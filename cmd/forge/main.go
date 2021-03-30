@@ -2,12 +2,16 @@ package main
 
 import (
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 
 	"github.com/imagvfx/forge"
 	"github.com/imagvfx/forge/service/sqlite"
+	"github.com/kybin/bml"
 )
+
+var Tmpl *template.Template
 
 func main() {
 	var (
@@ -31,7 +35,13 @@ func main() {
 	path := &pathHandler{
 		server: server,
 	}
+	api := &apiHandler{
+		server: server,
+	}
+	Tmpl = template.New("")
+	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", path.Handle)
+	mux.HandleFunc("/e/", path.Handle)
+	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
 	http.ListenAndServe(addr, mux)
 }

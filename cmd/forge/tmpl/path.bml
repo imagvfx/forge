@@ -1,0 +1,21 @@
+<!doctype html>
+<html> [
+	<head> []
+	<body> [
+		<h1> [{{.Entry.Path}}]
+		<form action="/api/add-entry" method="post"> [
+			<div> [
+				SubEntry
+				<input name="parent" type="hidden" value="{{.Entry.Path}}"> []
+				<input name="path" type="text" value=""> []
+				<button type="submit"> [Add]
+			]
+		]
+		<div> [
+		{{range .SubEntries}}
+			<a href="{{.Name}}"> [{{.Name}}]
+		{{end}}
+		]
+	]
+]
+

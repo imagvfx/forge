@@ -1,2 +1,4 @@
+github.com/kybin/bml v0.0.6 h1:hfAX6WtiXjLcADUoAQv7/1OGhPFEafal14vkuTjEgXA=
+github.com/kybin/bml v0.0.6/go.mod h1:sf98QYVbGCO7z3TmIyZwdlDrdFsXKlZiXIEnFcl/fBc=
 github.com/mattn/go-sqlite3 v1.14.6 h1:dNPt6NO46WmLVt2DLNpwczCmdV5boIZ6g/tlDrlRUbg=
 github.com/mattn/go-sqlite3 v1.14.6/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
