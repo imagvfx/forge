@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/imagvfx/forge/property"
 	"github.com/imagvfx/forge/service"
 )
 
@@ -87,5 +88,96 @@ func (s *Server) AddEntry(path string) error {
 	if err != nil {
 		return err
 	}
-	return err
+	return nil
+}
+
+func (s *Server) entryProperties(ent int) ([]*Property, error) {
+	ps, err := s.svc.FindProperties(service.PropertyFinder{
+		EntryID: &ent,
+	})
+	if err != nil {
+		return nil, err
+	}
+	props := make([]*Property, 0)
+	for _, p := range ps {
+		prop := &Property{
+			srv:   s,
+			id:    p.ID,
+			name:  p.Name,
+			typ:   p.Type,
+			value: p.Value,
+		}
+		fmt.Println(p.Value)
+		props = append(props, prop)
+	}
+	return props, nil
+}
+
+func (s *Server) getProperty(ent int, name string) (*Property, error) {
+	ps, err := s.svc.FindProperties(service.PropertyFinder{
+		EntryID: &ent,
+		Name:    &name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(ps) == 0 {
+		return nil, fmt.Errorf("entry not found")
+	}
+	if len(ps) != 1 {
+		return nil, fmt.Errorf("got more than 1 property")
+	}
+	p := ps[0]
+	prop := &Property{
+		srv:   s,
+		id:    p.ID,
+		name:  p.Name,
+		typ:   p.Type,
+		value: p.Value,
+	}
+	return prop, nil
+}
+
+func (s *Server) AddProperty(path string, name, typ, value string) error {
+	err := property.Validate(typ, value)
+	if err != nil {
+		return err
+	}
+	ent, err := s.GetEntry(path)
+	if err != nil {
+		return err
+	}
+	err = s.svc.AddProperty(&service.Property{
+		EntryID: ent.id,
+		Name:    name,
+		Type:    typ,
+		Value:   value,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) SetProperty(path string, name, value string) error {
+	ent, err := s.GetEntry(path)
+	if err != nil {
+		return err
+	}
+	prop, err := s.getProperty(ent.id, name)
+	if err != nil {
+		return err
+	}
+	err = property.Validate(prop.typ, value)
+	if err != nil {
+		return err
+	}
+	err = s.svc.UpdateProperty(service.PropertyUpdater{
+		ID:    prop.id,
+		Value: &value,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

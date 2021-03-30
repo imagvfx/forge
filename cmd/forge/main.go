@@ -43,5 +43,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/e/", path.Handle)
 	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
+	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
+	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
 	http.ListenAndServe(addr, mux)
 }

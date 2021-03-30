@@ -6,33 +6,15 @@ import (
 	"strings"
 )
 
-type Timecode struct {
-	name  string
-	value string
-}
-
-func NewTimecode(name string) *Timecode {
-	t := &Timecode{
-		name: name,
+func Validate(typ, val string) error {
+	validate := map[string]func(string) error{
+		"timecode": validateTimecode,
 	}
-	return t
-}
-
-func (t *Timecode) Name() string {
-	return t.name
-}
-
-func (t *Timecode) Value() string {
-	return t.value
-}
-
-func (t *Timecode) Set(s string) error {
-	err := validateTimecode(s)
-	if err != nil {
-		return err
+	fn := validate[typ]
+	if fn == nil {
+		return fmt.Errorf("unknown type of property: %v", typ)
 	}
-	t.t = s
-	return nil
+	return fn(val)
 }
 
 func validateTimecode(s string) error {

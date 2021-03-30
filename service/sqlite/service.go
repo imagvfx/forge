@@ -24,3 +24,15 @@ func (s *Service) FindEntries(find service.EntryFinder) ([]*service.Entry, error
 func (s *Service) AddEntry(ent *service.Entry) error {
 	return AddEntry(s.db, ent)
 }
+
+func (s *Service) FindProperties(find service.PropertyFinder) ([]*service.Property, error) {
+	return FindProperties(s.db, find)
+}
+
+func (s *Service) AddProperty(ent *service.Property) error {
+	return AddProperty(s.db, ent)
+}
+
+func (s *Service) UpdateProperty(upd service.PropertyUpdater) error {
+	return UpdateProperty(s.db, upd)
+}

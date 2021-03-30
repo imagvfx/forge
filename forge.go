@@ -24,6 +24,10 @@ func (e *Entry) SubEntries() ([]*Entry, error) {
 	return e.srv.subEntries(e.id)
 }
 
+func (e *Entry) Properties() ([]*Property, error) {
+	return e.srv.entryProperties(e.id)
+}
+
 func (e *Entry) MarshalJSON() ([]byte, error) {
 	m := struct {
 		Path       string
@@ -34,8 +38,23 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-type Property interface {
-	Name() string
-	Value() string
-	Set(string) error
+type Property struct {
+	srv   *Server
+	id    int
+	entID int
+	name  string
+	typ   string
+	value string
+}
+
+func (p *Property) Type() string {
+	return p.typ
+}
+
+func (p *Property) Name() string {
+	return p.name
+}
+
+func (p *Property) Value() string {
+	return p.value
 }

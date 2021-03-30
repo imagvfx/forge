@@ -2,18 +2,44 @@
 <html> [
 	<head> []
 	<body> [
-		<h1> [{{.Entry.Path}}]
-		<form action="/api/add-entry" method="post"> [
-			<div> [
-				SubEntry
-				<input name="parent" type="hidden" value="{{.Entry.Path}}"> []
-				<input name="path" type="text" value=""> []
-				<button type="submit"> [Add]
+		<h1> [{{$.Entry.Path}}]
+		<h4> [
+			Sub Entry
+			<form action="/api/add-entry" method="post"> [
+				<div> [
+					<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
+					<input name="path" type="text" value=""> []
+					<button type="submit"> [Add]
+				]
 			]
 		]
 		<div> [
-		{{range .SubEntries}}
+		{{range $.SubEntries}}
 			<a href="{{.Name}}"> [{{.Name}}]
+		{{end}}
+		]
+		<h4> [
+			Property
+			<form action="/api/add-property" method="post"> [
+				<div> [
+					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+					<input name="type" type="text" value=""> []
+					<input name="name" type="text" value=""> []
+					<button type="submit"> [Add]
+				]
+			]
+		]
+		<div> [
+		{{range $.Properties}}
+			<form action="/api/set-property" method="post"> [
+				<div> [
+					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+					<input readonly name="name" type="text" value="{{.Name}}"> []
+					<input readonly name="type" type="text" value="{{.Type}}"> []
+					<input name="value" type="text" value="{{.Value}}"> []
+					<button type="submit"> [Set]
+				]
+			]
 		{{end}}
 		]
 	]
