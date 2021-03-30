@@ -44,7 +44,6 @@ func (s *Server) GetEntry(path string) (*Entry, error) {
 		id:       e.ID,
 		parentID: parentID,
 		path:     e.Path,
-		name:     e.Name,
 	}
 	return ent, nil
 }
@@ -67,7 +66,6 @@ func (s *Server) subEntries(parent int) ([]*Entry, error) {
 			id:       e.ID,
 			parentID: parentID,
 			path:     e.Path,
-			name:     e.Name,
 		}
 		ents = append(ents, ent)
 	}
@@ -84,7 +82,6 @@ func (s *Server) AddEntry(path string) error {
 	e := &service.Entry{
 		ParentID: &p.id,
 		Path:     path,
-		Name:     filepath.Base(path),
 	}
 	err = s.svc.AddEntry(e)
 	if err != nil {

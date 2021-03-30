@@ -1,13 +1,15 @@
 package forge
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"path/filepath"
+)
 
 type Entry struct {
 	srv      *Server
 	id       int
 	parentID int
 	path     string
-	name     string
 }
 
 func (e *Entry) Path() string {
@@ -15,7 +17,7 @@ func (e *Entry) Path() string {
 }
 
 func (e *Entry) Name() string {
-	return e.name
+	return filepath.Base(e.path)
 }
 
 func (e *Entry) SubEntries() ([]*Entry, error) {
@@ -24,10 +26,10 @@ func (e *Entry) SubEntries() ([]*Entry, error) {
 
 func (e *Entry) MarshalJSON() ([]byte, error) {
 	m := struct {
-		Name       string
+		Path       string
 		SubEntries []string
 	}{
-		Name: e.name,
+		Path: e.path,
 	}
 	return json.Marshal(m)
 }
