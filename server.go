@@ -121,6 +121,7 @@ func (s *Server) entryProperties(ent int) ([]*Property, error) {
 		prop := &Property{
 			srv:     s,
 			id:      p.ID,
+			entID:   p.EntryID,
 			name:    p.Name,
 			typ:     p.Type,
 			value:   p.Value,
@@ -149,6 +150,7 @@ func (s *Server) getProperty(ent int, name string) (*Property, error) {
 	prop := &Property{
 		srv:     s,
 		id:      p.ID,
+		entID:   p.EntryID,
 		name:    p.Name,
 		typ:     p.Type,
 		value:   p.Value,
