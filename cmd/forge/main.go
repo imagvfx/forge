@@ -41,7 +41,7 @@ func main() {
 	Tmpl = template.New("")
 	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
-	mux.HandleFunc("/e/", path.Handle)
+	mux.HandleFunc("/", path.Handle)
 	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
 	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)

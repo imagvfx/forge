@@ -21,10 +21,6 @@ func handleError(w http.ResponseWriter, err error) {
 func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		path := r.URL.Path
-		if path[:3] != "/e/" {
-			return fmt.Errorf("assumtion of the path failed")
-		}
-		path = path[2:]
 		ent, err := h.server.GetEntry(path)
 		if err != nil {
 			return err
