@@ -126,7 +126,6 @@ func (s *Server) entryProperties(ent int) ([]*Property, error) {
 			value:   p.Value,
 			inherit: p.Inherit,
 		}
-		fmt.Println(p.Value)
 		props = append(props, prop)
 	}
 	return props, nil
