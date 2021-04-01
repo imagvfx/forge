@@ -21,6 +21,10 @@ func (s *Service) FindEntries(find service.EntryFinder) ([]*service.Entry, error
 	return FindEntries(s.db, find)
 }
 
+func (s *Service) GetEntry(id int) (*service.Entry, error) {
+	return GetEntry(s.db, id)
+}
+
 func (s *Service) AddEntry(ent *service.Entry) error {
 	return AddEntry(s.db, ent)
 }

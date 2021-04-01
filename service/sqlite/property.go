@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -16,6 +17,7 @@ func createPropertiesTable(tx *sql.Tx) error {
 			name STRING NOT NULL,
 			typ STRING NOT NULL,
 			val STRING NOT NULL,
+			inherit BOOL NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			UNIQUE (entry_id, name)
 		)
@@ -29,28 +31,56 @@ func FindProperties(db *sql.DB, find service.PropertyFinder) ([]*service.Propert
 		return nil, err
 	}
 	defer tx.Rollback()
-	ents, err := findProperties(tx, find)
-	if err != nil {
-		return nil, err
+	propmap := make(map[string]*service.Property)
+	onlyInherit := false
+	for {
+		ent, err := getEntry(tx, find.EntryID)
+		if err != nil {
+			return nil, err
+		}
+		pmap, err := findProperties(tx, find, onlyInherit)
+		if err != nil {
+			return nil, err
+		}
+		for name, p := range pmap {
+			if propmap[name] == nil {
+				propmap[name] = p
+			}
+		}
+		if ent.ParentID == nil {
+			break
+		}
+		find.EntryID = *ent.ParentID
+		onlyInherit = true
 	}
+	props := make([]*service.Property, 0, len(propmap))
+	for _, p := range propmap {
+		props = append(props, p)
+	}
+	sort.Slice(props, func(i, j int) bool {
+		return props[i].Name < props[j].Name
+	})
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
-	return ents, nil
+	return props, nil
 }
 
 // when id is empty, it will find properties of root.
-func findProperties(tx *sql.Tx, find service.PropertyFinder) ([]*service.Property, error) {
+// It returns a map instead of a slice, because it is better structure for aggregating the parents` properties.
+func findProperties(tx *sql.Tx, find service.PropertyFinder, onlyInherit bool) (map[string]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.EntryID != nil {
-		keys = append(keys, "entry_id=?")
-		vals = append(vals, *find.EntryID)
-	}
+	keys = append(keys, "entry_id=?")
+	vals = append(vals, find.EntryID)
 	if find.Name != nil {
 		keys = append(keys, "name=?")
 		vals = append(vals, *find.Name)
+	}
+	if onlyInherit {
+		keys = append(keys, "inherit=?")
+		vals = append(vals, true)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -62,18 +92,17 @@ func findProperties(tx *sql.Tx, find service.PropertyFinder) ([]*service.Propert
 			entry_id,
 			name,
 			typ,
-			val
+			val,
+			inherit
 		FROM properties
-		`+where+`
-		ORDER BY name ASC
-	`,
+		`+where,
 		vals...,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	props := make([]*service.Property, 0)
+	propmap := make(map[string]*service.Property)
 	for rows.Next() {
 		p := &service.Property{}
 		err := rows.Scan(
@@ -82,13 +111,14 @@ func findProperties(tx *sql.Tx, find service.PropertyFinder) ([]*service.Propert
 			&p.Name,
 			&p.Type,
 			&p.Value,
+			&p.Inherit,
 		)
 		if err != nil {
 			return nil, err
 		}
-		props = append(props, p)
+		propmap[p.Name] = p
 	}
-	return props, nil
+	return propmap, nil
 }
 
 func AddProperty(db *sql.DB, p *service.Property) error {
@@ -114,14 +144,16 @@ func addProperty(tx *sql.Tx, p *service.Property) error {
 			entry_id,
 			typ,
 			name,
-			val
+			val,
+			inherit
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`,
 		p.EntryID,
 		p.Type,
 		p.Name,
 		p.Value,
+		p.Inherit,
 	)
 	if err != nil {
 		return err
@@ -157,6 +189,10 @@ func updateProperty(tx *sql.Tx, upd service.PropertyUpdater) error {
 	if upd.Value != nil {
 		keys = append(keys, "val=?")
 		vals = append(vals, *upd.Value)
+	}
+	if upd.Inherit != nil {
+		keys = append(keys, "inherit=?")
+		vals = append(vals, *upd.Inherit)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)

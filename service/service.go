@@ -2,6 +2,7 @@ package service
 
 type Service interface {
 	FindEntries(EntryFinder) ([]*Entry, error)
+	GetEntry(int) (*Entry, error)
 	AddEntry(*Entry) error
 	FindProperties(PropertyFinder) ([]*Property, error)
 	AddProperty(*Property) error
@@ -15,6 +16,7 @@ type Entry struct {
 }
 
 type EntryFinder struct {
+	ID       *int
 	ParentID *int
 	Path     string
 }
@@ -25,14 +27,16 @@ type Property struct {
 	Name    string
 	Type    string
 	Value   string
+	Inherit bool
 }
 
 type PropertyFinder struct {
-	EntryID *int
+	EntryID int
 	Name    *string
 }
 
 type PropertyUpdater struct {
-	ID    int
-	Value *string
+	ID      int
+	Value   *string
+	Inherit *bool
 }

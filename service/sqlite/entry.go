@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -55,6 +56,10 @@ func FindEntries(db *sql.DB, find service.EntryFinder) ([]*service.Entry, error)
 func findEntries(tx *sql.Tx, find service.EntryFinder) ([]*service.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
+	if find.ID != nil {
+		keys = append(keys, "id=?")
+		vals = append(vals, *find.ID)
+	}
 	if find.Path != "" {
 		keys = append(keys, "path=?")
 		vals = append(vals, find.Path)
@@ -96,6 +101,34 @@ func findEntries(tx *sql.Tx, find service.EntryFinder) ([]*service.Entry, error)
 		ents = append(ents, e)
 	}
 	return ents, nil
+}
+
+func GetEntry(db *sql.DB, id int) (*service.Entry, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	ent, err := getEntry(tx, id)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return ent, nil
+}
+
+func getEntry(tx *sql.Tx, id int) (*service.Entry, error) {
+	ents, err := findEntries(tx, service.EntryFinder{ID: &id})
+	if err != nil {
+		return nil, err
+	}
+	if len(ents) == 0 {
+		return nil, fmt.Errorf("entry not found")
+	}
+	return ents[0], nil
 }
 
 func AddEntry(db *sql.DB, e *service.Entry) error {

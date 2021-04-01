@@ -37,6 +37,7 @@
 					<input readonly name="name" type="text" value="{{.Name}}"> []
 					<input readonly name="type" type="text" value="{{.Type}}"> []
 					<input name="value" type="text" value="{{.Value}}"> []
+					{{if ne .Entry.Path $.Entry.Path}}inherited from '{{.Entry.Path}}'{{end}}
 					<button type="submit"> [Set]
 				]
 			]

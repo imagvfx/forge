@@ -49,6 +49,24 @@ func (s *Server) GetEntry(path string) (*Entry, error) {
 	return ent, nil
 }
 
+func (s *Server) getEntry(id int) (*Entry, error) {
+	e, err := s.svc.GetEntry(id)
+	if err != nil {
+		return nil, err
+	}
+	parentID := -1
+	if e.ParentID != nil {
+		parentID = *e.ParentID
+	}
+	ent := &Entry{
+		srv:      s,
+		id:       e.ID,
+		parentID: parentID,
+		path:     e.Path,
+	}
+	return ent, nil
+}
+
 func (s *Server) subEntries(parent int) ([]*Entry, error) {
 	es, err := s.svc.FindEntries(service.EntryFinder{
 		ParentID: &parent,
@@ -93,7 +111,7 @@ func (s *Server) AddEntry(path string) error {
 
 func (s *Server) entryProperties(ent int) ([]*Property, error) {
 	ps, err := s.svc.FindProperties(service.PropertyFinder{
-		EntryID: &ent,
+		EntryID: ent,
 	})
 	if err != nil {
 		return nil, err
@@ -101,11 +119,12 @@ func (s *Server) entryProperties(ent int) ([]*Property, error) {
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			srv:   s,
-			id:    p.ID,
-			name:  p.Name,
-			typ:   p.Type,
-			value: p.Value,
+			srv:     s,
+			id:      p.ID,
+			name:    p.Name,
+			typ:     p.Type,
+			value:   p.Value,
+			inherit: p.Inherit,
 		}
 		fmt.Println(p.Value)
 		props = append(props, prop)
@@ -115,7 +134,7 @@ func (s *Server) entryProperties(ent int) ([]*Property, error) {
 
 func (s *Server) getProperty(ent int, name string) (*Property, error) {
 	ps, err := s.svc.FindProperties(service.PropertyFinder{
-		EntryID: &ent,
+		EntryID: ent,
 		Name:    &name,
 	})
 	if err != nil {
@@ -129,11 +148,12 @@ func (s *Server) getProperty(ent int, name string) (*Property, error) {
 	}
 	p := ps[0]
 	prop := &Property{
-		srv:   s,
-		id:    p.ID,
-		name:  p.Name,
-		typ:   p.Type,
-		value: p.Value,
+		srv:     s,
+		id:      p.ID,
+		name:    p.Name,
+		typ:     p.Type,
+		value:   p.Value,
+		inherit: p.Inherit,
 	}
 	return prop, nil
 }
@@ -152,6 +172,7 @@ func (s *Server) AddProperty(path string, name, typ, value string) error {
 		Name:    name,
 		Type:    typ,
 		Value:   value,
+		Inherit: false,
 	})
 	if err != nil {
 		return err
