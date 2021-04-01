@@ -45,7 +45,7 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 type Property struct {
 	srv     *Server
 	id      int
-	entID   int
+	entryID int
 	name    string
 	typ     string
 	value   string
@@ -53,7 +53,7 @@ type Property struct {
 }
 
 func (p *Property) Entry() (*Entry, error) {
-	return p.srv.getEntry(p.entID)
+	return p.srv.getEntry(p.entryID)
 }
 
 func (p *Property) Type() string {
