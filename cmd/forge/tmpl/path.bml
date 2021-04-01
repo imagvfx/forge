@@ -15,7 +15,7 @@
 		]
 		<div> [
 		{{range $.SubEntries}}
-			<a href="{{.Name}}"> [{{.Name}}]
+			<a href="{{.Path}}"> [{{.Name}}]
 		{{end}}
 		]
 		<h4> [
