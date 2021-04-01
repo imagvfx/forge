@@ -16,6 +16,10 @@ func (e *Entry) Path() string {
 	return e.path
 }
 
+func (e *Entry) Dir() string {
+	return filepath.Dir(e.path)
+}
+
 func (e *Entry) Name() string {
 	return filepath.Base(e.path)
 }

@@ -2,7 +2,10 @@
 <html> [
 	<head> []
 	<body> [
-		<h1> [{{$.Entry.Path}}]
+		<h1> [
+			{{if ne $.Entry.Path "/"}}<a href="{{$.Entry.Dir}}">[&#60;-]{{end}}
+			{{$.Entry.Path}}
+		]
 		<h4> [
 			Sub Entry
 			<form action="/api/add-entry" method="post"> [
