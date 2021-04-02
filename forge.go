@@ -53,7 +53,6 @@ type Property struct {
 	name    string
 	typ     string
 	value   string
-	inherit bool
 }
 
 func (p *Property) Entry() (*Entry, error) {
@@ -70,10 +69,6 @@ func (p *Property) Name() string {
 
 func (p *Property) Value() string {
 	return p.value
-}
-
-func (p *Property) Inherit() bool {
-	return p.inherit
 }
 
 type Environ struct {

@@ -30,7 +30,6 @@ type Property struct {
 	Name    string
 	Type    string
 	Value   string
-	Inherit bool
 }
 
 type PropertyFinder struct {
@@ -39,9 +38,8 @@ type PropertyFinder struct {
 }
 
 type PropertyUpdater struct {
-	ID      int
-	Value   *string
-	Inherit *bool
+	ID    int
+	Value *string
 }
 
 type Environ struct {

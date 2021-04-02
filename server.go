@@ -125,7 +125,6 @@ func (s *Server) entryProperties(ent int) ([]*Property, error) {
 			name:    p.Name,
 			typ:     p.Type,
 			value:   p.Value,
-			inherit: p.Inherit,
 		}
 		props = append(props, prop)
 	}
@@ -154,7 +153,6 @@ func (s *Server) getProperty(ent int, name string) (*Property, error) {
 		name:    p.Name,
 		typ:     p.Type,
 		value:   p.Value,
-		inherit: p.Inherit,
 	}
 	return prop, nil
 }
@@ -173,7 +171,6 @@ func (s *Server) AddProperty(path string, name, typ, value string) error {
 		Name:    name,
 		Type:    typ,
 		Value:   value,
-		Inherit: false,
 	})
 	if err != nil {
 		return err
