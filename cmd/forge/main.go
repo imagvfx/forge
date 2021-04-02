@@ -45,5 +45,7 @@ func main() {
 	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
 	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
+	mux.HandleFunc("/api/add-environ", api.HandleAddEnviron)
+	mux.HandleFunc("/api/set-environ", api.HandleSetEnviron)
 	http.ListenAndServe(addr, mux)
 }

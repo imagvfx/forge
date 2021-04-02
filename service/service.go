@@ -7,6 +7,9 @@ type Service interface {
 	FindProperties(PropertyFinder) ([]*Property, error)
 	AddProperty(*Property) error
 	UpdateProperty(PropertyUpdater) error
+	FindEnvirons(EnvironFinder) ([]*Environ, error)
+	AddEnviron(*Environ) error
+	UpdateEnviron(EnvironUpdater) error
 }
 
 type Entry struct {
@@ -39,4 +42,21 @@ type PropertyUpdater struct {
 	ID      int
 	Value   *string
 	Inherit *bool
+}
+
+type Environ struct {
+	ID      int
+	EntryID int
+	Name    string
+	Value   string
+}
+
+type EnvironFinder struct {
+	EntryID int
+	Name    *string
+}
+
+type EnvironUpdater struct {
+	ID    int
+	Value *string
 }

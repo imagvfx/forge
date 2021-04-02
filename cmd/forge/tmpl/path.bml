@@ -39,9 +39,36 @@
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 					<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
 					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
-					<input name="value" type="text" value="{{.Value}} "placeholder="value"> []
+					<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
 					{{if ne .Entry.Path $.Entry.Path}}inherited from '{{.Entry.Path}}'{{end}}
 					<button type="submit"> [Set]
+				]
+			]
+		{{end}}
+		]
+		<h4> [
+			Environ
+			<form action="/api/add-environ" method="post"> [
+				<div> [
+					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+					<input name="name" type="text" value="" placeholder="name"> []
+					<button type="submit"> [Add]
+				]
+			]
+		]
+		<div> [
+		{{range $env := $.Environs}}
+			{{$inherit := ne $env.Entry.Path $.Entry.Path}}
+			<form action="/api/{{if $inherit}}add{{else}}set{{end}}-environ" method="post"> [
+				<div> [
+					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+					<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
+					<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
+					{{if $inherit}}
+						inherited from '{{$env.Entry.Path}}' <button type="submit"> [Overwrite]
+					{{else}}
+						<button type="submit"> [Set]
+					{{end}}
 				]
 			]
 		{{end}}

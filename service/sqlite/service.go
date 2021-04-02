@@ -40,3 +40,15 @@ func (s *Service) AddProperty(ent *service.Property) error {
 func (s *Service) UpdateProperty(upd service.PropertyUpdater) error {
 	return UpdateProperty(s.db, upd)
 }
+
+func (s *Service) FindEnvirons(find service.EnvironFinder) ([]*service.Environ, error) {
+	return FindEnvirons(s.db, find)
+}
+
+func (s *Service) AddEnviron(ent *service.Environ) error {
+	return AddEnviron(s.db, ent)
+}
+
+func (s *Service) UpdateEnviron(upd service.EnvironUpdater) error {
+	return UpdateEnviron(s.db, upd)
+}

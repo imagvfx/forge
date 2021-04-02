@@ -32,6 +32,10 @@ func (e *Entry) Properties() ([]*Property, error) {
 	return e.srv.entryProperties(e.id)
 }
 
+func (e *Entry) Environs() ([]*Environ, error) {
+	return e.srv.entryEnvirons(e.id)
+}
+
 func (e *Entry) MarshalJSON() ([]byte, error) {
 	m := struct {
 		Path       string
@@ -70,4 +74,24 @@ func (p *Property) Value() string {
 
 func (p *Property) Inherit() bool {
 	return p.inherit
+}
+
+type Environ struct {
+	srv     *Server
+	id      int
+	entryID int
+	name    string
+	value   string
+}
+
+func (p *Environ) Entry() (*Entry, error) {
+	return p.srv.getEntry(p.entryID)
+}
+
+func (p *Environ) Name() string {
+	return p.name
+}
+
+func (p *Environ) Value() string {
+	return p.value
 }

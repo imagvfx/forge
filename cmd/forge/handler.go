@@ -33,14 +33,20 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		envs, err := ent.Environs()
+		if err != nil {
+			return err
+		}
 		recipe := struct {
 			Entry      *forge.Entry
 			SubEntries []*forge.Entry
 			Properties []*forge.Property
+			Environs   []*forge.Environ
 		}{
 			Entry:      ent,
 			SubEntries: subEnts,
 			Properties: props,
+			Environs:   envs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
 		if err != nil {
@@ -99,6 +105,40 @@ func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		value := r.FormValue("value")
 		err := h.server.SetProperty(path, name, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
+func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		path := r.FormValue("path")
+		name := r.FormValue("name")
+		value := r.FormValue("value")
+		err := h.server.AddEnviron(path, name, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
+func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		path := r.FormValue("path")
+		name := r.FormValue("name")
+		value := r.FormValue("value")
+		err := h.server.SetEnviron(path, name, value)
 		if err != nil {
 			return err
 		}
