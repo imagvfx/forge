@@ -134,7 +134,7 @@ func getEntry(tx *sql.Tx, id int) (*service.Entry, error) {
 	return ents[0], nil
 }
 
-func AddEntry(db *sql.DB, e *service.Entry) error {
+func AddEntry(db *sql.DB, e *service.Entry, props []*service.Property, envs []*service.Environ) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -143,6 +143,20 @@ func AddEntry(db *sql.DB, e *service.Entry) error {
 	err = addEntry(tx, e)
 	if err != nil {
 		return err
+	}
+	for _, p := range props {
+		p.EntryID = e.ID
+		err := addProperty(tx, p)
+		if err != nil {
+			return err
+		}
+	}
+	for _, env := range envs {
+		env.EntryID = e.ID
+		err := addEnviron(tx, env)
+		if err != nil {
+			return err
+		}
 	}
 	err = tx.Commit()
 	if err != nil {

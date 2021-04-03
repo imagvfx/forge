@@ -119,7 +119,24 @@ func (s *Server) AddEntry(path, typ string) error {
 		Path:     path,
 		Type:     typ,
 	}
-	err = s.svc.AddEntry(e)
+	props := make([]*service.Property, 0)
+	for _, ktv := range s.cfg.Struct[typ].Properties {
+		p := &service.Property{
+			Name:  ktv.Key,
+			Type:  ktv.Type,
+			Value: ktv.Value,
+		}
+		props = append(props, p)
+	}
+	envs := make([]*service.Environ, 0)
+	for _, ktv := range s.cfg.Struct[typ].Environs {
+		e := &service.Environ{
+			Name:  ktv.Key,
+			Value: ktv.Value,
+		}
+		envs = append(envs, e)
+	}
+	err = s.svc.AddEntry(e, props, envs)
 	if err != nil {
 		return err
 	}

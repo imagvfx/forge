@@ -25,8 +25,8 @@ func (s *Service) GetEntry(id int) (*service.Entry, error) {
 	return GetEntry(s.db, id)
 }
 
-func (s *Service) AddEntry(ent *service.Entry) error {
-	return AddEntry(s.db, ent)
+func (s *Service) AddEntry(ent *service.Entry, props []*service.Property, env []*service.Environ) error {
+	return AddEntry(s.db, ent, props, env)
 }
 
 func (s *Service) FindProperties(find service.PropertyFinder) ([]*service.Property, error) {

@@ -3,7 +3,7 @@ package service
 type Service interface {
 	FindEntries(EntryFinder) ([]*Entry, error)
 	GetEntry(int) (*Entry, error)
-	AddEntry(*Entry) error
+	AddEntry(*Entry, []*Property, []*Environ) error
 	FindProperties(PropertyFinder) ([]*Property, error)
 	AddProperty(*Property) error
 	UpdateProperty(PropertyUpdater) error
