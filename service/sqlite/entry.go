@@ -14,6 +14,7 @@ func createEntriesTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			parent_id INTEGER,
 			path STRING NOT NULL UNIQUE,
+			typ STRING NOT NULL,
 			FOREIGN KEY (parent_id) REFERENCES entries (id)
 		)
 	`)
@@ -23,11 +24,11 @@ func createEntriesTable(tx *sql.Tx) error {
 func addRootEntry(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO entries
-			(id, path)
+			(id, path, typ)
 		VALUES
-			(?, ?)
+			(?, ?, ?)
 	`,
-		0, "/",
+		0, "/", "root",
 	)
 	if err != nil {
 		return err
@@ -76,7 +77,8 @@ func findEntries(tx *sql.Tx, find service.EntryFinder) ([]*service.Entry, error)
 		SELECT
 			id,
 			parent_id,
-			path
+			path,
+			typ
 		FROM entries
 		`+where+`
 		ORDER BY id ASC
@@ -94,6 +96,7 @@ func findEntries(tx *sql.Tx, find service.EntryFinder) ([]*service.Entry, error)
 			&e.ID,
 			&e.ParentID,
 			&e.Path,
+			&e.Type,
 		)
 		if err != nil {
 			return nil, err
@@ -152,12 +155,14 @@ func addEntry(tx *sql.Tx, e *service.Entry) error {
 	result, err := tx.Exec(`
 		INSERT INTO entries (
 			parent_id,
-			path
+			path,
+			typ
 		)
-		VALUES (?, ?)
+		VALUES (?, ?, ?)
 	`,
 		e.ParentID,
 		e.Path,
+		e.Type,
 	)
 	if err != nil {
 		return err

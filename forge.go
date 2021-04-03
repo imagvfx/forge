@@ -10,6 +10,7 @@ type Entry struct {
 	id       int
 	parentID int
 	path     string
+	typ      string
 }
 
 func (e *Entry) Path() string {
@@ -22,6 +23,10 @@ func (e *Entry) Dir() string {
 
 func (e *Entry) Name() string {
 	return filepath.Base(e.path)
+}
+
+func (e *Entry) Type() string {
+	return e.typ
 }
 
 func (e *Entry) SubEntries() ([]*Entry, error) {

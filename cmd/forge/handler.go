@@ -10,6 +10,7 @@ import (
 
 type pathHandler struct {
 	server *forge.Server
+	cfg    *forge.Config
 }
 
 func handleError(w http.ResponseWriter, err error) {
@@ -37,16 +38,19 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		subtyps := h.cfg.Struct[ent.Type()].SubEntryTypes
 		recipe := struct {
-			Entry      *forge.Entry
-			SubEntries []*forge.Entry
-			Properties []*forge.Property
-			Environs   []*forge.Environ
+			Entry         *forge.Entry
+			SubEntries    []*forge.Entry
+			Properties    []*forge.Property
+			Environs      []*forge.Environ
+			SubEntryTypes []string
 		}{
-			Entry:      ent,
-			SubEntries: subEnts,
-			Properties: props,
-			Environs:   envs,
+			Entry:         ent,
+			SubEntries:    subEnts,
+			Properties:    props,
+			Environs:      envs,
+			SubEntryTypes: subtyps,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
 		if err != nil {
@@ -70,7 +74,8 @@ func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
 		parent := r.FormValue("parent")
 		path := r.FormValue("path")
 		path = filepath.Join(parent, path)
-		err := h.server.AddEntry(path)
+		typ := r.FormValue("type")
+		err := h.server.AddEntry(path, typ)
 		if err != nil {
 			return err
 		}

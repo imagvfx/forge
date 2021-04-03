@@ -10,11 +10,13 @@ import (
 
 type Server struct {
 	svc service.Service
+	cfg *Config
 }
 
-func NewServer(svc service.Service) *Server {
+func NewServer(svc service.Service, cfg *Config) *Server {
 	s := &Server{
 		svc: svc,
+		cfg: cfg,
 	}
 	return s
 }
@@ -45,6 +47,7 @@ func (s *Server) GetEntry(path string) (*Entry, error) {
 		id:       e.ID,
 		parentID: parentID,
 		path:     e.Path,
+		typ:      e.Type,
 	}
 	return ent, nil
 }
@@ -63,6 +66,7 @@ func (s *Server) getEntry(id int) (*Entry, error) {
 		id:       e.ID,
 		parentID: parentID,
 		path:     e.Path,
+		typ:      e.Type,
 	}
 	return ent, nil
 }
@@ -85,22 +89,35 @@ func (s *Server) subEntries(parent int) ([]*Entry, error) {
 			id:       e.ID,
 			parentID: parentID,
 			path:     e.Path,
+			typ:      e.Type,
 		}
 		ents = append(ents, ent)
 	}
 	return ents, nil
 }
 
-func (s *Server) AddEntry(path string) error {
+func (s *Server) AddEntry(path, typ string) error {
 	path = filepath.ToSlash(path)
 	parent := filepath.Dir(path)
 	p, err := s.GetEntry(parent)
 	if err != nil {
 		return fmt.Errorf("error on parent check: %v", err)
 	}
+	allow := false
+	subtyps := s.cfg.Struct[p.Type()].SubEntryTypes
+	for _, subtyp := range subtyps {
+		if subtyp == typ {
+			allow = true
+			break
+		}
+	}
+	if !allow {
+		return fmt.Errorf("cannot create a child of type %q from %q", typ, p.Type())
+	}
 	e := &service.Entry{
 		ParentID: &p.id,
 		Path:     path,
+		Type:     typ,
 	}
 	err = s.svc.AddEntry(e)
 	if err != nil {

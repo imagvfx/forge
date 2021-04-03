@@ -16,6 +16,7 @@ type Entry struct {
 	ID       int
 	ParentID *int // nil if root entry
 	Path     string
+	Type     string
 }
 
 type EntryFinder struct {

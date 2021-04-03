@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -26,9 +25,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, s := range cfg.Struct {
-		fmt.Println(s)
-	}
 
 	db, err := sqlite.Open(dbpath)
 	if err != nil {
@@ -40,9 +36,10 @@ func main() {
 		log.Fatal(err)
 	}
 	svc := sqlite.NewService(db)
-	server := forge.NewServer(svc)
+	server := forge.NewServer(svc, cfg)
 	path := &pathHandler{
 		server: server,
+		cfg:    cfg,
 	}
 	api := &apiHandler{
 		server: server,

@@ -4,17 +4,24 @@
 	<body> [
 		<h1> [
 			{{if ne $.Entry.Path "/"}}<a href="{{$.Entry.Dir}}">[&#60;-]{{end}}
-			{{$.Entry.Path}}
+			{{$.Entry.Path}} ({{$.Entry.Type}})
 		]
 		<h4> [
 			Sub Entry
+			{{if $.SubEntryTypes}}
 			<form action="/api/add-entry" method="post"> [
 				<div> [
 					<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
 					<input name="path" type="text" value=""> []
+					<select name="type" value=""> [
+					{{range $t := $.SubEntryTypes}}
+						<option value={{$t}}> [{{$t}}]
+					{{end}}
+					]
 					<button type="submit"> [Add]
 				]
 			]
+			{{end}}
 		]
 		<div> [
 		{{range $.SubEntries}}
