@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -20,6 +21,14 @@ func main() {
 	)
 	flag.StringVar(&addr, "addr", "0.0.0.0:8080", "address to bind")
 	flag.StringVar(&dbpath, "db", "forge.db", "db path to create or open")
+
+	cfg, err := forge.LoadConfig("config/")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, s := range cfg.Struct {
+		fmt.Println(s)
+	}
 
 	db, err := sqlite.Open(dbpath)
 	if err != nil {

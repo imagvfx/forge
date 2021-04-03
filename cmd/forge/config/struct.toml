@@ -1,0 +1,96 @@
+[root] # reserved
+
+sub_entry_types = [
+	"show",
+]
+
+
+[show]
+
+environs = [
+	"SHOW={{.Name}}",
+]
+
+properties = [
+	"sup user",
+	"pd user",
+	"pm user",
+	"note text",
+]
+
+sub_entry_types = [
+	"group",
+]
+
+
+[group]
+
+environs = [
+	"GROUP={{.Name}}",
+]
+
+properties = [
+	"note text",
+]
+
+sub_entry_types = [
+	"unit",
+]
+
+
+[unit]
+
+environs = [
+	"UNIT={{.Name}}",
+]
+
+properties = [
+	"confirm text",
+	"note text",
+]
+
+sub_entry_types = [
+	"part",
+]
+
+
+[part]
+
+environs = [
+	"PART={{.Name}}",
+]
+
+properties = [
+	"note text",
+]
+
+sub_entry_types = [
+	"elem",
+]
+
+
+[elem]
+
+environs = [
+	"ELEM={{.Name}}",
+]
+
+properties = [
+	"note text",
+]
+
+sub_entry_types = [
+	"ver",
+]
+
+
+[ver]
+
+environs = [
+	"VER={{.Name}}",
+]
+
+properties = [
+	"confirm text",
+	"note text",
+]
