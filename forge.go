@@ -1,7 +1,9 @@
 package forge
 
 import (
+	"bytes"
 	"encoding/json"
+	"html/template"
 	"path/filepath"
 )
 
@@ -72,8 +74,20 @@ func (p *Property) Name() string {
 	return p.name
 }
 
-func (p *Property) Value() string {
+func (p *Property) RawValue() string {
 	return p.value
+}
+
+func (p *Property) Value() string {
+	ent, err := p.Entry()
+	if err != nil {
+		return err.Error()
+	}
+	ev := Evaluator{
+		Path: ent.Path(),
+		Name: ent.Name(),
+	}
+	return ev.Eval(p.value)
 }
 
 type Environ struct {
@@ -92,6 +106,43 @@ func (p *Environ) Name() string {
 	return p.name
 }
 
-func (p *Environ) Value() string {
+func (p *Environ) RawValue() string {
 	return p.value
+}
+
+func (p *Environ) Value() string {
+	ent, err := p.Entry()
+	if err != nil {
+		return err.Error()
+	}
+	ev := Evaluator{
+		Path: ent.Path(),
+		Name: ent.Name(),
+	}
+	return ev.Eval(p.value)
+}
+
+type Evaluator struct {
+	Path string
+	Name string
+}
+
+func (e Evaluator) Eval(val string) string {
+	t, err := template.New("").Parse(val)
+	if err != nil {
+		return err.Error()
+	}
+	recipe := struct {
+		Path string
+		Name string
+	}{
+		Path: e.Path,
+		Name: e.Name,
+	}
+	w := &bytes.Buffer{}
+	err = t.Execute(w, recipe)
+	if err != nil {
+		return err.Error()
+	}
+	return w.String()
 }
