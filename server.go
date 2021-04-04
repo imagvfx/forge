@@ -192,11 +192,16 @@ func (s *Server) getProperty(ent int, name string) (*Property, error) {
 }
 
 func (s *Server) AddProperty(path string, name, typ, value string) error {
-	err := property.Validate(typ, value)
+	ent, err := s.GetEntry(path)
 	if err != nil {
 		return err
 	}
-	ent, err := s.GetEntry(path)
+	// When the value is in template form, the result should be valid value of the type.
+	ev := Evaluator{
+		Path: ent.Path(),
+		Name: ent.Name(),
+	}
+	err = property.Validate(typ, ev.Eval(value))
 	if err != nil {
 		return err
 	}
@@ -221,7 +226,12 @@ func (s *Server) SetProperty(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	err = property.Validate(prop.typ, value)
+	// When the value is in template form, the result should be valid value of the type.
+	ev := Evaluator{
+		Path: ent.Path(),
+		Name: ent.Name(),
+	}
+	err = property.Validate(prop.Type(), ev.Eval(value))
 	if err != nil {
 		return err
 	}
