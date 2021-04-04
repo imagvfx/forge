@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/imagvfx/forge/property"
 	"github.com/pelletier/go-toml"
 )
 
@@ -70,6 +71,10 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 				Key:   k,
 				Type:  t,
 				Value: v,
+			}
+			err := property.Validate(ktv.Type, ktv.Value)
+			if err != nil {
+				return nil, err
 			}
 			s.Properties = append(s.Properties, ktv)
 		}
