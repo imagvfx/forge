@@ -153,12 +153,13 @@ func (s *Server) entryProperties(ent int) ([]*Property, error) {
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			srv:     s,
-			id:      p.ID,
-			entryID: p.EntryID,
-			name:    p.Name,
-			typ:     p.Type,
-			value:   p.Value,
+			srv:       s,
+			id:        p.ID,
+			entryID:   p.EntryID,
+			entryPath: p.EntryPath,
+			name:      p.Name,
+			typ:       p.Type,
+			value:     p.Value,
 		}
 		props = append(props, prop)
 	}
@@ -181,12 +182,13 @@ func (s *Server) getProperty(ent int, name string) (*Property, error) {
 	}
 	p := ps[0]
 	prop := &Property{
-		srv:     s,
-		id:      p.ID,
-		entryID: p.EntryID,
-		name:    p.Name,
-		typ:     p.Type,
-		value:   p.Value,
+		srv:       s,
+		id:        p.ID,
+		entryID:   p.EntryID,
+		entryPath: p.EntryPath,
+		name:      p.Name,
+		typ:       p.Type,
+		value:     p.Value,
 	}
 	return prop, nil
 }
@@ -255,11 +257,12 @@ func (s *Server) entryEnvirons(ent int) ([]*Environ, error) {
 	props := make([]*Environ, 0)
 	for _, p := range ps {
 		prop := &Environ{
-			srv:     s,
-			id:      p.ID,
-			entryID: p.EntryID,
-			name:    p.Name,
-			value:   p.Value,
+			srv:       s,
+			id:        p.ID,
+			entryID:   p.EntryID,
+			entryPath: p.EntryPath,
+			name:      p.Name,
+			value:     p.Value,
 		}
 		props = append(props, prop)
 	}
@@ -282,11 +285,12 @@ func (s *Server) getEnviron(ent int, name string) (*Environ, error) {
 	}
 	e := es[0]
 	env := &Environ{
-		srv:     s,
-		id:      e.ID,
-		entryID: e.EntryID,
-		name:    e.Name,
-		value:   e.Value,
+		srv:       s,
+		id:        e.ID,
+		entryID:   e.EntryID,
+		entryPath: e.EntryPath,
+		name:      e.Name,
+		value:     e.Value,
 	}
 	return env, nil
 }

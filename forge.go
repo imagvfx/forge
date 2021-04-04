@@ -54,12 +54,13 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 }
 
 type Property struct {
-	srv     *Server
-	id      int
-	entryID int
-	name    string
-	typ     string
-	value   string
+	srv       *Server
+	id        int
+	entryID   int
+	entryPath string
+	name      string
+	typ       string
+	value     string
 }
 
 func (p *Property) Entry() (*Entry, error) {
@@ -79,23 +80,20 @@ func (p *Property) RawValue() string {
 }
 
 func (p *Property) Value() string {
-	ent, err := p.Entry()
-	if err != nil {
-		return err.Error()
-	}
 	ev := Evaluator{
-		Path: ent.Path(),
-		Name: ent.Name(),
+		Path: p.entryPath,
+		Name: filepath.Base(p.entryPath),
 	}
 	return ev.Eval(p.value)
 }
 
 type Environ struct {
-	srv     *Server
-	id      int
-	entryID int
-	name    string
-	value   string
+	srv       *Server
+	id        int
+	entryID   int
+	entryPath string
+	name      string
+	value     string
 }
 
 func (p *Environ) Entry() (*Entry, error) {
@@ -111,13 +109,9 @@ func (p *Environ) RawValue() string {
 }
 
 func (p *Environ) Value() string {
-	ent, err := p.Entry()
-	if err != nil {
-		return err.Error()
-	}
 	ev := Evaluator{
-		Path: ent.Path(),
-		Name: ent.Name(),
+		Path: p.entryPath,
+		Name: filepath.Base(p.entryPath),
 	}
 	return ev.Eval(p.value)
 }

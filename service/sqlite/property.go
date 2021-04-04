@@ -30,9 +30,16 @@ func FindProperties(db *sql.DB, find service.PropertyFinder) ([]*service.Propert
 		return nil, err
 	}
 	defer tx.Rollback()
+	ent, err := getEntry(tx, find.EntryID)
+	if err != nil {
+		return nil, err
+	}
 	props, err := findProperties(tx, find)
 	if err != nil {
 		return nil, err
+	}
+	for _, p := range props {
+		p.EntryPath = ent.Path
 	}
 	sort.Slice(props, func(i, j int) bool {
 		return props[i].Name < props[j].Name

@@ -41,6 +41,7 @@ func FindEnvirons(db *sql.DB, find service.EnvironFinder) ([]*service.Environ, e
 		}
 		for name, e := range emap {
 			if envmap[name] == nil {
+				e.EntryPath = ent.Path
 				envmap[name] = e
 			}
 		}

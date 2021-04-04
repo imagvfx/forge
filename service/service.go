@@ -26,11 +26,12 @@ type EntryFinder struct {
 }
 
 type Property struct {
-	ID      int
-	EntryID int
-	Name    string
-	Type    string
-	Value   string
+	ID        int
+	EntryID   int
+	EntryPath string
+	Name      string
+	Type      string
+	Value     string
 }
 
 type PropertyFinder struct {
@@ -44,10 +45,11 @@ type PropertyUpdater struct {
 }
 
 type Environ struct {
-	ID      int
-	EntryID int
-	Name    string
-	Value   string
+	ID        int
+	EntryID   int
+	EntryPath string
+	Name      string
+	Value     string
 }
 
 type EnvironFinder struct {
