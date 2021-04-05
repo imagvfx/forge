@@ -25,7 +25,7 @@ type StructConfig map[string]*EntryStruct
 type EntryStruct struct {
 	Type          string
 	Properties    []KeyTypeValue
-	Environs      []KeyValue
+	Environs      []KeyTypeValue
 	SubEntryTypes []string
 }
 
@@ -48,7 +48,7 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 	s := &EntryStruct{}
 	s.Type = typ
 	s.Properties = make([]KeyTypeValue, 0)
-	s.Environs = make([]KeyValue, 0)
+	s.Environs = make([]KeyTypeValue, 0)
 	s.SubEntryTypes = make([]string, 0)
 	propsTree := typTree.(*toml.Tree).GetArray("properties")
 	if propsTree != nil {
@@ -86,17 +86,26 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 			return nil, fmt.Errorf("cannot convert [%v].environs as []string", s.Type)
 		}
 		for _, e := range envs {
-			var k, v string
-			k_v := strings.SplitN(e, "=", 2)
-			k = k_v[0]
-			if len(k_v) == 2 {
-				v = k_v[1]
+			var k, t, v string
+			kt_v := strings.SplitN(e, "=", 2)
+			if len(kt_v) == 2 {
+				v = kt_v[1]
 			}
-			kv := KeyValue{
+			k_t := strings.SplitN(kt_v[0], " ", 2)
+			k = k_t[0]
+			if len(k_t) == 2 {
+				t = k_t[1]
+			}
+			ktv := KeyTypeValue{
 				Key:   k,
+				Type:  t,
 				Value: v,
 			}
-			s.Environs = append(s.Environs, kv)
+			err := property.Validate(ktv.Type, ktv.Value)
+			if err != nil {
+				return nil, err
+			}
+			s.Environs = append(s.Environs, ktv)
 		}
 	}
 	subtypsTree := typTree.(*toml.Tree).GetArray("sub_entry_types")

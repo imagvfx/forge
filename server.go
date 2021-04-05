@@ -121,6 +121,7 @@ func (s *Server) AddEntry(path, typ string) error {
 	}
 	props := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Properties {
+		// It has been validated while loading, skip it here.
 		p := &service.Property{
 			Name:  ktv.Key,
 			Type:  ktv.Type,
@@ -130,8 +131,10 @@ func (s *Server) AddEntry(path, typ string) error {
 	}
 	envs := make([]*service.Environ, 0)
 	for _, ktv := range s.cfg.Struct[typ].Environs {
+		// It has been validated while loading, skip it here.
 		e := &service.Environ{
 			Name:  ktv.Key,
+			Type:  ktv.Type,
 			Value: ktv.Value,
 		}
 		envs = append(envs, e)
@@ -262,6 +265,7 @@ func (s *Server) entryEnvirons(ent int) ([]*Environ, error) {
 			entryID:   p.EntryID,
 			entryPath: p.EntryPath,
 			name:      p.Name,
+			typ:       p.Type,
 			value:     p.Value,
 		}
 		props = append(props, prop)
@@ -290,19 +294,30 @@ func (s *Server) getEnviron(ent int, name string) (*Environ, error) {
 		entryID:   e.EntryID,
 		entryPath: e.EntryPath,
 		name:      e.Name,
+		typ:       e.Type,
 		value:     e.Value,
 	}
 	return env, nil
 }
 
-func (s *Server) AddEnviron(path string, name, value string) error {
+func (s *Server) AddEnviron(path string, name, typ, value string) error {
 	ent, err := s.GetEntry(path)
+	if err != nil {
+		return err
+	}
+	// When the value is in template form, the result should be valid value of the type.
+	ev := Evaluator{
+		Path: ent.Path(),
+		Name: ent.Name(),
+	}
+	err = property.Validate(typ, ev.Eval(value))
 	if err != nil {
 		return err
 	}
 	err = s.svc.AddEnviron(&service.Environ{
 		EntryID: ent.id,
 		Name:    name,
+		Type:    typ,
 		Value:   value,
 	})
 	if err != nil {
@@ -317,6 +332,15 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 		return err
 	}
 	env, err := s.getEnviron(ent.id, name)
+	if err != nil {
+		return err
+	}
+	// When the value is in template form, the result should be valid value of the type.
+	ev := Evaluator{
+		Path: ent.Path(),
+		Name: ent.Name(),
+	}
+	err = property.Validate(env.Type(), ev.Eval(value))
 	if err != nil {
 		return err
 	}

@@ -49,6 +49,7 @@ type Environ struct {
 	EntryID   int
 	EntryPath string
 	Name      string
+	Type      string
 	Value     string
 }
 

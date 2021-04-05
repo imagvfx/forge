@@ -93,6 +93,7 @@ type Environ struct {
 	entryID   int
 	entryPath string
 	name      string
+	typ       string
 	value     string
 }
 
@@ -102,6 +103,10 @@ func (p *Environ) Entry() (*Entry, error) {
 
 func (p *Environ) Name() string {
 	return p.name
+}
+
+func (p *Environ) Type() string {
+	return p.typ
 }
 
 func (p *Environ) RawValue() string {

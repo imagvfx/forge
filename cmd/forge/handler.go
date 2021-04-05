@@ -125,8 +125,9 @@ func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
 		}
 		path := r.FormValue("path")
 		name := r.FormValue("name")
+		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err := h.server.AddEnviron(path, name, value)
+		err := h.server.AddEnviron(path, name, typ, value)
 		if err != nil {
 			return err
 		}

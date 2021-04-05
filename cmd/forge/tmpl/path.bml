@@ -70,6 +70,7 @@
 				<div> [
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 					<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
+					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
 					<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
 					{{if $inherit}}
 						inherited from '{{$env.Entry.Path}}' <button type="submit"> [Overwrite]

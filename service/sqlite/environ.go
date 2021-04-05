@@ -15,6 +15,7 @@ func createEnvironsTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER,
 			name STRING NOT NULL,
+			typ STRING NOT NULL,
 			val STRING NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			UNIQUE (entry_id, name)
@@ -84,6 +85,7 @@ func findEnvirons(tx *sql.Tx, find service.EnvironFinder) (map[string]*service.E
 			id,
 			entry_id,
 			name,
+			typ,
 			val
 		FROM environs
 		`+where,
@@ -100,6 +102,7 @@ func findEnvirons(tx *sql.Tx, find service.EnvironFinder) (map[string]*service.E
 			&e.ID,
 			&e.EntryID,
 			&e.Name,
+			&e.Type,
 			&e.Value,
 		)
 		if err != nil {
@@ -132,12 +135,14 @@ func addEnviron(tx *sql.Tx, e *service.Environ) error {
 		INSERT INTO environs (
 			entry_id,
 			name,
+			typ,
 			val
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		e.EntryID,
 		e.Name,
+		e.Type,
 		e.Value,
 	)
 	if err != nil {
