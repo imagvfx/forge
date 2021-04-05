@@ -129,10 +129,10 @@ func (s *Server) AddEntry(path, typ string) error {
 		}
 		props = append(props, p)
 	}
-	envs := make([]*service.Environ, 0)
+	envs := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Environs {
 		// It has been validated while loading, skip it here.
-		e := &service.Environ{
+		e := &service.Property{
 			Name:  ktv.Key,
 			Type:  ktv.Type,
 			Value: ktv.Value,
@@ -250,16 +250,16 @@ func (s *Server) SetProperty(path string, name, value string) error {
 	return nil
 }
 
-func (s *Server) entryEnvirons(ent int) ([]*Environ, error) {
-	ps, err := s.svc.FindEnvirons(service.EnvironFinder{
+func (s *Server) entryEnvirons(ent int) ([]*Property, error) {
+	ps, err := s.svc.FindEnvirons(service.PropertyFinder{
 		EntryID: ent,
 	})
 	if err != nil {
 		return nil, err
 	}
-	props := make([]*Environ, 0)
+	props := make([]*Property, 0)
 	for _, p := range ps {
-		prop := &Environ{
+		prop := &Property{
 			srv:       s,
 			id:        p.ID,
 			entryID:   p.EntryID,
@@ -273,8 +273,8 @@ func (s *Server) entryEnvirons(ent int) ([]*Environ, error) {
 	return props, nil
 }
 
-func (s *Server) getEnviron(ent int, name string) (*Environ, error) {
-	es, err := s.svc.FindEnvirons(service.EnvironFinder{
+func (s *Server) getEnviron(ent int, name string) (*Property, error) {
+	es, err := s.svc.FindEnvirons(service.PropertyFinder{
 		EntryID: ent,
 		Name:    &name,
 	})
@@ -288,7 +288,7 @@ func (s *Server) getEnviron(ent int, name string) (*Environ, error) {
 		return nil, fmt.Errorf("got more than 1 environ")
 	}
 	e := es[0]
-	env := &Environ{
+	env := &Property{
 		srv:       s,
 		id:        e.ID,
 		entryID:   e.EntryID,
@@ -314,7 +314,7 @@ func (s *Server) AddEnviron(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	err = s.svc.AddEnviron(&service.Environ{
+	err = s.svc.AddEnviron(&service.Property{
 		EntryID: ent.id,
 		Name:    name,
 		Type:    typ,
@@ -344,7 +344,7 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	err = s.svc.UpdateEnviron(service.EnvironUpdater{
+	err = s.svc.UpdateEnviron(service.PropertyUpdater{
 		ID:    env.id,
 		Value: &value,
 	})

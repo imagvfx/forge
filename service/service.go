@@ -3,13 +3,13 @@ package service
 type Service interface {
 	FindEntries(EntryFinder) ([]*Entry, error)
 	GetEntry(int) (*Entry, error)
-	AddEntry(*Entry, []*Property, []*Environ) error
+	AddEntry(*Entry, []*Property, []*Property) error
 	FindProperties(PropertyFinder) ([]*Property, error)
 	AddProperty(*Property) error
 	UpdateProperty(PropertyUpdater) error
-	FindEnvirons(EnvironFinder) ([]*Environ, error)
-	AddEnviron(*Environ) error
-	UpdateEnviron(EnvironUpdater) error
+	FindEnvirons(PropertyFinder) ([]*Property, error)
+	AddEnviron(*Property) error
+	UpdateEnviron(PropertyUpdater) error
 }
 
 type Entry struct {
@@ -40,25 +40,6 @@ type PropertyFinder struct {
 }
 
 type PropertyUpdater struct {
-	ID    int
-	Value *string
-}
-
-type Environ struct {
-	ID        int
-	EntryID   int
-	EntryPath string
-	Name      string
-	Type      string
-	Value     string
-}
-
-type EnvironFinder struct {
-	EntryID int
-	Name    *string
-}
-
-type EnvironUpdater struct {
 	ID    int
 	Value *string
 }

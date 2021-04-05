@@ -43,7 +43,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Entry         *forge.Entry
 			SubEntries    []*forge.Entry
 			Properties    []*forge.Property
-			Environs      []*forge.Environ
+			Environs      []*forge.Property
 			SubEntryTypes []string
 		}{
 			Entry:         ent,

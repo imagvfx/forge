@@ -39,7 +39,7 @@ func (e *Entry) Properties() ([]*Property, error) {
 	return e.srv.entryProperties(e.id)
 }
 
-func (e *Entry) Environs() ([]*Environ, error) {
+func (e *Entry) Environs() ([]*Property, error) {
 	return e.srv.entryEnvirons(e.id)
 }
 
@@ -53,6 +53,7 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+// Property can be either a normal property or an environment.
 type Property struct {
 	srv       *Server
 	id        int
@@ -80,40 +81,6 @@ func (p *Property) RawValue() string {
 }
 
 func (p *Property) Value() string {
-	ev := Evaluator{
-		Path: p.entryPath,
-		Name: filepath.Base(p.entryPath),
-	}
-	return ev.Eval(p.value)
-}
-
-type Environ struct {
-	srv       *Server
-	id        int
-	entryID   int
-	entryPath string
-	name      string
-	typ       string
-	value     string
-}
-
-func (p *Environ) Entry() (*Entry, error) {
-	return p.srv.getEntry(p.entryID)
-}
-
-func (p *Environ) Name() string {
-	return p.name
-}
-
-func (p *Environ) Type() string {
-	return p.typ
-}
-
-func (p *Environ) RawValue() string {
-	return p.value
-}
-
-func (p *Environ) Value() string {
 	ev := Evaluator{
 		Path: p.entryPath,
 		Name: filepath.Base(p.entryPath),

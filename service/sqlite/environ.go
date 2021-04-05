@@ -24,13 +24,13 @@ func createEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindEnvirons(db *sql.DB, find service.EnvironFinder) ([]*service.Environ, error) {
+func FindEnvirons(db *sql.DB, find service.PropertyFinder) ([]*service.Property, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	envmap := make(map[string]*service.Environ)
+	envmap := make(map[string]*service.Property)
 	for {
 		ent, err := getEntry(tx, find.EntryID)
 		if err != nil {
@@ -51,7 +51,7 @@ func FindEnvirons(db *sql.DB, find service.EnvironFinder) ([]*service.Environ, e
 		}
 		find.EntryID = *ent.ParentID
 	}
-	envs := make([]*service.Environ, 0, len(envmap))
+	envs := make([]*service.Property, 0, len(envmap))
 	for _, e := range envmap {
 		envs = append(envs, e)
 	}
@@ -67,7 +67,7 @@ func FindEnvirons(db *sql.DB, find service.EnvironFinder) ([]*service.Environ, e
 
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
-func findEnvirons(tx *sql.Tx, find service.EnvironFinder) (map[string]*service.Environ, error) {
+func findEnvirons(tx *sql.Tx, find service.PropertyFinder) (map[string]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -95,9 +95,9 @@ func findEnvirons(tx *sql.Tx, find service.EnvironFinder) (map[string]*service.E
 		return nil, err
 	}
 	defer rows.Close()
-	envmap := make(map[string]*service.Environ)
+	envmap := make(map[string]*service.Property)
 	for rows.Next() {
-		e := &service.Environ{}
+		e := &service.Property{}
 		err := rows.Scan(
 			&e.ID,
 			&e.EntryID,
@@ -113,7 +113,7 @@ func findEnvirons(tx *sql.Tx, find service.EnvironFinder) (map[string]*service.E
 	return envmap, nil
 }
 
-func AddEnviron(db *sql.DB, e *service.Environ) error {
+func AddEnviron(db *sql.DB, e *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -130,7 +130,7 @@ func AddEnviron(db *sql.DB, e *service.Environ) error {
 	return nil
 }
 
-func addEnviron(tx *sql.Tx, e *service.Environ) error {
+func addEnviron(tx *sql.Tx, e *service.Property) error {
 	result, err := tx.Exec(`
 		INSERT INTO environs (
 			entry_id,
@@ -156,7 +156,7 @@ func addEnviron(tx *sql.Tx, e *service.Environ) error {
 	return nil
 }
 
-func UpdateEnviron(db *sql.DB, upd service.EnvironUpdater) error {
+func UpdateEnviron(db *sql.DB, upd service.PropertyUpdater) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func UpdateEnviron(db *sql.DB, upd service.EnvironUpdater) error {
 	return nil
 }
 
-func updateEnviron(tx *sql.Tx, upd service.EnvironUpdater) error {
+func updateEnviron(tx *sql.Tx, upd service.PropertyUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {

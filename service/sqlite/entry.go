@@ -134,7 +134,7 @@ func getEntry(tx *sql.Tx, id int) (*service.Entry, error) {
 	return ents[0], nil
 }
 
-func AddEntry(db *sql.DB, e *service.Entry, props []*service.Property, envs []*service.Environ) error {
+func AddEntry(db *sql.DB, e *service.Entry, props []*service.Property, envs []*service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
