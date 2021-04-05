@@ -1,9 +1,7 @@
 package forge
 
 import (
-	"bytes"
 	"encoding/json"
-	"html/template"
 	"path/filepath"
 )
 
@@ -81,34 +79,11 @@ func (p *Property) RawValue() string {
 }
 
 func (p *Property) Value() string {
-	ev := Evaluator{
-		Path: p.entryPath,
-		Name: filepath.Base(p.entryPath),
+	switch p.typ {
+	case "entry_path":
+		return filepath.Clean(filepath.Join(p.entryPath, p.value))
+	case "entry_name":
+		return filepath.Base(filepath.Clean(filepath.Join(p.entryPath, p.value)))
 	}
-	return ev.Eval(p.value)
-}
-
-type Evaluator struct {
-	Path string
-	Name string
-}
-
-func (e Evaluator) Eval(val string) string {
-	t, err := template.New("").Parse(val)
-	if err != nil {
-		return err.Error()
-	}
-	recipe := struct {
-		Path string
-		Name string
-	}{
-		Path: e.Path,
-		Name: e.Name,
-	}
-	w := &bytes.Buffer{}
-	err = t.Execute(w, recipe)
-	if err != nil {
-		return err.Error()
-	}
-	return w.String()
+	return p.value
 }

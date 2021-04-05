@@ -201,12 +201,7 @@ func (s *Server) AddProperty(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	// When the value is in template form, the result should be valid value of the type.
-	ev := Evaluator{
-		Path: ent.Path(),
-		Name: ent.Name(),
-	}
-	err = property.Validate(typ, ev.Eval(value))
+	err = property.Validate(typ, value)
 	if err != nil {
 		return err
 	}
@@ -231,12 +226,7 @@ func (s *Server) SetProperty(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	// When the value is in template form, the result should be valid value of the type.
-	ev := Evaluator{
-		Path: ent.Path(),
-		Name: ent.Name(),
-	}
-	err = property.Validate(prop.Type(), ev.Eval(value))
+	err = property.Validate(prop.Type(), value)
 	if err != nil {
 		return err
 	}
@@ -305,12 +295,7 @@ func (s *Server) AddEnviron(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	// When the value is in template form, the result should be valid value of the type.
-	ev := Evaluator{
-		Path: ent.Path(),
-		Name: ent.Name(),
-	}
-	err = property.Validate(typ, ev.Eval(value))
+	err = property.Validate(typ, value)
 	if err != nil {
 		return err
 	}
@@ -335,12 +320,7 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	// When the value is in template form, the result should be valid value of the type.
-	ev := Evaluator{
-		Path: ent.Path(),
-		Name: ent.Name(),
-	}
-	err = property.Validate(env.Type(), ev.Eval(value))
+	err = property.Validate(env.Type(), value)
 	if err != nil {
 		return err
 	}

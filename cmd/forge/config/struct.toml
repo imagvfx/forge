@@ -8,7 +8,7 @@ sub_entry_types = [
 [show]
 
 environs = [
-	"SHOW text={{.Name}}",
+	"SHOW entry_name=.",
 ]
 
 properties = [
@@ -26,7 +26,7 @@ sub_entry_types = [
 [group]
 
 environs = [
-	"GROUP text={{.Name}}",
+	"GROUP entry_name=.",
 ]
 
 properties = [
@@ -41,7 +41,7 @@ sub_entry_types = [
 [unit]
 
 environs = [
-	"UNIT text={{.Name}}",
+	"UNIT entry_name=.",
 ]
 
 properties = [
@@ -57,7 +57,7 @@ sub_entry_types = [
 [part]
 
 environs = [
-	"PART text={{.Name}}",
+	"PART entry_name=.",
 ]
 
 properties = [
@@ -72,7 +72,7 @@ sub_entry_types = [
 [elem]
 
 environs = [
-	"ELEM text={{.Name}}",
+	"ELEM entry_name=.",
 ]
 
 properties = [
@@ -87,7 +87,7 @@ sub_entry_types = [
 [ver]
 
 environs = [
-	"VER text={{.Name}}",
+	"VER entry_name=.",
 ]
 
 properties = [

@@ -8,9 +8,11 @@ import (
 
 func Validate(typ, val string) error {
 	validate := map[string]func(string) error{
-		"timecode": validateTimecode,
-		"text":     validateText,
-		"user":     validateUser,
+		"timecode":   validateTimecode,
+		"text":       validateText,
+		"user":       validateUser,
+		"entry_path": validateEntryPath,
+		"entry_name": validateEntryPath,
 	}
 	fn := validate[typ]
 	if fn == nil {
@@ -49,4 +51,17 @@ func validateTimecode(s string) error {
 		}
 	}
 	return nil
+}
+
+func validateEntryPath(s string) error {
+	if s == "" {
+		// unset
+		return nil
+	}
+	if s == "." {
+		// currently only . is a valid entry path.
+		// other values should resolve entry renaming issue.
+		return nil
+	}
+	return fmt.Errorf("path except . isn't valid yet")
 }
