@@ -238,6 +238,7 @@ func (s *Server) SetProperty(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
+	prop.value = value // validate the given value
 	err = prop.Validate()
 	if err != nil {
 		return err
@@ -335,6 +336,7 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
+	env.value = value // validate the given value
 	err = env.Validate()
 	if err != nil {
 		return err
