@@ -138,6 +138,17 @@ func addProperty(tx *sql.Tx, p *service.Property) error {
 		return err
 	}
 	p.ID = int(id)
+	err = addLog(tx, &service.Log{
+		EntryID:  p.EntryID,
+		Action:   "create",
+		Category: "property",
+		Name:     p.Name,
+		Type:     p.Type,
+		Value:    p.Value,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

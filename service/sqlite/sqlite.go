@@ -53,5 +53,9 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	err = createLogsTable(tx)
+	if err != nil {
+		return err
+	}
 	return tx.Commit()
 }

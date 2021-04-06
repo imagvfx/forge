@@ -1,5 +1,7 @@
 package service
 
+import "time"
+
 type Service interface {
 	FindEntries(EntryFinder) ([]*Entry, error)
 	GetEntry(int) (*Entry, error)
@@ -10,6 +12,7 @@ type Service interface {
 	FindEnvirons(PropertyFinder) ([]*Property, error)
 	AddEnviron(*Property) error
 	UpdateEnviron(PropertyUpdater) error
+	FindLogs(LogFinder) ([]*Log, error)
 }
 
 type Entry struct {
@@ -42,4 +45,19 @@ type PropertyFinder struct {
 type PropertyUpdater struct {
 	ID    int
 	Value *string
+}
+
+type Log struct {
+	ID       int
+	EntryID  int
+	Action   string
+	Category string
+	Name     string
+	Type     string
+	Value    string
+	When     time.Time
+}
+
+type LogFinder struct {
+	EntryID int
 }

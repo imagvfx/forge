@@ -153,6 +153,17 @@ func addEnviron(tx *sql.Tx, e *service.Property) error {
 		return err
 	}
 	e.ID = int(id)
+	err = addLog(tx, &service.Log{
+		EntryID:  e.EntryID,
+		Action:   "create",
+		Category: "environ",
+		Name:     e.Name,
+		Type:     e.Type,
+		Value:    e.Value,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

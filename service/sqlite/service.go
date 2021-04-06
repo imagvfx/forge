@@ -52,3 +52,7 @@ func (s *Service) AddEnviron(ent *service.Property) error {
 func (s *Service) UpdateEnviron(upd service.PropertyUpdater) error {
 	return UpdateEnviron(s.db, upd)
 }
+
+func (s *Service) FindLogs(find service.LogFinder) ([]*service.Log, error) {
+	return FindLogs(s.db, find)
+}

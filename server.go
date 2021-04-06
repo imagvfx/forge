@@ -348,3 +348,27 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 	}
 	return nil
 }
+
+func (s *Server) entryLogs(ent int) ([]*Log, error) {
+	ls, err := s.svc.FindLogs(service.LogFinder{
+		EntryID: ent,
+	})
+	if err != nil {
+		return nil, err
+	}
+	logs := make([]*Log, 0)
+	for _, l := range ls {
+		log := &Log{
+			ID:       l.ID,
+			EntryID:  l.EntryID,
+			Action:   l.Action,
+			Category: l.Category,
+			Name:     l.Name,
+			Type:     l.Type,
+			Value:    l.Value,
+			When:     l.When,
+		}
+		logs = append(logs, log)
+	}
+	return logs, nil
+}

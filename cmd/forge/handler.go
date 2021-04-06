@@ -38,6 +38,10 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		logs, err := ent.Logs()
+		if err != nil {
+			return err
+		}
 		subtyps := h.cfg.Struct[ent.Type()].SubEntryTypes
 		recipe := struct {
 			Entry         *forge.Entry
@@ -45,12 +49,14 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Properties    []*forge.Property
 			Environs      []*forge.Property
 			SubEntryTypes []string
+			Logs          []*forge.Log
 		}{
 			Entry:         ent,
 			SubEntries:    subEnts,
 			Properties:    props,
 			Environs:      envs,
 			SubEntryTypes: subtyps,
+			Logs:          logs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
 		if err != nil {

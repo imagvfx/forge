@@ -186,5 +186,15 @@ func addEntry(tx *sql.Tx, e *service.Entry) error {
 		return err
 	}
 	e.ID = int(id)
+	err = addLog(tx, &service.Log{
+		EntryID:  e.ID,
+		Action:   "create",
+		Category: "entry",
+		Name:     e.Path,
+		Type:     e.Type,
+	})
+	if err != nil {
+		return err
+	}
 	return nil
 }

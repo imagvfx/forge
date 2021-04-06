@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -44,6 +45,10 @@ func (e *Entry) Properties() ([]*Property, error) {
 
 func (e *Entry) Environs() ([]*Property, error) {
 	return e.srv.entryEnvirons(e.id)
+}
+
+func (e *Entry) Logs() ([]*Log, error) {
+	return e.srv.entryLogs(e.id)
 }
 
 func (e *Entry) MarshalJSON() ([]byte, error) {
@@ -202,4 +207,23 @@ func (p *Property) ServiceProperty() *service.Property {
 		Value:     p.value,
 	}
 	return sp
+}
+
+type Log struct {
+	ID       int
+	EntryID  int
+	Action   string
+	Category string
+	Name     string
+	Type     string
+	Value    string
+	When     time.Time
+}
+
+func (l *Log) String() string {
+	s := fmt.Sprintf("%v: %v %v %v: %v", l.When, l.Action, l.Type, l.Category, l.Name)
+	if l.Value != "" {
+		s += fmt.Sprintf(" with value %v", l.Value)
+	}
+	return s
 }

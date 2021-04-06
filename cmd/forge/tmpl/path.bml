@@ -84,6 +84,14 @@
 			]
 		{{end}}
 		]
+		<h4> [
+			Log
+		]
+		<div> [
+		{{range $log := $.Logs}}
+			<div> [{{$log}}]
+		{{end}}
+		]
 	]
 ]
 
