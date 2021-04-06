@@ -18,6 +18,7 @@
 						<option value={{$t}}> [{{$t}}]
 					{{end}}
 					]
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					<button type="submit"> [Add]
 				]
 			]
@@ -36,6 +37,7 @@
 					<input name="name" type="text" value="" placeholder="name"> []
 					<input name="type" type="text" value="" placeholder="type"> []
 					<input name="value" type="text" value="" placeholder="value"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					<button type="submit"> [Add]
 				]
 			]
@@ -48,6 +50,7 @@
 					<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
 					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
 					<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					{{if ne .Entry.Path $.Entry.Path}}inherited from '{{.Entry.Path}}'{{end}}
 					<button type="submit"> [Set]
 				]
@@ -62,6 +65,7 @@
 					<input name="name" type="text" value="" placeholder="name"> []
 					<input name="type" type="text" value="" placeholder="type"> []
 					<input name="value" type="text" value="" placeholder="value"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					<button type="submit"> [Add]
 				]
 			]
@@ -75,6 +79,7 @@
 					<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
 					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
 					<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					{{if $inherit}}
 						inherited from '{{$env.Entry.Path}}' <button type="submit"> [Overwrite]
 					{{else}}
