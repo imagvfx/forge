@@ -98,6 +98,39 @@ func findProperties(tx *sql.Tx, find service.PropertyFinder) ([]*service.Propert
 	return props, nil
 }
 
+func getProperty(tx *sql.Tx, id int) (*service.Property, error) {
+	rows, err := tx.Query(`
+		SELECT
+			id,
+			entry_id,
+			name,
+			typ,
+			val
+		FROM properties
+		WHERE id=?`,
+		id,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, fmt.Errorf("property not found")
+	}
+	p := &service.Property{}
+	err = rows.Scan(
+		&p.ID,
+		&p.EntryID,
+		&p.Name,
+		&p.Type,
+		&p.Value,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func AddProperty(db *sql.DB, p *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -170,11 +203,16 @@ func UpdateProperty(db *sql.DB, upd service.PropertyUpdater) error {
 }
 
 func updateProperty(tx *sql.Tx, upd service.PropertyUpdater) error {
+	p, err := getProperty(tx, upd.ID)
+	if err != nil {
+		return err
+	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {
 		keys = append(keys, "val=?")
 		vals = append(vals, *upd.Value)
+		p.Value = *upd.Value // for logging
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)
@@ -196,6 +234,17 @@ func updateProperty(tx *sql.Tx, upd service.PropertyUpdater) error {
 	}
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
+	}
+	err = addLog(tx, &service.Log{
+		EntryID:  p.EntryID,
+		Action:   "update",
+		Category: "property",
+		Name:     p.Name,
+		Type:     p.Type,
+		Value:    p.Value,
+	})
+	if err != nil {
+		return nil
 	}
 	return nil
 }

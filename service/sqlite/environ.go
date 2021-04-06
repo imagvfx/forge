@@ -113,6 +113,39 @@ func findEnvirons(tx *sql.Tx, find service.PropertyFinder) (map[string]*service.
 	return envmap, nil
 }
 
+func getEnviron(tx *sql.Tx, id int) (*service.Property, error) {
+	rows, err := tx.Query(`
+		SELECT
+			id,
+			entry_id,
+			name,
+			typ,
+			val
+		FROM environs
+		WHERE id=?`,
+		id,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, fmt.Errorf("environ not found")
+	}
+	e := &service.Property{}
+	err = rows.Scan(
+		&e.ID,
+		&e.EntryID,
+		&e.Name,
+		&e.Type,
+		&e.Value,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
 func AddEnviron(db *sql.DB, e *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -185,11 +218,16 @@ func UpdateEnviron(db *sql.DB, upd service.PropertyUpdater) error {
 }
 
 func updateEnviron(tx *sql.Tx, upd service.PropertyUpdater) error {
+	e, err := getEnviron(tx, upd.ID)
+	if err != nil {
+		return err
+	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {
 		keys = append(keys, "val=?")
 		vals = append(vals, *upd.Value)
+		e.Value = *upd.Value // for logging
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)
@@ -211,6 +249,17 @@ func updateEnviron(tx *sql.Tx, upd service.PropertyUpdater) error {
 	}
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
+	}
+	err = addLog(tx, &service.Log{
+		EntryID:  e.EntryID,
+		Action:   "update",
+		Category: "environ",
+		Name:     e.Name,
+		Type:     e.Type,
+		Value:    e.Value,
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }
