@@ -92,7 +92,8 @@ func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
-		err := h.server.AddProperty(path, name, typ, "")
+		value := r.FormValue("value")
+		err := h.server.AddProperty(path, name, typ, value)
 		if err != nil {
 			return err
 		}
