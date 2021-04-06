@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/imagvfx/forge/property"
 	"github.com/imagvfx/forge/service"
 )
 
@@ -121,23 +120,33 @@ func (s *Server) AddEntry(path, typ string) error {
 	}
 	props := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Properties {
-		// It has been validated while loading, skip it here.
-		p := &service.Property{
-			Name:  ktv.Key,
-			Type:  ktv.Type,
-			Value: ktv.Value,
+		p := &Property{
+			srv:       s,
+			entryPath: path,
+			name:      ktv.Key,
+			typ:       ktv.Type,
+			value:     ktv.Value,
 		}
-		props = append(props, p)
+		err := p.Validate()
+		if err != nil {
+			return err
+		}
+		props = append(props, p.ServiceProperty())
 	}
 	envs := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Environs {
-		// It has been validated while loading, skip it here.
-		e := &service.Property{
-			Name:  ktv.Key,
-			Type:  ktv.Type,
-			Value: ktv.Value,
+		e := &Property{
+			srv:       s,
+			entryPath: path,
+			name:      ktv.Key,
+			typ:       ktv.Type,
+			value:     ktv.Value,
 		}
-		envs = append(envs, e)
+		err := e.Validate()
+		if err != nil {
+			return err
+		}
+		envs = append(envs, e.ServiceProperty())
 	}
 	err = s.svc.AddEntry(e, props, envs)
 	if err != nil {
@@ -201,16 +210,19 @@ func (s *Server) AddProperty(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	err = property.Validate(typ, value)
+	env := &Property{
+		srv:       s,
+		entryID:   ent.id,
+		entryPath: ent.path,
+		name:      name,
+		typ:       typ,
+		value:     value,
+	}
+	err = env.Validate()
 	if err != nil {
 		return err
 	}
-	err = s.svc.AddProperty(&service.Property{
-		EntryID: ent.id,
-		Name:    name,
-		Type:    typ,
-		Value:   value,
-	})
+	err = s.svc.AddProperty(env.ServiceProperty())
 	if err != nil {
 		return err
 	}
@@ -226,7 +238,7 @@ func (s *Server) SetProperty(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	err = property.Validate(prop.Type(), value)
+	err = prop.Validate()
 	if err != nil {
 		return err
 	}
@@ -295,16 +307,19 @@ func (s *Server) AddEnviron(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	err = property.Validate(typ, value)
+	env := &Property{
+		srv:       s,
+		entryID:   ent.id,
+		entryPath: ent.path,
+		name:      name,
+		typ:       typ,
+		value:     value,
+	}
+	err = env.Validate()
 	if err != nil {
 		return err
 	}
-	err = s.svc.AddEnviron(&service.Property{
-		EntryID: ent.id,
-		Name:    name,
-		Type:    typ,
-		Value:   value,
-	})
+	err = s.svc.AddEnviron(env.ServiceProperty())
 	if err != nil {
 		return err
 	}
@@ -320,7 +335,7 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	err = property.Validate(env.Type(), value)
+	err = env.Validate()
 	if err != nil {
 		return err
 	}
