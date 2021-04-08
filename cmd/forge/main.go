@@ -1,18 +1,24 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
+	"github.com/gorilla/securecookie"
 	"github.com/imagvfx/forge"
 	"github.com/imagvfx/forge/service/sqlite"
 	"github.com/kybin/bml"
 )
 
 var Tmpl *template.Template
+
+// cookieHandler is used to save or clear sessions.
+var cookieHandler *securecookie.SecureCookie
 
 func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -26,16 +32,20 @@ func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
 
 func main() {
 	var (
-		addr     string
-		insecure bool
-		cert     string
-		key      string
-		dbpath   string
+		addr        string
+		insecure    bool
+		cert        string
+		key         string
+		cookieHash  string
+		cookieBlock string
+		dbpath      string
 	)
 	flag.StringVar(&addr, "addr", "0.0.0.0:80:443", "address to bind. automatic port forwarding will be enabled, if two ports are specified")
 	flag.BoolVar(&insecure, "insecure", false, "use http instead of https for testing")
 	flag.StringVar(&cert, "cert", "cert.pem", "https cert file")
 	flag.StringVar(&key, "key", "key.pem", "https key file")
+	flag.StringVar(&cookieHash, "cookie-hash", "cookie.hash", "hash for encrypting browser cookie. will be generated if not exists")
+	flag.StringVar(&cookieBlock, "cookie-block", "cookie.block", "block for encrypting browser cookie. will be generated if not exists")
 	flag.StringVar(&dbpath, "db", "forge.db", "db path to create or open")
 	flag.Parse()
 
@@ -60,6 +70,32 @@ func main() {
 	} else {
 		log.Fatalf("invalid bind address: %v", addr)
 	}
+
+	_, err := os.Stat(cookieHash)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			os.WriteFile(cookieHash, securecookie.GenerateRandomKey(64), 0600)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	_, err = os.Stat(cookieBlock)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			os.WriteFile(cookieBlock, securecookie.GenerateRandomKey(32), 0600)
+		} else {
+			log.Fatal(err)
+		}
+	}
+	hash, err := os.ReadFile(cookieHash)
+	if err != nil {
+		log.Fatal(err)
+	}
+	block, err := os.ReadFile(cookieBlock)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cookieHandler = securecookie.New(hash, block)
 
 	cfg, err := forge.LoadConfig("config/")
 	if err != nil {
