@@ -1,2 +1,3 @@
 cmd/forge/forge
 *.db*
+*.pem

@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/imagvfx/forge"
 	"github.com/imagvfx/forge/service/sqlite"
@@ -13,13 +14,52 @@ import (
 
 var Tmpl *template.Template
 
+func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		to := "https://" + strings.Split(r.Host, ":")[0] + ":" + httpsPort + r.URL.Path
+		if r.URL.RawQuery != "" {
+			to += "?" + r.URL.RawQuery
+		}
+		http.Redirect(w, r, to, http.StatusTemporaryRedirect)
+	}
+}
+
 func main() {
 	var (
-		addr   string
-		dbpath string
+		addr     string
+		insecure bool
+		cert     string
+		key      string
+		dbpath   string
 	)
-	flag.StringVar(&addr, "addr", "0.0.0.0:8080", "address to bind")
+	flag.StringVar(&addr, "addr", "0.0.0.0:80:443", "address to bind. automatic port forwarding will be enabled, if two ports are specified")
+	flag.BoolVar(&insecure, "insecure", false, "use http instead of https for testing")
+	flag.StringVar(&cert, "cert", "cert.pem", "https cert file")
+	flag.StringVar(&key, "key", "key.pem", "https key file")
 	flag.StringVar(&dbpath, "db", "forge.db", "db path to create or open")
+	flag.Parse()
+
+	var (
+		httpPort  string
+		httpsPort string
+	)
+	toks := strings.Split(addr, ":")
+	n := len(toks)
+	addr = toks[0]
+	if n == 2 {
+		addr = toks[0]
+		if insecure {
+			httpPort = toks[1]
+		} else {
+			httpsPort = toks[1]
+		}
+	} else if n == 3 {
+		addr = toks[0]
+		httpPort = toks[1]
+		httpsPort = toks[2]
+	} else {
+		log.Fatalf("invalid bind address: %v", addr)
+	}
 
 	cfg, err := forge.LoadConfig("config/")
 	if err != nil {
@@ -53,5 +93,22 @@ func main() {
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
 	mux.HandleFunc("/api/add-environ", api.HandleAddEnviron)
 	mux.HandleFunc("/api/set-environ", api.HandleSetEnviron)
-	http.ListenAndServe(addr, mux)
+
+	if insecure {
+		log.Printf("bind to %v:%v", addr, httpPort)
+		err = http.ListenAndServe(addr+":"+httpPort, mux)
+		log.Fatal(err)
+	} else {
+		if httpPort != "" {
+			// port forward
+			go func() {
+				log.Printf("port forwarding enabled from %v to %v", httpPort, httpsPort)
+				err := http.ListenAndServe(addr+":"+httpPort, http.HandlerFunc(portForward(httpsPort)))
+				log.Fatal(err)
+			}()
+		}
+		log.Printf("bind to %v:%v", addr, httpsPort)
+		err := http.ListenAndServeTLS(addr+":"+httpsPort, cert, key, mux)
+		log.Fatal(err)
+	}
 }
