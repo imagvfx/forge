@@ -33,6 +33,7 @@ func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
 func main() {
 	var (
 		addr        string
+		host        string
 		insecure    bool
 		cert        string
 		key         string
@@ -41,6 +42,7 @@ func main() {
 		dbpath      string
 	)
 	flag.StringVar(&addr, "addr", "0.0.0.0:80:443", "address to bind. automatic port forwarding will be enabled, if two ports are specified")
+	flag.StringVar(&host, "host", "", "host name of the site let users access this program")
 	flag.BoolVar(&insecure, "insecure", false, "use http instead of https for testing")
 	flag.StringVar(&cert, "cert", "cert.pem", "https cert file")
 	flag.StringVar(&key, "key", "key.pem", "https key file")
@@ -56,15 +58,16 @@ func main() {
 	toks := strings.Split(addr, ":")
 	n := len(toks)
 	addr = toks[0]
+	if host == "" {
+		host = addr
+	}
 	if n == 2 {
-		addr = toks[0]
 		if insecure {
 			httpPort = toks[1]
 		} else {
 			httpsPort = toks[1]
 		}
 	} else if n == 3 {
-		addr = toks[0]
 		httpPort = toks[1]
 		httpsPort = toks[2]
 	} else {
