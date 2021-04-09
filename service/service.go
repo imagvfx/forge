@@ -13,6 +13,16 @@ type Service interface {
 	AddEnviron(*Property) error
 	UpdateEnviron(PropertyUpdater) error
 	FindLogs(LogFinder) ([]*Log, error)
+	AddUser(*User) error
+	GetUserByUser(string) (*User, error)
+}
+
+type NotFoundError struct {
+	Err string
+}
+
+func (e NotFoundError) Error() string {
+	return e.Err
 }
 
 type Entry struct {
@@ -45,6 +55,22 @@ type PropertyFinder struct {
 type PropertyUpdater struct {
 	ID    int
 	Value *string
+}
+
+type User struct {
+	ID   int
+	User string
+	Name string
+}
+
+type UserFinder struct {
+	ID   *int
+	User *string
+}
+
+type UserUpdater struct {
+	ID   int
+	Name *string
 }
 
 type Log struct {

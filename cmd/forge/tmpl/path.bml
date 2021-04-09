@@ -2,6 +2,10 @@
 <html> [
 	<head> []
 	<body> [
+		<div style="display:flex;justify-content:space-between"> [
+			<div> [forge]
+			<div> [{{$.User}} (<a href="/logout"> [logout])]
+		]
 		<h1> [
 			{{if ne $.Entry.Path "/"}}<a href="{{$.Entry.Dir}}">[&#60;-]{{end}}
 			{{$.Entry.Path}} ({{$.Entry.Type}})

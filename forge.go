@@ -227,3 +227,9 @@ func (l *Log) String() string {
 	}
 	return s
 }
+
+type User struct {
+	ID   int
+	User string
+	Name string
+}

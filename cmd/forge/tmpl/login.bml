@@ -1,0 +1,7 @@
+<!doctype html>
+<html> [
+	<head> []
+	<body> [
+		<a href="https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={{$.OIDC.ClientID}}&scope=openid%20email&redirect_uri={{$.OIDC.RedirectURI}}&state={{$.OIDCState}}&nonce={{$.OIDCNonce}}&hd={{$.OIDC.HostDomain}}&prompt=consent"> [구글로 로그인]
+	]
+]

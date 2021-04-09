@@ -56,3 +56,11 @@ func (s *Service) UpdateEnviron(upd service.PropertyUpdater) error {
 func (s *Service) FindLogs(find service.LogFinder) ([]*service.Log, error) {
 	return FindLogs(s.db, find)
 }
+
+func (s *Service) AddUser(u *service.User) error {
+	return AddUser(s.db, u)
+}
+
+func (s *Service) GetUserByUser(user string) (*service.User, error) {
+	return GetUserByUser(s.db, user)
+}

@@ -374,3 +374,25 @@ func (s *Server) entryLogs(ent int) ([]*Log, error) {
 	}
 	return logs, nil
 }
+
+func (s *Server) GetUser(user string) (*User, error) {
+	su, err := s.svc.GetUserByUser(user)
+	if err != nil {
+		err = fromServiceError(err)
+		return nil, err
+	}
+	u := &User{
+		User: su.User,
+	}
+	return u, nil
+}
+
+func (s *Server) AddUser(user string) error {
+	u := &service.User{User: user}
+	err := s.svc.AddUser(u)
+	if err != nil {
+		err = fromServiceError(err)
+		return err
+	}
+	return nil
+}

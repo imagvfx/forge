@@ -57,5 +57,13 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	err = createUsersTable(tx)
+	if err != nil {
+		return err
+	}
+	err = addRootUser(tx)
+	if err != nil {
+		return err
+	}
 	return tx.Commit()
 }

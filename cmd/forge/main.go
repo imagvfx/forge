@@ -116,6 +116,15 @@ func main() {
 	}
 	svc := sqlite.NewService(db)
 	server := forge.NewServer(svc, cfg)
+	login := &loginHandler{
+		server: server,
+		oidc: &forge.OIDC{
+			ClientID:     os.Getenv("OIDC_CLIENT_ID"),
+			ClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
+			RedirectURI:  "https://" + host + "/login/callback/google",
+			HostDomain:   host,
+		},
+	}
 	path := &pathHandler{
 		server: server,
 		cfg:    cfg,
@@ -127,6 +136,9 @@ func main() {
 	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", path.Handle)
+	mux.HandleFunc("/login", login.Handle)
+	mux.HandleFunc("/login/callback/google", login.HandleCallback)
+	mux.HandleFunc("/logout", login.HandleLogout)
 	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
 	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
