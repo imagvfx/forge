@@ -3,12 +3,11 @@
 	<head> []
 	<body> [
 		<div style="display:flex;justify-content:space-between"> [
-			<div> [forge]
+			<a href="/"> [forge]
 			<div> [{{$.User}} (<a href="/logout"> [logout])]
 		]
 		<h1> [
-			{{if ne $.Entry.Path "/"}}<a href="{{$.Entry.Dir}}">[&#60;-]{{end}}
-			{{$.Entry.Path}} ({{$.Entry.Type}})
+			{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
 		]
 		<h4> [
 			Sub Entry

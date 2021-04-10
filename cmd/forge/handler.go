@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -20,6 +21,23 @@ type pathHandler struct {
 	server *forge.Server
 	cfg    *forge.Config
 	oidc   *forge.OIDC
+}
+
+var pathHandlerFuncs = template.FuncMap{
+	"pathLinks": func(path string) (template.HTML, error) {
+		if !strings.HasPrefix(path, "/") {
+			return "", fmt.Errorf("path should start with /")
+		}
+		full := ""
+		link := ""
+		ps := strings.Split(path[1:], "/")
+		for _, p := range ps {
+			p = "/" + p
+			link += p
+			full += fmt.Sprintf(`<a href="%v">%v</a>`, link, p)
+		}
+		return template.HTML(full), nil
+	},
 }
 
 func handleError(w http.ResponseWriter, err error) {

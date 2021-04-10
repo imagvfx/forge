@@ -132,7 +132,7 @@ func main() {
 	api := &apiHandler{
 		server: server,
 	}
-	Tmpl = template.New("")
+	Tmpl = template.New("").Funcs(pathHandlerFuncs)
 	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", path.Handle)
