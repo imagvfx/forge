@@ -212,6 +212,7 @@ func (p *Property) ServiceProperty() *service.Property {
 type Log struct {
 	ID       int
 	EntryID  int
+	User     string
 	Action   string
 	Category string
 	Name     string
@@ -221,7 +222,7 @@ type Log struct {
 }
 
 func (l *Log) String() string {
-	s := fmt.Sprintf("%v: %v %v %v: %v", l.When, l.Action, l.Type, l.Category, l.Name)
+	s := fmt.Sprintf("%v: %v %v %v %v: %v", l.When, l.User, l.Action, l.Type, l.Category, l.Name)
 	if l.Value != "" {
 		s += fmt.Sprintf(" with value %v", l.Value)
 	}

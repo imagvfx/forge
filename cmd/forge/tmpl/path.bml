@@ -15,6 +15,7 @@
 			{{if $.SubEntryTypes}}
 			<form action="/api/add-entry" method="post"> [
 				<div> [
+					<input readonly name="user" type="hidden" value="{{$.User}}"> []
 					<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
 					<input name="path" type="text" value=""> []
 					<select name="type" value=""> [
@@ -37,6 +38,7 @@
 			Property
 			<form action="/api/add-property" method="post"> [
 				<div> [
+					<input readonly name="user" type="hidden" value="{{$.User}}"> []
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 					<input name="name" type="text" value="" placeholder="name"> []
 					<input name="type" type="text" value="" placeholder="type"> []
@@ -50,6 +52,7 @@
 		{{range $.Properties}}
 			<form action="/api/set-property" method="post"> [
 				<div> [
+					<input readonly name="user" type="hidden" value="{{$.User}}"> []
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 					<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
 					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
@@ -65,6 +68,7 @@
 			Environ
 			<form action="/api/add-environ" method="post"> [
 				<div> [
+					<input readonly name="user" type="hidden" value="{{$.User}}"> []
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 					<input name="name" type="text" value="" placeholder="name"> []
 					<input name="type" type="text" value="" placeholder="type"> []
@@ -79,6 +83,7 @@
 			{{$inherit := ne $env.Entry.Path $.Entry.Path}}
 			<form action="/api/{{if $inherit}}add{{else}}set{{end}}-environ" method="post"> [
 				<div> [
+					<input readonly name="user" type="hidden" value="{{$.User}}"> []
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 					<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
 					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []

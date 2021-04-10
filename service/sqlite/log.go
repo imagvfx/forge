@@ -12,6 +12,7 @@ func createLogsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS logs (
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER,
+			user STRING NOT NULL,
 			action STRING NOT NULL,
 			ctg STRING NOT NULL,
 			name STRING NOT NULL,
@@ -59,6 +60,7 @@ func findLogs(tx *sql.Tx, find service.LogFinder) ([]*service.Log, error) {
 		SELECT
 			id,
 			entry_id,
+			user,
 			action,
 			ctg,
 			name,
@@ -79,6 +81,7 @@ func findLogs(tx *sql.Tx, find service.LogFinder) ([]*service.Log, error) {
 		err := rows.Scan(
 			&l.ID,
 			&l.EntryID,
+			&l.User,
 			&l.Action,
 			&l.Category,
 			&l.Name,
@@ -98,15 +101,17 @@ func addLog(tx *sql.Tx, l *service.Log) error {
 	result, err := tx.Exec(`
 		INSERT INTO logs (
 			entry_id,
+			user,
 			action,
 			ctg,
 			name,
 			typ,
 			val
 		)
-		VALUES (?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`,
 		l.EntryID,
+		l.User,
 		l.Action,
 		l.Category,
 		l.Name,

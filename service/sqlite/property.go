@@ -131,13 +131,13 @@ func getProperty(tx *sql.Tx, id int) (*service.Property, error) {
 	return p, nil
 }
 
-func AddProperty(db *sql.DB, p *service.Property) error {
+func AddProperty(db *sql.DB, user string, p *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addProperty(tx, p)
+	err = addProperty(tx, user, p)
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func AddProperty(db *sql.DB, p *service.Property) error {
 	return nil
 }
 
-func addProperty(tx *sql.Tx, p *service.Property) error {
+func addProperty(tx *sql.Tx, user string, p *service.Property) error {
 	result, err := tx.Exec(`
 		INSERT INTO properties (
 			entry_id,
@@ -173,6 +173,7 @@ func addProperty(tx *sql.Tx, p *service.Property) error {
 	p.ID = int(id)
 	err = addLog(tx, &service.Log{
 		EntryID:  p.EntryID,
+		User:     user,
 		Action:   "create",
 		Category: "property",
 		Name:     p.Name,
@@ -185,13 +186,13 @@ func addProperty(tx *sql.Tx, p *service.Property) error {
 	return nil
 }
 
-func UpdateProperty(db *sql.DB, upd service.PropertyUpdater) error {
+func UpdateProperty(db *sql.DB, user string, upd service.PropertyUpdater) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateProperty(tx, upd)
+	err = updateProperty(tx, user, upd)
 	if err != nil {
 		return err
 	}
@@ -202,7 +203,7 @@ func UpdateProperty(db *sql.DB, upd service.PropertyUpdater) error {
 	return nil
 }
 
-func updateProperty(tx *sql.Tx, upd service.PropertyUpdater) error {
+func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 	p, err := getProperty(tx, upd.ID)
 	if err != nil {
 		return err
@@ -237,6 +238,7 @@ func updateProperty(tx *sql.Tx, upd service.PropertyUpdater) error {
 	}
 	err = addLog(tx, &service.Log{
 		EntryID:  p.EntryID,
+		User:     user,
 		Action:   "update",
 		Category: "property",
 		Name:     p.Name,

@@ -95,7 +95,7 @@ func (s *Server) subEntries(parent int) ([]*Entry, error) {
 	return ents, nil
 }
 
-func (s *Server) AddEntry(path, typ string) error {
+func (s *Server) AddEntry(user, path, typ string) error {
 	path = filepath.ToSlash(path)
 	parent := filepath.Dir(path)
 	p, err := s.GetEntry(parent)
@@ -148,7 +148,7 @@ func (s *Server) AddEntry(path, typ string) error {
 		}
 		envs = append(envs, e.ServiceProperty())
 	}
-	err = s.svc.AddEntry(e, props, envs)
+	err = s.svc.AddEntry(user, e, props, envs)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (s *Server) getProperty(ent int, name string) (*Property, error) {
 	return prop, nil
 }
 
-func (s *Server) AddProperty(path string, name, typ, value string) error {
+func (s *Server) AddProperty(user, path string, name, typ, value string) error {
 	ent, err := s.GetEntry(path)
 	if err != nil {
 		return err
@@ -222,14 +222,14 @@ func (s *Server) AddProperty(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	err = s.svc.AddProperty(env.ServiceProperty())
+	err = s.svc.AddProperty(user, env.ServiceProperty())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Server) SetProperty(path string, name, value string) error {
+func (s *Server) SetProperty(user, path string, name, value string) error {
 	ent, err := s.GetEntry(path)
 	if err != nil {
 		return err
@@ -243,7 +243,7 @@ func (s *Server) SetProperty(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	err = s.svc.UpdateProperty(service.PropertyUpdater{
+	err = s.svc.UpdateProperty(user, service.PropertyUpdater{
 		ID:    prop.id,
 		Value: &value,
 	})
@@ -303,7 +303,7 @@ func (s *Server) getEnviron(ent int, name string) (*Property, error) {
 	return env, nil
 }
 
-func (s *Server) AddEnviron(path string, name, typ, value string) error {
+func (s *Server) AddEnviron(user, path string, name, typ, value string) error {
 	ent, err := s.GetEntry(path)
 	if err != nil {
 		return err
@@ -320,14 +320,14 @@ func (s *Server) AddEnviron(path string, name, typ, value string) error {
 	if err != nil {
 		return err
 	}
-	err = s.svc.AddEnviron(env.ServiceProperty())
+	err = s.svc.AddEnviron(user, env.ServiceProperty())
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Server) SetEnviron(path string, name, value string) error {
+func (s *Server) SetEnviron(user, path string, name, value string) error {
 	ent, err := s.GetEntry(path)
 	if err != nil {
 		return err
@@ -341,7 +341,7 @@ func (s *Server) SetEnviron(path string, name, value string) error {
 	if err != nil {
 		return err
 	}
-	err = s.svc.UpdateEnviron(service.PropertyUpdater{
+	err = s.svc.UpdateEnviron(user, service.PropertyUpdater{
 		ID:    env.id,
 		Value: &value,
 	})
@@ -363,6 +363,7 @@ func (s *Server) entryLogs(ent int) ([]*Log, error) {
 		log := &Log{
 			ID:       l.ID,
 			EntryID:  l.EntryID,
+			User:     l.User,
 			Action:   l.Action,
 			Category: l.Category,
 			Name:     l.Name,

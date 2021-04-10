@@ -134,26 +134,26 @@ func getEntry(tx *sql.Tx, id int) (*service.Entry, error) {
 	return ents[0], nil
 }
 
-func AddEntry(db *sql.DB, e *service.Entry, props []*service.Property, envs []*service.Property) error {
+func AddEntry(db *sql.DB, user string, e *service.Entry, props []*service.Property, envs []*service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addEntry(tx, e)
+	err = addEntry(tx, user, e)
 	if err != nil {
 		return err
 	}
 	for _, p := range props {
 		p.EntryID = e.ID
-		err := addProperty(tx, p)
+		err := addProperty(tx, user, p)
 		if err != nil {
 			return err
 		}
 	}
 	for _, env := range envs {
 		env.EntryID = e.ID
-		err := addEnviron(tx, env)
+		err := addEnviron(tx, user, env)
 		if err != nil {
 			return err
 		}
@@ -165,7 +165,7 @@ func AddEntry(db *sql.DB, e *service.Entry, props []*service.Property, envs []*s
 	return nil
 }
 
-func addEntry(tx *sql.Tx, e *service.Entry) error {
+func addEntry(tx *sql.Tx, user string, e *service.Entry) error {
 	result, err := tx.Exec(`
 		INSERT INTO entries (
 			parent_id,
@@ -188,6 +188,7 @@ func addEntry(tx *sql.Tx, e *service.Entry) error {
 	e.ID = int(id)
 	err = addLog(tx, &service.Log{
 		EntryID:  e.ID,
+		User:     user,
 		Action:   "create",
 		Category: "entry",
 		Name:     e.Path,

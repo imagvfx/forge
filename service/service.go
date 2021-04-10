@@ -5,13 +5,13 @@ import "time"
 type Service interface {
 	FindEntries(EntryFinder) ([]*Entry, error)
 	GetEntry(int) (*Entry, error)
-	AddEntry(*Entry, []*Property, []*Property) error
+	AddEntry(string, *Entry, []*Property, []*Property) error
 	FindProperties(PropertyFinder) ([]*Property, error)
-	AddProperty(*Property) error
-	UpdateProperty(PropertyUpdater) error
+	AddProperty(string, *Property) error
+	UpdateProperty(string, PropertyUpdater) error
 	FindEnvirons(PropertyFinder) ([]*Property, error)
-	AddEnviron(*Property) error
-	UpdateEnviron(PropertyUpdater) error
+	AddEnviron(string, *Property) error
+	UpdateEnviron(string, PropertyUpdater) error
 	FindLogs(LogFinder) ([]*Log, error)
 	AddUser(*User) error
 	GetUserByUser(string) (*User, error)
@@ -76,6 +76,7 @@ type UserUpdater struct {
 type Log struct {
 	ID       int
 	EntryID  int
+	User     string
 	Action   string
 	Category string
 	Name     string

@@ -146,13 +146,13 @@ func getEnviron(tx *sql.Tx, id int) (*service.Property, error) {
 	return e, nil
 }
 
-func AddEnviron(db *sql.DB, e *service.Property) error {
+func AddEnviron(db *sql.DB, user string, e *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addEnviron(tx, e)
+	err = addEnviron(tx, user, e)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func AddEnviron(db *sql.DB, e *service.Property) error {
 	return nil
 }
 
-func addEnviron(tx *sql.Tx, e *service.Property) error {
+func addEnviron(tx *sql.Tx, user string, e *service.Property) error {
 	result, err := tx.Exec(`
 		INSERT INTO environs (
 			entry_id,
@@ -188,6 +188,7 @@ func addEnviron(tx *sql.Tx, e *service.Property) error {
 	e.ID = int(id)
 	err = addLog(tx, &service.Log{
 		EntryID:  e.EntryID,
+		User:     user,
 		Action:   "create",
 		Category: "environ",
 		Name:     e.Name,
@@ -200,13 +201,13 @@ func addEnviron(tx *sql.Tx, e *service.Property) error {
 	return nil
 }
 
-func UpdateEnviron(db *sql.DB, upd service.PropertyUpdater) error {
+func UpdateEnviron(db *sql.DB, user string, upd service.PropertyUpdater) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateEnviron(tx, upd)
+	err = updateEnviron(tx, user, upd)
 	if err != nil {
 		return err
 	}
@@ -217,7 +218,7 @@ func UpdateEnviron(db *sql.DB, upd service.PropertyUpdater) error {
 	return nil
 }
 
-func updateEnviron(tx *sql.Tx, upd service.PropertyUpdater) error {
+func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 	e, err := getEnviron(tx, upd.ID)
 	if err != nil {
 		return err
@@ -252,6 +253,7 @@ func updateEnviron(tx *sql.Tx, upd service.PropertyUpdater) error {
 	}
 	err = addLog(tx, &service.Log{
 		EntryID:  e.EntryID,
+		User:     user,
 		Action:   "update",
 		Category: "environ",
 		Name:     e.Name,
