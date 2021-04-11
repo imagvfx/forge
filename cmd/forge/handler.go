@@ -247,13 +247,18 @@ func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
 		}
-		user := r.FormValue("user") // TODO: don't accept user name. use api-key instead.
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
 		// parent, if suggested, will be used as prefix of the path.
 		parent := r.FormValue("parent")
 		path := r.FormValue("path")
 		path = filepath.Join(parent, path)
 		typ := r.FormValue("type")
-		err := h.server.AddEntry(user, path, typ)
+		err = h.server.AddEntry(user, path, typ)
 		if err != nil {
 			return err
 		}
@@ -273,12 +278,17 @@ func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
 		}
-		user := r.FormValue("user") // TODO: don't accept user name. use api-key instead.
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err := h.server.AddProperty(user, path, name, typ, value)
+		err = h.server.AddProperty(user, path, name, typ, value)
 		if err != nil {
 			return err
 		}
@@ -298,11 +308,16 @@ func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
 		}
-		user := r.FormValue("user") // TODO: don't accept user name. use api-key instead.
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		value := r.FormValue("value")
-		err := h.server.SetProperty(user, path, name, value)
+		err = h.server.SetProperty(user, path, name, value)
 		if err != nil {
 			return err
 		}
@@ -322,12 +337,17 @@ func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
 		}
-		user := r.FormValue("user") // TODO: don't accept user name. use api-key instead.
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err := h.server.AddEnviron(user, path, name, typ, value)
+		err = h.server.AddEnviron(user, path, name, typ, value)
 		if err != nil {
 			return err
 		}
@@ -347,11 +367,16 @@ func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
 		}
-		user := r.FormValue("user") // TODO: don't accept user name. use api-key instead.
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		value := r.FormValue("value")
-		err := h.server.SetEnviron(user, path, name, value)
+		err = h.server.SetEnviron(user, path, name, value)
 		if err != nil {
 			return err
 		}
