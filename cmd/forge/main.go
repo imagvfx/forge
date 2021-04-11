@@ -17,8 +17,8 @@ import (
 
 var Tmpl *template.Template
 
-// cookieHandler is used to save or clear sessions.
-var cookieHandler *securecookie.SecureCookie
+// secureCookie is used to save or clear sessions.
+var secureCookie *securecookie.SecureCookie
 
 func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +98,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cookieHandler = securecookie.New(hash, block)
+	secureCookie = securecookie.New(hash, block)
 
 	cfg, err := forge.LoadConfig("config/")
 	if err != nil {

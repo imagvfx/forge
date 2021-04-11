@@ -5,7 +5,7 @@ import (
 )
 
 func setSession(w http.ResponseWriter, session map[string]string) error {
-	encoded, err := cookieHandler.Encode("session", session)
+	encoded, err := secureCookie.Encode("session", session)
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func getSession(r *http.Request) (map[string]string, error) {
 	if c == nil {
 		return value, nil
 	}
-	err := cookieHandler.Decode("session", c.Value, &value)
+	err := secureCookie.Decode("session", c.Value, &value)
 	if err != nil {
 		return nil, err
 	}
