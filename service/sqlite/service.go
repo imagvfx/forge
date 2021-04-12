@@ -53,6 +53,18 @@ func (s *Service) UpdateEnviron(user string, upd service.PropertyUpdater) error 
 	return UpdateEnviron(s.db, user, upd)
 }
 
+func (s Service) FindAccessControls(find service.AccessControlFinder) ([]*service.AccessControl, error) {
+	return FindAccessControls(s.db, find)
+}
+
+func (s Service) AddAccessControl(user string, a *service.AccessControl) error {
+	return AddAccessControl(s.db, user, a)
+}
+
+func (s Service) UpdateAccessControl(user string, upd service.AccessControlUpdater) error {
+	return UpdateAccessControl(s.db, user, upd)
+}
+
 func (s *Service) FindLogs(find service.LogFinder) ([]*service.Log, error) {
 	return FindLogs(s.db, find)
 }

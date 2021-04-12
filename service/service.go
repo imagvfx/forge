@@ -1,6 +1,8 @@
 package service
 
-import "time"
+import (
+	"time"
+)
 
 type Service interface {
 	FindEntries(EntryFinder) ([]*Entry, error)
@@ -12,6 +14,9 @@ type Service interface {
 	FindEnvirons(PropertyFinder) ([]*Property, error)
 	AddEnviron(string, *Property) error
 	UpdateEnviron(string, PropertyUpdater) error
+	FindAccessControls(AccessControlFinder) ([]*AccessControl, error)
+	AddAccessControl(string, *AccessControl) error
+	UpdateAccessControl(string, AccessControlUpdater) error
 	FindLogs(LogFinder) ([]*Log, error)
 	AddUser(*User) error
 	GetUserByUser(string) (*User, error)
@@ -55,6 +60,27 @@ type PropertyFinder struct {
 type PropertyUpdater struct {
 	ID    int
 	Value *string
+}
+
+type AccessControl struct {
+	ID      int
+	EntryID int
+	// either UserID or GroupID is not nil
+	UserID       *int
+	GroupID      *int
+	Accessor     string
+	AccessorType int
+	Type         int
+	Members      []*User
+}
+
+type AccessControlFinder struct {
+	EntryID int
+}
+
+type AccessControlUpdater struct {
+	ID   int
+	Type *int
 }
 
 type User struct {

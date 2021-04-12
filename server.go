@@ -351,6 +351,31 @@ func (s *Server) SetEnviron(user, path string, name, value string) error {
 	return nil
 }
 
+func (s *Server) entryAccessControls(ent int) ([]*AccessControl, error) {
+	as, err := s.svc.FindAccessControls(service.AccessControlFinder{
+		EntryID: ent,
+	})
+	if err != nil {
+		return nil, err
+	}
+	acs := make([]*AccessControl, 0, len(as))
+	for _, a := range as {
+		ac := &AccessControl{
+			ID:           a.ID,
+			EntryID:      a.EntryID,
+			Accessor:     a.Accessor,
+			AccessorType: AccessorType(a.AccessorType),
+			Type:         AccessType(a.Type),
+			Members:      make([]*User, 0, len(a.Members)),
+		}
+		for _, m := range a.Members {
+			ac.Members = append(ac.Members, &User{User: m.User, Name: m.Name})
+		}
+		acs = append(acs, ac)
+	}
+	return acs, nil
+}
+
 func (s *Server) entryLogs(ent int) ([]*Log, error) {
 	ls, err := s.svc.FindLogs(service.LogFinder{
 		EntryID: ent,

@@ -47,6 +47,10 @@ func (e *Entry) Environs() ([]*Property, error) {
 	return e.srv.entryEnvirons(e.id)
 }
 
+func (e *Entry) AccessControls() ([]*AccessControl, error) {
+	return e.srv.entryAccessControls(e.id)
+}
+
 func (e *Entry) Logs() ([]*Log, error) {
 	return e.srv.entryLogs(e.id)
 }
@@ -207,6 +211,29 @@ func (p *Property) ServiceProperty() *service.Property {
 		Value:     p.value,
 	}
 	return sp
+}
+
+type AccessType int
+
+const (
+	ReadAccess = AccessType(iota)
+	WriteAccess
+)
+
+type AccessorType int
+
+const (
+	UserAccessor = AccessorType(iota)
+	GroupAccessor
+)
+
+type AccessControl struct {
+	ID           int
+	EntryID      int
+	Accessor     string
+	AccessorType AccessorType
+	Type         AccessType
+	Members      []*User
 }
 
 type Log struct {

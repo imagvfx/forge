@@ -114,6 +114,17 @@ func GetUserByUser(db *sql.DB, user string) (*service.User, error) {
 	return u, nil
 }
 
+func getUser(tx *sql.Tx, id int) (*service.User, error) {
+	users, err := findUsers(tx, service.UserFinder{ID: &id})
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, service.NotFoundError{"user not found"}
+	}
+	return users[0], nil
+}
+
 func getUserByUser(tx *sql.Tx, user string) (*service.User, error) {
 	users, err := findUsers(tx, service.UserFinder{User: &user})
 	if err != nil {
