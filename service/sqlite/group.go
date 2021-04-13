@@ -7,24 +7,38 @@ import (
 	"github.com/imagvfx/forge/service"
 )
 
-func createUsersTable(tx *sql.Tx) error {
+func createGroupsTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
+		CREATE TABLE IF NOT EXISTS groups (
 			id INTEGER PRIMARY KEY,
-			user STRING NOT NULL UNIQUE,
-			name STRING NOT NULL
+			name STRING NOT NULL UNIQUE
 		)
 	`)
 	return err
 }
 
-func FindUsers(db *sql.DB, find service.UserFinder) ([]*service.User, error) {
+func addAdminGroup(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		INSERT OR IGNORE INTO groups
+			(name)
+		VALUES
+			(?)
+	`,
+		"admin",
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func FindGroups(db *sql.DB, find service.GroupFinder) ([]*service.Group, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	users, err := findUsers(tx, find)
+	groups, err := findGroups(tx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -32,19 +46,19 @@ func FindUsers(db *sql.DB, find service.UserFinder) ([]*service.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+	return groups, nil
 }
 
-func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
+func findGroups(tx *sql.Tx, find service.GroupFinder) ([]*service.Group, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
 		keys = append(keys, "id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.User != nil {
-		keys = append(keys, "user=?")
-		vals = append(vals, *find.User)
+	if find.Name != nil {
+		keys = append(keys, "name=?")
+		vals = append(vals, *find.Name)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -53,9 +67,8 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 	rows, err := tx.Query(`
 		SELECT
 			id,
-			user,
 			name
-		FROM users
+		FROM groups
 		`+where+`
 		ORDER BY id ASC
 	`,
@@ -65,30 +78,29 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	users := make([]*service.User, 0)
+	groups := make([]*service.Group, 0)
 	for rows.Next() {
-		u := &service.User{}
+		u := &service.Group{}
 		err := rows.Scan(
 			&u.ID,
-			&u.User,
 			&u.Name,
 		)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, u)
+		groups = append(groups, u)
 	}
-	return users, nil
+	return groups, nil
 }
 
-func GetUserByUser(db *sql.DB, user string) (*service.User, error) {
+func GetGroupByName(db *sql.DB, name string) (*service.Group, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getUserByUser(tx, user)
+	u, err := getGroupByName(tx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -99,35 +111,35 @@ func GetUserByUser(db *sql.DB, user string) (*service.User, error) {
 	return u, nil
 }
 
-func getUser(tx *sql.Tx, id int) (*service.User, error) {
-	users, err := findUsers(tx, service.UserFinder{ID: &id})
+func getGroup(tx *sql.Tx, id int) (*service.Group, error) {
+	groups, err := findGroups(tx, service.GroupFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, service.NotFoundError{"user not found"}
+	if len(groups) == 0 {
+		return nil, service.NotFoundError{"group not found"}
 	}
-	return users[0], nil
+	return groups[0], nil
 }
 
-func getUserByUser(tx *sql.Tx, user string) (*service.User, error) {
-	users, err := findUsers(tx, service.UserFinder{User: &user})
+func getGroupByName(tx *sql.Tx, name string) (*service.Group, error) {
+	groups, err := findGroups(tx, service.GroupFinder{Name: &name})
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, service.NotFoundError{"user not found"}
+	if len(groups) == 0 {
+		return nil, service.NotFoundError{"group not found"}
 	}
-	return users[0], nil
+	return groups[0], nil
 }
 
-func AddUser(db *sql.DB, u *service.User) error {
+func AddGroup(db *sql.DB, g *service.Group) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addUser(tx, u)
+	err = addGroup(tx, g)
 	if err != nil {
 		return err
 	}
@@ -138,16 +150,14 @@ func AddUser(db *sql.DB, u *service.User) error {
 	return nil
 }
 
-func addUser(tx *sql.Tx, u *service.User) error {
+func addGroup(tx *sql.Tx, g *service.Group) error {
 	result, err := tx.Exec(`
-		INSERT INTO users (
-			user,
+		INSERT INTO groups (
 			name
 		)
 		VALUES (?, ?)
 	`,
-		u.User,
-		u.Name,
+		g.Name,
 	)
 	if err != nil {
 		return err
@@ -156,6 +166,6 @@ func addUser(tx *sql.Tx, u *service.User) error {
 	if err != nil {
 		return err
 	}
-	u.ID = int(id)
+	g.ID = int(id)
 	return nil
 }

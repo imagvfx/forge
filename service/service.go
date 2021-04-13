@@ -100,6 +100,21 @@ type UserUpdater struct {
 	Name *string
 }
 
+type Group struct {
+	ID   int
+	Name string
+}
+
+type GroupFinder struct {
+	ID   *int
+	Name *string
+}
+
+type GroupUpdater struct {
+	ID   int
+	Name *string
+}
+
 type Log struct {
 	ID       int
 	EntryID  int

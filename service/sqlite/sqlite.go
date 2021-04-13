@@ -65,7 +65,11 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	err = addRootUser(tx)
+	err = createGroupsTable(tx)
+	if err != nil {
+		return err
+	}
+	err = addAdminGroup(tx)
 	if err != nil {
 		return err
 	}
