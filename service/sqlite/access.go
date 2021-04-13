@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -31,7 +32,7 @@ func FindAccessControls(db *sql.DB, find service.AccessControlFinder) ([]*servic
 		return nil, err
 	}
 	defer tx.Rollback()
-	acss := make([]*service.AccessControl, 0)
+	acm := make(map[string]*service.AccessControl)
 	for {
 		ent, err := getEntry(tx, find.EntryID)
 		if err != nil {
@@ -42,19 +43,30 @@ func FindAccessControls(db *sql.DB, find service.AccessControlFinder) ([]*servic
 			return nil, err
 		}
 		for _, a := range as {
+			if acm[a.Accessor] != nil {
+				// NOTE: user and group shouldn't share same name.
+				continue
+			}
 			a.EntryPath = ent.Path
+			acm[a.Accessor] = a
 		}
-		acss = append(acss, as...)
 		if ent.ParentID == nil {
 			break
 		}
 		find.EntryID = *ent.ParentID
 	}
+	acs := make([]*service.AccessControl, 0)
+	for _, a := range acm {
+		acs = append(acs, a)
+	}
+	sort.Slice(acs, func(i, j int) bool {
+		return acs[i].Accessor < acs[j].Accessor
+	})
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
-	return acss, nil
+	return acs, nil
 }
 
 // when id is empty, it will find access controls of root.
