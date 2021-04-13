@@ -264,11 +264,22 @@ type Log struct {
 }
 
 func (l *Log) String() string {
-	s := fmt.Sprintf("%v: %v %v %v: %v", l.When, l.User, l.Action, l.Category, l.Name)
-	if l.Value != "" {
-		s += fmt.Sprintf(" = %v", l.Value)
+	switch l.Category {
+	case "access":
+		return l.AccessControlString()
+	default:
+		s := fmt.Sprintf("%v: %v %v %v: %v", l.When, l.User, l.Action, l.Category, l.Name)
+		if l.Value != "" {
+			s += fmt.Sprintf(" = %v", l.Value)
+		}
+		return s
 	}
-	return s
+}
+
+func (l *Log) AccessControlString() string {
+	v, _ := strconv.Atoi(l.Value)
+	mode := AccessMode(v)
+	return fmt.Sprintf("%v: %v %v %v: %v = %v", l.When, l.User, l.Action, l.Category, l.Name, mode)
 }
 
 type User struct {
