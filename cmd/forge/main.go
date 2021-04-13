@@ -144,6 +144,8 @@ func main() {
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
 	mux.HandleFunc("/api/add-environ", api.HandleAddEnviron)
 	mux.HandleFunc("/api/set-environ", api.HandleSetEnviron)
+	mux.HandleFunc("/api/add-access-control", api.HandleAddAccessControl)
+	mux.HandleFunc("/api/set-access-control", api.HandleSetAccessControl)
 
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)

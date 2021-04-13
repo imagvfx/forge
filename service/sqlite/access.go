@@ -16,7 +16,7 @@ func createAccessControlsTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER NOT NULL,
 			user_id INTEGER,
-			typ INTEGER NOT NULL,
+			mode INTEGER NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			FOREIGN KEY (user_id) REFERENCES users (id),
 			UNIQUE (entry_id, user_id)
@@ -40,6 +40,9 @@ func FindAccessControls(db *sql.DB, find service.AccessControlFinder) ([]*servic
 		as, err := findAccessControls(tx, find)
 		if err != nil {
 			return nil, err
+		}
+		for _, a := range as {
+			a.EntryPath = ent.Path
 		}
 		acss = append(acss, as...)
 		if ent.ParentID == nil {
@@ -69,7 +72,7 @@ func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*servic
 			id,
 			entry_id,
 			user_id,
-			typ
+			mode
 		FROM access_controls
 		`+where,
 		vals...,
@@ -85,7 +88,7 @@ func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*servic
 			&a.ID,
 			&a.EntryID,
 			&a.UserID,
-			&a.Type,
+			&a.Mode,
 		)
 		if err != nil {
 			return nil, err
@@ -105,7 +108,7 @@ func getAccessControl(tx *sql.Tx, id int) (*service.AccessControl, error) {
 			id,
 			entry_id,
 			user_id,
-			typ
+			mode
 		FROM access_controls
 		WHERE id=?`,
 		id,
@@ -115,18 +118,23 @@ func getAccessControl(tx *sql.Tx, id int) (*service.AccessControl, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, fmt.Errorf("access not found")
+		return nil, fmt.Errorf("access not found: %v", id)
 	}
 	a := &service.AccessControl{}
 	err = rows.Scan(
 		&a.ID,
 		&a.EntryID,
 		&a.UserID,
-		&a.Type,
+		&a.Mode,
 	)
 	if err != nil {
 		return nil, err
 	}
+	ent, err := getEntry(tx, a.EntryID)
+	if err != nil {
+		return nil, err
+	}
+	a.EntryPath = ent.Path
 	err = attachAccessorInfo(tx, a)
 	if err != nil {
 		return nil, err
@@ -146,11 +154,11 @@ func attachAccessorInfo(tx *sql.Tx, a *service.AccessControl) error {
 		if err != nil {
 			return err
 		}
-		a.Accessor = u.Name
+		a.Accessor = u.User
 		a.AccessorType = 0 // user
 		a.Members = []*service.User{u}
 	} else {
-		// TODO: process for group access
+		return fmt.Errorf("group access not implemented yet")
 	}
 	return nil
 }
@@ -177,13 +185,13 @@ func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
 		INSERT INTO access_controls (
 			entry_id,
 			user_id,
-			typ
+			mode
 		)
 		VALUES (?, ?, ?)
 	`,
 		a.EntryID,
 		a.UserID,
-		a.Type,
+		a.Mode,
 	)
 	if err != nil {
 		return err
@@ -204,7 +212,7 @@ func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
 		Category: "access",
 		Name:     a.Accessor,
 		Type:     strconv.Itoa(a.AccessorType),
-		Value:    strconv.Itoa(a.Type),
+		Value:    strconv.Itoa(a.Mode),
 	})
 	if err != nil {
 		return err
@@ -240,9 +248,10 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if upd.Type != nil {
-		keys = append(keys, "typ=?")
-		vals = append(vals, *upd.Type)
+	if upd.Mode != nil {
+		keys = append(keys, "mode=?")
+		vals = append(vals, *upd.Mode)
+		a.Mode = *upd.Mode
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)
@@ -272,7 +281,7 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 		Category: "access",
 		Name:     a.Accessor,
 		Type:     strconv.Itoa(a.AccessorType),
-		Value:    strconv.Itoa(a.Type),
+		Value:    strconv.Itoa(a.Mode),
 	})
 	if err != nil {
 		return err

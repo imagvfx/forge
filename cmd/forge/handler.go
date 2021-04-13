@@ -74,27 +74,33 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		acs, err := ent.AccessControls()
+		if err != nil {
+			return err
+		}
 		logs, err := ent.Logs()
 		if err != nil {
 			return err
 		}
 		subtyps := h.cfg.Struct[ent.Type()].SubEntryTypes
 		recipe := struct {
-			User          string
-			Entry         *forge.Entry
-			SubEntries    []*forge.Entry
-			Properties    []*forge.Property
-			Environs      []*forge.Property
-			SubEntryTypes []string
-			Logs          []*forge.Log
+			User           string
+			Entry          *forge.Entry
+			SubEntries     []*forge.Entry
+			Properties     []*forge.Property
+			Environs       []*forge.Property
+			SubEntryTypes  []string
+			AccessControls []*forge.AccessControl
+			Logs           []*forge.Log
 		}{
-			User:          user,
-			Entry:         ent,
-			SubEntries:    subEnts,
-			Properties:    props,
-			Environs:      envs,
-			SubEntryTypes: subtyps,
-			Logs:          logs,
+			User:           user,
+			Entry:          ent,
+			SubEntries:     subEnts,
+			Properties:     props,
+			Environs:       envs,
+			SubEntryTypes:  subtyps,
+			AccessControls: acs,
+			Logs:           logs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
 		if err != nil {
@@ -377,6 +383,64 @@ func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		value := r.FormValue("value")
 		err = h.server.SetEnviron(user, path, name, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		path := r.FormValue("path")
+		accessor := r.FormValue("accessor")
+		accessor_type := r.FormValue("accessor_type")
+		mode := r.FormValue("mode")
+		err = h.server.AddAccessControl(user, path, accessor, accessor_type, mode)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		id := r.FormValue("id")
+		mode := r.FormValue("mode")
+		err = h.server.SetAccessControl(user, id, mode)
 		if err != nil {
 			return err
 		}

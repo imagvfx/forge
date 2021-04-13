@@ -213,12 +213,19 @@ func (p *Property) ServiceProperty() *service.Property {
 	return sp
 }
 
-type AccessType int
+type AccessMode int
 
 const (
-	ReadAccess = AccessType(iota)
-	WriteAccess
+	ReadAccess = AccessMode(iota)
+	ReadWriteAccess
 )
+
+func (m AccessMode) String() string {
+	if m == ReadAccess {
+		return "r"
+	}
+	return "rw"
+}
 
 type AccessorType int
 
@@ -227,12 +234,20 @@ const (
 	GroupAccessor
 )
 
+func (t AccessorType) String() string {
+	if t == UserAccessor {
+		return "user"
+	}
+	return "group"
+}
+
 type AccessControl struct {
 	ID           int
 	EntryID      int
+	EntryPath    string
 	Accessor     string
 	AccessorType AccessorType
-	Type         AccessType
+	Mode         AccessMode
 	Members      []*User
 }
 

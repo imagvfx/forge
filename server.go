@@ -3,6 +3,7 @@ package forge
 import (
 	"fmt"
 	"path/filepath"
+	"strconv"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -363,9 +364,10 @@ func (s *Server) entryAccessControls(ent int) ([]*AccessControl, error) {
 		ac := &AccessControl{
 			ID:           a.ID,
 			EntryID:      a.EntryID,
+			EntryPath:    a.EntryPath,
 			Accessor:     a.Accessor,
 			AccessorType: AccessorType(a.AccessorType),
-			Type:         AccessType(a.Type),
+			Mode:         AccessMode(a.Mode),
 			Members:      make([]*User, 0, len(a.Members)),
 		}
 		for _, m := range a.Members {
@@ -374,6 +376,65 @@ func (s *Server) entryAccessControls(ent int) ([]*AccessControl, error) {
 		acs = append(acs, ac)
 	}
 	return acs, nil
+}
+
+func (s *Server) AddAccessControl(user, path string, accessor, accessor_type, mode string) error {
+	ent, err := s.GetEntry(path)
+	if err != nil {
+		return err
+	}
+	ac := &service.AccessControl{
+		EntryID: ent.id,
+	}
+	switch accessor_type {
+	case "user":
+		u, err := s.GetUser(accessor)
+		if err != nil {
+			return err
+		}
+		ac.UserID = &u.ID
+	// TODO: case "group":
+	default:
+		return fmt.Errorf("unknown accessor type")
+	}
+	switch mode {
+	case "r":
+		ac.Mode = int(ReadAccess)
+	case "rw":
+		ac.Mode = int(ReadWriteAccess)
+	default:
+		return fmt.Errorf("unknown access type")
+	}
+	err = s.svc.AddAccessControl(user, ac)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) SetAccessControl(user string, accessID string, mode string) error {
+	id, err := strconv.Atoi(accessID)
+	if err != nil {
+		return fmt.Errorf("invalid access id: %v", accessID)
+	}
+	ac := service.AccessControlUpdater{
+		ID: id,
+	}
+	switch mode {
+	case "r":
+		m := int(ReadAccess)
+		ac.Mode = &m
+	case "rw":
+		m := int(ReadWriteAccess)
+		ac.Mode = &m
+	default:
+		return fmt.Errorf("unknown access type")
+	}
+	err = s.svc.UpdateAccessControl(user, ac)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Server) entryLogs(ent int) ([]*Log, error) {
@@ -408,7 +469,9 @@ func (s *Server) GetUser(user string) (*User, error) {
 		return nil, err
 	}
 	u := &User{
+		ID:   su.ID,
 		User: su.User,
+		Name: su.Name,
 	}
 	return u, nil
 }

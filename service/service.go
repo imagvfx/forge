@@ -63,14 +63,15 @@ type PropertyUpdater struct {
 }
 
 type AccessControl struct {
-	ID      int
-	EntryID int
+	ID        int
+	EntryID   int
+	EntryPath string
 	// either UserID or GroupID is not nil
 	UserID       *int
 	GroupID      *int
 	Accessor     string
 	AccessorType int
-	Type         int
+	Mode         int
 	Members      []*User
 }
 
@@ -80,7 +81,7 @@ type AccessControlFinder struct {
 
 type AccessControlUpdater struct {
 	ID   int
-	Type *int
+	Mode *int
 }
 
 type User struct {
