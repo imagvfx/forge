@@ -76,3 +76,15 @@ func (s *Service) AddUser(u *service.User) error {
 func (s *Service) GetUserByUser(user string) (*service.User, error) {
 	return GetUserByUser(s.db, user)
 }
+
+func (s *Service) FindGroups(find service.GroupFinder) ([]*service.Group, error) {
+	return FindGroups(s.db, find)
+}
+
+func (s *Service) AddGroup(user string, g *service.Group) error {
+	return AddGroup(s.db, user, g)
+}
+
+func (s *Service) UpdateGroup(user string, upd service.GroupUpdater) error {
+	return UpdateGroup(s.db, user, upd)
+}

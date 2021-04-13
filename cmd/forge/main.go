@@ -129,6 +129,9 @@ func main() {
 		server: server,
 		cfg:    cfg,
 	}
+	group := &groupHandler{
+		server: server,
+	}
 	api := &apiHandler{
 		server: server,
 	}
@@ -139,6 +142,7 @@ func main() {
 	mux.HandleFunc("/login", login.Handle)
 	mux.HandleFunc("/login/callback/google", login.HandleCallback)
 	mux.HandleFunc("/logout", login.HandleLogout)
+	mux.HandleFunc("/groups", group.Handle)
 	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
 	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
@@ -146,6 +150,8 @@ func main() {
 	mux.HandleFunc("/api/set-environ", api.HandleSetEnviron)
 	mux.HandleFunc("/api/add-access-control", api.HandleAddAccessControl)
 	mux.HandleFunc("/api/set-access-control", api.HandleSetAccessControl)
+	mux.HandleFunc("/api/add-group", api.HandleAddGroup)
+	mux.HandleFunc("/api/set-group", api.HandleSetGroup)
 
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)

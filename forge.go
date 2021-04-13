@@ -287,3 +287,8 @@ type User struct {
 	User string
 	Name string
 }
+
+type Group struct {
+	ID   int
+	Name string
+}

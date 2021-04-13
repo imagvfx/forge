@@ -3,7 +3,10 @@
 	<head> []
 	<body> [
 		<div style="display:flex;justify-content:space-between"> [
-			<a href="/"> [forge]
+			<div> [
+				<a href="/"> [forge]
+				| <a href="/groups"> [groups]
+			]
 			<div> [{{$.User}} (<a href="/logout"> [logout])]
 		]
 		<h1> [

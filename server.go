@@ -485,3 +485,44 @@ func (s *Server) AddUser(user string) error {
 	}
 	return nil
 }
+
+func (s *Server) FindAllGroups() ([]*Group, error) {
+	sgroups, err := s.svc.FindGroups(service.GroupFinder{})
+	if err != nil {
+		err = fromServiceError(err)
+		return nil, err
+	}
+	groups := make([]*Group, 0, len(sgroups))
+	for _, sg := range sgroups {
+		g := &Group{
+			ID:   sg.ID,
+			Name: sg.Name,
+		}
+		groups = append(groups, g)
+	}
+	return groups, nil
+}
+
+func (s *Server) AddGroup(user, group string) error {
+	g := &service.Group{Name: group}
+	err := s.svc.AddGroup(user, g)
+	if err != nil {
+		err = fromServiceError(err)
+		return err
+	}
+	return nil
+}
+
+func (s *Server) SetGroup(user string, groupID string, group string) error {
+	id, err := strconv.Atoi(groupID)
+	if err != nil {
+		return fmt.Errorf("invalid group id: %v", groupID)
+	}
+	g := service.GroupUpdater{ID: id, Name: &group}
+	err = s.svc.UpdateGroup(user, g)
+	if err != nil {
+		err = fromServiceError(err)
+		return err
+	}
+	return nil
+}

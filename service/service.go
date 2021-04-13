@@ -20,6 +20,9 @@ type Service interface {
 	FindLogs(LogFinder) ([]*Log, error)
 	AddUser(*User) error
 	GetUserByUser(string) (*User, error)
+	FindGroups(GroupFinder) ([]*Group, error)
+	AddGroup(string, *Group) error
+	UpdateGroup(string, GroupUpdater) error
 }
 
 type NotFoundError struct {

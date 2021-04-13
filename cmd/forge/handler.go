@@ -111,6 +111,41 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
+type groupHandler struct {
+	server *forge.Server
+}
+
+func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		if user == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+		groups, err := h.server.FindAllGroups()
+		if err != nil {
+			return err
+		}
+		recipe := struct {
+			User   string
+			Groups []*forge.Group
+		}{
+			User:   user,
+			Groups: groups,
+		}
+		err = Tmpl.ExecuteTemplate(w, "groups.bml", recipe)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
 type loginHandler struct {
 	server *forge.Server
 	oidc   *forge.OIDC
@@ -441,6 +476,61 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 		id := r.FormValue("id")
 		mode := r.FormValue("mode")
 		err = h.server.SetAccessControl(user, id, mode)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		group := r.FormValue("group")
+		err = h.server.AddGroup(user, group)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		id := r.FormValue("id")
+		group := r.FormValue("group")
+		err = h.server.SetGroup(user, id, group)
 		if err != nil {
 			return err
 		}

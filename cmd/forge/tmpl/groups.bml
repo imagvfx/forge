@@ -1,0 +1,38 @@
+<!doctype html>
+<html> [
+	<head> []
+	<body> [
+		<div style="display:flex;justify-content:space-between"> [
+			<div> [
+				<a href="/"> [forge]
+				| <a href="/groups"> [groups]
+			]
+			<div> [{{$.User}} (<a href="/logout"> [logout])]
+		]
+		<h1> [
+			Groups
+		]
+		<h4> [
+			<form action="/api/add-group" method="post"> [
+				<div> [
+					<input name="group" type="text" value="" placeholder="group"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Add]
+				]
+			]
+		]
+		<div> [
+		{{range $g := $.Groups}}
+			<form action="/api/set-group" method="post"> [
+				<div> [
+					<input readonly name="id" type="hidden" value="{{$g.ID}}"> []
+					<input name="group" type="text" value="{{$g.Name}}" placeholder="group"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Set]
+				]
+			]
+		{{end}}
+		]
+	]
+]
+

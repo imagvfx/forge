@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -133,13 +134,13 @@ func getGroupByName(tx *sql.Tx, name string) (*service.Group, error) {
 	return groups[0], nil
 }
 
-func AddGroup(db *sql.DB, g *service.Group) error {
+func AddGroup(db *sql.DB, user string, g *service.Group) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addGroup(tx, g)
+	err = addGroup(tx, user, g)
 	if err != nil {
 		return err
 	}
@@ -150,12 +151,13 @@ func AddGroup(db *sql.DB, g *service.Group) error {
 	return nil
 }
 
-func addGroup(tx *sql.Tx, g *service.Group) error {
+func addGroup(tx *sql.Tx, user string, g *service.Group) error {
+	// TODO: check the user is a member of admin group.
 	result, err := tx.Exec(`
 		INSERT INTO groups (
 			name
 		)
-		VALUES (?, ?)
+		VALUES (?)
 	`,
 		g.Name,
 	)
@@ -167,5 +169,54 @@ func addGroup(tx *sql.Tx, g *service.Group) error {
 		return err
 	}
 	g.ID = int(id)
+	return nil
+}
+
+func UpdateGroup(db *sql.DB, user string, upd service.GroupUpdater) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = updateGroup(tx, user, upd)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func updateGroup(tx *sql.Tx, user string, upd service.GroupUpdater) error {
+	// TODO: check the user is a member of admin group.
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if upd.Name != nil {
+		keys = append(keys, "name=?")
+		vals = append(vals, *upd.Name)
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("need at least one field to update group: %v", upd.ID)
+	}
+	vals = append(vals, upd.ID) // for where clause
+	result, err := tx.Exec(`
+		UPDATE groups
+		SET `+strings.Join(keys, ", ")+`
+		WHERE id=?
+	`,
+		vals...,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("want 1 property affected, got %v", n)
+	}
 	return nil
 }
