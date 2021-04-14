@@ -33,6 +33,30 @@
 			]
 		{{end}}
 		]
+		{{range $g := $.Groups}}
+		<div> [
+			<h4> [{{$g.Name}}]
+			<form action="/api/add-group-member" method="post"> [
+				<div> [
+					<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
+					<input name="member" type="text" value="" placeholder="user"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Add]
+				]
+			]
+			{{$members := index $.Members $g.Name}}
+			{{range $m := $members}}
+			<form action="/api/delete-group-member" method="post"> [
+				<div> [
+					<input readonly name="id" type="hidden" value="{{$m.ID}}"> []
+					<input readonly name="user" value="{{$m.User}}"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Delete]
+				]
+			]
+			{{end}}
+		{{end}}
+		]
 	]
 ]
 

@@ -130,12 +130,22 @@ func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		members := make(map[string][]*forge.Member)
+		for _, g := range groups {
+			mems, err := h.server.FindGroupMembers(g.Name)
+			if err != nil {
+				return err
+			}
+			members[g.Name] = mems
+		}
 		recipe := struct {
-			User   string
-			Groups []*forge.Group
+			User    string
+			Groups  []*forge.Group
+			Members map[string][]*forge.Member
 		}{
-			User:   user,
-			Groups: groups,
+			User:    user,
+			Groups:  groups,
+			Members: members,
 		}
 		err = Tmpl.ExecuteTemplate(w, "groups.bml", recipe)
 		if err != nil {
@@ -531,6 +541,61 @@ func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
 		id := r.FormValue("id")
 		group := r.FormValue("group")
 		err = h.server.SetGroup(user, id, group)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleAddGroupMember(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		group := r.FormValue("group")
+		member := r.FormValue("member")
+		err = h.server.AddGroupMember(user, group, member)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		id := r.FormValue("id")
+		err = h.server.DeleteGroupMember(user, id)
 		if err != nil {
 			return err
 		}

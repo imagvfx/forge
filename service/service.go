@@ -23,6 +23,9 @@ type Service interface {
 	FindGroups(GroupFinder) ([]*Group, error)
 	AddGroup(string, *Group) error
 	UpdateGroup(string, GroupUpdater) error
+	FindGroupMembers(MemberFinder) ([]*Member, error)
+	AddGroupMember(string, *Member) error
+	DeleteGroupMember(string, int) error
 }
 
 type NotFoundError struct {
@@ -116,6 +119,19 @@ type GroupFinder struct {
 type GroupUpdater struct {
 	ID   int
 	Name *string
+}
+
+type Member struct {
+	ID      int
+	GroupID int
+	Group   string
+	UserID  int
+	User    string
+}
+
+type MemberFinder struct {
+	ID      *int
+	GroupID *int
 }
 
 type Log struct {

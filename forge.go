@@ -292,3 +292,11 @@ type Group struct {
 	ID   int
 	Name string
 }
+
+type Member struct {
+	ID      int
+	GroupID int
+	Group   string
+	UserID  int
+	User    string
+}

@@ -503,6 +503,23 @@ func (s *Server) FindAllGroups() ([]*Group, error) {
 	return groups, nil
 }
 
+func (s *Server) GetGroup(name string) (*Group, error) {
+	sgroups, err := s.svc.FindGroups(service.GroupFinder{Name: &name})
+	if err != nil {
+		err = fromServiceError(err)
+		return nil, err
+	}
+	if len(sgroups) == 0 {
+		return nil, fmt.Errorf("group not exist: %v", name)
+	}
+	sg := sgroups[0]
+	g := &Group{
+		ID:   sg.ID,
+		Name: sg.Name,
+	}
+	return g, nil
+}
+
 func (s *Server) AddGroup(user, group string) error {
 	g := &service.Group{Name: group}
 	err := s.svc.AddGroup(user, g)
@@ -520,6 +537,62 @@ func (s *Server) SetGroup(user string, groupID string, group string) error {
 	}
 	g := service.GroupUpdater{ID: id, Name: &group}
 	err = s.svc.UpdateGroup(user, g)
+	if err != nil {
+		err = fromServiceError(err)
+		return err
+	}
+	return nil
+}
+
+func (s *Server) FindGroupMembers(group string) ([]*Member, error) {
+	g, err := s.GetGroup(group)
+	if err != nil {
+		return nil, err
+	}
+	svcMembers, err := s.svc.FindGroupMembers(service.MemberFinder{GroupID: &g.ID})
+	if err != nil {
+		err = fromServiceError(err)
+		return nil, err
+	}
+	members := make([]*Member, 0, len(svcMembers))
+	for _, sm := range svcMembers {
+		m := &Member{
+			ID:      sm.ID,
+			GroupID: sm.GroupID,
+			Group:   sm.Group,
+			UserID:  sm.UserID,
+			User:    sm.User,
+		}
+		members = append(members, m)
+	}
+	return members, nil
+}
+
+func (s *Server) AddGroupMember(user, group, member string) error {
+	g, err := s.GetGroup(group)
+	if err != nil {
+		return err
+	}
+	u, err := s.GetUser(member)
+	if err != nil {
+		fmt.Println("here?")
+		return err
+	}
+	m := &service.Member{GroupID: g.ID, UserID: u.ID}
+	err = s.svc.AddGroupMember(user, m)
+	if err != nil {
+		err = fromServiceError(err)
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteGroupMember(user string, memberID string) error {
+	id, err := strconv.Atoi(memberID)
+	if err != nil {
+		return fmt.Errorf("invalid member id: %v", memberID)
+	}
+	err = s.svc.DeleteGroupMember(user, id)
 	if err != nil {
 		err = fromServiceError(err)
 		return err

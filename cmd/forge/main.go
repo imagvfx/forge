@@ -152,6 +152,8 @@ func main() {
 	mux.HandleFunc("/api/set-access-control", api.HandleSetAccessControl)
 	mux.HandleFunc("/api/add-group", api.HandleAddGroup)
 	mux.HandleFunc("/api/set-group", api.HandleSetGroup)
+	mux.HandleFunc("/api/add-group-member", api.HandleAddGroupMember)
+	mux.HandleFunc("/api/delete-group-member", api.HandleDeleteGroupMember)
 
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)

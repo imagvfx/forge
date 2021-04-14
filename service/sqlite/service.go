@@ -88,3 +88,15 @@ func (s *Service) AddGroup(user string, g *service.Group) error {
 func (s *Service) UpdateGroup(user string, upd service.GroupUpdater) error {
 	return UpdateGroup(s.db, user, upd)
 }
+
+func (s *Service) FindGroupMembers(find service.MemberFinder) ([]*service.Member, error) {
+	return FindGroupMembers(s.db, find)
+}
+
+func (s *Service) AddGroupMember(user string, m *service.Member) error {
+	return AddGroupMember(s.db, user, m)
+}
+
+func (s *Service) DeleteGroupMember(user string, id int) error {
+	return DeleteGroupMember(s.db, user, id)
+}
