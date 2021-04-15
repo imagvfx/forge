@@ -58,27 +58,27 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 		path := r.URL.Path
-		ent, err := h.server.GetEntry(path)
+		ent, err := h.server.GetEntry(user, path)
 		if err != nil {
 			return err
 		}
-		subEnts, err := ent.SubEntries()
+		subEnts, err := h.server.SubEntries(user, path)
 		if err != nil {
 			return err
 		}
-		props, err := ent.Properties()
+		props, err := h.server.EntryProperties(user, path)
 		if err != nil {
 			return err
 		}
-		envs, err := ent.Environs()
+		envs, err := h.server.EntryEnvirons(user, path)
 		if err != nil {
 			return err
 		}
-		acs, err := ent.AccessControls()
+		acs, err := h.server.EntryAccessControls(user, path)
 		if err != nil {
 			return err
 		}
-		logs, err := ent.Logs()
+		logs, err := h.server.EntryLogs(user, path)
 		if err != nil {
 			return err
 		}

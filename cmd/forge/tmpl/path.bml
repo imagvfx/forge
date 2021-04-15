@@ -57,7 +57,7 @@
 					<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
 					<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
 					<input readonly name="back_to_referer" type="hidden" value="1"> []
-					{{if ne .Entry.Path $.Entry.Path}}inherited from '{{.Entry.Path}}'{{end}}
+					{{if ne .EntryPath $.Entry.Path}}inherited from '{{.EntryPath}}'{{end}}
 					<button type="submit"> [Set]
 				]
 			]
@@ -78,7 +78,7 @@
 		]
 		<div> [
 		{{range $env := $.Environs}}
-			{{$inherit := ne $env.Entry.Path $.Entry.Path}}
+			{{$inherit := ne $env.EntryPath $.Entry.Path}}
 			<form action="/api/{{if $inherit}}add{{else}}set{{end}}-environ" method="post"> [
 				<div> [
 					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -87,7 +87,7 @@
 					<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
 					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					{{if $inherit}}
-						inherited from '{{$env.Entry.Path}}' <button type="submit"> [Overwrite]
+						inherited from '{{$env.EntryPath}}' <button type="submit"> [Overwrite]
 					{{else}}
 						<button type="submit"> [Set]
 					{{end}}

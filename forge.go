@@ -35,26 +35,6 @@ func (e *Entry) Type() string {
 	return e.typ
 }
 
-func (e *Entry) SubEntries() ([]*Entry, error) {
-	return e.srv.subEntries(e.id)
-}
-
-func (e *Entry) Properties() ([]*Property, error) {
-	return e.srv.entryProperties(e.id)
-}
-
-func (e *Entry) Environs() ([]*Property, error) {
-	return e.srv.entryEnvirons(e.id)
-}
-
-func (e *Entry) AccessControls() ([]*AccessControl, error) {
-	return e.srv.entryAccessControls(e.id)
-}
-
-func (e *Entry) Logs() ([]*Log, error) {
-	return e.srv.entryLogs(e.id)
-}
-
 func (e *Entry) MarshalJSON() ([]byte, error) {
 	m := struct {
 		Path       string
@@ -76,8 +56,8 @@ type Property struct {
 	value     string
 }
 
-func (p *Property) Entry() (*Entry, error) {
-	return p.srv.getEntry(p.entryID)
+func (p *Property) EntryPath() string {
+	return p.entryPath
 }
 
 func (p *Property) Type() string {
