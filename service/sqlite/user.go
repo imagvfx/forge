@@ -157,5 +157,16 @@ func addUser(tx *sql.Tx, u *service.User) error {
 		return err
 	}
 	u.ID = int(id)
+	if u.ID == 1 {
+		// make the user admin
+		adminGroupID := 1
+		err = addGroupMember(tx, "system", &service.Member{
+			GroupID: adminGroupID,
+			UserID:  u.ID,
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
