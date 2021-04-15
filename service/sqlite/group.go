@@ -18,6 +18,9 @@ func createGroupsTable(tx *sql.Tx) error {
 	return err
 }
 
+// addAdminGroup adds 'admin' group to groups table.
+// Members of admin group are able to see/modify any entry.
+// The group isn't allowed to be renamed or deleted.
 func addAdminGroup(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO groups
