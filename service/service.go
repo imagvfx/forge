@@ -78,7 +78,6 @@ type AccessControl struct {
 	Accessor     string
 	AccessorType int
 	Mode         int
-	Members      []*User
 }
 
 type AccessControlFinder struct {

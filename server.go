@@ -368,10 +368,6 @@ func (s *Server) entryAccessControls(ent int) ([]*AccessControl, error) {
 			Accessor:     a.Accessor,
 			AccessorType: AccessorType(a.AccessorType),
 			Mode:         AccessMode(a.Mode),
-			Members:      make([]*User, 0, len(a.Members)),
-		}
-		for _, m := range a.Members {
-			ac.Members = append(ac.Members, &User{User: m.User, Name: m.Name})
 		}
 		acs = append(acs, ac)
 	}
@@ -393,7 +389,12 @@ func (s *Server) AddAccessControl(user, path string, accessor, accessor_type, mo
 			return err
 		}
 		ac.UserID = &u.ID
-	// TODO: case "group":
+	case "group":
+		g, err := s.GetGroup(accessor)
+		if err != nil {
+			return err
+		}
+		ac.GroupID = &g.ID
 	default:
 		return fmt.Errorf("unknown accessor type")
 	}

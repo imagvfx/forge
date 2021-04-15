@@ -248,7 +248,6 @@ type AccessControl struct {
 	Accessor     string
 	AccessorType AccessorType
 	Mode         AccessMode
-	Members      []*User
 }
 
 type Log struct {

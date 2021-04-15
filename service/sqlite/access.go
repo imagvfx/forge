@@ -17,10 +17,11 @@ func createAccessControlsTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER NOT NULL,
 			user_id INTEGER,
+			group_id INTEGER,
 			mode INTEGER NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			FOREIGN KEY (user_id) REFERENCES users (id),
-			UNIQUE (entry_id, user_id)
+			UNIQUE (entry_id, user_id, group_id)
 		)
 	`)
 	return err
@@ -84,6 +85,7 @@ func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*servic
 			id,
 			entry_id,
 			user_id,
+			group_id,
 			mode
 		FROM access_controls
 		`+where,
@@ -100,6 +102,7 @@ func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*servic
 			&a.ID,
 			&a.EntryID,
 			&a.UserID,
+			&a.GroupID,
 			&a.Mode,
 		)
 		if err != nil {
@@ -120,6 +123,7 @@ func getAccessControl(tx *sql.Tx, id int) (*service.AccessControl, error) {
 			id,
 			entry_id,
 			user_id,
+			group_id,
 			mode
 		FROM access_controls
 		WHERE id=?`,
@@ -137,6 +141,7 @@ func getAccessControl(tx *sql.Tx, id int) (*service.AccessControl, error) {
 		&a.ID,
 		&a.EntryID,
 		&a.UserID,
+		&a.GroupID,
 		&a.Mode,
 	)
 	if err != nil {
@@ -168,9 +173,13 @@ func attachAccessorInfo(tx *sql.Tx, a *service.AccessControl) error {
 		}
 		a.Accessor = u.User
 		a.AccessorType = 0 // user
-		a.Members = []*service.User{u}
 	} else {
-		return fmt.Errorf("group access not implemented yet")
+		g, err := getGroup(tx, *a.GroupID)
+		if err != nil {
+			return err
+		}
+		a.Accessor = g.Name
+		a.AccessorType = 1 // group
 	}
 	return nil
 }
@@ -197,12 +206,14 @@ func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
 		INSERT INTO access_controls (
 			entry_id,
 			user_id,
+			group_id,
 			mode
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		a.EntryID,
 		a.UserID,
+		a.GroupID,
 		a.Mode,
 	)
 	if err != nil {
