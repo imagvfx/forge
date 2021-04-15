@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -168,10 +169,19 @@ func DeleteGroupMember(db *sql.DB, user string, id int) error {
 }
 
 func deleteGroupMember(tx *sql.Tx, user string, id int) error {
-	// TODO: check the user is a member of admin group.
-	_, err := getGroupMember(tx, id)
+	m, err := getGroupMember(tx, id)
 	if err != nil {
 		return err
+	}
+	adminGroupID := 1
+	if m.GroupID == adminGroupID {
+		members, err := findGroupMembers(tx, service.MemberFinder{GroupID: &adminGroupID})
+		if err != nil {
+			return err
+		}
+		if len(members) == 1 {
+			return fmt.Errorf("need at least 1 admin")
+		}
 	}
 	_, err = tx.Exec(`
 		DELETE FROM group_members
