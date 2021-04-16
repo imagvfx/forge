@@ -25,17 +25,17 @@ func createLogsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindLogs(db *sql.DB, find service.LogFinder) ([]*service.Log, error) {
+func FindLogs(db *sql.DB, user string, find service.LogFinder) ([]*service.Log, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	_, err = getEntry(tx, find.EntryID)
+	_, err = getEntry(tx, user, find.EntryID)
 	if err != nil {
 		return nil, err
 	}
-	props, err := findLogs(tx, find)
+	props, err := findLogs(tx, user, find)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func FindLogs(db *sql.DB, find service.LogFinder) ([]*service.Log, error) {
 }
 
 // when id is empty, it will find logs of root.
-func findLogs(tx *sql.Tx, find service.LogFinder) ([]*service.Log, error) {
+func findLogs(tx *sql.Tx, user string, find service.LogFinder) ([]*service.Log, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")

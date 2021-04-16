@@ -27,7 +27,7 @@ func createAccessControlsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindAccessControls(db *sql.DB, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+func FindAccessControls(db *sql.DB, user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
@@ -35,11 +35,11 @@ func FindAccessControls(db *sql.DB, find service.AccessControlFinder) ([]*servic
 	defer tx.Rollback()
 	acm := make(map[string]*service.AccessControl)
 	for {
-		ent, err := getEntry(tx, find.EntryID)
+		ent, err := getEntry(tx, user, find.EntryID)
 		if err != nil {
 			return nil, err
 		}
-		as, err := findAccessControls(tx, find)
+		as, err := findAccessControls(tx, user, find)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +71,7 @@ func FindAccessControls(db *sql.DB, find service.AccessControlFinder) ([]*servic
 }
 
 // when id is empty, it will find access controls of root.
-func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -108,7 +108,7 @@ func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*servic
 		if err != nil {
 			return nil, err
 		}
-		err = attachAccessorInfo(tx, a)
+		err = attachAccessorInfo(tx, user, a)
 		if err != nil {
 			return nil, err
 		}
@@ -117,7 +117,61 @@ func findAccessControls(tx *sql.Tx, find service.AccessControlFinder) ([]*servic
 	return acss, nil
 }
 
-func getAccessControl(tx *sql.Tx, id int) (*service.AccessControl, error) {
+func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
+	u, err := getUserByUser(tx, user)
+	if err != nil {
+		return false, err
+	}
+	adminGroupID := 1
+	admins, err := findGroupMembers(tx, service.MemberFinder{GroupID: &adminGroupID})
+	for _, a := range admins {
+		if a.UserID == u.ID {
+			// admins can read any entry.
+			return true, nil
+		}
+	}
+	for {
+		as, err := findAccessControls(tx, user, service.AccessControlFinder{EntryID: entID})
+		if err != nil {
+			return false, err
+		}
+		// Lower entry has precedence to higher entry.
+		// In a same entry, user accessor has precedence to group accessor.
+		for _, a := range as {
+			if a.UserID == nil {
+				continue
+			}
+			if *a.UserID == u.ID {
+				return true, nil
+			}
+		}
+		for _, a := range as {
+			if a.GroupID == nil {
+				continue
+			}
+			members, err := findGroupMembers(tx, service.MemberFinder{GroupID: a.GroupID})
+			if err != nil {
+				return false, err
+			}
+			for _, m := range members {
+				if m.UserID == u.ID {
+					return true, nil
+				}
+			}
+		}
+		parentID, err := getEntryParent(tx, entID)
+		if err != nil {
+			return false, err
+		}
+		if parentID == nil {
+			break
+		}
+		entID = *parentID
+	}
+	return false, nil
+}
+
+func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, error) {
 	rows, err := tx.Query(`
 		SELECT
 			id,
@@ -147,19 +201,19 @@ func getAccessControl(tx *sql.Tx, id int) (*service.AccessControl, error) {
 	if err != nil {
 		return nil, err
 	}
-	ent, err := getEntry(tx, a.EntryID)
+	ent, err := getEntry(tx, user, a.EntryID)
 	if err != nil {
 		return nil, err
 	}
 	a.EntryPath = ent.Path
-	err = attachAccessorInfo(tx, a)
+	err = attachAccessorInfo(tx, user, a)
 	if err != nil {
 		return nil, err
 	}
 	return a, nil
 }
 
-func attachAccessorInfo(tx *sql.Tx, a *service.AccessControl) error {
+func attachAccessorInfo(tx *sql.Tx, user string, a *service.AccessControl) error {
 	if a.UserID != nil && a.GroupID != nil {
 		return fmt.Errorf("both user_id and group_id is defined")
 	}
@@ -224,7 +278,7 @@ func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
 		return err
 	}
 	a.ID = int(id)
-	err = attachAccessorInfo(tx, a)
+	err = attachAccessorInfo(tx, user, a)
 	if err != nil {
 		return err
 	}
@@ -261,11 +315,11 @@ func UpdateAccessControl(db *sql.DB, user string, upd service.AccessControlUpdat
 }
 
 func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdater) error {
-	a, err := getAccessControl(tx, upd.ID)
+	a, err := getAccessControl(tx, user, upd.ID)
 	if err != nil {
 		return err
 	}
-	err = attachAccessorInfo(tx, a)
+	err = attachAccessorInfo(tx, user, a)
 	if err != nil {
 		return err
 	}

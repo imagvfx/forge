@@ -36,13 +36,13 @@ func addRootEntry(tx *sql.Tx) error {
 	return nil
 }
 
-func FindEntries(db *sql.DB, find service.EntryFinder) ([]*service.Entry, error) {
+func FindEntries(db *sql.DB, user string, find service.EntryFinder) ([]*service.Entry, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ents, err := findEntries(tx, find)
+	ents, err := findEntries(tx, user, find)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func FindEntries(db *sql.DB, find service.EntryFinder) ([]*service.Entry, error)
 }
 
 // when id is empty, it will find entries of root.
-func findEntries(tx *sql.Tx, find service.EntryFinder) ([]*service.Entry, error) {
+func findEntries(tx *sql.Tx, user string, find service.EntryFinder) ([]*service.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -101,18 +101,49 @@ func findEntries(tx *sql.Tx, find service.EntryFinder) ([]*service.Entry, error)
 		if err != nil {
 			return nil, err
 		}
-		ents = append(ents, e)
+		canRead, err := userCanRead(tx, user, e.ID)
+		if err != nil {
+			return nil, err
+		}
+		if canRead {
+			ents = append(ents, e)
+		}
 	}
 	return ents, nil
 }
 
-func GetEntry(db *sql.DB, id int) (*service.Entry, error) {
+// getEntryParent get the entry's parent without checking user permission.
+// It shouldn't be used except permission checks.
+func getEntryParent(tx *sql.Tx, id int) (*int, error) {
+	rows, err := tx.Query(`
+		SELECT
+			parent_id
+		FROM entries
+		WHERE id=?
+	`,
+		id,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, fmt.Errorf("entry not found: %v", id)
+	}
+	var parentID *int
+	err = rows.Scan(
+		&parentID,
+	)
+	return parentID, nil
+}
+
+func GetEntry(db *sql.DB, user string, id int) (*service.Entry, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntry(tx, id)
+	ent, err := getEntry(tx, user, id)
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +154,8 @@ func GetEntry(db *sql.DB, id int) (*service.Entry, error) {
 	return ent, nil
 }
 
-func getEntry(tx *sql.Tx, id int) (*service.Entry, error) {
-	ents, err := findEntries(tx, service.EntryFinder{ID: &id})
+func getEntry(tx *sql.Tx, user string, id int) (*service.Entry, error) {
+	ents, err := findEntries(tx, user, service.EntryFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}

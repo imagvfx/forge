@@ -24,17 +24,17 @@ func createPropertiesTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindProperties(db *sql.DB, find service.PropertyFinder) ([]*service.Property, error) {
+func FindProperties(db *sql.DB, user string, find service.PropertyFinder) ([]*service.Property, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntry(tx, find.EntryID)
+	ent, err := getEntry(tx, user, find.EntryID)
 	if err != nil {
 		return nil, err
 	}
-	props, err := findProperties(tx, find)
+	props, err := findProperties(tx, user, find)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func FindProperties(db *sql.DB, find service.PropertyFinder) ([]*service.Propert
 }
 
 // when id is empty, it will find properties of root.
-func findProperties(tx *sql.Tx, find service.PropertyFinder) ([]*service.Property, error) {
+func findProperties(tx *sql.Tx, user string, find service.PropertyFinder) ([]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -98,7 +98,7 @@ func findProperties(tx *sql.Tx, find service.PropertyFinder) ([]*service.Propert
 	return props, nil
 }
 
-func getProperty(tx *sql.Tx, id int) (*service.Property, error) {
+func getProperty(tx *sql.Tx, user string, id int) (*service.Property, error) {
 	rows, err := tx.Query(`
 		SELECT
 			id,
@@ -204,7 +204,7 @@ func UpdateProperty(db *sql.DB, user string, upd service.PropertyUpdater) error 
 }
 
 func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
-	p, err := getProperty(tx, upd.ID)
+	p, err := getProperty(tx, user, upd.ID)
 	if err != nil {
 		return err
 	}

@@ -17,20 +17,20 @@ func NewService(db *sql.DB) *Service {
 	return s
 }
 
-func (s *Service) FindEntries(find service.EntryFinder) ([]*service.Entry, error) {
-	return FindEntries(s.db, find)
+func (s *Service) FindEntries(user string, find service.EntryFinder) ([]*service.Entry, error) {
+	return FindEntries(s.db, user, find)
 }
 
-func (s *Service) GetEntry(id int) (*service.Entry, error) {
-	return GetEntry(s.db, id)
+func (s *Service) GetEntry(user string, id int) (*service.Entry, error) {
+	return GetEntry(s.db, user, id)
 }
 
 func (s *Service) AddEntry(user string, ent *service.Entry, props []*service.Property, env []*service.Property) error {
 	return AddEntry(s.db, user, ent, props, env)
 }
 
-func (s *Service) FindProperties(find service.PropertyFinder) ([]*service.Property, error) {
-	return FindProperties(s.db, find)
+func (s *Service) FindProperties(user string, find service.PropertyFinder) ([]*service.Property, error) {
+	return FindProperties(s.db, user, find)
 }
 
 func (s *Service) AddProperty(user string, ent *service.Property) error {
@@ -41,8 +41,8 @@ func (s *Service) UpdateProperty(user string, upd service.PropertyUpdater) error
 	return UpdateProperty(s.db, user, upd)
 }
 
-func (s *Service) FindEnvirons(find service.PropertyFinder) ([]*service.Property, error) {
-	return FindEnvirons(s.db, find)
+func (s *Service) FindEnvirons(user string, find service.PropertyFinder) ([]*service.Property, error) {
+	return FindEnvirons(s.db, user, find)
 }
 
 func (s *Service) AddEnviron(user string, ent *service.Property) error {
@@ -53,8 +53,8 @@ func (s *Service) UpdateEnviron(user string, upd service.PropertyUpdater) error 
 	return UpdateEnviron(s.db, user, upd)
 }
 
-func (s Service) FindAccessControls(find service.AccessControlFinder) ([]*service.AccessControl, error) {
-	return FindAccessControls(s.db, find)
+func (s Service) FindAccessControls(user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+	return FindAccessControls(s.db, user, find)
 }
 
 func (s Service) AddAccessControl(user string, a *service.AccessControl) error {
@@ -65,8 +65,8 @@ func (s Service) UpdateAccessControl(user string, upd service.AccessControlUpdat
 	return UpdateAccessControl(s.db, user, upd)
 }
 
-func (s *Service) FindLogs(find service.LogFinder) ([]*service.Log, error) {
-	return FindLogs(s.db, find)
+func (s *Service) FindLogs(user string, find service.LogFinder) ([]*service.Log, error) {
+	return FindLogs(s.db, user, find)
 }
 
 func (s *Service) AddUser(u *service.User) error {

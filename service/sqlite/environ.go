@@ -24,7 +24,7 @@ func createEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindEnvirons(db *sql.DB, find service.PropertyFinder) ([]*service.Property, error) {
+func FindEnvirons(db *sql.DB, user string, find service.PropertyFinder) ([]*service.Property, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
@@ -32,11 +32,11 @@ func FindEnvirons(db *sql.DB, find service.PropertyFinder) ([]*service.Property,
 	defer tx.Rollback()
 	envmap := make(map[string]*service.Property)
 	for {
-		ent, err := getEntry(tx, find.EntryID)
+		ent, err := getEntry(tx, user, find.EntryID)
 		if err != nil {
 			return nil, err
 		}
-		emap, err := findEnvirons(tx, find)
+		emap, err := findEnvirons(tx, user, find)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +67,7 @@ func FindEnvirons(db *sql.DB, find service.PropertyFinder) ([]*service.Property,
 
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
-func findEnvirons(tx *sql.Tx, find service.PropertyFinder) (map[string]*service.Property, error) {
+func findEnvirons(tx *sql.Tx, user string, find service.PropertyFinder) (map[string]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -113,7 +113,7 @@ func findEnvirons(tx *sql.Tx, find service.PropertyFinder) (map[string]*service.
 	return envmap, nil
 }
 
-func getEnviron(tx *sql.Tx, id int) (*service.Property, error) {
+func getEnviron(tx *sql.Tx, user string, id int) (*service.Property, error) {
 	rows, err := tx.Query(`
 		SELECT
 			id,
@@ -219,7 +219,7 @@ func UpdateEnviron(db *sql.DB, user string, upd service.PropertyUpdater) error {
 }
 
 func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
-	e, err := getEnviron(tx, upd.ID)
+	e, err := getEnviron(tx, user, upd.ID)
 	if err != nil {
 		return err
 	}

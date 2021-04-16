@@ -25,7 +25,7 @@ func (s *Server) GetEntry(user, path string) (*Entry, error) {
 	if path == "" {
 		return nil, fmt.Errorf("path emtpy")
 	}
-	es, err := s.svc.FindEntries(service.EntryFinder{
+	es, err := s.svc.FindEntries(user, service.EntryFinder{
 		Path: path,
 	})
 	if err != nil {
@@ -53,7 +53,7 @@ func (s *Server) GetEntry(user, path string) (*Entry, error) {
 }
 
 func (s *Server) getEntry(user string, id int) (*Entry, error) {
-	e, err := s.svc.GetEntry(id)
+	e, err := s.svc.GetEntry(user, id)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (s *Server) SubEntries(user string, path string) ([]*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	es, err := s.svc.FindEntries(service.EntryFinder{
+	es, err := s.svc.FindEntries(user, service.EntryFinder{
 		ParentID: &ent.id,
 	})
 	if err != nil {
@@ -165,7 +165,7 @@ func (s *Server) EntryProperties(user, path string) ([]*Property, error) {
 	if err != nil {
 		return nil, err
 	}
-	ps, err := s.svc.FindProperties(service.PropertyFinder{
+	ps, err := s.svc.FindProperties(user, service.PropertyFinder{
 		EntryID: ent.id,
 	})
 	if err != nil {
@@ -188,7 +188,7 @@ func (s *Server) EntryProperties(user, path string) ([]*Property, error) {
 }
 
 func (s *Server) getProperty(user string, ent int, name string) (*Property, error) {
-	ps, err := s.svc.FindProperties(service.PropertyFinder{
+	ps, err := s.svc.FindProperties(user, service.PropertyFinder{
 		EntryID: ent,
 		Name:    &name,
 	})
@@ -267,7 +267,7 @@ func (s *Server) EntryEnvirons(user, path string) ([]*Property, error) {
 	if err != nil {
 		return nil, err
 	}
-	ps, err := s.svc.FindEnvirons(service.PropertyFinder{
+	ps, err := s.svc.FindEnvirons(user, service.PropertyFinder{
 		EntryID: ent.id,
 	})
 	if err != nil {
@@ -290,7 +290,7 @@ func (s *Server) EntryEnvirons(user, path string) ([]*Property, error) {
 }
 
 func (s *Server) getEnviron(user string, ent int, name string) (*Property, error) {
-	es, err := s.svc.FindEnvirons(service.PropertyFinder{
+	es, err := s.svc.FindEnvirons(user, service.PropertyFinder{
 		EntryID: ent,
 		Name:    &name,
 	})
@@ -369,7 +369,7 @@ func (s *Server) EntryAccessControls(user, path string) ([]*AccessControl, error
 	if err != nil {
 		return nil, err
 	}
-	as, err := s.svc.FindAccessControls(service.AccessControlFinder{
+	as, err := s.svc.FindAccessControls(user, service.AccessControlFinder{
 		EntryID: ent.id,
 	})
 	if err != nil {
@@ -459,7 +459,7 @@ func (s *Server) EntryLogs(user, path string) ([]*Log, error) {
 	if err != nil {
 		return nil, err
 	}
-	ls, err := s.svc.FindLogs(service.LogFinder{
+	ls, err := s.svc.FindLogs(user, service.LogFinder{
 		EntryID: ent.id,
 	})
 	if err != nil {

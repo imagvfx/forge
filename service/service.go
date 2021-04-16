@@ -5,19 +5,19 @@ import (
 )
 
 type Service interface {
-	FindEntries(EntryFinder) ([]*Entry, error)
-	GetEntry(int) (*Entry, error)
+	FindEntries(string, EntryFinder) ([]*Entry, error)
+	GetEntry(string, int) (*Entry, error)
 	AddEntry(string, *Entry, []*Property, []*Property) error
-	FindProperties(PropertyFinder) ([]*Property, error)
+	FindProperties(string, PropertyFinder) ([]*Property, error)
 	AddProperty(string, *Property) error
 	UpdateProperty(string, PropertyUpdater) error
-	FindEnvirons(PropertyFinder) ([]*Property, error)
+	FindEnvirons(string, PropertyFinder) ([]*Property, error)
 	AddEnviron(string, *Property) error
 	UpdateEnviron(string, PropertyUpdater) error
-	FindAccessControls(AccessControlFinder) ([]*AccessControl, error)
+	FindAccessControls(string, AccessControlFinder) ([]*AccessControl, error)
 	AddAccessControl(string, *AccessControl) error
 	UpdateAccessControl(string, AccessControlUpdater) error
-	FindLogs(LogFinder) ([]*Log, error)
+	FindLogs(string, LogFinder) ([]*Log, error)
 	AddUser(*User) error
 	GetUserByUser(string) (*User, error)
 	FindGroups(GroupFinder) ([]*Group, error)
