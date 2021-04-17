@@ -215,11 +215,11 @@ func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, 
 	if err != nil {
 		return nil, err
 	}
-	ent, err := getEntry(tx, user, a.EntryID)
+	path, err := getEntryPath(tx, a.EntryID)
 	if err != nil {
 		return nil, err
 	}
-	a.EntryPath = ent.Path
+	a.EntryPath = path
 	err = attachAccessorInfo(tx, user, a)
 	if err != nil {
 		return nil, err
