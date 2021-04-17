@@ -82,12 +82,15 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 	}
 	rows, err := tx.Query(`
 		SELECT
-			id,
-			entry_id,
-			user_id,
-			group_id,
-			mode
+			access_controls.id,
+			access_controls.entry_id,
+			entries.path,
+			access_controls.user_id,
+			access_controls.group_id,
+			access_controls.mode
 		FROM access_controls
+		LEFT JOIN entries
+		ON access_controls.entry_id = entries.id
 		`+where,
 		vals...,
 	)
@@ -101,6 +104,7 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryID,
+			&a.EntryPath,
 			&a.UserID,
 			&a.GroupID,
 			&a.Mode,
