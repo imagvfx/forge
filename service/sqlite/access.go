@@ -189,6 +189,9 @@ func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessContr
 	return nil, nil
 }
 
+// getAccessControl finds and returns AccessControl by it's id.
+// The reason it doesn't use findAccessConrtol is the function is entry based.
+// I might refactor it.
 func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, error) {
 	rows, err := tx.Query(`
 		SELECT
