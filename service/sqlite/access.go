@@ -118,22 +118,36 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 }
 
 func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
-	u, err := getUserByUser(tx, user)
+	_, err := userAccessControl(tx, user, entID)
 	if err != nil {
 		return false, err
 	}
+	return true, nil
+}
+
+// userAccessControl returns the user's access control for an entry.
+// It checks the parents recursively as access control inherits.
+func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessControl, error) {
+	u, err := getUserByUser(tx, user)
+	if err != nil {
+		return nil, err
+	}
 	adminGroupID := 1
 	admins, err := findGroupMembers(tx, service.MemberFinder{GroupID: &adminGroupID})
-	for _, a := range admins {
-		if a.UserID == u.ID {
+	for _, admin := range admins {
+		if admin.UserID == u.ID {
 			// admins can read any entry.
-			return true, nil
+			a, err := getAccessControl(tx, user, adminGroupID)
+			if err != nil {
+				return nil, err
+			}
+			return a, nil
 		}
 	}
 	for {
 		as, err := findAccessControls(tx, user, service.AccessControlFinder{EntryID: entID})
 		if err != nil {
-			return false, err
+			return nil, err
 		}
 		// Lower entry has precedence to higher entry.
 		// In a same entry, user accessor has precedence to group accessor.
@@ -142,7 +156,7 @@ func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
 				continue
 			}
 			if *a.UserID == u.ID {
-				return true, nil
+				return a, nil
 			}
 		}
 		for _, a := range as {
@@ -151,24 +165,24 @@ func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
 			}
 			members, err := findGroupMembers(tx, service.MemberFinder{GroupID: a.GroupID})
 			if err != nil {
-				return false, err
+				return nil, err
 			}
 			for _, m := range members {
 				if m.UserID == u.ID {
-					return true, nil
+					return a, nil
 				}
 			}
 		}
 		parentID, err := getEntryParent(tx, entID)
 		if err != nil {
-			return false, err
+			return nil, err
 		}
 		if parentID == nil {
 			break
 		}
 		entID = *parentID
 	}
-	return false, nil
+	return nil, nil
 }
 
 func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, error) {
