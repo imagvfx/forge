@@ -149,6 +149,13 @@ func AddProperty(db *sql.DB, user string, p *service.Property) error {
 }
 
 func addProperty(tx *sql.Tx, user string, p *service.Property) error {
+	ok, err := userCanWrite(tx, user, p.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
 	result, err := tx.Exec(`
 		INSERT INTO properties (
 			entry_id,
@@ -207,6 +214,13 @@ func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error 
 	p, err := getProperty(tx, user, upd.ID)
 	if err != nil {
 		return err
+	}
+	ok, err := userCanWrite(tx, user, p.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)

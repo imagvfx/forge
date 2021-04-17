@@ -197,6 +197,16 @@ func AddEntry(db *sql.DB, user string, e *service.Entry, props []*service.Proper
 }
 
 func addEntry(tx *sql.Tx, user string, e *service.Entry) error {
+	if e.ParentID == nil {
+		fmt.Errorf("parent id unspecified")
+	}
+	ok, err := userCanWrite(tx, user, *e.ParentID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
 	result, err := tx.Exec(`
 		INSERT INTO entries (
 			parent_id,

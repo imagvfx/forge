@@ -129,6 +129,18 @@ func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
 	return true, nil
 }
 
+func userCanWrite(tx *sql.Tx, user string, entID int) (bool, error) {
+	a, err := userAccessControl(tx, user, entID)
+	if err != nil {
+		return false, err
+	}
+	if a.Mode == 0 {
+		// read mode
+		return false, nil
+	}
+	return true, nil
+}
+
 // userAccessControl returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
 func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessControl, error) {
@@ -276,6 +288,13 @@ func AddAccessControl(db *sql.DB, user string, a *service.AccessControl) error {
 }
 
 func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
+	ok, err := userCanWrite(tx, user, a.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
 	result, err := tx.Exec(`
 		INSERT INTO access_controls (
 			entry_id,
@@ -342,6 +361,13 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 	err = attachAccessorInfo(tx, user, a)
 	if err != nil {
 		return err
+	}
+	ok, err := userCanWrite(tx, user, a.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)

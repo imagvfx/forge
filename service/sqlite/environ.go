@@ -164,6 +164,13 @@ func AddEnviron(db *sql.DB, user string, e *service.Property) error {
 }
 
 func addEnviron(tx *sql.Tx, user string, e *service.Property) error {
+	ok, err := userCanWrite(tx, user, e.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
 	result, err := tx.Exec(`
 		INSERT INTO environs (
 			entry_id,
@@ -222,6 +229,13 @@ func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 	e, err := getEnviron(tx, user, upd.ID)
 	if err != nil {
 		return err
+	}
+	ok, err := userCanWrite(tx, user, e.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
