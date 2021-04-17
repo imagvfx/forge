@@ -122,28 +122,34 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 }
 
 func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
-	_, err := userAccessControl(tx, user, entID)
+	mode, err := userAccessMode(tx, user, entID)
 	if err != nil {
 		return false, err
+	}
+	if mode == nil {
+		return false, nil
 	}
 	return true, nil
 }
 
 func userCanWrite(tx *sql.Tx, user string, entID int) (bool, error) {
-	a, err := userAccessControl(tx, user, entID)
+	mode, err := userAccessMode(tx, user, entID)
 	if err != nil {
 		return false, err
 	}
-	if a.Mode == 0 {
+	if mode == nil {
+		return false, nil
+	}
+	if *mode == 0 {
 		// read mode
 		return false, nil
 	}
 	return true, nil
 }
 
-// userAccessControl returns the user's access control for an entry.
+// userAccessMode returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
-func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessControl, error) {
+func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
 	u, err := getUserByUser(tx, user)
 	if err != nil {
 		return nil, err
@@ -153,11 +159,8 @@ func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessContr
 	for _, admin := range admins {
 		if admin.UserID == u.ID {
 			// admins can read any entry.
-			a, err := getAccessControl(tx, user, adminGroupID)
-			if err != nil {
-				return nil, err
-			}
-			return a, nil
+			rwMode := 1
+			return &rwMode, nil
 		}
 	}
 	for {
@@ -172,7 +175,7 @@ func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessContr
 				continue
 			}
 			if *a.UserID == u.ID {
-				return a, nil
+				return &a.Mode, nil
 			}
 		}
 		for _, a := range as {
@@ -185,7 +188,7 @@ func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessContr
 			}
 			for _, m := range members {
 				if m.UserID == u.ID {
-					return a, nil
+					return &a.Mode, nil
 				}
 			}
 		}
