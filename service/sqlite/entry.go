@@ -137,31 +137,6 @@ func getEntryParent(tx *sql.Tx, id int) (*int, error) {
 	return parentID, nil
 }
 
-// getEntryPath gets the entry's path without checking user permission.
-// It should be only used to attach entry path to a access control.
-func getEntryPath(tx *sql.Tx, id int) (string, error) {
-	rows, err := tx.Query(`
-		SELECT
-			path
-		FROM entries
-		WHERE id=?
-	`,
-		id,
-	)
-	if err != nil {
-		return "", err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return "", fmt.Errorf("entry not found: %v", id)
-	}
-	var path string
-	err = rows.Scan(
-		&path,
-	)
-	return path, nil
-}
-
 func GetEntry(db *sql.DB, user string, id int) (*service.Entry, error) {
 	tx, err := db.Begin()
 	if err != nil {

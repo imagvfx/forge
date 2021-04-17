@@ -188,13 +188,16 @@ func userAccessControl(tx *sql.Tx, user string, entID int) (*service.AccessContr
 func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, error) {
 	rows, err := tx.Query(`
 		SELECT
-			id,
-			entry_id,
-			user_id,
-			group_id,
-			mode
+			access_controls.id,
+			access_controls.entry_id,
+			entries.path,
+			access_controls.user_id,
+			access_controls.group_id,
+			access_controls.mode
 		FROM access_controls
-		WHERE id=?`,
+		LEFT JOIN entries
+		ON access_controls.entry_id = entries.id
+		WHERE access_controls.id=?`,
 		id,
 	)
 	if err != nil {
@@ -208,6 +211,7 @@ func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, 
 	err = rows.Scan(
 		&a.ID,
 		&a.EntryID,
+		&a.EntryPath,
 		&a.UserID,
 		&a.GroupID,
 		&a.Mode,
@@ -215,11 +219,6 @@ func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, 
 	if err != nil {
 		return nil, err
 	}
-	path, err := getEntryPath(tx, a.EntryID)
-	if err != nil {
-		return nil, err
-	}
-	a.EntryPath = path
 	err = attachAccessorInfo(tx, user, a)
 	if err != nil {
 		return nil, err
