@@ -25,6 +25,13 @@ func (s *Service) GetEntry(user string, id int) (*service.Entry, error) {
 	return GetEntry(s.db, user, id)
 }
 
+// UserCanWriteEntry checks that a user can write to a entry.
+// Usually other service methods check it internally.
+// So use it only when the operation is performed outside of this service.
+func (s *Service) UserCanWriteEntry(user string, id int) (bool, error) {
+	return UserCanWriteEntry(s.db, user, id)
+}
+
 func (s *Service) AddEntry(user string, ent *service.Entry, props []*service.Property, env []*service.Property) error {
 	return AddEntry(s.db, user, ent, props, env)
 }

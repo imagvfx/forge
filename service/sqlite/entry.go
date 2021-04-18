@@ -165,6 +165,23 @@ func getEntry(tx *sql.Tx, user string, id int) (*service.Entry, error) {
 	return ents[0], nil
 }
 
+func UserCanWriteEntry(db *sql.DB, user string, id int) (bool, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	ok, err := userCanWrite(tx, user, id)
+	if err != nil {
+		return false, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+	return ok, nil
+}
+
 func AddEntry(db *sql.DB, user string, e *service.Entry, props []*service.Property, envs []*service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {

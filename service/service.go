@@ -7,6 +7,7 @@ import (
 type Service interface {
 	FindEntries(string, EntryFinder) ([]*Entry, error)
 	GetEntry(string, int) (*Entry, error)
+	UserCanWriteEntry(string, int) (bool, error)
 	AddEntry(string, *Entry, []*Property, []*Property) error
 	FindProperties(string, PropertyFinder) ([]*Property, error)
 	AddProperty(string, *Property) error
