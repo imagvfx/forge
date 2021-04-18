@@ -117,15 +117,15 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 
 func LoadConfig(configDir string) (*Config, error) {
 	c := NewConfig()
-	cfgFile := filepath.Join(configDir, "struct.toml")
-	structToml, err := toml.LoadFile(cfgFile)
+	structToml := filepath.Join(configDir, "struct.toml")
+	structConfig, err := toml.LoadFile(structToml)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load %v: %v", cfgFile, err)
+		return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
 	}
-	for _, k := range structToml.Keys() {
-		s, err := getEntryStruct(structToml, k)
+	for _, k := range structConfig.Keys() {
+		s, err := getEntryStruct(structConfig, k)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load %v: %v", cfgFile, err)
+			return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
 		}
 		c.Struct[s.Type] = s
 	}
