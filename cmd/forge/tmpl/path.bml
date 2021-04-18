@@ -12,6 +12,16 @@
 		<h1> [
 			{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
 		]
+		<div> [
+			<img src="/thumbnail{{$.Entry.Path}}" height="120" width="180" alt=""> []
+			<form action="/api/add-thumbnail" method="post" enctype="multipart/form-data"> [
+				<div> [
+					<input name="file" type="file" accept="image/png, image/jpeg"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Upload]
+				]
+			]
+		]
 		<h4> [
 			Sub Entry
 			{{if $.SubEntryTypes}}

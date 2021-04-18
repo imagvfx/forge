@@ -9,6 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"image"
+	_ "image/jpeg"
+	"image/png"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -103,6 +106,40 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Logs:           logs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
+func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if !strings.HasPrefix(r.URL.Path, "/thumbnail/") {
+			return fmt.Errorf("invalid thumbnail path")
+		}
+		path := strings.TrimPrefix(r.URL.Path, "/thumbnail")
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		if user == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
+		}
+		img, err := h.server.GetThumbnail(user, path)
+		if err != nil {
+			return err
+		}
+		if img == nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return nil
+		}
+		w.Header().Set("Content-Type", "image/png")
+		err = png.Encode(w, img)
 		if err != nil {
 			return err
 		}
@@ -596,6 +633,43 @@ func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Requ
 		user := session["user"]
 		id := r.FormValue("id")
 		err = h.server.DeleteGroupMember(user, id)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		path := r.FormValue("path")
+		KiB := int64(1 << 10)
+		r.ParseMultipartForm(500 * KiB) // 500KiB thumbnail is maximum
+		file, _, err := r.FormFile("file")
+		if err != nil {
+			return err
+		}
+		img, _, err := image.Decode(file)
+		if err != nil {
+			return err
+		}
+		err = h.server.AddThumbnail(user, path, img)
 		if err != nil {
 			return err
 		}
