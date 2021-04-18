@@ -9,7 +9,8 @@ import (
 )
 
 type Config struct {
-	Struct StructConfig
+	UserdataRoot string
+	Struct       StructConfig
 }
 
 func NewConfig() *Config {
@@ -117,6 +118,16 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 
 func LoadConfig(configDir string) (*Config, error) {
 	c := NewConfig()
+	forgeToml := filepath.Join(configDir, "forge.toml")
+	forgeConfig, err := toml.LoadFile(forgeToml)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load %v: %v", forgeToml, err)
+	}
+	userdataRoot, ok := forgeConfig.Get("userdata_root").(string)
+	if !ok {
+		return nil, fmt.Errorf("%v: cannot convert userdata_root value as string", forgeToml)
+	}
+	c.UserdataRoot = userdataRoot
 	structToml := filepath.Join(configDir, "struct.toml")
 	structConfig, err := toml.LoadFile(structToml)
 	if err != nil {

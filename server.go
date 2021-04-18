@@ -1,7 +1,11 @@
 package forge
 
 import (
+	"errors"
 	"fmt"
+	"image"
+	"image/png"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -616,6 +620,72 @@ func (s *Server) DeleteGroupMember(user string, memberID string) error {
 	err = s.svc.DeleteGroupMember(user, id)
 	if err != nil {
 		err = fromServiceError(err)
+		return err
+	}
+	return nil
+}
+
+// GetThumbnail gets a thumbnail image of a entry.
+func (s *Server) GetThumbnail(user string, path string) (image.Image, error) {
+	// check the user has read permission to the path by reading it.
+	ents, err := s.svc.FindEntries(user, service.EntryFinder{
+		Path: path,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(ents) == 0 {
+		// maybe because of permission, maybe not exists.
+		return nil, fmt.Errorf("entry not found")
+	}
+	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
+	thumbnailDir := filepath.Join(thumbnailRoot, path)
+	f, err := os.Open(filepath.Join(thumbnailDir, "thumbnail.png"))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	img, err := png.Decode(f)
+	if err != nil {
+		return nil, err
+	}
+	return img, nil
+}
+
+// AddThumbnail adds a thumbnail image to a entry.
+func (s *Server) AddThumbnail(user string, path string, thumb image.Image) error {
+	ents, err := s.svc.FindEntries(user, service.EntryFinder{
+		Path: path,
+	})
+	if err != nil {
+		return err
+	}
+	if len(ents) == 0 {
+		// maybe because of permission, maybe not exists.
+		return fmt.Errorf("entry not found")
+	}
+	ent := ents[0]
+	ok, err := s.svc.UserCanWriteEntry(user, ent.ID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user doesn't have permission to write the entry")
+	}
+	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
+	thumbnailDir := filepath.Join(thumbnailRoot, path)
+	err = os.MkdirAll(thumbnailDir, 0755)
+	if err != nil {
+		return err
+	}
+	f, err := os.Create(filepath.Join(thumbnailDir, "thumbnail.png"))
+	if err != nil {
+		return err
+	}
+	err = png.Encode(f, thumb)
+	if err != nil {
 		return err
 	}
 	return nil

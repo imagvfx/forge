@@ -2,3 +2,4 @@ cmd/forge/forge
 *.db*
 *.pem
 cookie.*
+userdata/
