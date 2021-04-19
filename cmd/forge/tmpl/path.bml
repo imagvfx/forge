@@ -10,21 +10,6 @@
 				]
 				<h4> [
 					Sub Entry
-					{{if $.SubEntryTypes}}
-					<form action="/api/add-entry" method="post"> [
-						<div> [
-							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="path" type="text" value=""> []
-							<select name="type" value=""> [
-							{{range $t := $.SubEntryTypes}}
-								<option value={{$t}}> [{{$t}}]
-							{{end}}
-							]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
-					{{end}}
 				]
 				<div> [
 				{{range $.SubEntries}}
@@ -32,7 +17,7 @@
 				{{end}}
 				]
 			]
-			<div name="right" style="min-width:300"> [
+			<div name="right" style="width:600px"> [
 				<h4> [
 					<div style="display:flex"> [
 						<a href="?"> [View]
@@ -42,105 +27,32 @@
 				]
 				<h4> [
 					<img src="/thumbnail{{$.Entry.Path}}" height="120" width="180" alt="" style="border:1px solid #AAAAAA"> []
-					<form action="/api/add-thumbnail" method="post" enctype="multipart/form-data"> [
-						<div> [
-							<input name="file" type="file" accept="image/png, image/jpeg"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Upload]
-						]
-					]
 				]
 				<div style="height:1px"> []
 				<h4> [
 					Property
-					<form action="/api/add-property" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="name" type="text" value="" placeholder="name"> []
-							<input name="type" type="text" value="" placeholder="type"> []
-							<input name="value" type="text" value="" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
 				]
 				<div> [
-				{{range $.Properties}}
-					<form action="/api/set-property" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
-							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
-							<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							{{if ne .EntryPath $.Entry.Path}}inherited from '{{.EntryPath}}'{{end}}
-							<button type="submit"> [Set]
-						]
-					]
+				{{range $p := $.Properties}}
+					<div> [{{$p.Name}} {{$p.Type}}{{if $p.Value}} = {{$p.Value}}{{end}}]
 				{{end}}
 				]
 				<h4> [
 					Environ
-					<form action="/api/add-environ" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="name" type="text" value="" placeholder="name"> []
-							<input name="type" type="text" value="" placeholder="type"> []
-							<input name="value" type="text" value="" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
 				]
 				<div> [
-				{{range $env := $.Environs}}
-					{{$inherit := ne $env.EntryPath $.Entry.Path}}
-					<form action="/api/{{if $inherit}}add{{else}}set{{end}}-environ" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
-							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
-							<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							{{if $inherit}}
-								inherited from '{{$env.EntryPath}}' <button type="submit"> [Overwrite]
-							{{else}}
-								<button type="submit"> [Set]
-							{{end}}
-						]
-					]
+				{{range $e := $.Environs}}
+					{{$inherit := ne $e.EntryPath $.Entry.Path}}
+					<div> [{{$e.Name}} {{$e.Type}}{{if $e.Value}} = {{$e.Value}}{{end}}{{if $inherit}} from '{{$e.EntryPath}}'{{end}}]
 				{{end}}
 				]
 				<h4> [
 					Access Control
-					<form action="/api/add-access-control" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="accessor" type="text" value="" placeholder="accessor"> []
-							<input name="accessor_type" type="text" value="" placeholder="accessor type"> []
-							<input name="mode" type="text" value="" placeholder="r, rw"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
 				]
 				<div> [
-				{{range $ac := $.AccessControls}}
-					{{$inherit := ne $ac.EntryPath $.Entry.Path}}
-					<form action="/api/set-access-control" method="post"> [
-						<div> [
-							<input readonly name="id" type="hidden" value="{{$ac.ID}}"> []
-							<input readonly name="accessor" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
-							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type"> []
-							<input name="mode" type="text" value="{{$ac.Mode}}" placeholder="r, rw"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							{{if $inherit}}
-								inherited from '{{$ac.EntryPath}}'
-							{{else}}
-								<button type="submit"> [Set]
-							{{end}}
-						]
-					]
+				{{range $a := $.AccessControls}}
+					{{$inherit := ne $a.EntryPath $.Entry.Path}}
+					<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}}{{if $inherit}} from '{{$a.EntryPath}}'{{end}}]
 				{{end}}
 				]
 				<h4> [

@@ -32,7 +32,7 @@
 				{{end}}
 				]
 			]
-			<div name="right" style="min-width:300"> [
+			<div name="right" style="width:600px"> [
 				<h4> [
 					<div style="display:flex"> [
 						<a href="?"> [View]
