@@ -1,0 +1,19 @@
+<!doctype html>
+<html> [
+	<head> []
+	<body> [
+		{{template "nav" $}}
+		<h1> [
+			{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
+		]
+		<h4> [
+			Log
+		]
+		<div> [
+		{{range $log := $.Logs}}
+			<div> [{{$log}}]
+		{{end}}
+		]
+	]
+]
+

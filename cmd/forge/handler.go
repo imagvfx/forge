@@ -50,6 +50,12 @@ func handleError(w http.ResponseWriter, err error) {
 }
 
 func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	tab := r.FormValue("tab")
+	switch tab {
+	case "logs":
+		h.HandleEntryLogs(w, r)
+		return
+	}
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
@@ -81,10 +87,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		logs, err := h.server.EntryLogs(user, path)
-		if err != nil {
-			return err
-		}
 		subtyps := h.cfg.Struct[ent.Type()].SubEntryTypes
 		recipe := struct {
 			User           string
@@ -94,7 +96,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Environs       []*forge.Property
 			SubEntryTypes  []string
 			AccessControls []*forge.AccessControl
-			Logs           []*forge.Log
 		}{
 			User:           user,
 			Entry:          ent,
@@ -103,9 +104,46 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Environs:       envs,
 			SubEntryTypes:  subtyps,
 			AccessControls: acs,
-			Logs:           logs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
+func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		if user == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+		path := r.URL.Path
+		ent, err := h.server.GetEntry(user, path)
+		if err != nil {
+			return err
+		}
+		logs, err := h.server.EntryLogs(user, path)
+		if err != nil {
+			return err
+		}
+		recipe := struct {
+			User  string
+			Entry *forge.Entry
+			Logs  []*forge.Log
+		}{
+			User:  user,
+			Entry: ent,
+			Logs:  logs,
+		}
+		err = Tmpl.ExecuteTemplate(w, "logs.bml", recipe)
 		if err != nil {
 			return err
 		}
