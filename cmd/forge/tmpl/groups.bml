@@ -2,13 +2,7 @@
 <html> [
 	<head> []
 	<body> [
-		<div style="display:flex;justify-content:space-between"> [
-			<div> [
-				<a href="/"> [forge]
-				| <a href="/groups"> [groups]
-			]
-			<div> [{{$.User}} (<a href="/logout"> [logout])]
-		]
+		{{template "nav" $}}
 		<h1> [
 			Groups
 		]

@@ -1,0 +1,9 @@
+{{define "nav"}}
+	<div style="display:flex;justify-content:space-between"> [
+		<div> [
+			<a href="/"> [forge]
+			| <a href="/groups"> [groups]
+		]
+		<div> [{{$.User}} (<a href="/logout"> [logout])]
+	]
+{{end}}
