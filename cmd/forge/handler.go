@@ -55,6 +55,9 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	case "logs":
 		h.HandleEntryLogs(w, r)
 		return
+	case "edit":
+		h.HandleEntryEdit(w, r)
+		return
 	}
 	err := func() error {
 		session, err := getSession(r)
@@ -106,6 +109,65 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			AccessControls: acs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
+func (h *pathHandler) HandleEntryEdit(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		if user == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+		path := r.URL.Path
+		ent, err := h.server.GetEntry(user, path)
+		if err != nil {
+			return err
+		}
+		subEnts, err := h.server.SubEntries(user, path)
+		if err != nil {
+			return err
+		}
+		props, err := h.server.EntryProperties(user, path)
+		if err != nil {
+			return err
+		}
+		envs, err := h.server.EntryEnvirons(user, path)
+		if err != nil {
+			return err
+		}
+		acs, err := h.server.EntryAccessControls(user, path)
+		if err != nil {
+			return err
+		}
+		subtyps := h.cfg.Struct[ent.Type()].SubEntryTypes
+		recipe := struct {
+			User           string
+			Entry          *forge.Entry
+			SubEntries     []*forge.Entry
+			Properties     []*forge.Property
+			Environs       []*forge.Property
+			SubEntryTypes  []string
+			AccessControls []*forge.AccessControl
+		}{
+			User:           user,
+			Entry:          ent,
+			SubEntries:     subEnts,
+			Properties:     props,
+			Environs:       envs,
+			SubEntryTypes:  subtyps,
+			AccessControls: acs,
+		}
+		err = Tmpl.ExecuteTemplate(w, "entry-edit.bml", recipe)
 		if err != nil {
 			return err
 		}
