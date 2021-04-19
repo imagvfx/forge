@@ -23,6 +23,8 @@
 						<a href="?"> [View]
 						<div style="width:0.5rem"> []
 						<a href="?tab=edit"> [Edit]
+						<div style="width:0.5rem"> []
+						<a href="?tab=logs"> [Logs]
 					]
 				]
 				<h4> [
@@ -54,9 +56,6 @@
 					{{$inherit := ne $a.EntryPath $.Entry.Path}}
 					<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}}{{if $inherit}} from '{{$a.EntryPath}}'{{end}}]
 				{{end}}
-				]
-				<h4> [
-					<a href="?tab=logs"> [See Logs]
 				]
 			]
 		]

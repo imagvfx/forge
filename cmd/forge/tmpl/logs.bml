@@ -3,16 +3,31 @@
 	<head> []
 	<body> [
 		{{template "nav" $}}
-		<h1> [
-			{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
-		]
-		<h4> [
-			Log
-		]
-		<div> [
-		{{range $log := $.Logs}}
-			<div> [{{$log}}]
-		{{end}}
+		<div style="display:flex;justify-content:space-between"> [
+			<div name="left" style="flex:1"> [
+				<h1> [
+					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
+				]
+				<h4> [
+					Log
+				]
+				<div> [
+				{{range $log := $.Logs}}
+					<div> [{{$log}}]
+				{{end}}
+				]
+			]
+			<div name="right" style="width:600px"> [
+				<h4> [
+					<div style="display:flex"> [
+						<a href="?"> [View]
+						<div style="width:0.5rem"> []
+						<a href="?tab=edit"> [Edit]
+						<div style="width:0.5rem"> []
+						<a href="?tab=logs"> [Logs]
+					]
+				]
+			]
 		]
 	]
 ]
