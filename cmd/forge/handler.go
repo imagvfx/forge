@@ -108,7 +108,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			SubEntryTypes:  subtyps,
 			AccessControls: acs,
 		}
-		err = Tmpl.ExecuteTemplate(w, "path.bml", recipe)
+		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 		if err != nil {
 			return err
 		}
@@ -205,7 +205,7 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 			Entry: ent,
 			Logs:  logs,
 		}
-		err = Tmpl.ExecuteTemplate(w, "logs.bml", recipe)
+		err = Tmpl.ExecuteTemplate(w, "entry-logs.bml", recipe)
 		if err != nil {
 			return err
 		}
