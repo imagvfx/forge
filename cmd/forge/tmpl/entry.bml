@@ -62,7 +62,11 @@
 				<div> [
 				{{range $e := $.Environs}}
 					{{$inherit := ne $e.EntryPath $.Entry.Path}}
-					<div> [{{$e.Name}} {{$e.Type}}{{if $e.Value}} = {{$e.Value}}{{end}}{{if $inherit}} from '{{$e.EntryPath}}'{{end}}]
+					{{if $inherit}}
+						<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}} {{$e.Type}}{{if $e.Value}} = {{$e.Value}}{{end}}]]
+					{{else}}
+						<div> [{{$e.Name}} {{$e.Type}}{{if $e.Value}} = {{$e.Value}}{{end}}]
+					{{end}}
 				{{end}}
 				]
 				<h4> [
