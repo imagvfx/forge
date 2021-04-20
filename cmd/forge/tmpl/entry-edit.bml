@@ -96,21 +96,18 @@
 				]
 				<div> [
 				{{range $env := $.Environs}}
-					{{$inherit := ne $env.EntryPath $.Entry.Path}}
-					<form action="/api/{{if $inherit}}add{{else}}set{{end}}-environ" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
-							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
-							<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							{{if $inherit}}
-								inherited from '{{$env.EntryPath}}' <button type="submit"> [Overwrite]
-							{{else}}
+					{{if eq $env.EntryPath $.Entry.Path}}
+						<form action="/api/set-environ" method="post"> [
+							<div> [
+								<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
+								<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
+								<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button type="submit"> [Set]
-							{{end}}
+							]
 						]
-					]
+					{{end}}
 				{{end}}
 				]
 				<h4> [
