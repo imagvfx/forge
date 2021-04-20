@@ -47,8 +47,8 @@ environs = [
 properties = [
 	"cg text",
 	"direction text",
-	"in timecode",
-	"out timecode",
+	"timecode_in timecode",
+	"timecode_out timecode",
 	"note text",
 	"delivery date",
 ]
