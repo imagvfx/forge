@@ -189,6 +189,10 @@ func (p *Property) evalDate(s string) string {
 }
 
 func (p *Property) validateDate(s string) error {
+	if s == "" {
+		// unset
+		return nil
+	}
 	_, err := time.Parse("2006/01/02", s)
 	if err != nil {
 		return fmt.Errorf("invalid date string: need yyyy/mm/dd (ex: 2006/01/02)")
