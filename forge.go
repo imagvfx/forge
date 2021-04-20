@@ -79,6 +79,7 @@ func (p *Property) Value() string {
 		"user":       p.evalUser,
 		"entry_path": p.evalEntryPath,
 		"entry_name": p.evalEntryName,
+		"date":       p.evalDate,
 	}
 	fn := eval[p.typ]
 	if fn == nil {
@@ -94,6 +95,7 @@ func (p *Property) Validate() error {
 		"user":       p.validateUser,
 		"entry_path": p.validateEntryPath,
 		"entry_name": p.validateEntryName,
+		"date":       p.validateDate,
 	}
 	fn := validate[p.typ]
 	if fn == nil {
@@ -180,6 +182,18 @@ func (p *Property) validateEntryName(s string) error {
 		return nil
 	}
 	return fmt.Errorf("path except . isn't valid yet")
+}
+
+func (p *Property) evalDate(s string) string {
+	return s
+}
+
+func (p *Property) validateDate(s string) error {
+	_, err := time.Parse("2006/01/02", s)
+	if err != nil {
+		return fmt.Errorf("invalid date string: need yyyy/mm/dd (ex: 2006/01/02)")
+	}
+	return nil
 }
 
 func (p *Property) ServiceProperty() *service.Property {
