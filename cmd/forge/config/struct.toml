@@ -50,6 +50,7 @@ properties = [
 	"in timecode",
 	"out timecode",
 	"note text",
+	"delivery date",
 ]
 
 sub_entry_types = [
