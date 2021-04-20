@@ -28,7 +28,9 @@
 				]
 				<div> [
 				{{range $.SubEntries}}
-					<a href="{{.Path}}"> [{{.Name}}]
+					<div> [
+						<a href="{{.Path}}"> [<img src="/thumbnail{{.Path}}" height="60" width="90" alt="" style="border:1px solid #AAAAAA"> [] {{.Name}}]
+					]
 				{{end}}
 				]
 			]
