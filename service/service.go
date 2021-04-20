@@ -47,7 +47,7 @@ type Entry struct {
 type EntryFinder struct {
 	ID       *int
 	ParentID *int
-	Path     string
+	Path     *string
 }
 
 type Property struct {

@@ -61,9 +61,9 @@ func findEntries(tx *sql.Tx, user string, find service.EntryFinder) ([]*service.
 		keys = append(keys, "id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.Path != "" {
+	if find.Path != nil {
 		keys = append(keys, "path=?")
-		vals = append(vals, find.Path)
+		vals = append(vals, *find.Path)
 	}
 	if find.ParentID != nil {
 		keys = append(keys, "parent_id=?")

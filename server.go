@@ -30,7 +30,7 @@ func (s *Server) GetEntry(user, path string) (*Entry, error) {
 		return nil, fmt.Errorf("path emtpy")
 	}
 	es, err := s.svc.FindEntries(user, service.EntryFinder{
-		Path: path,
+		Path: &path,
 	})
 	if err != nil {
 		return nil, err
@@ -629,7 +629,7 @@ func (s *Server) DeleteGroupMember(user string, memberID string) error {
 func (s *Server) GetThumbnail(user string, path string) (image.Image, error) {
 	// check the user has read permission to the path by reading it.
 	ents, err := s.svc.FindEntries(user, service.EntryFinder{
-		Path: path,
+		Path: &path,
 	})
 	if err != nil {
 		return nil, err
@@ -657,7 +657,7 @@ func (s *Server) GetThumbnail(user string, path string) (image.Image, error) {
 // AddThumbnail adds a thumbnail image to a entry.
 func (s *Server) AddThumbnail(user string, path string, thumb image.Image) error {
 	ents, err := s.svc.FindEntries(user, service.EntryFinder{
-		Path: path,
+		Path: &path,
 	})
 	if err != nil {
 		return err
