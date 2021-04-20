@@ -80,6 +80,7 @@ func (p *Property) Value() string {
 		"entry_path": p.evalEntryPath,
 		"entry_name": p.evalEntryName,
 		"date":       p.evalDate,
+		"int":        p.evalInt,
 	}
 	fn := eval[p.typ]
 	if fn == nil {
@@ -96,6 +97,7 @@ func (p *Property) Validate() error {
 		"entry_path": p.validateEntryPath,
 		"entry_name": p.validateEntryName,
 		"date":       p.validateDate,
+		"int":        p.validateInt,
 	}
 	fn := validate[p.typ]
 	if fn == nil {
@@ -196,6 +198,22 @@ func (p *Property) validateDate(s string) error {
 	_, err := time.Parse("2006/01/02", s)
 	if err != nil {
 		return fmt.Errorf("invalid date string: need yyyy/mm/dd (ex: 2006/01/02)")
+	}
+	return nil
+}
+
+func (p *Property) evalInt(s string) string {
+	return s
+}
+
+func (p *Property) validateInt(s string) error {
+	if s == "" {
+		// unset
+		return nil
+	}
+	_, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("cannot convert to int")
 	}
 	return nil
 }
