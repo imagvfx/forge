@@ -45,7 +45,10 @@ environs = [
 ]
 
 properties = [
-	"confirm text",
+	"cg text",
+	"direction text",
+	"in timecode",
+	"out timecode",
 	"note text",
 ]
 
@@ -61,7 +64,7 @@ environs = [
 ]
 
 properties = [
-	"note text",
+	"confirm text",
 ]
 
 sub_entry_types = [
