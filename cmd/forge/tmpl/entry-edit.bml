@@ -47,6 +47,7 @@
 					<form action="/api/add-thumbnail" method="post" enctype="multipart/form-data"> [
 						<div> [
 							<input name="file" type="file" accept="image/png, image/jpeg"> []
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Upload]
 						]
