@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/imagvfx/forge"
@@ -78,6 +79,9 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		sort.Slice(subEnts, func(i, j int) bool {
+			return subEnts[i].Name() < subEnts[j].Name()
+		})
 		props, err := h.server.EntryProperties(user, path)
 		if err != nil {
 			return err
