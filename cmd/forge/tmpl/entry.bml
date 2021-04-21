@@ -50,38 +50,60 @@
 					<img src="/thumbnail{{$.Entry.Path}}" height="120" width="180" alt="" style="border:1px solid #AAAAAA"> []
 				]
 				<div style="height:1px"> []
-				<h4> [
-					Property
-				]
-				<div> [
-				{{range $p := $.Properties}}
-					<div> [{{$p.Name}}{{if $p.Value}} = {{$p.Value}}{{end}}]
-				{{end}}
-				]
-				<h4> [
-					Environ
-				]
-				<div> [
-				{{range $e := $.Environs}}
-					{{$inherit := ne $e.EntryPath $.Entry.Path}}
-					{{if $inherit}}
-						<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]]
-					{{else}}
-						<div> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]
+				<div class="collapsible"> [
+					<h4 class="title" style="cursor:pointer"> [
+						Property ({{len $.Properties}})
+					]
+					<div class="content"> [
+					{{range $p := $.Properties}}
+						<div> [{{$p.Name}}{{if $p.Value}} = {{$p.Value}}{{end}}]
 					{{end}}
-				{{end}}
+					]
 				]
-				<h4> [
-					Access Control
+				<div class="collapsible"> [
+					<h4 class="title" style="cursor:pointer"> [
+						Environ ({{len $.Environs}})
+					]
+					<div class="content" style="display:none"> [
+					{{range $e := $.Environs}}
+						{{$inherit := ne $e.EntryPath $.Entry.Path}}
+						{{if $inherit}}
+							<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]]
+						{{else}}
+							<div> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]
+						{{end}}
+					{{end}}
+					]
 				]
-				<div> [
-				{{range $a := $.AccessControls}}
-					{{$inherit := ne $a.EntryPath $.Entry.Path}}
-					<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}}{{if $inherit}} from '{{$a.EntryPath}}'{{end}}]
-				{{end}}
+				<div class="collapsible"> [
+					<h4 class="title" style="cursor:pointer"> [
+						Access Control ({{len $.AccessControls}})
+					]
+					<div class="content" style="display:none"> [
+					{{range $a := $.AccessControls}}
+						{{$inherit := ne $a.EntryPath $.Entry.Path}}
+						<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}}{{if $inherit}} from '{{$a.EntryPath}}'{{end}}]
+					{{end}}
+					]
 				]
 			]
 		]
 	]
 ]
 
+<script> [`
+function toggleCollapse() {
+	let collapsible = this.parentElement;
+	let content = collapsible.getElementsByClassName("content")[0];
+	if (content.style.display == "none") {
+		content.style.display = "block";
+	} else {
+		content.style.display = "none";
+	}
+}
+
+var coll = document.getElementsByClassName("collapsible");
+for (i = 0; i < coll.length; i++) {
+	coll[i].getElementsByClassName("title")[0].addEventListener("click", toggleCollapse);
+}
+`]
