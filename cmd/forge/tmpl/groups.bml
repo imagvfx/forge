@@ -1,6 +1,8 @@
 <!doctype html>
 <html> [
-	<head> []
+	<head> [
+		{{template "style"}}
+	]
 	<body> [
 		{{template "nav" $}}
 		<h1> [
