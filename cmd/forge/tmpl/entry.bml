@@ -56,7 +56,7 @@
 					]
 					<div class="content"> [
 					{{range $p := $.Properties}}
-						<div> [{{$p.Name}}{{if $p.Value}} = {{$p.Value}}{{end}}]
+						<div> [{{$p.Name}}{{if $p.Eval}} = {{$p.Eval}}{{end}}]
 					{{end}}
 					]
 				]
@@ -68,7 +68,7 @@
 					{{range $e := $.Environs}}
 						{{$inherit := ne $e.EntryPath $.Entry.Path}}
 						{{if $inherit}}
-							<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]]
+							<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}}]]
 						{{else}}
 							<div> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]
 						{{end}}

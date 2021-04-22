@@ -72,7 +72,7 @@ func (p *Property) RawValue() string {
 	return p.value
 }
 
-func (p *Property) Value() string {
+func (p *Property) Eval() string {
 	eval := map[string]func(string) string{
 		"timecode":   p.evalTimecode,
 		"text":       p.evalText,
