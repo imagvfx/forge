@@ -145,6 +145,7 @@ func main() {
 	mux.HandleFunc("/logout", login.HandleLogout)
 	mux.HandleFunc("/groups", group.Handle)
 	mux.HandleFunc("/api/add-entry", api.HandleAddEntry)
+	mux.HandleFunc("/api/rename-entry", api.HandleRenameEntry)
 	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
 	mux.HandleFunc("/api/add-environ", api.HandleAddEnviron)

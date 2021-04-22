@@ -9,6 +9,7 @@ type Service interface {
 	GetEntry(string, int) (*Entry, error)
 	UserCanWriteEntry(string, int) (bool, error)
 	AddEntry(string, *Entry, []*Property, []*Property) error
+	RenameEntry(string, string, string) error
 	FindProperties(string, PropertyFinder) ([]*Property, error)
 	AddProperty(string, *Property) error
 	UpdateProperty(string, PropertyUpdater) error

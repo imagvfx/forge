@@ -3,6 +3,7 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -165,6 +166,17 @@ func getEntry(tx *sql.Tx, user string, id int) (*service.Entry, error) {
 	return ents[0], nil
 }
 
+func getEntryByPath(tx *sql.Tx, user, path string) (*service.Entry, error) {
+	ents, err := findEntries(tx, user, service.EntryFinder{Path: &path})
+	if err != nil {
+		return nil, err
+	}
+	if len(ents) == 0 {
+		return nil, fmt.Errorf("entry not found")
+	}
+	return ents[0], nil
+}
+
 func UserCanWriteEntry(db *sql.DB, user string, id int) (bool, error) {
 	tx, err := db.Begin()
 	if err != nil {
@@ -254,6 +266,116 @@ func addEntry(tx *sql.Tx, user string, e *service.Entry) error {
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func RenameEntry(db *sql.DB, user, path, newName string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = renameEntry(tx, user, path, newName)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func renameEntry(tx *sql.Tx, user, path, newName string) error {
+	// Rename an entry actually affects many sub entries,
+	// should be picky.
+	if path == "" {
+		return fmt.Errorf("need a path for rename")
+	}
+	if path == "/" {
+		return fmt.Errorf("cannot rename root entry")
+	}
+	if strings.HasSuffix(path, "/") {
+		return fmt.Errorf("entry path shouldn't end with /")
+	}
+	if newName == "" {
+		return fmt.Errorf("need a new name for rename")
+	}
+	if strings.Contains(newName, "/") {
+		return fmt.Errorf("entry name cannot have '/' in it")
+	}
+	base := filepath.Base(path)
+	if newName == base {
+		return nil
+	}
+	newPath := filepath.Dir(path) + "/" + newName
+	e, err := getEntryByPath(tx, user, path)
+	if err != nil {
+		return err
+	}
+	ok, err := userCanWrite(tx, user, *e.ParentID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
+	err = updateEntryPath(tx, path, newPath)
+	if err != nil {
+		return err
+	}
+	// root entry successfully renamed,
+	// let's do it for all sub entries.
+	like := path + `/%`
+	rows, err := tx.Query(`
+		SELECT
+			path
+		FROM entries
+		WHERE path LIKE ?
+	`,
+		like,
+	)
+	if err != nil {
+		return err
+	}
+	subEnts := make([]string, 0)
+	defer rows.Close()
+	for rows.Next() {
+		var path string
+		err := rows.Scan(
+			&path,
+		)
+		if err != nil {
+			return err
+		}
+		subEnts = append(subEnts, path)
+	}
+	for _, subEntPath := range subEnts {
+		newSubEntPath := strings.Replace(subEntPath, path, newPath, 1)
+		err := updateEntryPath(tx, subEntPath, newSubEntPath)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func updateEntryPath(tx *sql.Tx, path, newPath string) error {
+	result, err := tx.Exec(`
+		UPDATE entries
+		SET path=?
+		WHERE path=?
+	`,
+		newPath,
+		path,
+	)
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
 	return nil
 }

@@ -8,7 +8,15 @@
 		<div style="display:flex;justify-content:space-between"> [
 			<div name="left" style="flex:1"> [
 				<h1> [
-					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
+					<div style="display:inline-block"> [
+						{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
+					]
+					<form action="/api/rename-entry" method="post"> [
+						<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+						<input name="new-name" type="text" value=""> []
+						<input readonly name="back_to_referer" type="hidden" value="1"> []
+						<button type="submit"> [Rename]
+					]
 				]
 				<h4> [
 					Sub Entry

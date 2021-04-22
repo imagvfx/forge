@@ -465,6 +465,39 @@ func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *apiHandler) HandleRenameEntry(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		// parent, if suggested, will be used as prefix of the path.
+		path := r.FormValue("path")
+		newName := r.FormValue("new-name")
+		err = h.server.RenameEntry(user, path, newName)
+		if err != nil {
+			return err
+		}
+		newPath := filepath.Dir(path) + "/" + newName
+		if r.FormValue("back_to_referer") != "" {
+			referer := r.Header.Get("Referer")
+			if strings.Contains(referer, path) {
+				referer = strings.Replace(referer, path, newPath, 1)
+			}
+			http.Redirect(w, r, referer, http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+	}
+}
+
 func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {

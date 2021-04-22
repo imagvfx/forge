@@ -164,6 +164,23 @@ func (s *Server) AddEntry(user, path, typ string) error {
 	return nil
 }
 
+func (s *Server) RenameEntry(user, path, newName string) error {
+	err := s.svc.RenameEntry(user, path, newName)
+	if err != nil {
+		return err
+	}
+	// Move the thumbnail also.
+	newPath := filepath.Dir(path) + "/" + newName
+	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
+	thumbnailDir := filepath.Join(thumbnailRoot, path)
+	newThumbnailDir := filepath.Join(thumbnailRoot, newPath)
+	err = os.Rename(thumbnailDir, newThumbnailDir)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) EntryProperties(user, path string) ([]*Property, error) {
 	ent, err := s.GetEntry(user, path)
 	if err != nil {

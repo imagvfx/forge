@@ -36,6 +36,10 @@ func (s *Service) AddEntry(user string, ent *service.Entry, props []*service.Pro
 	return AddEntry(s.db, user, ent, props, env)
 }
 
+func (s *Service) RenameEntry(user, path, newName string) error {
+	return RenameEntry(s.db, user, path, newName)
+}
+
 func (s *Service) FindProperties(user string, find service.PropertyFinder) ([]*service.Property, error) {
 	return FindProperties(s.db, user, find)
 }
