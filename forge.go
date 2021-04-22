@@ -68,7 +68,7 @@ func (p *Property) Name() string {
 	return p.name
 }
 
-func (p *Property) RawValue() string {
+func (p *Property) Value() string {
 	return p.value
 }
 

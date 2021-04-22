@@ -78,7 +78,7 @@
 							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
 							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
-							<input name="value" type="text" value="{{.RawValue}}" placeholder="value"> []
+							<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							{{if ne .EntryPath $.Entry.Path}}inherited from '{{.EntryPath}}'{{end}}
 							<button type="submit"> [Set]
@@ -107,7 +107,7 @@
 								<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 								<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
 								<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
-								<input name="value" type="text" value="{{$env.RawValue}}" placeholder="value"> []
+								<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button type="submit"> [Set]
 							]
