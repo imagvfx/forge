@@ -174,6 +174,13 @@ func (s *Server) RenameEntry(user, path, newName string) error {
 	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
 	thumbnailDir := filepath.Join(thumbnailRoot, path)
 	newThumbnailDir := filepath.Join(thumbnailRoot, newPath)
+	_, err = os.Stat(thumbnailDir)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return nil
+	}
 	err = os.Rename(thumbnailDir, newThumbnailDir)
 	if err != nil {
 		return err
