@@ -379,3 +379,95 @@ func updateEntryPath(tx *sql.Tx, path, newPath string) error {
 	}
 	return nil
 }
+
+func DeleteEntry(db *sql.DB, user, path string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = deleteEntry(tx, user, path)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteEntry(tx *sql.Tx, user, path string) error {
+	// Rename an entry actually affects many sub entries,
+	// should be picky.
+	if path == "" {
+		return fmt.Errorf("need a path to delete")
+	}
+	if path == "/" {
+		return fmt.Errorf("cannot delete root entry")
+	}
+	if strings.HasSuffix(path, "/") {
+		return fmt.Errorf("entry path shouldn't end with /")
+	}
+	// The entry that will be deleted shouldn't have sub entries.
+	like := path + `/%`
+	rows, err := tx.Query(`
+		SELECT
+			path
+		FROM entries
+		WHERE path LIKE ?
+	`,
+		like,
+	)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	if rows.Next() {
+		return fmt.Errorf("entry shouldn't have sub entries: %v", path)
+	}
+	if rows.Err() != nil {
+		return rows.Err()
+	}
+	e, err := getEntryByPath(tx, user, path)
+	if err != nil {
+		return err
+	}
+	ok, err := userCanWrite(tx, user, *e.ParentID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
+	relatedTables := []string{"properties", "environs", "access_controls", "logs"}
+	for _, table := range relatedTables {
+		stmt := fmt.Sprintf(`
+			DELETE FROM %v
+			WHERE entry_id=?
+		`, table)
+		_, err := tx.Exec(stmt,
+			e.ID,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	result, err := tx.Exec(`
+		DELETE FROM entries
+		WHERE id=?
+	`,
+		e.ID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("want 1 property affected, got %v", n)
+	}
+	return nil
+}

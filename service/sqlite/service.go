@@ -40,6 +40,10 @@ func (s *Service) RenameEntry(user, path, newName string) error {
 	return RenameEntry(s.db, user, path, newName)
 }
 
+func (s *Service) DeleteEntry(user, path string) error {
+	return DeleteEntry(s.db, user, path)
+}
+
 func (s *Service) FindProperties(user string, find service.PropertyFinder) ([]*service.Property, error) {
 	return FindProperties(s.db, user, find)
 }

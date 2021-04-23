@@ -181,6 +181,32 @@ func (s *Server) RenameEntry(user, path, newName string) error {
 	return nil
 }
 
+func (s *Server) DeleteEntry(user, path string) error {
+	err := s.svc.DeleteEntry(user, path)
+	if err != nil {
+		return err
+	}
+	// Delete the thumbnail also.
+	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
+	thumbnailDir := filepath.Join(thumbnailRoot, path)
+	thumbnailFile := filepath.Join(thumbnailDir, "thumbnail.png")
+	files := []string{thumbnailFile, thumbnailDir}
+	for _, f := range files {
+		_, err = os.Stat(f)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			return err
+		}
+		err = os.Remove(f)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Server) EntryProperties(user, path string) ([]*Property, error) {
 	ent, err := s.GetEntry(user, path)
 	if err != nil {
