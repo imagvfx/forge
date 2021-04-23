@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -11,7 +12,7 @@ import (
 	"html/template"
 	"image"
 	_ "image/jpeg"
-	"image/png"
+	"io"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -296,16 +297,24 @@ func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return nil
 		}
-		img, err := h.server.GetThumbnail(user, path)
+		bs, err := h.server.GetThumbnail(user, path)
 		if err != nil {
 			return err
 		}
-		if img == nil {
+		if bs == nil {
 			http.Error(w, "not found", http.StatusNotFound)
 			return nil
 		}
+		sum := md5.Sum(bs)
+		hash := base64.URLEncoding.EncodeToString(sum[:])
+		if r.Header.Get("If-None-Match") == hash {
+			w.WriteHeader(http.StatusNotModified)
+			return nil
+		}
 		w.Header().Set("Content-Type", "image/png")
-		err = png.Encode(w, img)
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("ETag", hash)
+		_, err = io.Copy(w, bytes.NewReader(bs))
 		if err != nil {
 			return err
 		}
