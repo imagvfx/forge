@@ -12,21 +12,6 @@
 				]
 				<h4> [
 					Sub Entry
-					{{if $.SubEntryTypes}}
-					<form action="/api/add-entry" method="post"> [
-						<div> [
-							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="path" type="text" value=""> []
-							<select name="type" value=""> [
-							{{range $t := $.SubEntryTypes}}
-								<option value={{$t}}> [{{$t}}]
-							{{end}}
-							]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
-					{{end}}
 				]
 				<div> [
 				{{range $.SubEntries}}
