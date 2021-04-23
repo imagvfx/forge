@@ -1,1 +1,3 @@
-
+resize thumbnail on recieve
+store thumbnail in db
+http cache for thumbnail
