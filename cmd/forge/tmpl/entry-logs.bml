@@ -27,6 +27,8 @@
 						<a href="?tab=edit"> [Edit]
 						<div style="width:0.5rem"> []
 						<a href="?tab=logs"> [Logs]
+						<div style="flex:1"> []
+						<a href="?tab=delete"> [Delete]
 					]
 				]
 			]

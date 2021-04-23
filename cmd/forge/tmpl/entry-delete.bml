@@ -1,0 +1,114 @@
+<!doctype html>
+<html> [
+	<head> [
+		{{template "style"}}
+	]
+	<body> [
+		{{template "nav" $}}
+		<div style="display:flex;justify-content:space-between"> [
+			<div name="left" style="flex:1"> [
+				<h1> [
+					<div style="display:inline-block"> [
+						{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
+						<form action="/api/delete-entry" method="post" style="display:inline-block"> [
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Delete]
+						]
+					]
+				]
+				<h4> [
+					Sub Entry
+				]
+				<div> [
+				{{range $.SubEntries}}
+					<div> [
+						<a href="{{.Path}}"> [<img src="/thumbnail{{.Path}}" height="60" width="90" alt="" style="border:1px solid #AAAAAA"> [] {{.Name}}]
+						<form action="/api/delete-entry" method="post" style="display:inline-block"> [
+							<div> [
+								<input name="path" type="hidden" value="{{.Path}}"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+								<button type="submit"> [Delete]
+							]
+						]
+					]
+				{{end}}
+				]
+			]
+			<div name="right" style="width:600px"> [
+				<h4> [
+					<div style="display:flex"> [
+						<a href="?"> [View]
+						<div style="width:0.5rem"> []
+						<a href="?tab=edit"> [Edit]
+						<div style="width:0.5rem"> []
+						<a href="?tab=logs"> [Logs]
+						<div style="flex:1"> []
+						<a href="?tab=delete"> [Delete]
+					]
+				]
+				<h4> [
+					<img src="/thumbnail{{$.Entry.Path}}" height="120" width="180" alt="" style="border:1px solid #AAAAAA"> []
+					<form action="/api/delete-thumbnail" method="post" enctype="multipart/form-data"> [
+						<div> [
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Delete]
+						]
+					]
+				]
+				<div style="height:1px"> []
+				<h4> [
+					Property
+				]
+				<div> [
+				{{range $.Properties}}
+					<form action="/api/delete-property" method="post"> [
+						<div> [
+							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Delete]
+						]
+					]
+				{{end}}
+				]
+				<h4> [
+					Environ
+				]
+				<div> [
+				{{range $env := $.Environs}}
+					{{if eq $env.EntryPath $.Entry.Path}}
+						<form action="/api/delete-environ" method="post"> [
+							<div> [
+								<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+								<button type="submit"> [Delete]
+							]
+						]
+					{{end}}
+				{{end}}
+				]
+				<h4> [
+					Access Control
+				]
+				<div> [
+				{{range $ac := $.AccessControls}}
+					{{$inherit := ne $ac.EntryPath $.Entry.Path}}
+					<form action="/api/delete-access-control" method="post"> [
+						<div> [
+							<input readonly name="id" type="hidden" value="{{$ac.ID}}"> []
+							<input readonly name="accessor" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
+							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Delete]
+						]
+					]
+				{{end}}
+				]
+			]
+		]
+	]
+]
+

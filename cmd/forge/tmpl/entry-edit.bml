@@ -53,11 +53,7 @@
 						<div style="width:0.5rem"> []
 						<a href="?tab=logs"> [Logs]
 						<div style="flex:1"> []
-						<form action="/api/delete-entry" method="post"> [
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Delete]
-						]
+						<a href="?tab=delete"> [Delete]
 					]
 				]
 				<h4> [
