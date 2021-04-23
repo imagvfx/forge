@@ -70,7 +70,7 @@
 						{{if $inherit}}
 							<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}}]]
 						{{else}}
-							<div> [{{$e.Name}}{{if $e.Value}} = {{$e.Value}}{{end}}]
+							<div> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}}]
 						{{end}}
 					{{end}}
 					]
