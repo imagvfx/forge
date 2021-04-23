@@ -325,6 +325,18 @@ func renameEntry(tx *sql.Tx, user, path, newName string) error {
 	if err != nil {
 		return err
 	}
+	// Let's log only for the entry (not for sub entries).
+	// This might be changed in the future.
+	err = addLog(tx, &service.Log{
+		EntryID:  e.ID,
+		User:     user,
+		Action:   "rename",
+		Category: "entry",
+		Name:     newName,
+	})
+	if err != nil {
+		return err
+	}
 	// root entry successfully renamed,
 	// let's do it for all sub entries.
 	like := path + `/%`
