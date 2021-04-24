@@ -22,6 +22,7 @@ type Service interface {
 	FindAccessControls(string, AccessControlFinder) ([]*AccessControl, error)
 	AddAccessControl(string, *AccessControl) error
 	UpdateAccessControl(string, AccessControlUpdater) error
+	DeleteAccessControl(string, string, string) error
 	FindLogs(string, LogFinder) ([]*Log, error)
 	AddUser(*User) error
 	GetUserByUser(string) (*User, error)

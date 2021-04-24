@@ -248,6 +248,72 @@ func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, 
 	return a, nil
 }
 
+func getAccessControlByPathName(tx *sql.Tx, user, path, name string) (*service.AccessControl, error) {
+	e, err := getEntryByPath(tx, user, path)
+	if err != nil {
+		return nil, err
+	}
+	typ := "user"
+	if !strings.Contains(name, "@") {
+		typ = "group"
+	}
+	var id int
+	if typ == "user" {
+		u, err := getUserByUser(tx, name)
+		if err != nil {
+			return nil, err
+		}
+		id = u.ID
+	} else {
+		g, err := getGroupByName(tx, name)
+		if err != nil {
+			return nil, err
+		}
+		id = g.ID
+	}
+	stmt := fmt.Sprintf(`
+		SELECT
+			access_controls.id,
+			access_controls.entry_id,
+			entries.path,
+			access_controls.user_id,
+			access_controls.group_id,
+			access_controls.mode
+		FROM access_controls
+		LEFT JOIN entries
+		ON access_controls.entry_id = entries.id
+		WHERE
+			access_controls.entry_id=? AND
+			access_controls.%v_id=?`,
+		typ,
+	)
+	rows, err := tx.Query(stmt, e.ID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, fmt.Errorf("access not found: %v", id)
+	}
+	a := &service.AccessControl{}
+	err = rows.Scan(
+		&a.ID,
+		&a.EntryID,
+		&a.EntryPath,
+		&a.UserID,
+		&a.GroupID,
+		&a.Mode,
+	)
+	if err != nil {
+		return nil, err
+	}
+	err = attachAccessorInfo(tx, user, a)
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
 func attachAccessorInfo(tx *sql.Tx, user string, a *service.AccessControl) error {
 	if a.UserID != nil && a.GroupID != nil {
 		return fmt.Errorf("both user_id and group_id is defined")
@@ -411,6 +477,66 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func DeleteAccessControl(db *sql.DB, user, path, name string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = deleteAccessControl(tx, user, path, name)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteAccessControl(tx *sql.Tx, user, path, name string) error {
+	a, err := getAccessControlByPathName(tx, user, path, name)
+	if err != nil {
+		return err
+	}
+	ok, err := userCanWrite(tx, user, a.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
+	result, err := tx.Exec(`
+		DELETE FROM access_controls
+		WHERE id=?
+	`,
+		a.ID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("want 1 access_control affected, got %v", n)
+	}
+	err = addLog(tx, &service.Log{
+		EntryID:  a.EntryID,
+		User:     user,
+		Action:   "delete",
+		Category: "access",
+		Name:     a.Accessor,
+		Type:     strconv.Itoa(a.AccessorType),
+		Value:    "",
+	})
+	if err != nil {
+		return nil
 	}
 	return nil
 }

@@ -835,6 +835,34 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+func (h *apiHandler) HandleDeleteAccessControl(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		path := r.FormValue("path")
+		name := r.FormValue("name")
+		err = h.server.DeleteAccessControl(user, path, name)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
 func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {

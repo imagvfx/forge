@@ -99,8 +99,8 @@
 					<form action="/api/delete-access-control" method="post"> [
 						<div> [
 							<input readonly name="id" type="hidden" value="{{$ac.ID}}"> []
-							<input readonly name="accessor" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
-							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type"> []
+							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input readonly name="name" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Delete]
 						]

@@ -525,6 +525,14 @@ func (s *Server) SetAccessControl(user string, accessID string, mode string) err
 	return nil
 }
 
+func (s *Server) DeleteAccessControl(user, path string, name string) error {
+	err := s.svc.DeleteAccessControl(user, path, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) EntryLogs(user, path string) ([]*Log, error) {
 	ent, err := s.GetEntry(user, path)
 	if err != nil {

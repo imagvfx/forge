@@ -156,6 +156,7 @@ func main() {
 	mux.HandleFunc("/api/add-thumbnail", api.HandleAddThumbnail)
 	mux.HandleFunc("/api/add-access-control", api.HandleAddAccessControl)
 	mux.HandleFunc("/api/set-access-control", api.HandleSetAccessControl)
+	mux.HandleFunc("/api/delete-access-control", api.HandleDeleteAccessControl)
 	mux.HandleFunc("/api/add-group", api.HandleAddGroup)
 	mux.HandleFunc("/api/set-group", api.HandleSetGroup)
 	mux.HandleFunc("/api/add-group-member", api.HandleAddGroupMember)

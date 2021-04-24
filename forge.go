@@ -293,8 +293,12 @@ func (l *Log) String() string {
 
 func (l *Log) AccessControlString() string {
 	v, _ := strconv.Atoi(l.Value)
-	mode := AccessMode(v)
-	return fmt.Sprintf("%v: %v %v %v: %v = %v", l.When, l.User, l.Action, l.Category, l.Name, mode)
+	if l.Action != "delete" {
+		mode := AccessMode(v)
+		return fmt.Sprintf("%v: %v %v %v: %v = %v", l.When, l.User, l.Action, l.Category, l.Name, mode)
+	} else {
+		return fmt.Sprintf("%v: %v %v %v: %v", l.When, l.User, l.Action, l.Category, l.Name)
+	}
 }
 
 type User struct {

@@ -88,6 +88,10 @@ func (s Service) UpdateAccessControl(user string, upd service.AccessControlUpdat
 	return UpdateAccessControl(s.db, user, upd)
 }
 
+func (s *Service) DeleteAccessControl(user, path, name string) error {
+	return DeleteAccessControl(s.db, user, path, name)
+}
+
 func (s *Service) FindLogs(user string, find service.LogFinder) ([]*service.Log, error) {
 	return FindLogs(s.db, user, find)
 }
