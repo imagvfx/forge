@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -310,6 +311,14 @@ func (s *Server) SetProperty(user, path string, name, value string) error {
 		ID:    prop.id,
 		Value: &value,
 	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteProperty(user, path string, name string) error {
+	err := s.svc.DeleteProperty(user, path, name)
 	if err != nil {
 		return err
 	}
@@ -676,7 +685,7 @@ func (s *Server) DeleteGroupMember(user string, memberID string) error {
 }
 
 // GetThumbnail gets a thumbnail image of a entry.
-func (s *Server) GetThumbnail(user string, path string) (image.Image, error) {
+func (s *Server) GetThumbnail(user string, path string) ([]byte, error) {
 	// check the user has read permission to the path by reading it.
 	ents, err := s.svc.FindEntries(user, service.EntryFinder{
 		Path: &path,
@@ -697,11 +706,11 @@ func (s *Server) GetThumbnail(user string, path string) (image.Image, error) {
 		}
 		return nil, err
 	}
-	img, err := png.Decode(f)
+	bs, err := io.ReadAll(f)
 	if err != nil {
 		return nil, err
 	}
-	return img, nil
+	return bs, nil
 }
 
 // AddThumbnail adds a thumbnail image to a entry.

@@ -14,6 +14,7 @@ type Service interface {
 	FindProperties(string, PropertyFinder) ([]*Property, error)
 	AddProperty(string, *Property) error
 	UpdateProperty(string, PropertyUpdater) error
+	DeleteProperty(string, string, string) error
 	FindEnvirons(string, PropertyFinder) ([]*Property, error)
 	AddEnviron(string, *Property) error
 	UpdateEnviron(string, PropertyUpdater) error

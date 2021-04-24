@@ -131,6 +131,44 @@ func getProperty(tx *sql.Tx, user string, id int) (*service.Property, error) {
 	return p, nil
 }
 
+func getPropertyByPathName(tx *sql.Tx, user, path, name string) (*service.Property, error) {
+	e, err := getEntryByPath(tx, user, path)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := tx.Query(`
+		SELECT
+			id,
+			entry_id,
+			name,
+			typ,
+			val
+		FROM properties
+		WHERE entry_id=? AND name=?`,
+		e.ID,
+		name,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, fmt.Errorf("property not found")
+	}
+	p := &service.Property{}
+	err = rows.Scan(
+		&p.ID,
+		&p.EntryID,
+		&p.Name,
+		&p.Type,
+		&p.Value,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func AddProperty(db *sql.DB, user string, p *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -258,6 +296,65 @@ func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error 
 		Name:     p.Name,
 		Type:     p.Type,
 		Value:    p.Value,
+	})
+	if err != nil {
+		return nil
+	}
+	return nil
+}
+
+func DeleteProperty(db *sql.DB, user, path, name string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = deleteProperty(tx, user, path, name)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteProperty(tx *sql.Tx, user, path, name string) error {
+	p, err := getPropertyByPathName(tx, user, path, name)
+	if err != nil {
+		return err
+	}
+	ok, err := userCanWrite(tx, user, p.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
+	result, err := tx.Exec(`
+		DELETE FROM properties
+		WHERE id=?
+	`,
+		p.ID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("want 1 property affected, got %v", n)
+	}
+	err = addLog(tx, &service.Log{
+		EntryID:  p.EntryID,
+		User:     user,
+		Action:   "delete",
+		Category: "property",
+		Name:     p.Name,
+		Type:     p.Type,
 	})
 	if err != nil {
 		return nil

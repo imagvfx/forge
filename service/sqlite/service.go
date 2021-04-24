@@ -56,6 +56,10 @@ func (s *Service) UpdateProperty(user string, upd service.PropertyUpdater) error
 	return UpdateProperty(s.db, user, upd)
 }
 
+func (s *Service) DeleteProperty(user, path, name string) error {
+	return DeleteProperty(s.db, user, path, name)
+}
+
 func (s *Service) FindEnvirons(user string, find service.PropertyFinder) ([]*service.Property, error) {
 	return FindEnvirons(s.db, user, find)
 }

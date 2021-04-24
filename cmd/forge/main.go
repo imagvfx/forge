@@ -149,6 +149,7 @@ func main() {
 	mux.HandleFunc("/api/delete-entry", api.HandleDeleteEntry)
 	mux.HandleFunc("/api/add-property", api.HandleAddProperty)
 	mux.HandleFunc("/api/set-property", api.HandleSetProperty)
+	mux.HandleFunc("/api/delete-property", api.HandleDeleteProperty)
 	mux.HandleFunc("/api/add-environ", api.HandleAddEnviron)
 	mux.HandleFunc("/api/set-environ", api.HandleSetEnviron)
 	mux.HandleFunc("/api/add-thumbnail", api.HandleAddThumbnail)
