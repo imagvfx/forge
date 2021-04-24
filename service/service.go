@@ -18,6 +18,7 @@ type Service interface {
 	FindEnvirons(string, PropertyFinder) ([]*Property, error)
 	AddEnviron(string, *Property) error
 	UpdateEnviron(string, PropertyUpdater) error
+	DeleteEnviron(string, string, string) error
 	FindAccessControls(string, AccessControlFinder) ([]*AccessControl, error)
 	AddAccessControl(string, *AccessControl) error
 	UpdateAccessControl(string, AccessControlUpdater) error

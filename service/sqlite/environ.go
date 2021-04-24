@@ -146,6 +146,44 @@ func getEnviron(tx *sql.Tx, user string, id int) (*service.Property, error) {
 	return e, nil
 }
 
+func getEnvironByPathName(tx *sql.Tx, user, path, name string) (*service.Property, error) {
+	e, err := getEntryByPath(tx, user, path)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := tx.Query(`
+		SELECT
+			id,
+			entry_id,
+			name,
+			typ,
+			val
+		FROM environs
+		WHERE entry_id=? AND name=?`,
+		e.ID,
+		name,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, fmt.Errorf("environ not found")
+	}
+	p := &service.Property{}
+	err = rows.Scan(
+		&p.ID,
+		&p.EntryID,
+		&p.Name,
+		&p.Type,
+		&p.Value,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
 func AddEnviron(db *sql.DB, user string, e *service.Property) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -276,6 +314,65 @@ func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 	})
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func DeleteEnviron(db *sql.DB, user, path, name string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = deleteEnviron(tx, user, path, name)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteEnviron(tx *sql.Tx, user, path, name string) error {
+	e, err := getEnvironByPathName(tx, user, path, name)
+	if err != nil {
+		return err
+	}
+	ok, err := userCanWrite(tx, user, e.EntryID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user cannot modify entry")
+	}
+	result, err := tx.Exec(`
+		DELETE FROM environs
+		WHERE id=?
+	`,
+		e.ID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("want 1 environ affected, got %v", n)
+	}
+	err = addLog(tx, &service.Log{
+		EntryID:  e.EntryID,
+		User:     user,
+		Action:   "delete",
+		Category: "environ",
+		Name:     e.Name,
+		Type:     e.Type,
+	})
+	if err != nil {
+		return nil
 	}
 	return nil
 }

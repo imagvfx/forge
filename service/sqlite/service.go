@@ -72,6 +72,10 @@ func (s *Service) UpdateEnviron(user string, upd service.PropertyUpdater) error 
 	return UpdateEnviron(s.db, user, upd)
 }
 
+func (s *Service) DeleteEnviron(user, path, name string) error {
+	return DeleteEnviron(s.db, user, path, name)
+}
+
 func (s Service) FindAccessControls(user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
 	return FindAccessControls(s.db, user, find)
 }

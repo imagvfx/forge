@@ -427,6 +427,14 @@ func (s *Server) SetEnviron(user, path string, name, value string) error {
 	return nil
 }
 
+func (s *Server) DeleteEnviron(user, path string, name string) error {
+	err := s.svc.DeleteEnviron(user, path, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) EntryAccessControls(user, path string) ([]*AccessControl, error) {
 	ent, err := s.GetEntry(user, path)
 	if err != nil {
