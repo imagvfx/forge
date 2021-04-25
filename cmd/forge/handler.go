@@ -1009,3 +1009,30 @@ func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) 
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}
 }
+
+func (h *apiHandler) HandleDeleteThumbnail(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		path := r.FormValue("path")
+		err = h.server.DeleteThumbnail(user, path)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}

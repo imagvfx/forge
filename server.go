@@ -765,3 +765,42 @@ func (s *Server) AddThumbnail(user string, path string, thumb image.Image) error
 	}
 	return nil
 }
+
+func (s *Server) DeleteThumbnail(user string, path string) error {
+	ents, err := s.svc.FindEntries(user, service.EntryFinder{
+		Path: &path,
+	})
+	if err != nil {
+		return err
+	}
+	if len(ents) == 0 {
+		// maybe because of permission, maybe not exists.
+		return fmt.Errorf("entry not found")
+	}
+	ent := ents[0]
+	ok, err := s.svc.UserCanWriteEntry(user, ent.ID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return fmt.Errorf("user doesn't have permission to write the entry")
+	}
+	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
+	thumbnailDir := filepath.Join(thumbnailRoot, path)
+	thumbnailFile := filepath.Join(thumbnailDir, "thumbnail.png")
+	delFiles := []string{thumbnailFile, thumbnailDir}
+	for _, f := range delFiles {
+		_, err := os.Stat(thumbnailFile)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			return err
+		}
+		err = os.Remove(f)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
