@@ -74,7 +74,15 @@
 						<div> [
 							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input name="name" type="text" value="" placeholder="name"> []
-							<input name="type" type="text" value="" placeholder="type"> []
+							<select name="type" style="width:10em"> [
+								<option value="text"> [text]
+								<option value="user"> [user]
+								<option value="date"> [date]
+								<option value="timecode"> [timecode]
+								<option value="int"> [int]
+								<option value="entry_path"> [entry_path]
+								<option value="entry_name"> [entry_name]
+							]
 							<input name="value" type="text" value="" placeholder="value"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
@@ -87,7 +95,7 @@
 						<div> [
 							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
-							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
+							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type" style="width:10em;box-sizing:border-box"> []
 							<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							{{if ne .EntryPath $.Entry.Path}}inherited from '{{.EntryPath}}'{{end}}
@@ -102,7 +110,15 @@
 						<div> [
 							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input name="name" type="text" value="" placeholder="name"> []
-							<input name="type" type="text" value="" placeholder="type"> []
+							<select name="type" style="width:10em"> [
+								<option value="text"> [text]
+								<option value="user"> [user]
+								<option value="date"> [date]
+								<option value="timecode"> [timecode]
+								<option value="int"> [int]
+								<option value="entry_path"> [entry_path]
+								<option value="entry_name"> [entry_name]
+							]
 							<input name="value" type="text" value="" placeholder="value"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
@@ -116,7 +132,7 @@
 							<div> [
 								<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 								<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
-								<input readonly name="type" type="text" value="{{.Type}}" placeholder="type"> []
+								<input readonly name="type" type="text" value="{{$env.Type}}" placeholder="name" style="width:10em;box-sizing:border-box"> []
 								<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button type="submit"> [Set]
@@ -131,7 +147,10 @@
 						<div> [
 							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input name="accessor" type="text" value="" placeholder="accessor"> []
-							<input name="accessor_type" type="text" value="" placeholder="accessor type"> []
+							<select name="accessor_type" style="width:10em"> [
+								<option value="user"> [user]
+								<option value="group"> [group]
+							]
 							<input name="mode" type="text" value="" placeholder="r, rw"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
@@ -145,7 +164,7 @@
 						<div> [
 							<input readonly name="id" type="hidden" value="{{$ac.ID}}"> []
 							<input readonly name="accessor" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
-							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type"> []
+							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type" style="width:10em;box-sizing:border-box"> []
 							<input name="mode" type="text" value="{{$ac.Mode}}" placeholder="r, rw"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							{{if $inherit}}
