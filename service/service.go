@@ -5,33 +5,33 @@ import (
 )
 
 type Service interface {
-	FindEntries(string, EntryFinder) ([]*Entry, error)
-	GetEntry(string, int) (*Entry, error)
-	UserCanWriteEntry(string, int) (bool, error)
-	AddEntry(string, *Entry, []*Property, []*Property) error
-	RenameEntry(string, string, string) error
-	DeleteEntry(string, string) error
-	FindProperties(string, PropertyFinder) ([]*Property, error)
-	AddProperty(string, *Property) error
-	UpdateProperty(string, PropertyUpdater) error
-	DeleteProperty(string, string, string) error
-	FindEnvirons(string, PropertyFinder) ([]*Property, error)
-	AddEnviron(string, *Property) error
-	UpdateEnviron(string, PropertyUpdater) error
-	DeleteEnviron(string, string, string) error
-	FindAccessControls(string, AccessControlFinder) ([]*AccessControl, error)
-	AddAccessControl(string, *AccessControl) error
-	UpdateAccessControl(string, AccessControlUpdater) error
-	DeleteAccessControl(string, string, string) error
-	FindLogs(string, LogFinder) ([]*Log, error)
-	AddUser(*User) error
-	GetUserByUser(string) (*User, error)
-	FindGroups(GroupFinder) ([]*Group, error)
-	AddGroup(string, *Group) error
-	UpdateGroup(string, GroupUpdater) error
-	FindGroupMembers(MemberFinder) ([]*Member, error)
-	AddGroupMember(string, *Member) error
-	DeleteGroupMember(string, int) error
+	FindEntries(user string, find EntryFinder) ([]*Entry, error)
+	GetEntry(user string, id int) (*Entry, error)
+	UserCanWriteEntry(user string, id int) (bool, error)
+	AddEntry(user string, ent *Entry, props []*Property, envs []*Property) error
+	RenameEntry(user string, path string, newName string) error
+	DeleteEntry(user string, path string) error
+	FindProperties(user string, find PropertyFinder) ([]*Property, error)
+	AddProperty(user string, p *Property) error
+	UpdateProperty(user string, upd PropertyUpdater) error
+	DeleteProperty(user string, path string, name string) error
+	FindEnvirons(user string, find PropertyFinder) ([]*Property, error)
+	AddEnviron(user string, p *Property) error
+	UpdateEnviron(user string, upd PropertyUpdater) error
+	DeleteEnviron(user string, path string, name string) error
+	FindAccessControls(user string, find AccessControlFinder) ([]*AccessControl, error)
+	AddAccessControl(user string, ac *AccessControl) error
+	UpdateAccessControl(user string, upd AccessControlUpdater) error
+	DeleteAccessControl(user string, path string, name string) error
+	FindLogs(user string, find LogFinder) ([]*Log, error)
+	AddUser(u *User) error
+	GetUserByUser(user string) (*User, error)
+	FindGroups(find GroupFinder) ([]*Group, error)
+	AddGroup(user string, g *Group) error
+	UpdateGroup(user string, upd GroupUpdater) error
+	FindGroupMembers(find MemberFinder) ([]*Member, error)
+	AddGroupMember(user string, m *Member) error
+	DeleteGroupMember(user string, id int) error
 }
 
 type NotFoundError struct {
