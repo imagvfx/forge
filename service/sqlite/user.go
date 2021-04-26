@@ -11,7 +11,7 @@ func createUsersTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 			id INTEGER PRIMARY KEY,
-			user STRING NOT NULL UNIQUE,
+			email STRING NOT NULL UNIQUE,
 			name STRING NOT NULL
 		)
 	`)
@@ -42,9 +42,9 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 		keys = append(keys, "id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.User != nil {
-		keys = append(keys, "user=?")
-		vals = append(vals, *find.User)
+	if find.Email != nil {
+		keys = append(keys, "email=?")
+		vals = append(vals, *find.Email)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -53,7 +53,7 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 	rows, err := tx.Query(`
 		SELECT
 			id,
-			user,
+			email,
 			name
 		FROM users
 		`+where+`
@@ -70,7 +70,7 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 		u := &service.User{}
 		err := rows.Scan(
 			&u.ID,
-			&u.User,
+			&u.Email,
 			&u.Name,
 		)
 		if err != nil {
@@ -81,14 +81,14 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 	return users, nil
 }
 
-func GetUserByUser(db *sql.DB, user string) (*service.User, error) {
+func GetUserByEmail(db *sql.DB, user string) (*service.User, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getUserByUser(tx, user)
+	u, err := getUserByEmail(tx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -110,8 +110,8 @@ func getUser(tx *sql.Tx, id int) (*service.User, error) {
 	return users[0], nil
 }
 
-func getUserByUser(tx *sql.Tx, user string) (*service.User, error) {
-	users, err := findUsers(tx, service.UserFinder{User: &user})
+func getUserByEmail(tx *sql.Tx, user string) (*service.User, error) {
+	users, err := findUsers(tx, service.UserFinder{Email: &user})
 	if err != nil {
 		return nil, err
 	}
@@ -141,12 +141,12 @@ func AddUser(db *sql.DB, u *service.User) error {
 func addUser(tx *sql.Tx, u *service.User) error {
 	result, err := tx.Exec(`
 		INSERT INTO users (
-			user,
+			email,
 			name
 		)
 		VALUES (?, ?)
 	`,
-		u.User,
+		u.Email,
 		u.Name,
 	)
 	if err != nil {

@@ -302,9 +302,9 @@ func (l *Log) AccessControlString() string {
 }
 
 type User struct {
-	ID   int
-	User string
-	Name string
+	ID    int
+	Email string
+	Name  string
 }
 
 type Group struct {

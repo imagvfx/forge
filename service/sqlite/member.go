@@ -96,7 +96,7 @@ func attachAdditionalGroupMemberInfo(tx *sql.Tx, m *service.Member) error {
 	if err != nil {
 		return err
 	}
-	m.User = u.User
+	m.User = u.Email
 	return nil
 }
 

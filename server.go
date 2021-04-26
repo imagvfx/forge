@@ -563,21 +563,21 @@ func (s *Server) EntryLogs(user, path string) ([]*Log, error) {
 }
 
 func (s *Server) GetUser(user string) (*User, error) {
-	su, err := s.svc.GetUserByUser(user)
+	su, err := s.svc.GetUserByEmail(user)
 	if err != nil {
 		err = fromServiceError(err)
 		return nil, err
 	}
 	u := &User{
-		ID:   su.ID,
-		User: su.User,
-		Name: su.Name,
+		ID:    su.ID,
+		Email: su.Email,
+		Name:  su.Name,
 	}
 	return u, nil
 }
 
 func (s *Server) AddUser(user string) error {
-	u := &service.User{User: user}
+	u := &service.User{Email: user}
 	err := s.svc.AddUser(u)
 	if err != nil {
 		err = fromServiceError(err)

@@ -100,8 +100,8 @@ func (s *Service) AddUser(u *service.User) error {
 	return AddUser(s.db, u)
 }
 
-func (s *Service) GetUserByUser(user string) (*service.User, error) {
-	return GetUserByUser(s.db, user)
+func (s *Service) GetUserByEmail(user string) (*service.User, error) {
+	return GetUserByEmail(s.db, user)
 }
 
 func (s *Service) FindGroups(find service.GroupFinder) ([]*service.Group, error) {

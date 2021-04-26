@@ -150,7 +150,7 @@ func userCanWrite(tx *sql.Tx, user string, entID int) (bool, error) {
 // userAccessMode returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
 func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
-	u, err := getUserByUser(tx, user)
+	u, err := getUserByEmail(tx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +259,7 @@ func getAccessControlByPathName(tx *sql.Tx, user, path, name string) (*service.A
 	}
 	var id int
 	if typ == "user" {
-		u, err := getUserByUser(tx, name)
+		u, err := getUserByEmail(tx, name)
 		if err != nil {
 			return nil, err
 		}
@@ -326,7 +326,7 @@ func attachAccessorInfo(tx *sql.Tx, user string, a *service.AccessControl) error
 		if err != nil {
 			return err
 		}
-		a.Accessor = u.User
+		a.Accessor = u.Email
 		a.AccessorType = 0 // user
 	} else {
 		g, err := getGroup(tx, *a.GroupID)

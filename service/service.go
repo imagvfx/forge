@@ -25,7 +25,7 @@ type Service interface {
 	DeleteAccessControl(user string, path string, name string) error
 	FindLogs(user string, find LogFinder) ([]*Log, error)
 	AddUser(u *User) error
-	GetUserByUser(user string) (*User, error)
+	GetUserByEmail(user string) (*User, error)
 	FindGroups(find GroupFinder) ([]*Group, error)
 	AddGroup(user string, g *Group) error
 	UpdateGroup(user string, upd GroupUpdater) error
@@ -96,19 +96,19 @@ type AccessControlUpdater struct {
 }
 
 type User struct {
-	ID   int
-	User string
-	Name string
+	ID    int
+	Email string
+	Name  string
 }
 
 type UserFinder struct {
-	ID   *int
-	User *string
+	ID    *int
+	Email *string
 }
 
 type UserUpdater struct {
-	ID   int
-	Name *string
+	ID    int
+	Email *string
 }
 
 type Group struct {
