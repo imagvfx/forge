@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"time"
 )
 
@@ -32,6 +33,24 @@ type Service interface {
 	FindGroupMembers(find MemberFinder) ([]*Member, error)
 	AddGroupMember(user string, m *Member) error
 	DeleteGroupMember(user string, id int) error
+}
+
+type contextKey int
+
+const (
+	userEmailContextKey = contextKey(iota + 1)
+)
+
+func ContextWithUserEmail(ctx context.Context, email string) {
+	context.WithValue(ctx, userEmailContextKey, email)
+}
+
+func UserEmailFromContext(ctx context.Context) string {
+	email := ctx.Value(userEmailContextKey)
+	if email == nil {
+		return ""
+	}
+	return email.(string)
 }
 
 type NotFoundError struct {
