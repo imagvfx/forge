@@ -1011,7 +1011,7 @@ func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) 
 		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		KiB := int64(1 << 10)
-		r.ParseMultipartForm(500 * KiB) // 500KiB thumbnail is maximum
+		r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
 		file, _, err := r.FormFile("file")
 		if err != nil {
 			return err

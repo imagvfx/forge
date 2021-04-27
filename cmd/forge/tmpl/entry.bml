@@ -34,7 +34,7 @@
 					]
 				]
 				<h4> [
-					<img src="/thumbnail{{$.Entry.Path}}" height="120" width="180" alt="" style="border:1px solid #AAAAAA"> []
+					<img src="/thumbnail{{$.Entry.Path}}" height="108" width="192" alt="" style="border:1px solid #AAAAAA"> []
 				]
 				<div style="height:1px"> []
 				<div class="collapsible"> [

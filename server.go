@@ -12,6 +12,7 @@ import (
 	"strconv"
 
 	"github.com/imagvfx/forge/service"
+	"golang.org/x/image/draw"
 )
 
 type Server struct {
@@ -731,7 +732,7 @@ func (s *Server) GetThumbnail(ctx context.Context, path string) ([]byte, error) 
 }
 
 // AddThumbnail adds a thumbnail image to a entry.
-func (s *Server) AddThumbnail(ctx context.Context, path string, thumb image.Image) error {
+func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image) error {
 	ents, err := s.svc.FindEntries(ctx, service.EntryFinder{
 		Path: &path,
 	})
@@ -750,6 +751,24 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, thumb image.Imag
 	if !ok {
 		return fmt.Errorf("user doesn't have permission to write the entry")
 	}
+	thumb := image.NewRGBA(image.Rect(0, 0, 192, 108))
+	thumbBounds := thumb.Bounds()
+	imgWidth := float64(img.Bounds().Dx())
+	imgHeight := float64(img.Bounds().Dy())
+	xs := imgWidth / 192
+	ys := imgHeight / 108
+	if xs > ys {
+		scaledHeight := int(imgHeight / xs)
+		marginY := (108 - scaledHeight) / 2
+		thumbBounds.Min.Y += marginY
+		thumbBounds.Max.Y -= marginY
+	} else {
+		scaledWidth := int(imgWidth / ys)
+		marginX := (192 - scaledWidth) / 2
+		thumbBounds.Min.X += marginX
+		thumbBounds.Max.X -= marginX
+	}
+	draw.CatmullRom.Scale(thumb, thumbBounds, img, img.Bounds(), draw.Over, nil)
 	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
 	thumbnailDir := filepath.Join(thumbnailRoot, path)
 	err = os.MkdirAll(thumbnailDir, 0755)
