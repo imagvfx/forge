@@ -20,6 +20,10 @@ func createEntriesTable(tx *sql.Tx) error {
 			FOREIGN KEY (parent_id) REFERENCES entries (id)
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_entries_path ON entries (path)`)
 	return err
 }
 

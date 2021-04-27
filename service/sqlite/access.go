@@ -25,6 +25,10 @@ func createAccessControlsTable(tx *sql.Tx) error {
 			UNIQUE (entry_id, user_id, group_id)
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_access_controls_entry_id ON access_controls (entry_id)`)
 	return err
 }
 

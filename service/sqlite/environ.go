@@ -22,6 +22,10 @@ func createEnvironsTable(tx *sql.Tx) error {
 			UNIQUE (entry_id, name)
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_environs_entry_id ON environs (entry_id)`)
 	return err
 }
 

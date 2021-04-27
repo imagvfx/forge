@@ -16,6 +16,10 @@ func createUsersTable(tx *sql.Tx) error {
 			name STRING NOT NULL
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_users_email ON users (email)`)
 	return err
 }
 

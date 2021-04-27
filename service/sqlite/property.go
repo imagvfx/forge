@@ -22,6 +22,10 @@ func createPropertiesTable(tx *sql.Tx) error {
 			UNIQUE (entry_id, name)
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_properties_entry_id ON properties (entry_id)`)
 	return err
 }
 

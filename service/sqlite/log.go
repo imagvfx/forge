@@ -23,6 +23,14 @@ func createLogsTable(tx *sql.Tx) error {
 			FOREIGN KEY (entry_id) REFERENCES entries (id)
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_logs_entry_id ON logs (entry_id)`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_logs_user ON logs (user)`)
 	return err
 }
 

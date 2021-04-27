@@ -16,6 +16,10 @@ func createGroupsTable(tx *sql.Tx) error {
 			name STRING NOT NULL UNIQUE
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_groups_name ON groups (name)`)
 	return err
 }
 

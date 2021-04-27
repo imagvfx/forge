@@ -17,6 +17,10 @@ func createGroupMembersTable(tx *sql.Tx) error {
 			user_id INTEGER NOT NULL
 		)
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_group_members_group_id ON group_members (group_id)`)
 	return err
 }
 
