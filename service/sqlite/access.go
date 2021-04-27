@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"sort"
@@ -27,19 +28,19 @@ func createAccessControlsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindAccessControls(db *sql.DB, user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
-	tx, err := db.Begin()
+func FindAccessControls(db *sql.DB, ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 	acm := make(map[string]*service.AccessControl)
 	for {
-		ent, err := getEntry(tx, user, find.EntryID)
+		ent, err := getEntry(tx, ctx, find.EntryID)
 		if err != nil {
 			return nil, err
 		}
-		as, err := findAccessControls(tx, user, find)
+		as, err := findAccessControls(tx, ctx, find)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +72,7 @@ func FindAccessControls(db *sql.DB, user string, find service.AccessControlFinde
 }
 
 // when id is empty, it will find access controls of root.
-func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -80,7 +81,7 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			access_controls.id,
 			access_controls.entry_id,
@@ -112,7 +113,7 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 		if err != nil {
 			return nil, err
 		}
-		err = attachAccessorInfo(tx, user, a)
+		err = attachAccessorInfo(tx, ctx, a)
 		if err != nil {
 			return nil, err
 		}
@@ -121,8 +122,8 @@ func findAccessControls(tx *sql.Tx, user string, find service.AccessControlFinde
 	return acss, nil
 }
 
-func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
-	mode, err := userAccessMode(tx, user, entID)
+func userCanRead(tx *sql.Tx, ctx context.Context, entID int) (bool, error) {
+	mode, err := userAccessMode(tx, ctx, entID)
 	if err != nil {
 		return false, err
 	}
@@ -132,8 +133,8 @@ func userCanRead(tx *sql.Tx, user string, entID int) (bool, error) {
 	return true, nil
 }
 
-func userCanWrite(tx *sql.Tx, user string, entID int) (bool, error) {
-	mode, err := userAccessMode(tx, user, entID)
+func userCanWrite(tx *sql.Tx, ctx context.Context, entID int) (bool, error) {
+	mode, err := userAccessMode(tx, ctx, entID)
 	if err != nil {
 		return false, err
 	}
@@ -149,13 +150,14 @@ func userCanWrite(tx *sql.Tx, user string, entID int) (bool, error) {
 
 // userAccessMode returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
-func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
-	u, err := getUserByEmail(tx, user)
+func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
+	user := service.UserEmailFromContext(ctx)
+	u, err := getUserByEmail(tx, ctx, user)
 	if err != nil {
 		return nil, err
 	}
 	adminGroupID := 1
-	admins, err := findGroupMembers(tx, service.MemberFinder{GroupID: &adminGroupID})
+	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: &adminGroupID})
 	for _, admin := range admins {
 		if admin.UserID == u.ID {
 			// admins can read any entry.
@@ -164,7 +166,7 @@ func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
 		}
 	}
 	for {
-		as, err := findAccessControls(tx, user, service.AccessControlFinder{EntryID: entID})
+		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryID: entID})
 		if err != nil {
 			return nil, err
 		}
@@ -182,7 +184,7 @@ func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
 			if a.GroupID == nil {
 				continue
 			}
-			members, err := findGroupMembers(tx, service.MemberFinder{GroupID: a.GroupID})
+			members, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: a.GroupID})
 			if err != nil {
 				return nil, err
 			}
@@ -192,7 +194,7 @@ func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
 				}
 			}
 		}
-		parentID, err := getEntryParent(tx, entID)
+		parentID, err := getEntryParent(tx, ctx, entID)
 		if err != nil {
 			return nil, err
 		}
@@ -207,8 +209,8 @@ func userAccessMode(tx *sql.Tx, user string, entID int) (*int, error) {
 // getAccessControl finds and returns AccessControl by it's id.
 // The reason it doesn't use findAccessConrtol is the function is entry based.
 // I might refactor it.
-func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, error) {
-	rows, err := tx.Query(`
+func getAccessControl(tx *sql.Tx, ctx context.Context, id int) (*service.AccessControl, error) {
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			access_controls.id,
 			access_controls.entry_id,
@@ -241,15 +243,15 @@ func getAccessControl(tx *sql.Tx, user string, id int) (*service.AccessControl, 
 	if err != nil {
 		return nil, err
 	}
-	err = attachAccessorInfo(tx, user, a)
+	err = attachAccessorInfo(tx, ctx, a)
 	if err != nil {
 		return nil, err
 	}
 	return a, nil
 }
 
-func getAccessControlByPathName(tx *sql.Tx, user, path, name string) (*service.AccessControl, error) {
-	e, err := getEntryByPath(tx, user, path)
+func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
+	e, err := getEntryByPath(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -259,13 +261,13 @@ func getAccessControlByPathName(tx *sql.Tx, user, path, name string) (*service.A
 	}
 	var id int
 	if typ == "user" {
-		u, err := getUserByEmail(tx, name)
+		u, err := getUserByEmail(tx, ctx, name)
 		if err != nil {
 			return nil, err
 		}
 		id = u.ID
 	} else {
-		g, err := getGroupByName(tx, name)
+		g, err := getGroupByName(tx, ctx, name)
 		if err != nil {
 			return nil, err
 		}
@@ -287,7 +289,7 @@ func getAccessControlByPathName(tx *sql.Tx, user, path, name string) (*service.A
 			access_controls.%v_id=?`,
 		typ,
 	)
-	rows, err := tx.Query(stmt, e.ID, id)
+	rows, err := tx.QueryContext(ctx, stmt, e.ID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -307,14 +309,14 @@ func getAccessControlByPathName(tx *sql.Tx, user, path, name string) (*service.A
 	if err != nil {
 		return nil, err
 	}
-	err = attachAccessorInfo(tx, user, a)
+	err = attachAccessorInfo(tx, ctx, a)
 	if err != nil {
 		return nil, err
 	}
 	return a, nil
 }
 
-func attachAccessorInfo(tx *sql.Tx, user string, a *service.AccessControl) error {
+func attachAccessorInfo(tx *sql.Tx, ctx context.Context, a *service.AccessControl) error {
 	if a.UserID != nil && a.GroupID != nil {
 		return fmt.Errorf("both user_id and group_id is defined")
 	}
@@ -322,14 +324,14 @@ func attachAccessorInfo(tx *sql.Tx, user string, a *service.AccessControl) error
 		return fmt.Errorf("both user_id and group_id is nil")
 	}
 	if a.UserID != nil {
-		u, err := getUser(tx, *a.UserID)
+		u, err := getUser(tx, ctx, *a.UserID)
 		if err != nil {
 			return err
 		}
 		a.Accessor = u.Email
 		a.AccessorType = 0 // user
 	} else {
-		g, err := getGroup(tx, *a.GroupID)
+		g, err := getGroup(tx, ctx, *a.GroupID)
 		if err != nil {
 			return err
 		}
@@ -339,13 +341,13 @@ func attachAccessorInfo(tx *sql.Tx, user string, a *service.AccessControl) error
 	return nil
 }
 
-func AddAccessControl(db *sql.DB, user string, a *service.AccessControl) error {
-	tx, err := db.Begin()
+func AddAccessControl(db *sql.DB, ctx context.Context, a *service.AccessControl) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addAccessControl(tx, user, a)
+	err = addAccessControl(tx, ctx, a)
 	if err != nil {
 		return err
 	}
@@ -356,15 +358,15 @@ func AddAccessControl(db *sql.DB, user string, a *service.AccessControl) error {
 	return nil
 }
 
-func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
-	ok, err := userCanWrite(tx, user, a.EntryID)
+func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl) error {
+	ok, err := userCanWrite(tx, ctx, a.EntryID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return fmt.Errorf("user cannot modify entry")
 	}
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO access_controls (
 			entry_id,
 			user_id,
@@ -386,11 +388,12 @@ func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
 		return err
 	}
 	a.ID = int(id)
-	err = attachAccessorInfo(tx, user, a)
+	err = attachAccessorInfo(tx, ctx, a)
 	if err != nil {
 		return err
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  a.EntryID,
 		User:     user,
 		Action:   "create",
@@ -405,13 +408,13 @@ func addAccessControl(tx *sql.Tx, user string, a *service.AccessControl) error {
 	return nil
 }
 
-func UpdateAccessControl(db *sql.DB, user string, upd service.AccessControlUpdater) error {
-	tx, err := db.Begin()
+func UpdateAccessControl(db *sql.DB, ctx context.Context, upd service.AccessControlUpdater) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateAccessControl(tx, user, upd)
+	err = updateAccessControl(tx, ctx, upd)
 	if err != nil {
 		return err
 	}
@@ -422,16 +425,16 @@ func UpdateAccessControl(db *sql.DB, user string, upd service.AccessControlUpdat
 	return nil
 }
 
-func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdater) error {
-	a, err := getAccessControl(tx, user, upd.ID)
+func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessControlUpdater) error {
+	a, err := getAccessControl(tx, ctx, upd.ID)
 	if err != nil {
 		return err
 	}
-	err = attachAccessorInfo(tx, user, a)
+	err = attachAccessorInfo(tx, ctx, a)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, a.EntryID)
+	ok, err := userCanWrite(tx, ctx, a.EntryID)
 	if err != nil {
 		return err
 	}
@@ -449,7 +452,7 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)
 	}
 	vals = append(vals, upd.ID) // for where clause
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		UPDATE access_controls
 		SET `+strings.Join(keys, ", ")+`
 		WHERE id=?
@@ -466,7 +469,8 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  a.EntryID,
 		User:     user,
 		Action:   "update",
@@ -481,13 +485,13 @@ func updateAccessControl(tx *sql.Tx, user string, upd service.AccessControlUpdat
 	return nil
 }
 
-func DeleteAccessControl(db *sql.DB, user, path, name string) error {
-	tx, err := db.Begin()
+func DeleteAccessControl(db *sql.DB, ctx context.Context, path, name string) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteAccessControl(tx, user, path, name)
+	err = deleteAccessControl(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -498,12 +502,12 @@ func DeleteAccessControl(db *sql.DB, user, path, name string) error {
 	return nil
 }
 
-func deleteAccessControl(tx *sql.Tx, user, path, name string) error {
-	a, err := getAccessControlByPathName(tx, user, path, name)
+func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) error {
+	a, err := getAccessControlByPathName(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, a.EntryID)
+	ok, err := userCanWrite(tx, ctx, a.EntryID)
 	if err != nil {
 		return err
 	}
@@ -526,7 +530,8 @@ func deleteAccessControl(tx *sql.Tx, user, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 access_control affected, got %v", n)
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  a.EntryID,
 		User:     user,
 		Action:   "delete",

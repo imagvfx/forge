@@ -6,33 +6,33 @@ import (
 )
 
 type Service interface {
-	FindEntries(user string, find EntryFinder) ([]*Entry, error)
-	GetEntry(user string, id int) (*Entry, error)
-	UserCanWriteEntry(user string, id int) (bool, error)
-	AddEntry(user string, ent *Entry, props []*Property, envs []*Property) error
-	RenameEntry(user string, path string, newName string) error
-	DeleteEntry(user string, path string) error
-	FindProperties(user string, find PropertyFinder) ([]*Property, error)
-	AddProperty(user string, p *Property) error
-	UpdateProperty(user string, upd PropertyUpdater) error
-	DeleteProperty(user string, path string, name string) error
-	FindEnvirons(user string, find PropertyFinder) ([]*Property, error)
-	AddEnviron(user string, p *Property) error
-	UpdateEnviron(user string, upd PropertyUpdater) error
-	DeleteEnviron(user string, path string, name string) error
-	FindAccessControls(user string, find AccessControlFinder) ([]*AccessControl, error)
-	AddAccessControl(user string, ac *AccessControl) error
-	UpdateAccessControl(user string, upd AccessControlUpdater) error
-	DeleteAccessControl(user string, path string, name string) error
-	FindLogs(user string, find LogFinder) ([]*Log, error)
-	AddUser(u *User) error
-	GetUserByEmail(user string) (*User, error)
-	FindGroups(find GroupFinder) ([]*Group, error)
-	AddGroup(user string, g *Group) error
-	UpdateGroup(user string, upd GroupUpdater) error
-	FindGroupMembers(find MemberFinder) ([]*Member, error)
-	AddGroupMember(user string, m *Member) error
-	DeleteGroupMember(user string, id int) error
+	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
+	GetEntry(ctx context.Context, id int) (*Entry, error)
+	UserCanWriteEntry(ctx context.Context, id int) (bool, error)
+	AddEntry(ctx context.Context, ent *Entry, props []*Property, envs []*Property) error
+	RenameEntry(ctx context.Context, path string, newName string) error
+	DeleteEntry(ctx context.Context, path string) error
+	FindProperties(ctx context.Context, find PropertyFinder) ([]*Property, error)
+	AddProperty(ctx context.Context, p *Property) error
+	UpdateProperty(ctx context.Context, upd PropertyUpdater) error
+	DeleteProperty(ctx context.Context, path string, name string) error
+	FindEnvirons(ctx context.Context, find PropertyFinder) ([]*Property, error)
+	AddEnviron(ctx context.Context, p *Property) error
+	UpdateEnviron(ctx context.Context, upd PropertyUpdater) error
+	DeleteEnviron(ctx context.Context, path string, name string) error
+	FindAccessControls(ctx context.Context, find AccessControlFinder) ([]*AccessControl, error)
+	AddAccessControl(ctx context.Context, ac *AccessControl) error
+	UpdateAccessControl(ctx context.Context, upd AccessControlUpdater) error
+	DeleteAccessControl(ctx context.Context, path string, name string) error
+	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
+	AddUser(ctx context.Context, u *User) error
+	GetUserByEmail(ctx context.Context, user string) (*User, error)
+	FindGroups(ctx context.Context, find GroupFinder) ([]*Group, error)
+	AddGroup(ctx context.Context, g *Group) error
+	UpdateGroup(ctx context.Context, upd GroupUpdater) error
+	FindGroupMembers(ctx context.Context, find MemberFinder) ([]*Member, error)
+	AddGroupMember(ctx context.Context, m *Member) error
+	DeleteGroupMember(ctx context.Context, id int) error
 }
 
 type contextKey int
@@ -41,8 +41,8 @@ const (
 	userEmailContextKey = contextKey(iota + 1)
 )
 
-func ContextWithUserEmail(ctx context.Context, email string) {
-	context.WithValue(ctx, userEmailContextKey, email)
+func ContextWithUserEmail(ctx context.Context, email string) context.Context {
+	return context.WithValue(ctx, userEmailContextKey, email)
 }
 
 func UserEmailFromContext(ctx context.Context) string {

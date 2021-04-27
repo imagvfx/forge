@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"strings"
 
@@ -18,13 +19,13 @@ func createUsersTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindUsers(db *sql.DB, find service.UserFinder) ([]*service.User, error) {
-	tx, err := db.Begin()
+func FindUsers(db *sql.DB, ctx context.Context, find service.UserFinder) ([]*service.User, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	users, err := findUsers(tx, find)
+	users, err := findUsers(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +36,7 @@ func FindUsers(db *sql.DB, find service.UserFinder) ([]*service.User, error) {
 	return users, nil
 }
 
-func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
+func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*service.User, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -50,7 +51,7 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			email,
@@ -81,14 +82,14 @@ func findUsers(tx *sql.Tx, find service.UserFinder) ([]*service.User, error) {
 	return users, nil
 }
 
-func GetUserByEmail(db *sql.DB, user string) (*service.User, error) {
-	tx, err := db.Begin()
+func GetUserByEmail(db *sql.DB, ctx context.Context, user string) (*service.User, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getUserByEmail(tx, user)
+	u, err := getUserByEmail(tx, ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +100,8 @@ func GetUserByEmail(db *sql.DB, user string) (*service.User, error) {
 	return u, nil
 }
 
-func getUser(tx *sql.Tx, id int) (*service.User, error) {
-	users, err := findUsers(tx, service.UserFinder{ID: &id})
+func getUser(tx *sql.Tx, ctx context.Context, id int) (*service.User, error) {
+	users, err := findUsers(tx, ctx, service.UserFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -110,8 +111,8 @@ func getUser(tx *sql.Tx, id int) (*service.User, error) {
 	return users[0], nil
 }
 
-func getUserByEmail(tx *sql.Tx, user string) (*service.User, error) {
-	users, err := findUsers(tx, service.UserFinder{Email: &user})
+func getUserByEmail(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
+	users, err := findUsers(tx, ctx, service.UserFinder{Email: &user})
 	if err != nil {
 		return nil, err
 	}
@@ -121,13 +122,13 @@ func getUserByEmail(tx *sql.Tx, user string) (*service.User, error) {
 	return users[0], nil
 }
 
-func AddUser(db *sql.DB, u *service.User) error {
-	tx, err := db.Begin()
+func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addUser(tx, u)
+	err = addUser(tx, ctx, u)
 	if err != nil {
 		return err
 	}
@@ -138,8 +139,8 @@ func AddUser(db *sql.DB, u *service.User) error {
 	return nil
 }
 
-func addUser(tx *sql.Tx, u *service.User) error {
-	result, err := tx.Exec(`
+func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO users (
 			email,
 			name
@@ -160,7 +161,8 @@ func addUser(tx *sql.Tx, u *service.User) error {
 	if u.ID == 1 {
 		// make the user admin
 		adminGroupID := 1
-		err = addGroupMember(tx, "system", &service.Member{
+		ctx = service.ContextWithUserEmail(ctx, "system")
+		err = addGroupMember(tx, ctx, &service.Member{
 			GroupID: adminGroupID,
 			UserID:  u.ID,
 		})

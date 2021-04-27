@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -36,13 +37,13 @@ func addAdminGroup(tx *sql.Tx) error {
 	return nil
 }
 
-func FindGroups(db *sql.DB, find service.GroupFinder) ([]*service.Group, error) {
-	tx, err := db.Begin()
+func FindGroups(db *sql.DB, ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	groups, err := findGroups(tx, find)
+	groups, err := findGroups(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,7 @@ func FindGroups(db *sql.DB, find service.GroupFinder) ([]*service.Group, error) 
 	return groups, nil
 }
 
-func findGroups(tx *sql.Tx, find service.GroupFinder) ([]*service.Group, error) {
+func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -68,7 +69,7 @@ func findGroups(tx *sql.Tx, find service.GroupFinder) ([]*service.Group, error) 
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			name
@@ -97,14 +98,14 @@ func findGroups(tx *sql.Tx, find service.GroupFinder) ([]*service.Group, error) 
 	return groups, nil
 }
 
-func GetGroupByName(db *sql.DB, name string) (*service.Group, error) {
-	tx, err := db.Begin()
+func GetGroupByName(db *sql.DB, ctx context.Context, name string) (*service.Group, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getGroupByName(tx, name)
+	u, err := getGroupByName(tx, ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +116,8 @@ func GetGroupByName(db *sql.DB, name string) (*service.Group, error) {
 	return u, nil
 }
 
-func getGroup(tx *sql.Tx, id int) (*service.Group, error) {
-	groups, err := findGroups(tx, service.GroupFinder{ID: &id})
+func getGroup(tx *sql.Tx, ctx context.Context, id int) (*service.Group, error) {
+	groups, err := findGroups(tx, ctx, service.GroupFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +127,8 @@ func getGroup(tx *sql.Tx, id int) (*service.Group, error) {
 	return groups[0], nil
 }
 
-func getGroupByName(tx *sql.Tx, name string) (*service.Group, error) {
-	groups, err := findGroups(tx, service.GroupFinder{Name: &name})
+func getGroupByName(tx *sql.Tx, ctx context.Context, name string) (*service.Group, error) {
+	groups, err := findGroups(tx, ctx, service.GroupFinder{Name: &name})
 	if err != nil {
 		return nil, err
 	}
@@ -137,13 +138,13 @@ func getGroupByName(tx *sql.Tx, name string) (*service.Group, error) {
 	return groups[0], nil
 }
 
-func AddGroup(db *sql.DB, user string, g *service.Group) error {
-	tx, err := db.Begin()
+func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addGroup(tx, user, g)
+	err = addGroup(tx, ctx, g)
 	if err != nil {
 		return err
 	}
@@ -154,9 +155,9 @@ func AddGroup(db *sql.DB, user string, g *service.Group) error {
 	return nil
 }
 
-func addGroup(tx *sql.Tx, user string, g *service.Group) error {
+func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
 	// TODO: check the user is a member of admin group.
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO groups (
 			name
 		)
@@ -175,13 +176,13 @@ func addGroup(tx *sql.Tx, user string, g *service.Group) error {
 	return nil
 }
 
-func UpdateGroup(db *sql.DB, user string, upd service.GroupUpdater) error {
-	tx, err := db.Begin()
+func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateGroup(tx, user, upd)
+	err = updateGroup(tx, ctx, upd)
 	if err != nil {
 		return err
 	}
@@ -192,7 +193,7 @@ func UpdateGroup(db *sql.DB, user string, upd service.GroupUpdater) error {
 	return nil
 }
 
-func updateGroup(tx *sql.Tx, user string, upd service.GroupUpdater) error {
+func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) error {
 	// TODO: check the user is a member of admin group.
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -204,7 +205,7 @@ func updateGroup(tx *sql.Tx, user string, upd service.GroupUpdater) error {
 		return fmt.Errorf("need at least one field to update group: %v", upd.ID)
 	}
 	vals = append(vals, upd.ID) // for where clause
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		UPDATE groups
 		SET `+strings.Join(keys, ", ")+`
 		WHERE id=?

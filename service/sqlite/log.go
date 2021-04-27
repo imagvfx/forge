@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"strings"
 
@@ -25,17 +26,17 @@ func createLogsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindLogs(db *sql.DB, user string, find service.LogFinder) ([]*service.Log, error) {
-	tx, err := db.Begin()
+func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	_, err = getEntry(tx, user, find.EntryID)
+	_, err = getEntry(tx, ctx, find.EntryID)
 	if err != nil {
 		return nil, err
 	}
-	props, err := findLogs(tx, user, find)
+	props, err := findLogs(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func FindLogs(db *sql.DB, user string, find service.LogFinder) ([]*service.Log, 
 }
 
 // when id is empty, it will find logs of root.
-func findLogs(tx *sql.Tx, user string, find service.LogFinder) ([]*service.Log, error) {
+func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -56,7 +57,7 @@ func findLogs(tx *sql.Tx, user string, find service.LogFinder) ([]*service.Log, 
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -97,8 +98,8 @@ func findLogs(tx *sql.Tx, user string, find service.LogFinder) ([]*service.Log, 
 	return logs, nil
 }
 
-func addLog(tx *sql.Tx, l *service.Log) error {
-	result, err := tx.Exec(`
+func addLog(tx *sql.Tx, ctx context.Context, l *service.Log) error {
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO logs (
 			entry_id,
 			user,

@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/imagvfx/forge"
+	"github.com/imagvfx/forge/service"
 )
 
 type pathHandler struct {
@@ -74,27 +75,28 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.URL.Path
-		ent, err := h.server.GetEntry(user, path)
+		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
 			return err
 		}
-		subEnts, err := h.server.SubEntries(user, path)
+		subEnts, err := h.server.SubEntries(ctx, path)
 		if err != nil {
 			return err
 		}
 		sort.Slice(subEnts, func(i, j int) bool {
 			return subEnts[i].Name() < subEnts[j].Name()
 		})
-		props, err := h.server.EntryProperties(user, path)
+		props, err := h.server.EntryProperties(ctx, path)
 		if err != nil {
 			return err
 		}
-		envs, err := h.server.EntryEnvirons(user, path)
+		envs, err := h.server.EntryEnvirons(ctx, path)
 		if err != nil {
 			return err
 		}
-		acs, err := h.server.EntryAccessControls(user, path)
+		acs, err := h.server.EntryAccessControls(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -136,24 +138,25 @@ func (h *pathHandler) HandleEntryEdit(w http.ResponseWriter, r *http.Request) {
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.URL.Path
-		ent, err := h.server.GetEntry(user, path)
+		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
 			return err
 		}
-		subEnts, err := h.server.SubEntries(user, path)
+		subEnts, err := h.server.SubEntries(ctx, path)
 		if err != nil {
 			return err
 		}
-		props, err := h.server.EntryProperties(user, path)
+		props, err := h.server.EntryProperties(ctx, path)
 		if err != nil {
 			return err
 		}
-		envs, err := h.server.EntryEnvirons(user, path)
+		envs, err := h.server.EntryEnvirons(ctx, path)
 		if err != nil {
 			return err
 		}
-		acs, err := h.server.EntryAccessControls(user, path)
+		acs, err := h.server.EntryAccessControls(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -195,24 +198,25 @@ func (h *pathHandler) HandleEntryDelete(w http.ResponseWriter, r *http.Request) 
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.URL.Path
-		ent, err := h.server.GetEntry(user, path)
+		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
 			return err
 		}
-		subEnts, err := h.server.SubEntries(user, path)
+		subEnts, err := h.server.SubEntries(ctx, path)
 		if err != nil {
 			return err
 		}
-		props, err := h.server.EntryProperties(user, path)
+		props, err := h.server.EntryProperties(ctx, path)
 		if err != nil {
 			return err
 		}
-		envs, err := h.server.EntryEnvirons(user, path)
+		envs, err := h.server.EntryEnvirons(ctx, path)
 		if err != nil {
 			return err
 		}
-		acs, err := h.server.EntryAccessControls(user, path)
+		acs, err := h.server.EntryAccessControls(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -254,12 +258,13 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.URL.Path
-		ent, err := h.server.GetEntry(user, path)
+		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
 			return err
 		}
-		logs, err := h.server.EntryLogs(user, path)
+		logs, err := h.server.EntryLogs(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -297,7 +302,8 @@ func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return nil
 		}
-		bs, err := h.server.GetThumbnail(user, path)
+		ctx := service.ContextWithUserEmail(r.Context(), user)
+		bs, err := h.server.GetThumbnail(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -338,13 +344,14 @@ func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
-		groups, err := h.server.FindAllGroups()
+		ctx := service.ContextWithUserEmail(r.Context(), user)
+		groups, err := h.server.FindAllGroups(ctx)
 		if err != nil {
 			return err
 		}
 		members := make(map[string][]*forge.Member)
 		for _, g := range groups {
-			mems, err := h.server.FindGroupMembers(g.Name)
+			mems, err := h.server.FindGroupMembers(ctx, g.Name)
 			if err != nil {
 				return err
 			}
@@ -462,12 +469,13 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := op.Email
-		_, err = h.server.GetUser(user)
+		ctx := service.ContextWithUserEmail(r.Context(), user)
+		_, err = h.server.GetUser(ctx, user)
 		if err != nil {
 			if !errors.As(err, &forge.NotFoundError{}) {
 				return err
 			}
-			err := h.server.AddUser(user)
+			err := h.server.AddUser(ctx, user)
 			if err != nil {
 				return err
 			}
@@ -516,12 +524,13 @@ func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		// parent, if suggested, will be used as prefix of the path.
 		parent := r.FormValue("parent")
 		path := r.FormValue("path")
 		path = filepath.Join(parent, path)
 		typ := r.FormValue("type")
-		err = h.server.AddEntry(user, path, typ)
+		err = h.server.AddEntry(ctx, path, typ)
 		if err != nil {
 			return err
 		}
@@ -547,10 +556,11 @@ func (h *apiHandler) HandleRenameEntry(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		// parent, if suggested, will be used as prefix of the path.
 		path := r.FormValue("path")
 		newName := r.FormValue("new-name")
-		err = h.server.RenameEntry(user, path, newName)
+		err = h.server.RenameEntry(ctx, path, newName)
 		if err != nil {
 			return err
 		}
@@ -580,9 +590,10 @@ func (h *apiHandler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		// parent, if suggested, will be used as prefix of the path.
 		path := r.FormValue("path")
-		err = h.server.DeleteEntry(user, path)
+		err = h.server.DeleteEntry(ctx, path)
 		if err != nil {
 			return err
 		}
@@ -614,11 +625,12 @@ func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err = h.server.AddProperty(user, path, name, typ, value)
+		err = h.server.AddProperty(ctx, path, name, typ, value)
 		if err != nil {
 			return err
 		}
@@ -644,10 +656,11 @@ func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		value := r.FormValue("value")
-		err = h.server.SetProperty(user, path, name, value)
+		err = h.server.SetProperty(ctx, path, name, value)
 		if err != nil {
 			return err
 		}
@@ -673,9 +686,10 @@ func (h *apiHandler) HandleDeleteProperty(w http.ResponseWriter, r *http.Request
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
-		err = h.server.DeleteProperty(user, path, name)
+		err = h.server.DeleteProperty(ctx, path, name)
 		if err != nil {
 			return err
 		}
@@ -701,11 +715,12 @@ func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err = h.server.AddEnviron(user, path, name, typ, value)
+		err = h.server.AddEnviron(ctx, path, name, typ, value)
 		if err != nil {
 			return err
 		}
@@ -731,10 +746,11 @@ func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		value := r.FormValue("value")
-		err = h.server.SetEnviron(user, path, name, value)
+		err = h.server.SetEnviron(ctx, path, name, value)
 		if err != nil {
 			return err
 		}
@@ -760,9 +776,10 @@ func (h *apiHandler) HandleDeleteEnviron(w http.ResponseWriter, r *http.Request)
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
-		err = h.server.DeleteEnviron(user, path, name)
+		err = h.server.DeleteEnviron(ctx, path, name)
 		if err != nil {
 			return err
 		}
@@ -788,11 +805,12 @@ func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Reque
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		accessor := r.FormValue("accessor")
 		accessor_type := r.FormValue("accessor_type")
 		mode := r.FormValue("mode")
-		err = h.server.AddAccessControl(user, path, accessor, accessor_type, mode)
+		err = h.server.AddAccessControl(ctx, path, accessor, accessor_type, mode)
 		if err != nil {
 			return err
 		}
@@ -818,9 +836,10 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		id := r.FormValue("id")
 		mode := r.FormValue("mode")
-		err = h.server.SetAccessControl(user, id, mode)
+		err = h.server.SetAccessControl(ctx, id, mode)
 		if err != nil {
 			return err
 		}
@@ -846,9 +865,10 @@ func (h *apiHandler) HandleDeleteAccessControl(w http.ResponseWriter, r *http.Re
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		name := r.FormValue("name")
-		err = h.server.DeleteAccessControl(user, path, name)
+		err = h.server.DeleteAccessControl(ctx, path, name)
 		if err != nil {
 			return err
 		}
@@ -874,8 +894,9 @@ func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		group := r.FormValue("group")
-		err = h.server.AddGroup(user, group)
+		err = h.server.AddGroup(ctx, group)
 		if err != nil {
 			return err
 		}
@@ -901,9 +922,10 @@ func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		id := r.FormValue("id")
 		group := r.FormValue("group")
-		err = h.server.SetGroup(user, id, group)
+		err = h.server.SetGroup(ctx, id, group)
 		if err != nil {
 			return err
 		}
@@ -929,9 +951,10 @@ func (h *apiHandler) HandleAddGroupMember(w http.ResponseWriter, r *http.Request
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		group := r.FormValue("group")
 		member := r.FormValue("member")
-		err = h.server.AddGroupMember(user, group, member)
+		err = h.server.AddGroupMember(ctx, group, member)
 		if err != nil {
 			return err
 		}
@@ -957,8 +980,9 @@ func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Requ
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		id := r.FormValue("id")
-		err = h.server.DeleteGroupMember(user, id)
+		err = h.server.DeleteGroupMember(ctx, id)
 		if err != nil {
 			return err
 		}
@@ -984,6 +1008,7 @@ func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) 
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
 		KiB := int64(1 << 10)
 		r.ParseMultipartForm(500 * KiB) // 500KiB thumbnail is maximum
@@ -995,7 +1020,7 @@ func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			return err
 		}
-		err = h.server.AddThumbnail(user, path, img)
+		err = h.server.AddThumbnail(ctx, path, img)
 		if err != nil {
 			return err
 		}
@@ -1021,8 +1046,9 @@ func (h *apiHandler) HandleDeleteThumbnail(w http.ResponseWriter, r *http.Reques
 			return err
 		}
 		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
 		path := r.FormValue("path")
-		err = h.server.DeleteThumbnail(user, path)
+		err = h.server.DeleteThumbnail(ctx, path)
 		if err != nil {
 			return err
 		}

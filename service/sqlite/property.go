@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"sort"
@@ -24,17 +25,17 @@ func createPropertiesTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindProperties(db *sql.DB, user string, find service.PropertyFinder) ([]*service.Property, error) {
-	tx, err := db.Begin()
+func FindProperties(db *sql.DB, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntry(tx, user, find.EntryID)
+	ent, err := getEntry(tx, ctx, find.EntryID)
 	if err != nil {
 		return nil, err
 	}
-	props, err := findProperties(tx, user, find)
+	props, err := findProperties(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func FindProperties(db *sql.DB, user string, find service.PropertyFinder) ([]*se
 }
 
 // when id is empty, it will find properties of root.
-func findProperties(tx *sql.Tx, user string, find service.PropertyFinder) ([]*service.Property, error) {
+func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -65,7 +66,7 @@ func findProperties(tx *sql.Tx, user string, find service.PropertyFinder) ([]*se
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -98,8 +99,8 @@ func findProperties(tx *sql.Tx, user string, find service.PropertyFinder) ([]*se
 	return props, nil
 }
 
-func getProperty(tx *sql.Tx, user string, id int) (*service.Property, error) {
-	rows, err := tx.Query(`
+func getProperty(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -131,12 +132,12 @@ func getProperty(tx *sql.Tx, user string, id int) (*service.Property, error) {
 	return p, nil
 }
 
-func getPropertyByPathName(tx *sql.Tx, user, path, name string) (*service.Property, error) {
-	e, err := getEntryByPath(tx, user, path)
+func getPropertyByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
+	e, err := getEntryByPath(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -169,13 +170,13 @@ func getPropertyByPathName(tx *sql.Tx, user, path, name string) (*service.Proper
 	return p, nil
 }
 
-func AddProperty(db *sql.DB, user string, p *service.Property) error {
-	tx, err := db.Begin()
+func AddProperty(db *sql.DB, ctx context.Context, p *service.Property) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addProperty(tx, user, p)
+	err = addProperty(tx, ctx, p)
 	if err != nil {
 		return err
 	}
@@ -186,15 +187,15 @@ func AddProperty(db *sql.DB, user string, p *service.Property) error {
 	return nil
 }
 
-func addProperty(tx *sql.Tx, user string, p *service.Property) error {
-	ok, err := userCanWrite(tx, user, p.EntryID)
+func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
+	ok, err := userCanWrite(tx, ctx, p.EntryID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return fmt.Errorf("user cannot modify entry")
 	}
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO properties (
 			entry_id,
 			typ,
@@ -216,7 +217,8 @@ func addProperty(tx *sql.Tx, user string, p *service.Property) error {
 		return err
 	}
 	p.ID = int(id)
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  p.EntryID,
 		User:     user,
 		Action:   "create",
@@ -231,13 +233,13 @@ func addProperty(tx *sql.Tx, user string, p *service.Property) error {
 	return nil
 }
 
-func UpdateProperty(db *sql.DB, user string, upd service.PropertyUpdater) error {
-	tx, err := db.Begin()
+func UpdateProperty(db *sql.DB, ctx context.Context, upd service.PropertyUpdater) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateProperty(tx, user, upd)
+	err = updateProperty(tx, ctx, upd)
 	if err != nil {
 		return err
 	}
@@ -248,12 +250,12 @@ func UpdateProperty(db *sql.DB, user string, upd service.PropertyUpdater) error 
 	return nil
 }
 
-func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
-	p, err := getProperty(tx, user, upd.ID)
+func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
+	p, err := getProperty(tx, ctx, upd.ID)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, p.EntryID)
+	ok, err := userCanWrite(tx, ctx, p.EntryID)
 	if err != nil {
 		return err
 	}
@@ -271,7 +273,7 @@ func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error 
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)
 	}
 	vals = append(vals, upd.ID) // for where clause
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		UPDATE properties
 		SET `+strings.Join(keys, ", ")+`
 		WHERE id=?
@@ -288,7 +290,8 @@ func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error 
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  p.EntryID,
 		User:     user,
 		Action:   "update",
@@ -303,13 +306,13 @@ func updateProperty(tx *sql.Tx, user string, upd service.PropertyUpdater) error 
 	return nil
 }
 
-func DeleteProperty(db *sql.DB, user, path, name string) error {
-	tx, err := db.Begin()
+func DeleteProperty(db *sql.DB, ctx context.Context, path, name string) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteProperty(tx, user, path, name)
+	err = deleteProperty(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -320,19 +323,19 @@ func DeleteProperty(db *sql.DB, user, path, name string) error {
 	return nil
 }
 
-func deleteProperty(tx *sql.Tx, user, path, name string) error {
-	p, err := getPropertyByPathName(tx, user, path, name)
+func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
+	p, err := getPropertyByPathName(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, p.EntryID)
+	ok, err := userCanWrite(tx, ctx, p.EntryID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return fmt.Errorf("user cannot modify entry")
 	}
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		DELETE FROM properties
 		WHERE id=?
 	`,
@@ -348,7 +351,8 @@ func deleteProperty(tx *sql.Tx, user, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  p.EntryID,
 		User:     user,
 		Action:   "delete",

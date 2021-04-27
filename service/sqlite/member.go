@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -19,13 +20,13 @@ func createGroupMembersTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindGroupMembers(db *sql.DB, find service.MemberFinder) ([]*service.Member, error) {
-	tx, err := db.Begin()
+func FindGroupMembers(db *sql.DB, ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	groups, err := findGroupMembers(tx, find)
+	groups, err := findGroupMembers(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +37,7 @@ func FindGroupMembers(db *sql.DB, find service.MemberFinder) ([]*service.Member,
 	return groups, nil
 }
 
-func findGroupMembers(tx *sql.Tx, find service.MemberFinder) ([]*service.Member, error) {
+func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -51,7 +52,7 @@ func findGroupMembers(tx *sql.Tx, find service.MemberFinder) ([]*service.Member,
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			group_id,
@@ -77,7 +78,7 @@ func findGroupMembers(tx *sql.Tx, find service.MemberFinder) ([]*service.Member,
 		if err != nil {
 			return nil, err
 		}
-		err = attachAdditionalGroupMemberInfo(tx, m)
+		err = attachAdditionalGroupMemberInfo(tx, ctx, m)
 		if err != nil {
 			return nil, err
 		}
@@ -86,13 +87,13 @@ func findGroupMembers(tx *sql.Tx, find service.MemberFinder) ([]*service.Member,
 	return members, nil
 }
 
-func attachAdditionalGroupMemberInfo(tx *sql.Tx, m *service.Member) error {
-	g, err := getGroup(tx, m.GroupID)
+func attachAdditionalGroupMemberInfo(tx *sql.Tx, ctx context.Context, m *service.Member) error {
+	g, err := getGroup(tx, ctx, m.GroupID)
 	if err != nil {
 		return err
 	}
 	m.Group = g.Name
-	u, err := getUser(tx, m.UserID)
+	u, err := getUser(tx, ctx, m.UserID)
 	if err != nil {
 		return err
 	}
@@ -100,8 +101,8 @@ func attachAdditionalGroupMemberInfo(tx *sql.Tx, m *service.Member) error {
 	return nil
 }
 
-func getGroupMember(tx *sql.Tx, id int) (*service.Member, error) {
-	members, err := findGroupMembers(tx, service.MemberFinder{ID: &id})
+func getGroupMember(tx *sql.Tx, ctx context.Context, id int) (*service.Member, error) {
+	members, err := findGroupMembers(tx, ctx, service.MemberFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -111,13 +112,13 @@ func getGroupMember(tx *sql.Tx, id int) (*service.Member, error) {
 	return members[0], nil
 }
 
-func AddGroupMember(db *sql.DB, user string, m *service.Member) error {
-	tx, err := db.Begin()
+func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addGroupMember(tx, user, m)
+	err = addGroupMember(tx, ctx, m)
 	if err != nil {
 		return err
 	}
@@ -128,9 +129,9 @@ func AddGroupMember(db *sql.DB, user string, m *service.Member) error {
 	return nil
 }
 
-func addGroupMember(tx *sql.Tx, user string, m *service.Member) error {
+func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
 	// TODO: check the user is a member of admin group.
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO group_members (
 			group_id,
 			user_id
@@ -151,13 +152,13 @@ func addGroupMember(tx *sql.Tx, user string, m *service.Member) error {
 	return nil
 }
 
-func DeleteGroupMember(db *sql.DB, user string, id int) error {
-	tx, err := db.Begin()
+func DeleteGroupMember(db *sql.DB, ctx context.Context, id int) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteGroupMember(tx, user, id)
+	err = deleteGroupMember(tx, ctx, id)
 	if err != nil {
 		return err
 	}
@@ -168,14 +169,14 @@ func DeleteGroupMember(db *sql.DB, user string, id int) error {
 	return nil
 }
 
-func deleteGroupMember(tx *sql.Tx, user string, id int) error {
-	m, err := getGroupMember(tx, id)
+func deleteGroupMember(tx *sql.Tx, ctx context.Context, id int) error {
+	m, err := getGroupMember(tx, ctx, id)
 	if err != nil {
 		return err
 	}
 	adminGroupID := 1
 	if m.GroupID == adminGroupID {
-		members, err := findGroupMembers(tx, service.MemberFinder{GroupID: &adminGroupID})
+		members, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: &adminGroupID})
 		if err != nil {
 			return err
 		}
@@ -183,7 +184,7 @@ func deleteGroupMember(tx *sql.Tx, user string, id int) error {
 			return fmt.Errorf("need at least 1 admin")
 		}
 	}
-	_, err = tx.Exec(`
+	_, err = tx.ExecContext(ctx, `
 		DELETE FROM group_members
 		WHERE id=?
 	`,

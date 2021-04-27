@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -37,13 +38,13 @@ func addRootEntry(tx *sql.Tx) error {
 	return nil
 }
 
-func FindEntries(db *sql.DB, user string, find service.EntryFinder) ([]*service.Entry, error) {
-	tx, err := db.Begin()
+func FindEntries(db *sql.DB, ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ents, err := findEntries(tx, user, find)
+	ents, err := findEntries(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +56,7 @@ func FindEntries(db *sql.DB, user string, find service.EntryFinder) ([]*service.
 }
 
 // when id is empty, it will find entries of root.
-func findEntries(tx *sql.Tx, user string, find service.EntryFinder) ([]*service.Entry, error) {
+func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -74,7 +75,7 @@ func findEntries(tx *sql.Tx, user string, find service.EntryFinder) ([]*service.
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			parent_id,
@@ -102,7 +103,7 @@ func findEntries(tx *sql.Tx, user string, find service.EntryFinder) ([]*service.
 		if err != nil {
 			return nil, err
 		}
-		canRead, err := userCanRead(tx, user, e.ID)
+		canRead, err := userCanRead(tx, ctx, e.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -115,8 +116,8 @@ func findEntries(tx *sql.Tx, user string, find service.EntryFinder) ([]*service.
 
 // getEntryParent get the entry's parent without checking user permission.
 // It shouldn't be used except permission checks.
-func getEntryParent(tx *sql.Tx, id int) (*int, error) {
-	rows, err := tx.Query(`
+func getEntryParent(tx *sql.Tx, ctx context.Context, id int) (*int, error) {
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			parent_id
 		FROM entries
@@ -138,13 +139,13 @@ func getEntryParent(tx *sql.Tx, id int) (*int, error) {
 	return parentID, nil
 }
 
-func GetEntry(db *sql.DB, user string, id int) (*service.Entry, error) {
-	tx, err := db.Begin()
+func GetEntry(db *sql.DB, ctx context.Context, id int) (*service.Entry, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntry(tx, user, id)
+	ent, err := getEntry(tx, ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -155,8 +156,8 @@ func GetEntry(db *sql.DB, user string, id int) (*service.Entry, error) {
 	return ent, nil
 }
 
-func getEntry(tx *sql.Tx, user string, id int) (*service.Entry, error) {
-	ents, err := findEntries(tx, user, service.EntryFinder{ID: &id})
+func getEntry(tx *sql.Tx, ctx context.Context, id int) (*service.Entry, error) {
+	ents, err := findEntries(tx, ctx, service.EntryFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
@@ -166,8 +167,8 @@ func getEntry(tx *sql.Tx, user string, id int) (*service.Entry, error) {
 	return ents[0], nil
 }
 
-func getEntryByPath(tx *sql.Tx, user, path string) (*service.Entry, error) {
-	ents, err := findEntries(tx, user, service.EntryFinder{Path: &path})
+func getEntryByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, error) {
+	ents, err := findEntries(tx, ctx, service.EntryFinder{Path: &path})
 	if err != nil {
 		return nil, err
 	}
@@ -177,13 +178,13 @@ func getEntryByPath(tx *sql.Tx, user, path string) (*service.Entry, error) {
 	return ents[0], nil
 }
 
-func UserCanWriteEntry(db *sql.DB, user string, id int) (bool, error) {
-	tx, err := db.Begin()
+func UserCanWriteEntry(db *sql.DB, ctx context.Context, id int) (bool, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return false, err
 	}
 	defer tx.Rollback()
-	ok, err := userCanWrite(tx, user, id)
+	ok, err := userCanWrite(tx, ctx, id)
 	if err != nil {
 		return false, err
 	}
@@ -194,26 +195,26 @@ func UserCanWriteEntry(db *sql.DB, user string, id int) (bool, error) {
 	return ok, nil
 }
 
-func AddEntry(db *sql.DB, user string, e *service.Entry, props []*service.Property, envs []*service.Property) error {
-	tx, err := db.Begin()
+func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*service.Property, envs []*service.Property) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addEntry(tx, user, e)
+	err = addEntry(tx, ctx, e)
 	if err != nil {
 		return err
 	}
 	for _, p := range props {
 		p.EntryID = e.ID
-		err := addProperty(tx, user, p)
+		err := addProperty(tx, ctx, p)
 		if err != nil {
 			return err
 		}
 	}
 	for _, env := range envs {
 		env.EntryID = e.ID
-		err := addEnviron(tx, user, env)
+		err := addEnviron(tx, ctx, env)
 		if err != nil {
 			return err
 		}
@@ -225,11 +226,11 @@ func AddEntry(db *sql.DB, user string, e *service.Entry, props []*service.Proper
 	return nil
 }
 
-func addEntry(tx *sql.Tx, user string, e *service.Entry) error {
+func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if e.ParentID == nil {
 		fmt.Errorf("parent id unspecified")
 	}
-	ok, err := userCanWrite(tx, user, *e.ParentID)
+	ok, err := userCanWrite(tx, ctx, *e.ParentID)
 	if err != nil {
 		return err
 	}
@@ -256,7 +257,8 @@ func addEntry(tx *sql.Tx, user string, e *service.Entry) error {
 		return err
 	}
 	e.ID = int(id)
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.ID,
 		User:     user,
 		Action:   "create",
@@ -270,13 +272,13 @@ func addEntry(tx *sql.Tx, user string, e *service.Entry) error {
 	return nil
 }
 
-func RenameEntry(db *sql.DB, user, path, newName string) error {
-	tx, err := db.Begin()
+func RenameEntry(db *sql.DB, ctx context.Context, path, newName string) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = renameEntry(tx, user, path, newName)
+	err = renameEntry(tx, ctx, path, newName)
 	if err != nil {
 		return err
 	}
@@ -287,7 +289,7 @@ func RenameEntry(db *sql.DB, user, path, newName string) error {
 	return nil
 }
 
-func renameEntry(tx *sql.Tx, user, path, newName string) error {
+func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	// Rename an entry actually affects many sub entries,
 	// should be picky.
 	if path == "" {
@@ -310,24 +312,25 @@ func renameEntry(tx *sql.Tx, user, path, newName string) error {
 		return nil
 	}
 	newPath := filepath.Dir(path) + "/" + newName
-	e, err := getEntryByPath(tx, user, path)
+	e, err := getEntryByPath(tx, ctx, path)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, *e.ParentID)
+	ok, err := userCanWrite(tx, ctx, *e.ParentID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return fmt.Errorf("user cannot modify entry")
 	}
-	err = updateEntryPath(tx, path, newPath)
+	err = updateEntryPath(tx, ctx, path, newPath)
 	if err != nil {
 		return err
 	}
 	// Let's log only for the entry (not for sub entries).
 	// This might be changed in the future.
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.ID,
 		User:     user,
 		Action:   "rename",
@@ -340,7 +343,7 @@ func renameEntry(tx *sql.Tx, user, path, newName string) error {
 	// root entry successfully renamed,
 	// let's do it for all sub entries.
 	like := path + `/%`
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			path
 		FROM entries
@@ -365,7 +368,7 @@ func renameEntry(tx *sql.Tx, user, path, newName string) error {
 	}
 	for _, subEntPath := range subEnts {
 		newSubEntPath := strings.Replace(subEntPath, path, newPath, 1)
-		err := updateEntryPath(tx, subEntPath, newSubEntPath)
+		err := updateEntryPath(tx, ctx, subEntPath, newSubEntPath)
 		if err != nil {
 			return err
 		}
@@ -373,8 +376,8 @@ func renameEntry(tx *sql.Tx, user, path, newName string) error {
 	return nil
 }
 
-func updateEntryPath(tx *sql.Tx, path, newPath string) error {
-	result, err := tx.Exec(`
+func updateEntryPath(tx *sql.Tx, ctx context.Context, path, newPath string) error {
+	result, err := tx.ExecContext(ctx, `
 		UPDATE entries
 		SET path=?
 		WHERE path=?
@@ -392,13 +395,13 @@ func updateEntryPath(tx *sql.Tx, path, newPath string) error {
 	return nil
 }
 
-func DeleteEntry(db *sql.DB, user, path string) error {
-	tx, err := db.Begin()
+func DeleteEntry(db *sql.DB, ctx context.Context, path string) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteEntry(tx, user, path)
+	err = deleteEntry(tx, ctx, path)
 	if err != nil {
 		return err
 	}
@@ -409,7 +412,7 @@ func DeleteEntry(db *sql.DB, user, path string) error {
 	return nil
 }
 
-func deleteEntry(tx *sql.Tx, user, path string) error {
+func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	// Rename an entry actually affects many sub entries,
 	// should be picky.
 	if path == "" {
@@ -423,7 +426,7 @@ func deleteEntry(tx *sql.Tx, user, path string) error {
 	}
 	// The entry that will be deleted shouldn't have sub entries.
 	like := path + `/%`
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			path
 		FROM entries
@@ -441,11 +444,11 @@ func deleteEntry(tx *sql.Tx, user, path string) error {
 	if rows.Err() != nil {
 		return rows.Err()
 	}
-	e, err := getEntryByPath(tx, user, path)
+	e, err := getEntryByPath(tx, ctx, path)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, *e.ParentID)
+	ok, err := userCanWrite(tx, ctx, *e.ParentID)
 	if err != nil {
 		return err
 	}
@@ -458,7 +461,7 @@ func deleteEntry(tx *sql.Tx, user, path string) error {
 			DELETE FROM %v
 			WHERE entry_id=?
 		`, table)
-		_, err := tx.Exec(stmt,
+		_, err := tx.ExecContext(ctx, stmt,
 			e.ID,
 		)
 		if err != nil {

@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"sort"
@@ -24,19 +25,19 @@ func createEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindEnvirons(db *sql.DB, user string, find service.PropertyFinder) ([]*service.Property, error) {
-	tx, err := db.Begin()
+func FindEnvirons(db *sql.DB, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 	envmap := make(map[string]*service.Property)
 	for {
-		ent, err := getEntry(tx, user, find.EntryID)
+		ent, err := getEntry(tx, ctx, find.EntryID)
 		if err != nil {
 			return nil, err
 		}
-		emap, err := findEnvirons(tx, user, find)
+		emap, err := findEnvirons(tx, ctx, find)
 		if err != nil {
 			return nil, err
 		}
@@ -67,7 +68,7 @@ func FindEnvirons(db *sql.DB, user string, find service.PropertyFinder) ([]*serv
 
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
-func findEnvirons(tx *sql.Tx, user string, find service.PropertyFinder) (map[string]*service.Property, error) {
+func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) (map[string]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entry_id=?")
@@ -80,7 +81,7 @@ func findEnvirons(tx *sql.Tx, user string, find service.PropertyFinder) (map[str
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -113,8 +114,8 @@ func findEnvirons(tx *sql.Tx, user string, find service.PropertyFinder) (map[str
 	return envmap, nil
 }
 
-func getEnviron(tx *sql.Tx, user string, id int) (*service.Property, error) {
-	rows, err := tx.Query(`
+func getEnviron(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -146,12 +147,12 @@ func getEnviron(tx *sql.Tx, user string, id int) (*service.Property, error) {
 	return e, nil
 }
 
-func getEnvironByPathName(tx *sql.Tx, user, path, name string) (*service.Property, error) {
-	e, err := getEntryByPath(tx, user, path)
+func getEnvironByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
+	e, err := getEntryByPath(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	rows, err := tx.Query(`
+	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
 			entry_id,
@@ -184,13 +185,13 @@ func getEnvironByPathName(tx *sql.Tx, user, path, name string) (*service.Propert
 	return p, nil
 }
 
-func AddEnviron(db *sql.DB, user string, e *service.Property) error {
-	tx, err := db.Begin()
+func AddEnviron(db *sql.DB, ctx context.Context, e *service.Property) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addEnviron(tx, user, e)
+	err = addEnviron(tx, ctx, e)
 	if err != nil {
 		return err
 	}
@@ -201,15 +202,15 @@ func AddEnviron(db *sql.DB, user string, e *service.Property) error {
 	return nil
 }
 
-func addEnviron(tx *sql.Tx, user string, e *service.Property) error {
-	ok, err := userCanWrite(tx, user, e.EntryID)
+func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
+	ok, err := userCanWrite(tx, ctx, e.EntryID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return fmt.Errorf("user cannot modify entry")
 	}
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		INSERT INTO environs (
 			entry_id,
 			name,
@@ -231,7 +232,8 @@ func addEnviron(tx *sql.Tx, user string, e *service.Property) error {
 		return err
 	}
 	e.ID = int(id)
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.EntryID,
 		User:     user,
 		Action:   "create",
@@ -246,13 +248,13 @@ func addEnviron(tx *sql.Tx, user string, e *service.Property) error {
 	return nil
 }
 
-func UpdateEnviron(db *sql.DB, user string, upd service.PropertyUpdater) error {
-	tx, err := db.Begin()
+func UpdateEnviron(db *sql.DB, ctx context.Context, upd service.PropertyUpdater) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateEnviron(tx, user, upd)
+	err = updateEnviron(tx, ctx, upd)
 	if err != nil {
 		return err
 	}
@@ -263,12 +265,12 @@ func UpdateEnviron(db *sql.DB, user string, upd service.PropertyUpdater) error {
 	return nil
 }
 
-func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
-	e, err := getEnviron(tx, user, upd.ID)
+func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
+	e, err := getEnviron(tx, ctx, upd.ID)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, e.EntryID)
+	ok, err := userCanWrite(tx, ctx, e.EntryID)
 	if err != nil {
 		return err
 	}
@@ -286,7 +288,7 @@ func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 		return fmt.Errorf("need at least one field to update property %v", upd.ID)
 	}
 	vals = append(vals, upd.ID) // for where clause
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		UPDATE environs
 		SET `+strings.Join(keys, ", ")+`
 		WHERE id=?
@@ -303,7 +305,8 @@ func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.EntryID,
 		User:     user,
 		Action:   "update",
@@ -318,13 +321,13 @@ func updateEnviron(tx *sql.Tx, user string, upd service.PropertyUpdater) error {
 	return nil
 }
 
-func DeleteEnviron(db *sql.DB, user, path, name string) error {
-	tx, err := db.Begin()
+func DeleteEnviron(db *sql.DB, ctx context.Context, path, name string) error {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteEnviron(tx, user, path, name)
+	err = deleteEnviron(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -335,19 +338,19 @@ func DeleteEnviron(db *sql.DB, user, path, name string) error {
 	return nil
 }
 
-func deleteEnviron(tx *sql.Tx, user, path, name string) error {
-	e, err := getEnvironByPathName(tx, user, path, name)
+func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
+	e, err := getEnvironByPathName(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, user, e.EntryID)
+	ok, err := userCanWrite(tx, ctx, e.EntryID)
 	if err != nil {
 		return err
 	}
 	if !ok {
 		return fmt.Errorf("user cannot modify entry")
 	}
-	result, err := tx.Exec(`
+	result, err := tx.ExecContext(ctx, `
 		DELETE FROM environs
 		WHERE id=?
 	`,
@@ -363,7 +366,8 @@ func deleteEnviron(tx *sql.Tx, user, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 environ affected, got %v", n)
 	}
-	err = addLog(tx, &service.Log{
+	user := service.UserEmailFromContext(ctx)
+	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.EntryID,
 		User:     user,
 		Action:   "delete",

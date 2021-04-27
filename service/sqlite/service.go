@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/imagvfx/forge/service"
@@ -17,113 +18,113 @@ func NewService(db *sql.DB) *Service {
 	return s
 }
 
-func (s *Service) FindEntries(user string, find service.EntryFinder) ([]*service.Entry, error) {
-	return FindEntries(s.db, user, find)
+func (s *Service) FindEntries(ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
+	return FindEntries(s.db, ctx, find)
 }
 
-func (s *Service) GetEntry(user string, id int) (*service.Entry, error) {
-	return GetEntry(s.db, user, id)
+func (s *Service) GetEntry(ctx context.Context, id int) (*service.Entry, error) {
+	return GetEntry(s.db, ctx, id)
 }
 
 // UserCanWriteEntry checks that a user can write to a entry.
 // Usually other service methods check it internally.
 // So use it only when the operation is performed outside of this service.
-func (s *Service) UserCanWriteEntry(user string, id int) (bool, error) {
-	return UserCanWriteEntry(s.db, user, id)
+func (s *Service) UserCanWriteEntry(ctx context.Context, id int) (bool, error) {
+	return UserCanWriteEntry(s.db, ctx, id)
 }
 
-func (s *Service) AddEntry(user string, ent *service.Entry, props []*service.Property, env []*service.Property) error {
-	return AddEntry(s.db, user, ent, props, env)
+func (s *Service) AddEntry(ctx context.Context, ent *service.Entry, props []*service.Property, env []*service.Property) error {
+	return AddEntry(s.db, ctx, ent, props, env)
 }
 
-func (s *Service) RenameEntry(user, path, newName string) error {
-	return RenameEntry(s.db, user, path, newName)
+func (s *Service) RenameEntry(ctx context.Context, path, newName string) error {
+	return RenameEntry(s.db, ctx, path, newName)
 }
 
-func (s *Service) DeleteEntry(user, path string) error {
-	return DeleteEntry(s.db, user, path)
+func (s *Service) DeleteEntry(ctx context.Context, path string) error {
+	return DeleteEntry(s.db, ctx, path)
 }
 
-func (s *Service) FindProperties(user string, find service.PropertyFinder) ([]*service.Property, error) {
-	return FindProperties(s.db, user, find)
+func (s *Service) FindProperties(ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+	return FindProperties(s.db, ctx, find)
 }
 
-func (s *Service) AddProperty(user string, ent *service.Property) error {
-	return AddProperty(s.db, user, ent)
+func (s *Service) AddProperty(ctx context.Context, ent *service.Property) error {
+	return AddProperty(s.db, ctx, ent)
 }
 
-func (s *Service) UpdateProperty(user string, upd service.PropertyUpdater) error {
-	return UpdateProperty(s.db, user, upd)
+func (s *Service) UpdateProperty(ctx context.Context, upd service.PropertyUpdater) error {
+	return UpdateProperty(s.db, ctx, upd)
 }
 
-func (s *Service) DeleteProperty(user, path, name string) error {
-	return DeleteProperty(s.db, user, path, name)
+func (s *Service) DeleteProperty(ctx context.Context, path, name string) error {
+	return DeleteProperty(s.db, ctx, path, name)
 }
 
-func (s *Service) FindEnvirons(user string, find service.PropertyFinder) ([]*service.Property, error) {
-	return FindEnvirons(s.db, user, find)
+func (s *Service) FindEnvirons(ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+	return FindEnvirons(s.db, ctx, find)
 }
 
-func (s *Service) AddEnviron(user string, ent *service.Property) error {
-	return AddEnviron(s.db, user, ent)
+func (s *Service) AddEnviron(ctx context.Context, ent *service.Property) error {
+	return AddEnviron(s.db, ctx, ent)
 }
 
-func (s *Service) UpdateEnviron(user string, upd service.PropertyUpdater) error {
-	return UpdateEnviron(s.db, user, upd)
+func (s *Service) UpdateEnviron(ctx context.Context, upd service.PropertyUpdater) error {
+	return UpdateEnviron(s.db, ctx, upd)
 }
 
-func (s *Service) DeleteEnviron(user, path, name string) error {
-	return DeleteEnviron(s.db, user, path, name)
+func (s *Service) DeleteEnviron(ctx context.Context, path, name string) error {
+	return DeleteEnviron(s.db, ctx, path, name)
 }
 
-func (s Service) FindAccessControls(user string, find service.AccessControlFinder) ([]*service.AccessControl, error) {
-	return FindAccessControls(s.db, user, find)
+func (s Service) FindAccessControls(ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+	return FindAccessControls(s.db, ctx, find)
 }
 
-func (s Service) AddAccessControl(user string, a *service.AccessControl) error {
-	return AddAccessControl(s.db, user, a)
+func (s Service) AddAccessControl(ctx context.Context, a *service.AccessControl) error {
+	return AddAccessControl(s.db, ctx, a)
 }
 
-func (s Service) UpdateAccessControl(user string, upd service.AccessControlUpdater) error {
-	return UpdateAccessControl(s.db, user, upd)
+func (s Service) UpdateAccessControl(ctx context.Context, upd service.AccessControlUpdater) error {
+	return UpdateAccessControl(s.db, ctx, upd)
 }
 
-func (s *Service) DeleteAccessControl(user, path, name string) error {
-	return DeleteAccessControl(s.db, user, path, name)
+func (s *Service) DeleteAccessControl(ctx context.Context, path, name string) error {
+	return DeleteAccessControl(s.db, ctx, path, name)
 }
 
-func (s *Service) FindLogs(user string, find service.LogFinder) ([]*service.Log, error) {
-	return FindLogs(s.db, user, find)
+func (s *Service) FindLogs(ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
+	return FindLogs(s.db, ctx, find)
 }
 
-func (s *Service) AddUser(u *service.User) error {
-	return AddUser(s.db, u)
+func (s *Service) AddUser(ctx context.Context, u *service.User) error {
+	return AddUser(s.db, ctx, u)
 }
 
-func (s *Service) GetUserByEmail(user string) (*service.User, error) {
-	return GetUserByEmail(s.db, user)
+func (s *Service) GetUserByEmail(ctx context.Context, user string) (*service.User, error) {
+	return GetUserByEmail(s.db, ctx, user)
 }
 
-func (s *Service) FindGroups(find service.GroupFinder) ([]*service.Group, error) {
-	return FindGroups(s.db, find)
+func (s *Service) FindGroups(ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
+	return FindGroups(s.db, ctx, find)
 }
 
-func (s *Service) AddGroup(user string, g *service.Group) error {
-	return AddGroup(s.db, user, g)
+func (s *Service) AddGroup(ctx context.Context, g *service.Group) error {
+	return AddGroup(s.db, ctx, g)
 }
 
-func (s *Service) UpdateGroup(user string, upd service.GroupUpdater) error {
-	return UpdateGroup(s.db, user, upd)
+func (s *Service) UpdateGroup(ctx context.Context, upd service.GroupUpdater) error {
+	return UpdateGroup(s.db, ctx, upd)
 }
 
-func (s *Service) FindGroupMembers(find service.MemberFinder) ([]*service.Member, error) {
-	return FindGroupMembers(s.db, find)
+func (s *Service) FindGroupMembers(ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
+	return FindGroupMembers(s.db, ctx, find)
 }
 
-func (s *Service) AddGroupMember(user string, m *service.Member) error {
-	return AddGroupMember(s.db, user, m)
+func (s *Service) AddGroupMember(ctx context.Context, m *service.Member) error {
+	return AddGroupMember(s.db, ctx, m)
 }
 
-func (s *Service) DeleteGroupMember(user string, id int) error {
-	return DeleteGroupMember(s.db, user, id)
+func (s *Service) DeleteGroupMember(ctx context.Context, id int) error {
+	return DeleteGroupMember(s.db, ctx, id)
 }
