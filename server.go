@@ -1,12 +1,12 @@
 package forge
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"image"
 	"image/png"
-	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,11 +50,12 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 		parentID = *e.ParentID
 	}
 	ent := &Entry{
-		srv:      s,
-		id:       e.ID,
-		parentID: parentID,
-		path:     e.Path,
-		typ:      e.Type,
+		srv:          s,
+		id:           e.ID,
+		parentID:     parentID,
+		path:         e.Path,
+		typ:          e.Type,
+		HasThumbnail: e.HasThumbnail,
 	}
 	return ent, nil
 }
@@ -69,11 +70,12 @@ func (s *Server) getEntry(ctx context.Context, id int) (*Entry, error) {
 		parentID = *e.ParentID
 	}
 	ent := &Entry{
-		srv:      s,
-		id:       e.ID,
-		parentID: parentID,
-		path:     e.Path,
-		typ:      e.Type,
+		srv:          s,
+		id:           e.ID,
+		parentID:     parentID,
+		path:         e.Path,
+		typ:          e.Type,
+		HasThumbnail: e.HasThumbnail,
 	}
 	return ent, nil
 }
@@ -96,11 +98,12 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 			parentID = *e.ParentID
 		}
 		ent := &Entry{
-			srv:      s,
-			id:       e.ID,
-			parentID: parentID,
-			path:     e.Path,
-			typ:      e.Type,
+			srv:          s,
+			id:           e.ID,
+			parentID:     parentID,
+			path:         e.Path,
+			typ:          e.Type,
+			HasThumbnail: e.HasThumbnail,
 		}
 		ents = append(ents, ent)
 	}
@@ -703,54 +706,20 @@ func (s *Server) DeleteGroupMember(ctx context.Context, memberID string) error {
 }
 
 // GetThumbnail gets a thumbnail image of a entry.
-func (s *Server) GetThumbnail(ctx context.Context, path string) ([]byte, error) {
-	// check the user has read permission to the path by reading it.
-	ents, err := s.svc.FindEntries(ctx, service.EntryFinder{
-		Path: &path,
-	})
+func (s *Server) GetThumbnail(ctx context.Context, path string) (*Thumbnail, error) {
+	svcThumb, err := s.svc.GetThumbnail(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	if len(ents) == 0 {
-		// maybe because of permission, maybe not exists.
-		return nil, fmt.Errorf("entry not found")
+	thumb := &Thumbnail{
+		ID:      svcThumb.ID,
+		EntryID: svcThumb.EntryID,
+		Data:    svcThumb.Data,
 	}
-	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
-	thumbnailDir := filepath.Join(thumbnailRoot, path)
-	f, err := os.Open(filepath.Join(thumbnailDir, "thumbnail.png"))
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	bs, err := io.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-	return bs, nil
+	return thumb, nil
 }
 
-// AddThumbnail adds a thumbnail image to a entry.
-func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image) error {
-	ents, err := s.svc.FindEntries(ctx, service.EntryFinder{
-		Path: &path,
-	})
-	if err != nil {
-		return err
-	}
-	if len(ents) == 0 {
-		// maybe because of permission, maybe not exists.
-		return fmt.Errorf("entry not found")
-	}
-	ent := ents[0]
-	ok, err := s.svc.UserCanWriteEntry(ctx, ent.ID)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return fmt.Errorf("user doesn't have permission to write the entry")
-	}
+func thumbnail(img image.Image, width, height int) image.Image {
 	thumb := image.NewRGBA(image.Rect(0, 0, 192, 108))
 	thumbBounds := thumb.Bounds()
 	imgWidth := float64(img.Bounds().Dx())
@@ -769,17 +738,46 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image)
 		thumbBounds.Max.X -= marginX
 	}
 	draw.CatmullRom.Scale(thumb, thumbBounds, img, img.Bounds(), draw.Over, nil)
-	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
-	thumbnailDir := filepath.Join(thumbnailRoot, path)
-	err = os.MkdirAll(thumbnailDir, 0755)
+	return thumb
+}
+
+// AddThumbnail adds a thumbnail image to a entry.
+func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image) error {
+	ent, err := s.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
-	f, err := os.Create(filepath.Join(thumbnailDir, "thumbnail.png"))
+	thumb := thumbnail(img, 192, 108)
+	buf := new(bytes.Buffer)
+	err = png.Encode(buf, thumb)
 	if err != nil {
 		return err
 	}
-	err = png.Encode(f, thumb)
+	err = s.svc.AddThumbnail(ctx, &service.Thumbnail{
+		EntryID: ent.id,
+		Data:    buf.Bytes(),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) UpdateThumbnail(ctx context.Context, path string, img image.Image) error {
+	thumb := thumbnail(img, 192, 108)
+	buf := new(bytes.Buffer)
+	err := png.Encode(buf, thumb)
+	if err != nil {
+		return err
+	}
+	svcThumb, err := s.svc.GetThumbnail(ctx, path)
+	if err != nil {
+		return err
+	}
+	err = s.svc.UpdateThumbnail(ctx, service.ThumbnailUpdater{
+		ID:   svcThumb.ID,
+		Data: buf.Bytes(),
+	})
 	if err != nil {
 		return err
 	}
@@ -787,40 +785,9 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image)
 }
 
 func (s *Server) DeleteThumbnail(ctx context.Context, path string) error {
-	ents, err := s.svc.FindEntries(ctx, service.EntryFinder{
-		Path: &path,
-	})
+	err := s.svc.DeleteThumbnail(ctx, path)
 	if err != nil {
 		return err
-	}
-	if len(ents) == 0 {
-		// maybe because of permission, maybe not exists.
-		return fmt.Errorf("entry not found")
-	}
-	ent := ents[0]
-	ok, err := s.svc.UserCanWriteEntry(ctx, ent.ID)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return fmt.Errorf("user doesn't have permission to write the entry")
-	}
-	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
-	thumbnailDir := filepath.Join(thumbnailRoot, path)
-	thumbnailFile := filepath.Join(thumbnailDir, "thumbnail.png")
-	delFiles := []string{thumbnailFile, thumbnailDir}
-	for _, f := range delFiles {
-		_, err := os.Stat(thumbnailFile)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-			return err
-		}
-		err = os.Remove(f)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

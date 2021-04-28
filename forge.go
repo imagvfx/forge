@@ -12,11 +12,12 @@ import (
 )
 
 type Entry struct {
-	srv      *Server
-	id       int
-	parentID int
-	path     string
-	typ      string
+	srv          *Server
+	id           int
+	parentID     int
+	path         string
+	typ          string
+	HasThumbnail bool
 }
 
 func (e *Entry) Path() string {
@@ -43,6 +44,12 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 		Path: e.path,
 	}
 	return json.Marshal(m)
+}
+
+type Thumbnail struct {
+	ID      int
+	EntryID int
+	Data    []byte
 }
 
 // Property can be either a normal property or an environment.

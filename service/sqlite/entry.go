@@ -64,15 +64,15 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
-		keys = append(keys, "id=?")
+		keys = append(keys, "entries.id=?")
 		vals = append(vals, *find.ID)
 	}
 	if find.Path != nil {
-		keys = append(keys, "path=?")
+		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.Path)
 	}
 	if find.ParentID != nil {
-		keys = append(keys, "parent_id=?")
+		keys = append(keys, "entries.parent_id=?")
 		vals = append(vals, find.ParentID)
 	}
 	where := ""
@@ -81,13 +81,15 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			id,
-			parent_id,
-			path,
-			typ
+			entries.id,
+			entries.parent_id,
+			entries.path,
+			entries.typ,
+			thumbnails.id
 		FROM entries
+		LEFT JOIN thumbnails
 		`+where+`
-		ORDER BY id ASC
+		ORDER BY entries.id ASC
 	`,
 		vals...,
 	)
@@ -98,14 +100,19 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	ents := make([]*service.Entry, 0)
 	for rows.Next() {
 		e := &service.Entry{}
+		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
 			&e.ParentID,
 			&e.Path,
 			&e.Type,
+			&thumbID,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if thumbID != nil {
+			e.HasThumbnail = true
 		}
 		canRead, err := userCanRead(tx, ctx, e.ID)
 		if err != nil {

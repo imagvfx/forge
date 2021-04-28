@@ -12,6 +12,10 @@ type Service interface {
 	AddEntry(ctx context.Context, ent *Entry, props []*Property, envs []*Property) error
 	RenameEntry(ctx context.Context, path string, newName string) error
 	DeleteEntry(ctx context.Context, path string) error
+	AddThumbnail(ctx context.Context, thumb *Thumbnail) error
+	UpdateThumbnail(ctx context.Context, upd ThumbnailUpdater) error
+	GetThumbnail(ctx context.Context, path string) (*Thumbnail, error)
+	DeleteThumbnail(ctx context.Context, path string) error
 	FindProperties(ctx context.Context, find PropertyFinder) ([]*Property, error)
 	AddProperty(ctx context.Context, p *Property) error
 	UpdateProperty(ctx context.Context, upd PropertyUpdater) error
@@ -62,16 +66,33 @@ func (e NotFoundError) Error() string {
 }
 
 type Entry struct {
-	ID       int
-	ParentID *int // nil if root entry
-	Path     string
-	Type     string
+	ID           int
+	ParentID     *int // nil if root entry
+	Path         string
+	Type         string
+	HasThumbnail bool
 }
 
 type EntryFinder struct {
 	ID       *int
 	ParentID *int
 	Path     *string
+}
+
+type Thumbnail struct {
+	ID      int
+	EntryID int
+	Data    []byte
+}
+
+type ThumbnailFinder struct {
+	ID      *int
+	EntryID *int
+}
+
+type ThumbnailUpdater struct {
+	ID   int
+	Data []byte
 }
 
 type Property struct {

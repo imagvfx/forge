@@ -303,15 +303,11 @@ func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 		ctx := service.ContextWithUserEmail(r.Context(), user)
-		bs, err := h.server.GetThumbnail(ctx, path)
+		thumb, err := h.server.GetThumbnail(ctx, path)
 		if err != nil {
 			return err
 		}
-		if bs == nil {
-			http.Error(w, "not found", http.StatusNotFound)
-			return nil
-		}
-		sum := md5.Sum(bs)
+		sum := md5.Sum(thumb.Data)
 		hash := base64.URLEncoding.EncodeToString(sum[:])
 		if r.Header.Get("If-None-Match") == hash {
 			w.WriteHeader(http.StatusNotModified)
@@ -320,7 +316,7 @@ func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("ETag", hash)
-		_, err = io.Copy(w, bytes.NewReader(bs))
+		_, err = io.Copy(w, bytes.NewReader(thumb.Data))
 		if err != nil {
 			return err
 		}
@@ -1021,6 +1017,44 @@ func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) 
 			return err
 		}
 		err = h.server.AddThumbnail(ctx, path, img)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+}
+
+func (h *apiHandler) HandleUpdateThumbnail(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserEmail(r.Context(), user)
+		path := r.FormValue("path")
+		KiB := int64(1 << 10)
+		r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
+		file, _, err := r.FormFile("file")
+		if err != nil {
+			return err
+		}
+		img, _, err := image.Decode(file)
+		if err != nil {
+			return err
+		}
+		err = h.server.UpdateThumbnail(ctx, path, img)
 		if err != nil {
 			return err
 		}

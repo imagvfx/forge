@@ -154,6 +154,7 @@ func main() {
 	mux.HandleFunc("/api/set-environ", api.HandleSetEnviron)
 	mux.HandleFunc("/api/delete-environ", api.HandleDeleteEnviron)
 	mux.HandleFunc("/api/add-thumbnail", api.HandleAddThumbnail)
+	mux.HandleFunc("/api/set-thumbnail", api.HandleUpdateThumbnail)
 	mux.HandleFunc("/api/delete-thumbnail", api.HandleDeleteThumbnail)
 	mux.HandleFunc("/api/add-access-control", api.HandleAddAccessControl)
 	mux.HandleFunc("/api/set-access-control", api.HandleSetAccessControl)

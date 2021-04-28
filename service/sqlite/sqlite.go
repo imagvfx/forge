@@ -45,6 +45,10 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	err = createThumbnailsTable(tx)
+	if err != nil {
+		return err
+	}
 	err = createPropertiesTable(tx)
 	if err != nil {
 		return err

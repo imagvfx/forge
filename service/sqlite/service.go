@@ -45,6 +45,22 @@ func (s *Service) DeleteEntry(ctx context.Context, path string) error {
 	return DeleteEntry(s.db, ctx, path)
 }
 
+func (s *Service) GetThumbnail(ctx context.Context, path string) (*service.Thumbnail, error) {
+	return GetThumbnail(s.db, ctx, path)
+}
+
+func (s *Service) AddThumbnail(ctx context.Context, thumb *service.Thumbnail) error {
+	return AddThumbnail(s.db, ctx, thumb)
+}
+
+func (s *Service) UpdateThumbnail(ctx context.Context, upd service.ThumbnailUpdater) error {
+	return UpdateThumbnail(s.db, ctx, upd)
+}
+
+func (s *Service) DeleteThumbnail(ctx context.Context, path string) error {
+	return DeleteThumbnail(s.db, ctx, path)
+}
+
 func (s *Service) FindProperties(ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
 	return FindProperties(s.db, ctx, find)
 }

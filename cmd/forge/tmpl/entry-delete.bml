@@ -50,11 +50,13 @@
 				<h4> [
 					<img src="/thumbnail{{$.Entry.Path}}" height="108" width="192" alt="" style="border:1px solid #AAAAAA"> []
 					<form action="/api/delete-thumbnail" method="post" enctype="multipart/form-data"> [
+						{{if $.Entry.HasThumbnail}}
 						<div> [
 							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Delete]
 						]
+						{{end}}
 					]
 				]
 				<div style="height:1px"> []
