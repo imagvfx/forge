@@ -8,7 +8,6 @@ import (
 type Service interface {
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
-	UserCanWriteEntry(ctx context.Context, id int) (bool, error)
 	AddEntry(ctx context.Context, ent *Entry, props []*Property, envs []*Property) error
 	RenameEntry(ctx context.Context, path string, newName string) error
 	DeleteEntry(ctx context.Context, path string) error
