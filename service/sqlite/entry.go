@@ -150,13 +150,13 @@ func getEntryParent(tx *sql.Tx, ctx context.Context, id int) (*int, error) {
 	return parentID, nil
 }
 
-func GetEntry(db *sql.DB, ctx context.Context, id int) (*service.Entry, error) {
+func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntry(tx, ctx, id)
+	ent, err := getEntryByPath(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}

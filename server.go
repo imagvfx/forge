@@ -60,26 +60,6 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 	return ent, nil
 }
 
-func (s *Server) getEntry(ctx context.Context, id int) (*Entry, error) {
-	e, err := s.svc.GetEntry(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	parentID := -1
-	if e.ParentID != nil {
-		parentID = *e.ParentID
-	}
-	ent := &Entry{
-		srv:          s,
-		id:           e.ID,
-		parentID:     parentID,
-		path:         e.Path,
-		typ:          e.Type,
-		HasThumbnail: e.HasThumbnail,
-	}
-	return ent, nil
-}
-
 func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) {
 	ent, err := s.GetEntry(ctx, path)
 	if err != nil {

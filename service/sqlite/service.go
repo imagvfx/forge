@@ -22,8 +22,8 @@ func (s *Service) FindEntries(ctx context.Context, find service.EntryFinder) ([]
 	return FindEntries(s.db, ctx, find)
 }
 
-func (s *Service) GetEntry(ctx context.Context, id int) (*service.Entry, error) {
-	return GetEntry(s.db, ctx, id)
+func (s *Service) GetEntry(ctx context.Context, path string) (*service.Entry, error) {
+	return GetEntry(s.db, ctx, path)
 }
 
 // UserCanWriteEntry checks that a user can write to a entry.
