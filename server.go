@@ -32,19 +32,10 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 	if path == "" {
 		return nil, fmt.Errorf("path emtpy")
 	}
-	es, err := s.svc.FindEntries(ctx, service.EntryFinder{
-		Path: &path,
-	})
+	e, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	if len(es) == 0 {
-		return nil, fmt.Errorf("entry not found")
-	}
-	if len(es) != 1 {
-		return nil, fmt.Errorf("got more than 1 entry")
-	}
-	e := es[0]
 	parentID := -1
 	if e.ParentID != nil {
 		parentID = *e.ParentID
@@ -61,12 +52,12 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 }
 
 func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	es, err := s.svc.FindEntries(ctx, service.EntryFinder{
-		ParentID: &ent.id,
+		ParentID: &ent.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -93,12 +84,12 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	path = filepath.ToSlash(path)
 	parent := filepath.Dir(path)
-	p, err := s.GetEntry(ctx, parent)
+	p, err := s.svc.GetEntry(ctx, parent)
 	if err != nil {
 		return fmt.Errorf("error on parent check: %v", err)
 	}
 	allow := false
-	subtyps := s.cfg.Struct[p.Type()].SubEntryTypes
+	subtyps := s.cfg.Struct[p.Type].SubEntryTypes
 	for _, subtyp := range subtyps {
 		if subtyp == typ {
 			allow = true
@@ -106,10 +97,10 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 		}
 	}
 	if !allow {
-		return fmt.Errorf("cannot create a child of type %q from %q", typ, p.Type())
+		return fmt.Errorf("cannot create a child of type %q from %q", typ, p.Type)
 	}
 	e := &service.Entry{
-		ParentID: &p.id,
+		ParentID: &p.ID,
 		Path:     path,
 		Type:     typ,
 	}
@@ -201,12 +192,12 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 }
 
 func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property, error) {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	ps, err := s.svc.FindProperties(ctx, service.PropertyFinder{
-		EntryID: ent.id,
+		EntryID: ent.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -255,14 +246,14 @@ func (s *Server) getProperty(ctx context.Context, ent int, name string) (*Proper
 }
 
 func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value string) error {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
 	env := &Property{
 		srv:       s,
-		entryID:   ent.id,
-		entryPath: ent.path,
+		entryID:   ent.ID,
+		entryPath: ent.Path,
 		name:      name,
 		typ:       typ,
 		value:     value,
@@ -279,11 +270,11 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 }
 
 func (s *Server) SetProperty(ctx context.Context, path string, name, value string) error {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
-	prop, err := s.getProperty(ctx, ent.id, name)
+	prop, err := s.getProperty(ctx, ent.ID, name)
 	if err != nil {
 		return err
 	}
@@ -311,12 +302,12 @@ func (s *Server) DeleteProperty(ctx context.Context, path string, name string) e
 }
 
 func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, error) {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	ps, err := s.svc.FindEnvirons(ctx, service.PropertyFinder{
-		EntryID: ent.id,
+		EntryID: ent.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -365,14 +356,14 @@ func (s *Server) getEnviron(ctx context.Context, ent int, name string) (*Propert
 }
 
 func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value string) error {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
 	env := &Property{
 		srv:       s,
-		entryID:   ent.id,
-		entryPath: ent.path,
+		entryID:   ent.ID,
+		entryPath: ent.Path,
 		name:      name,
 		typ:       typ,
 		value:     value,
@@ -389,11 +380,11 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 }
 
 func (s *Server) SetEnviron(ctx context.Context, path string, name, value string) error {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
-	env, err := s.getEnviron(ctx, ent.id, name)
+	env, err := s.getEnviron(ctx, ent.ID, name)
 	if err != nil {
 		return err
 	}
@@ -421,12 +412,12 @@ func (s *Server) DeleteEnviron(ctx context.Context, path string, name string) er
 }
 
 func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*AccessControl, error) {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	as, err := s.svc.FindAccessControls(ctx, service.AccessControlFinder{
-		EntryID: ent.id,
+		EntryID: ent.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -447,12 +438,12 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 }
 
 func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, accessor_type, mode string) error {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
 	ac := &service.AccessControl{
-		EntryID: ent.id,
+		EntryID: ent.ID,
 	}
 	switch accessor_type {
 	case "user":
@@ -519,12 +510,12 @@ func (s *Server) DeleteAccessControl(ctx context.Context, path string, name stri
 }
 
 func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	ls, err := s.svc.FindLogs(ctx, service.LogFinder{
-		EntryID: ent.id,
+		EntryID: ent.ID,
 	})
 	if err != nil {
 		return nil, err
@@ -723,7 +714,7 @@ func thumbnail(img image.Image, width, height int) image.Image {
 
 // AddThumbnail adds a thumbnail image to a entry.
 func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image) error {
-	ent, err := s.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
 	}
@@ -734,7 +725,7 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image)
 		return err
 	}
 	err = s.svc.AddThumbnail(ctx, &service.Thumbnail{
-		EntryID: ent.id,
+		EntryID: ent.ID,
 		Data:    buf.Bytes(),
 	})
 	if err != nil {
