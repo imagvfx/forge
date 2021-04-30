@@ -14,7 +14,8 @@ func createGroupMembersTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS group_members (
 			id INTEGER PRIMARY KEY,
 			group_id INTEGER NOT NULL,
-			user_id INTEGER NOT NULL
+			user_id INTEGER NOT NULL,
+			UNIQUE (group_id, user_id)
 		)
 	`)
 	if err != nil {
