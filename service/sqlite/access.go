@@ -40,7 +40,7 @@ func FindAccessControls(db *sql.DB, ctx context.Context, find service.AccessCont
 	defer tx.Rollback()
 	acm := make(map[string]*service.AccessControl)
 	for {
-		ent, err := getEntry(tx, ctx, find.EntryID)
+		ent, err := getEntry(tx, ctx, *find.EntryID)
 		if err != nil {
 			return nil, err
 		}
@@ -59,7 +59,7 @@ func FindAccessControls(db *sql.DB, ctx context.Context, find service.AccessCont
 		if ent.ParentID == nil {
 			break
 		}
-		find.EntryID = *ent.ParentID
+		*find.EntryID = *ent.ParentID
 	}
 	acs := make([]*service.AccessControl, 0)
 	for _, a := range acm {
@@ -79,8 +79,26 @@ func FindAccessControls(db *sql.DB, ctx context.Context, find service.AccessCont
 func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	keys = append(keys, "entry_id=?")
-	vals = append(vals, find.EntryID)
+	if find.ID != nil {
+		keys = append(keys, "access_controls.id=?")
+		vals = append(vals, *find.ID)
+	}
+	if find.EntryID != nil {
+		keys = append(keys, "access_controls.entry_id=?")
+		vals = append(vals, *find.EntryID)
+	}
+	if find.EntryPath != nil {
+		keys = append(keys, "entries.path=?")
+		vals = append(vals, *find.EntryPath)
+	}
+	if find.User != nil {
+		keys = append(keys, "users.email=?")
+		vals = append(vals, *find.EntryPath)
+	}
+	if find.Group != nil {
+		keys = append(keys, "groups.name=?")
+		vals = append(vals, *find.EntryPath)
+	}
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
@@ -92,10 +110,13 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			entries.path,
 			access_controls.user_id,
 			access_controls.group_id,
-			access_controls.mode
+			access_controls.mode,
+			users.email,
+			groups.name
 		FROM access_controls
-		LEFT JOIN entries
-		ON access_controls.entry_id = entries.id
+		LEFT JOIN entries ON access_controls.entry_id = entries.id
+		LEFT JOIN users ON access_controls.user_id = users.id
+		LEFT JOIN groups ON access_controls.group_id = groups.id
 		`+where,
 		vals...,
 	)
@@ -106,6 +127,8 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	acss := make([]*service.AccessControl, 0)
 	for rows.Next() {
 		a := &service.AccessControl{}
+		var user *string
+		var group *string
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryID,
@@ -113,13 +136,18 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			&a.UserID,
 			&a.GroupID,
 			&a.Mode,
+			&user,
+			&group,
 		)
 		if err != nil {
 			return nil, err
 		}
-		err = attachAccessorInfo(tx, ctx, a)
-		if err != nil {
-			return nil, err
+		if user != nil {
+			a.Accessor = *user
+			a.AccessorType = 0
+		} else {
+			a.Accessor = *group
+			a.AccessorType = 1
 		}
 		acss = append(acss, a)
 	}
@@ -170,7 +198,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 		}
 	}
 	for {
-		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryID: entID})
+		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryID: &entID})
 		if err != nil {
 			return nil, err
 		}
@@ -214,109 +242,39 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 // The reason it doesn't use findAccessConrtol is the function is entry based.
 // I might refactor it.
 func getAccessControl(tx *sql.Tx, ctx context.Context, id int) (*service.AccessControl, error) {
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			access_controls.id,
-			access_controls.entry_id,
-			entries.path,
-			access_controls.user_id,
-			access_controls.group_id,
-			access_controls.mode
-		FROM access_controls
-		LEFT JOIN entries
-		ON access_controls.entry_id = entries.id
-		WHERE access_controls.id=?`,
-		id,
-	)
+	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
+		ID: &id,
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, fmt.Errorf("access not found: %v", id)
+	if len(as) == 0 {
+		return nil, fmt.Errorf("access control not found")
 	}
-	a := &service.AccessControl{}
-	err = rows.Scan(
-		&a.ID,
-		&a.EntryID,
-		&a.EntryPath,
-		&a.UserID,
-		&a.GroupID,
-		&a.Mode,
-	)
-	if err != nil {
-		return nil, err
-	}
-	err = attachAccessorInfo(tx, ctx, a)
-	if err != nil {
-		return nil, err
-	}
+	a := as[0]
 	return a, nil
 }
 
 func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
-	e, err := getEntryByPath(tx, ctx, path)
-	if err != nil {
-		return nil, err
-	}
-	typ := "user"
+	var user *string
+	var group *string
 	if !strings.Contains(name, "@") {
-		typ = "group"
-	}
-	var id int
-	if typ == "user" {
-		u, err := getUserByEmail(tx, ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		id = u.ID
+		user = &name
 	} else {
-		g, err := getGroupByName(tx, ctx, name)
-		if err != nil {
-			return nil, err
-		}
-		id = g.ID
+		group = &name
 	}
-	stmt := fmt.Sprintf(`
-		SELECT
-			access_controls.id,
-			access_controls.entry_id,
-			entries.path,
-			access_controls.user_id,
-			access_controls.group_id,
-			access_controls.mode
-		FROM access_controls
-		LEFT JOIN entries
-		ON access_controls.entry_id = entries.id
-		WHERE
-			access_controls.entry_id=? AND
-			access_controls.%v_id=?`,
-		typ,
-	)
-	rows, err := tx.QueryContext(ctx, stmt, e.ID, id)
+	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
+		EntryPath: &path,
+		User:      user,
+		Group:     group,
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, fmt.Errorf("access not found: %v", id)
+	if len(as) == 0 {
+		return nil, fmt.Errorf("access control not found")
 	}
-	a := &service.AccessControl{}
-	err = rows.Scan(
-		&a.ID,
-		&a.EntryID,
-		&a.EntryPath,
-		&a.UserID,
-		&a.GroupID,
-		&a.Mode,
-	)
-	if err != nil {
-		return nil, err
-	}
-	err = attachAccessorInfo(tx, ctx, a)
-	if err != nil {
-		return nil, err
-	}
+	a := as[0]
 	return a, nil
 }
 
@@ -431,10 +389,6 @@ func UpdateAccessControl(db *sql.DB, ctx context.Context, upd service.AccessCont
 
 func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessControlUpdater) error {
 	a, err := getAccessControl(tx, ctx, upd.ID)
-	if err != nil {
-		return err
-	}
-	err = attachAccessorInfo(tx, ctx, a)
 	if err != nil {
 		return err
 	}

@@ -126,7 +126,11 @@ type AccessControl struct {
 }
 
 type AccessControlFinder struct {
-	EntryID int
+	ID        *int
+	EntryID   *int
+	EntryPath *string
+	User      *string
+	Group     *string
 }
 
 type AccessControlUpdater struct {

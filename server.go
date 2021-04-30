@@ -417,7 +417,7 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 		return nil, err
 	}
 	as, err := s.svc.FindAccessControls(ctx, service.AccessControlFinder{
-		EntryID: ent.ID,
+		EntryID: &ent.ID,
 	})
 	if err != nil {
 		return nil, err
