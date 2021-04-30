@@ -35,7 +35,7 @@ type Service interface {
 	UpdateGroup(ctx context.Context, upd GroupUpdater) error
 	FindGroupMembers(ctx context.Context, find MemberFinder) ([]*Member, error)
 	AddGroupMember(ctx context.Context, m *Member) error
-	DeleteGroupMember(ctx context.Context, id int) error
+	DeleteGroupMember(ctx context.Context, group, member string) error
 }
 
 type contextKey int
@@ -176,6 +176,8 @@ type Member struct {
 type MemberFinder struct {
 	ID      *int
 	GroupID *int
+	Group   *string
+	Member  *string
 }
 
 type Log struct {

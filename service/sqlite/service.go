@@ -134,6 +134,6 @@ func (s *Service) AddGroupMember(ctx context.Context, m *service.Member) error {
 	return AddGroupMember(s.db, ctx, m)
 }
 
-func (s *Service) DeleteGroupMember(ctx context.Context, id int) error {
-	return DeleteGroupMember(s.db, ctx, id)
+func (s *Service) DeleteGroupMember(ctx context.Context, group, member string) error {
+	return DeleteGroupMember(s.db, ctx, group, member)
 }

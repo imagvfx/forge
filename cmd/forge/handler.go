@@ -977,8 +977,9 @@ func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Requ
 		}
 		user := session["user"]
 		ctx := service.ContextWithUserEmail(r.Context(), user)
-		id := r.FormValue("id")
-		err = h.server.DeleteGroupMember(ctx, id)
+		group := r.FormValue("group")
+		member := r.FormValue("member")
+		err = h.server.DeleteGroupMember(ctx, group, member)
 		if err != nil {
 			return err
 		}

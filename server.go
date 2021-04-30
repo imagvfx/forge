@@ -663,12 +663,8 @@ func (s *Server) AddGroupMember(ctx context.Context, group, member string) error
 	return nil
 }
 
-func (s *Server) DeleteGroupMember(ctx context.Context, memberID string) error {
-	id, err := strconv.Atoi(memberID)
-	if err != nil {
-		return fmt.Errorf("invalid member id: %v", memberID)
-	}
-	err = s.svc.DeleteGroupMember(ctx, id)
+func (s *Server) DeleteGroupMember(ctx context.Context, group, member string) error {
+	err := s.svc.DeleteGroupMember(ctx, group, member)
 	if err != nil {
 		err = fromServiceError(err)
 		return err

@@ -45,12 +45,20 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
-		keys = append(keys, "id=?")
+		keys = append(keys, "group_members.id=?")
 		vals = append(vals, *find.ID)
 	}
 	if find.GroupID != nil {
-		keys = append(keys, "group_id=?")
+		keys = append(keys, "group_members.group_id=?")
 		vals = append(vals, *find.GroupID)
+	}
+	if find.Group != nil {
+		keys = append(keys, "groups.name=?")
+		vals = append(vals, *find.Group)
+	}
+	if find.Member != nil {
+		keys = append(keys, "users.email=?")
+		vals = append(vals, *find.Member)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -58,12 +66,16 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			id,
-			group_id,
-			user_id
+			group_members.id,
+			group_members.group_id,
+			group_members.user_id,
+			groups.name,
+			users.email
 		FROM group_members
+		LEFT JOIN groups ON group_members.group_id = groups.id
+		LEFT JOIN users ON group_members.user_id = users.id
 		`+where+`
-		ORDER BY id ASC
+		ORDER BY group_members.id ASC
 	`,
 		vals...,
 	)
@@ -78,11 +90,9 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 			&m.ID,
 			&m.GroupID,
 			&m.UserID,
+			&m.Group,
+			&m.User,
 		)
-		if err != nil {
-			return nil, err
-		}
-		err = attachAdditionalGroupMemberInfo(tx, ctx, m)
 		if err != nil {
 			return nil, err
 		}
@@ -91,27 +101,13 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	return members, nil
 }
 
-func attachAdditionalGroupMemberInfo(tx *sql.Tx, ctx context.Context, m *service.Member) error {
-	g, err := getGroup(tx, ctx, m.GroupID)
-	if err != nil {
-		return err
-	}
-	m.Group = g.Name
-	u, err := getUser(tx, ctx, m.UserID)
-	if err != nil {
-		return err
-	}
-	m.User = u.Email
-	return nil
-}
-
-func getGroupMember(tx *sql.Tx, ctx context.Context, id int) (*service.Member, error) {
-	members, err := findGroupMembers(tx, ctx, service.MemberFinder{ID: &id})
+func getGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (*service.Member, error) {
+	members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group, Member: &member})
 	if err != nil {
 		return nil, err
 	}
 	if len(members) == 0 {
-		return nil, service.NotFoundError{"group not found"}
+		return nil, service.NotFoundError{"member not found"}
 	}
 	return members[0], nil
 }
@@ -156,13 +152,13 @@ func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
 	return nil
 }
 
-func DeleteGroupMember(db *sql.DB, ctx context.Context, id int) error {
+func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteGroupMember(tx, ctx, id)
+	err = deleteGroupMember(tx, ctx, group, member)
 	if err != nil {
 		return err
 	}
@@ -173,8 +169,8 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, id int) error {
 	return nil
 }
 
-func deleteGroupMember(tx *sql.Tx, ctx context.Context, id int) error {
-	m, err := getGroupMember(tx, ctx, id)
+func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) error {
+	m, err := getGroupMember(tx, ctx, group, member)
 	if err != nil {
 		return err
 	}
@@ -192,7 +188,7 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, id int) error {
 		DELETE FROM group_members
 		WHERE id=?
 	`,
-		id,
+		m.ID,
 	)
 	if err != nil {
 		return err
