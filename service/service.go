@@ -23,7 +23,7 @@ type Service interface {
 	AddEnviron(ctx context.Context, p *Property) error
 	UpdateEnviron(ctx context.Context, upd PropertyUpdater) error
 	DeleteEnviron(ctx context.Context, path string, name string) error
-	FindAccessControls(ctx context.Context, find AccessControlFinder) ([]*AccessControl, error)
+	EntryAccessControls(ctx context.Context, path string) ([]*AccessControl, error)
 	AddAccessControl(ctx context.Context, ac *AccessControl) error
 	UpdateAccessControl(ctx context.Context, upd AccessControlUpdater) error
 	DeleteAccessControl(ctx context.Context, path string, name string) error

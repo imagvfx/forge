@@ -412,13 +412,7 @@ func (s *Server) DeleteEnviron(ctx context.Context, path string, name string) er
 }
 
 func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*AccessControl, error) {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-	as, err := s.svc.FindAccessControls(ctx, service.AccessControlFinder{
-		EntryID: &ent.ID,
-	})
+	as, err := s.svc.EntryAccessControls(ctx, path)
 	if err != nil {
 		return nil, err
 	}

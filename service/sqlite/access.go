@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -32,7 +33,7 @@ func createAccessControlsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindAccessControls(db *sql.DB, ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*service.AccessControl, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -40,26 +41,26 @@ func FindAccessControls(db *sql.DB, ctx context.Context, find service.AccessCont
 	defer tx.Rollback()
 	acm := make(map[string]*service.AccessControl)
 	for {
-		ent, err := getEntry(tx, ctx, *find.EntryID)
+		ent, err := getEntryByPath(tx, ctx, path)
 		if err != nil {
 			return nil, err
 		}
-		as, err := findAccessControls(tx, ctx, find)
+		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
 		for _, a := range as {
 			if acm[a.Accessor] != nil {
-				// NOTE: user and group shouldn't share same name.
+				// Already found the accessor permission on a child entry.
 				continue
 			}
 			a.EntryPath = ent.Path
 			acm[a.Accessor] = a
 		}
-		if ent.ParentID == nil {
+		if path == "/" {
 			break
 		}
-		*find.EntryID = *ent.ParentID
+		path = filepath.Dir(path)
 	}
 	acs := make([]*service.AccessControl, 0)
 	for _, a := range acm {

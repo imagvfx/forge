@@ -86,8 +86,8 @@ func (s *Service) DeleteEnviron(ctx context.Context, path, name string) error {
 	return DeleteEnviron(s.db, ctx, path, name)
 }
 
-func (s Service) FindAccessControls(ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
-	return FindAccessControls(s.db, ctx, find)
+func (s Service) EntryAccessControls(ctx context.Context, path string) ([]*service.AccessControl, error) {
+	return EntryAccessControls(s.db, ctx, path)
 }
 
 func (s Service) AddAccessControl(ctx context.Context, a *service.AccessControl) error {
