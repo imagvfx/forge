@@ -14,7 +14,8 @@ func createThumbnailsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS thumbnails (
 			id INTEGER PRIMARY KEY,
 			entry_id STRING NOT NULL UNIQUE,
-			data BLOB NOT NULL
+			data BLOB NOT NULL,
+			FOREIGN KEY (entry_id) REFERENCES entries (id)
 		)
 	`)
 	if err != nil {
