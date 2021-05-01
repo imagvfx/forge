@@ -94,11 +94,11 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	}
 	if find.User != nil {
 		keys = append(keys, "users.email=?")
-		vals = append(vals, *find.EntryPath)
+		vals = append(vals, *find.User)
 	}
 	if find.Group != nil {
 		keys = append(keys, "groups.name=?")
-		vals = append(vals, *find.EntryPath)
+		vals = append(vals, *find.Group)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -259,7 +259,7 @@ func getAccessControl(tx *sql.Tx, ctx context.Context, id int) (*service.AccessC
 func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
 	var user *string
 	var group *string
-	if !strings.Contains(name, "@") {
+	if strings.Contains(name, "@") {
 		user = &name
 	} else {
 		group = &name
