@@ -88,8 +88,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 			entries.typ,
 			thumbnails.id
 		FROM entries
-		LEFT JOIN thumbnails
-		ON entries.id = thumbnails.entry_id
+		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
 		`+where+`
 		ORDER BY entries.id ASC
 	`,
