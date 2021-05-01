@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -115,13 +116,17 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		if thumbID != nil {
 			e.HasThumbnail = true
 		}
-		canRead, err := userCanRead(tx, ctx, e.ID)
+		err = userRead(tx, ctx, e.ID)
 		if err != nil {
-			return nil, err
+			var e *service.NotFoundError
+			if !errors.As(err, e) {
+				return nil, err
+			}
+			// userRead returns service.NotFoundError
+			// because of the user doesn't have permission to see the entry.
+			continue
 		}
-		if canRead {
-			ents = append(ents, e)
-		}
+		ents = append(ents, e)
 	}
 	return ents, nil
 }
@@ -225,12 +230,9 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if e.ParentID == nil {
 		fmt.Errorf("parent id unspecified")
 	}
-	ok, err := userCanWrite(tx, ctx, *e.ParentID)
+	err := userWrite(tx, ctx, *e.ParentID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.Exec(`
 		INSERT INTO entries (
@@ -311,12 +313,9 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, *e.ParentID)
+	err = userWrite(tx, ctx, *e.ParentID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return fmt.Errorf("user cannot modify entry")
 	}
 	err = updateEntryPath(tx, ctx, path, newPath)
 	if err != nil {
@@ -443,12 +442,9 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, *e.ParentID)
+	err = userWrite(tx, ctx, *e.ParentID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	relatedTables := []string{"properties", "environs", "access_controls", "logs"}
 	for _, table := range relatedTables {

@@ -197,12 +197,9 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, thumb.EntryID)
+	err = userWrite(tx, ctx, thumb.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return fmt.Errorf("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)

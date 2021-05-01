@@ -234,12 +234,9 @@ func AddEnviron(db *sql.DB, ctx context.Context, e *service.Property) error {
 }
 
 func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
-	ok, err := userCanWrite(tx, ctx, e.EntryID)
+	err := userWrite(tx, ctx, e.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return fmt.Errorf("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO environs (
@@ -301,12 +298,9 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, e.EntryID)
+	err = userWrite(tx, ctx, e.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return fmt.Errorf("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -374,12 +368,9 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, e.EntryID)
+	err = userWrite(tx, ctx, e.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return fmt.Errorf("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		DELETE FROM environs

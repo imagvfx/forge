@@ -168,12 +168,9 @@ func AddProperty(db *sql.DB, ctx context.Context, p *service.Property) error {
 }
 
 func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
-	ok, err := userCanWrite(tx, ctx, p.EntryID)
+	err := userWrite(tx, ctx, p.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO properties (
@@ -235,12 +232,9 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, p.EntryID)
+	err = userWrite(tx, ctx, p.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -308,12 +302,9 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, p.EntryID)
+	err = userWrite(tx, ctx, p.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		DELETE FROM properties

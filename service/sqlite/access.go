@@ -155,34 +155,42 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	return acss, nil
 }
 
-func userCanRead(tx *sql.Tx, ctx context.Context, entID int) (bool, error) {
+// userRead returns an error if the user cannot read the entry.
+// It returns service.NotFound error when the context user doesn't have read permission.
+func userRead(tx *sql.Tx, ctx context.Context, entID int) error {
 	mode, err := userAccessMode(tx, ctx, entID)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if mode == nil {
-		return false, nil
+		// The entry should invisible to the user.
+		return service.NotFound("cannot access to entry")
 	}
-	return true, nil
+	return nil
 }
 
-func userCanWrite(tx *sql.Tx, ctx context.Context, entID int) (bool, error) {
+// userWrite returns an error if the user cannot write the entry.
+// It returns service.NotFound error when the context user doesn't have read permission or
+// returns service.Unauthorized error when the context user doesn't have write permission.
+func userWrite(tx *sql.Tx, ctx context.Context, entID int) error {
 	mode, err := userAccessMode(tx, ctx, entID)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if mode == nil {
-		return false, nil
+		// The entry should invisible to the user.
+		return service.NotFound("cannot access to entry")
 	}
 	if *mode == 0 {
 		// read mode
-		return false, nil
+		return service.Unauthorized("entry modification not allowed")
 	}
-	return true, nil
+	return nil
 }
 
 // userAccessMode returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
+// It returns (nil, nil) when there is no access_control exists for the user.
 func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 	user := service.UserEmailFromContext(ctx)
 	u, err := getUserByEmail(tx, ctx, user)
@@ -322,12 +330,9 @@ func AddAccessControl(db *sql.DB, ctx context.Context, a *service.AccessControl)
 }
 
 func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl) error {
-	ok, err := userCanWrite(tx, ctx, a.EntryID)
+	err := userWrite(tx, ctx, a.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO access_controls (
@@ -393,12 +398,9 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, a.EntryID)
+	err = userWrite(tx, ctx, a.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -466,12 +468,9 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 	if err != nil {
 		return err
 	}
-	ok, err := userCanWrite(tx, ctx, a.EntryID)
+	err = userWrite(tx, ctx, a.EntryID)
 	if err != nil {
 		return err
-	}
-	if !ok {
-		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.Exec(`
 		DELETE FROM access_controls
