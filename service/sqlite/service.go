@@ -54,8 +54,12 @@ func (s *Service) DeleteThumbnail(ctx context.Context, path string) error {
 	return DeleteThumbnail(s.db, ctx, path)
 }
 
-func (s *Service) FindProperties(ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
-	return FindProperties(s.db, ctx, find)
+func (s *Service) EntryProperties(ctx context.Context, path string) ([]*service.Property, error) {
+	return EntryProperties(s.db, ctx, path)
+}
+
+func (s *Service) GetProperty(ctx context.Context, path, name string) (*service.Property, error) {
+	return GetProperty(s.db, ctx, path, name)
 }
 
 func (s *Service) AddProperty(ctx context.Context, ent *service.Property) error {
@@ -70,8 +74,12 @@ func (s *Service) DeleteProperty(ctx context.Context, path, name string) error {
 	return DeleteProperty(s.db, ctx, path, name)
 }
 
-func (s *Service) FindEnvirons(ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
-	return FindEnvirons(s.db, ctx, find)
+func (s *Service) EntryEnvirons(ctx context.Context, path string) ([]*service.Property, error) {
+	return EntryEnvirons(s.db, ctx, path)
+}
+
+func (s *Service) GetEnviron(ctx context.Context, path, name string) (*service.Property, error) {
+	return GetEnviron(s.db, ctx, path, name)
 }
 
 func (s *Service) AddEnviron(ctx context.Context, ent *service.Property) error {

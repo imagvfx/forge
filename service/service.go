@@ -15,11 +15,13 @@ type Service interface {
 	UpdateThumbnail(ctx context.Context, upd ThumbnailUpdater) error
 	GetThumbnail(ctx context.Context, path string) (*Thumbnail, error)
 	DeleteThumbnail(ctx context.Context, path string) error
-	FindProperties(ctx context.Context, find PropertyFinder) ([]*Property, error)
+	EntryProperties(ctx context.Context, path string) ([]*Property, error)
+	GetProperty(ctx context.Context, path, name string) (*Property, error)
 	AddProperty(ctx context.Context, p *Property) error
 	UpdateProperty(ctx context.Context, upd PropertyUpdater) error
 	DeleteProperty(ctx context.Context, path string, name string) error
-	FindEnvirons(ctx context.Context, find PropertyFinder) ([]*Property, error)
+	EntryEnvirons(ctx context.Context, path string) ([]*Property, error)
+	GetEnviron(ctx context.Context, path, name string) (*Property, error)
 	AddEnviron(ctx context.Context, p *Property) error
 	UpdateEnviron(ctx context.Context, upd PropertyUpdater) error
 	DeleteEnviron(ctx context.Context, path string, name string) error
@@ -104,8 +106,10 @@ type Property struct {
 }
 
 type PropertyFinder struct {
-	EntryID int
-	Name    *string
+	ID        *int
+	EntryID   *int
+	EntryPath *string
+	Name      *string
 }
 
 type PropertyUpdater struct {

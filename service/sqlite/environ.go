@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -29,7 +30,7 @@ func createEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindEnvirons(db *sql.DB, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -37,24 +38,19 @@ func FindEnvirons(db *sql.DB, ctx context.Context, find service.PropertyFinder) 
 	defer tx.Rollback()
 	envmap := make(map[string]*service.Property)
 	for {
-		ent, err := getEntry(tx, ctx, find.EntryID)
-		if err != nil {
-			return nil, err
-		}
-		emap, err := findEnvirons(tx, ctx, find)
+		emap, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
 		for name, e := range emap {
 			if envmap[name] == nil {
-				e.EntryPath = ent.Path
 				envmap[name] = e
 			}
 		}
-		if ent.ParentID == nil {
+		if path == "/" {
 			break
 		}
-		find.EntryID = *ent.ParentID
+		path = filepath.Dir(path)
 	}
 	envs := make([]*service.Property, 0, len(envmap))
 	for _, e := range envmap {
@@ -73,13 +69,24 @@ func FindEnvirons(db *sql.DB, ctx context.Context, find service.PropertyFinder) 
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
 func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) (map[string]*service.Property, error) {
+
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	keys = append(keys, "entry_id=?")
-	vals = append(vals, find.EntryID)
+	if find.ID != nil {
+		keys = append(keys, "environs.id=?")
+		vals = append(vals, *find.ID)
+	}
+	if find.EntryID != nil {
+		keys = append(keys, "environs.entry_id=?")
+		vals = append(vals, *find.EntryID)
+	}
 	if find.Name != nil {
-		keys = append(keys, "name=?")
+		keys = append(keys, "environs.name=?")
 		vals = append(vals, *find.Name)
+	}
+	if find.EntryPath != nil {
+		keys = append(keys, "entries.path=?")
+		vals = append(vals, *find.EntryPath)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -87,12 +94,14 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			id,
-			entry_id,
-			name,
-			typ,
-			val
+			environs.id,
+			environs.entry_id,
+			environs.name,
+			environs.typ,
+			environs.val,
+			entries.path
 		FROM environs
+		LEFT JOIN entries ON environs.entry_id = entries.id
 		`+where,
 		vals...,
 	)
@@ -109,6 +118,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 			&e.Name,
 			&e.Type,
 			&e.Value,
+			&e.EntryPath,
 		)
 		if err != nil {
 			return nil, err
@@ -116,6 +126,23 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 		envmap[e.Name] = e
 	}
 	return envmap, nil
+}
+
+func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Property, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	p, err := getEnvironByPathName(tx, ctx, path, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
 }
 
 func getEnviron(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {

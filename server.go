@@ -192,13 +192,7 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 }
 
 func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property, error) {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-	ps, err := s.svc.FindProperties(ctx, service.PropertyFinder{
-		EntryID: ent.ID,
-	})
+	ps, err := s.svc.EntryProperties(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -218,21 +212,11 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	return props, nil
 }
 
-func (s *Server) getProperty(ctx context.Context, ent int, name string) (*Property, error) {
-	ps, err := s.svc.FindProperties(ctx, service.PropertyFinder{
-		EntryID: ent,
-		Name:    &name,
-	})
+func (s *Server) getProperty(ctx context.Context, path string, name string) (*Property, error) {
+	p, err := s.svc.GetProperty(ctx, path, name)
 	if err != nil {
 		return nil, err
 	}
-	if len(ps) == 0 {
-		return nil, fmt.Errorf("entry not found")
-	}
-	if len(ps) != 1 {
-		return nil, fmt.Errorf("got more than 1 property")
-	}
-	p := ps[0]
 	prop := &Property{
 		srv:       s,
 		id:        p.ID,
@@ -270,11 +254,7 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 }
 
 func (s *Server) SetProperty(ctx context.Context, path string, name, value string) error {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return err
-	}
-	prop, err := s.getProperty(ctx, ent.ID, name)
+	prop, err := s.getProperty(ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -302,13 +282,7 @@ func (s *Server) DeleteProperty(ctx context.Context, path string, name string) e
 }
 
 func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, error) {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-	ps, err := s.svc.FindEnvirons(ctx, service.PropertyFinder{
-		EntryID: ent.ID,
-	})
+	ps, err := s.svc.EntryEnvirons(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -328,21 +302,11 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	return props, nil
 }
 
-func (s *Server) getEnviron(ctx context.Context, ent int, name string) (*Property, error) {
-	es, err := s.svc.FindEnvirons(ctx, service.PropertyFinder{
-		EntryID: ent,
-		Name:    &name,
-	})
+func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, error) {
+	e, err := s.svc.GetEnviron(ctx, path, name)
 	if err != nil {
 		return nil, err
 	}
-	if len(es) == 0 {
-		return nil, fmt.Errorf("entry not found")
-	}
-	if len(es) != 1 {
-		return nil, fmt.Errorf("got more than 1 environ")
-	}
-	e := es[0]
 	env := &Property{
 		srv:       s,
 		id:        e.ID,
@@ -380,11 +344,7 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 }
 
 func (s *Server) SetEnviron(ctx context.Context, path string, name, value string) error {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return err
-	}
-	env, err := s.getEnviron(ctx, ent.ID, name)
+	env, err := s.getEnviron(ctx, path, name)
 	if err != nil {
 		return err
 	}

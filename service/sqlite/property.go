@@ -29,22 +29,15 @@ func createPropertiesTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindProperties(db *sql.DB, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*service.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntry(tx, ctx, find.EntryID)
+	props, err := findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path})
 	if err != nil {
 		return nil, err
-	}
-	props, err := findProperties(tx, ctx, find)
-	if err != nil {
-		return nil, err
-	}
-	for _, p := range props {
-		p.EntryPath = ent.Path
 	}
 	sort.Slice(props, func(i, j int) bool {
 		return props[i].Name < props[j].Name
@@ -60,11 +53,21 @@ func FindProperties(db *sql.DB, ctx context.Context, find service.PropertyFinder
 func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	keys = append(keys, "entry_id=?")
-	vals = append(vals, find.EntryID)
+	if find.ID != nil {
+		keys = append(keys, "properties.id=?")
+		vals = append(vals, *find.ID)
+	}
+	if find.EntryID != nil {
+		keys = append(keys, "properties.entry_id=?")
+		vals = append(vals, *find.EntryID)
+	}
 	if find.Name != nil {
-		keys = append(keys, "name=?")
+		keys = append(keys, "properties.name=?")
 		vals = append(vals, *find.Name)
+	}
+	if find.EntryPath != nil {
+		keys = append(keys, "entries.path=?")
+		vals = append(vals, *find.EntryPath)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -72,12 +75,14 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			id,
-			entry_id,
-			name,
-			typ,
-			val
+			properties.id,
+			properties.entry_id,
+			properties.name,
+			properties.typ,
+			properties.val,
+			entries.path
 		FROM properties
+		LEFT JOIN entries ON properties.entry_id = entries.id
 		`+where,
 		vals...,
 	)
@@ -94,6 +99,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 			&p.Name,
 			&p.Type,
 			&p.Value,
+			&p.EntryPath,
 		)
 		if err != nil {
 			return nil, err
@@ -103,74 +109,44 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 	return props, nil
 }
 
-func getProperty(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			id,
-			entry_id,
-			name,
-			typ,
-			val
-		FROM properties
-		WHERE id=?`,
-		id,
-	)
+func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*service.Property, error) {
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, fmt.Errorf("property not found")
+	defer tx.Rollback()
+	p, err := getPropertyByPathName(tx, ctx, path, name)
+	if err != nil {
+		return nil, err
 	}
-	p := &service.Property{}
-	err = rows.Scan(
-		&p.ID,
-		&p.EntryID,
-		&p.Name,
-		&p.Type,
-		&p.Value,
-	)
+	err = tx.Commit()
 	if err != nil {
 		return nil, err
 	}
 	return p, nil
 }
 
-func getPropertyByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
-	e, err := getEntryByPath(tx, ctx, path)
+func getProperty(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
+	props, err := findProperties(tx, ctx, service.PropertyFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			id,
-			entry_id,
-			name,
-			typ,
-			val
-		FROM properties
-		WHERE entry_id=? AND name=?`,
-		e.ID,
-		name,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
+	if len(props) == 0 {
 		return nil, fmt.Errorf("property not found")
 	}
-	p := &service.Property{}
-	err = rows.Scan(
-		&p.ID,
-		&p.EntryID,
-		&p.Name,
-		&p.Type,
-		&p.Value,
-	)
+	p := props[0]
+	return p, nil
+}
+
+func getPropertyByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
+	props, err := findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
 		return nil, err
 	}
+	if len(props) == 0 {
+		return nil, fmt.Errorf("property not found")
+	}
+	p := props[0]
 	return p, nil
 }
 
