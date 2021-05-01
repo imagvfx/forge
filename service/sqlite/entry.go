@@ -118,7 +118,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		err = userRead(tx, ctx, e.ID)
 		if err != nil {
 			var e *service.NotFoundError
-			if !errors.As(err, e) {
+			if !errors.As(err, &e) {
 				return nil, err
 			}
 			// userRead returns service.NotFoundError
