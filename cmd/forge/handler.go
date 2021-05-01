@@ -47,9 +47,20 @@ var pathHandlerFuncs = template.FuncMap{
 }
 
 func handleError(w http.ResponseWriter, err error) {
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err == nil {
+		return
 	}
+	var notFound *service.NotFoundError
+	if errors.As(err, &notFound) {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	var unauthorized *service.UnauthorizedError
+	if errors.As(err, &unauthorized) {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	http.Error(w, err.Error(), http.StatusBadRequest)
 }
 
 func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
@@ -468,7 +479,8 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		ctx := service.ContextWithUserEmail(r.Context(), user)
 		_, err = h.server.GetUser(ctx, user)
 		if err != nil {
-			if !errors.As(err, &forge.NotFoundError{}) {
+			var e *service.NotFoundError
+			if !errors.As(err, &e) {
 				return err
 			}
 			err := h.server.AddUser(ctx, user)

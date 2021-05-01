@@ -110,7 +110,7 @@ func getUser(tx *sql.Tx, ctx context.Context, id int) (*service.User, error) {
 		return nil, err
 	}
 	if len(users) == 0 {
-		return nil, service.NotFoundError{"user not found"}
+		return nil, service.NotFound("user not found")
 	}
 	return users[0], nil
 }
@@ -121,7 +121,7 @@ func getUserByEmail(tx *sql.Tx, ctx context.Context, user string) (*service.User
 		return nil, err
 	}
 	if len(users) == 0 {
-		return nil, service.NotFoundError{"user not found"}
+		return nil, service.NotFound("user not found")
 	}
 	return users[0], nil
 }

@@ -110,7 +110,7 @@ func getGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (*ser
 		return nil, err
 	}
 	if len(members) == 0 {
-		return nil, service.NotFoundError{"member not found"}
+		return nil, service.NotFound("member not found")
 	}
 	return members[0], nil
 }

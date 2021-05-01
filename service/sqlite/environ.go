@@ -162,7 +162,7 @@ func getEnviron(tx *sql.Tx, ctx context.Context, id int) (*service.Property, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, fmt.Errorf("environ not found")
+		return nil, service.NotFound("environ not found")
 	}
 	e := &service.Property{}
 	err = rows.Scan(
@@ -200,7 +200,7 @@ func getEnvironByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, fmt.Errorf("environ not found")
+		return nil, service.NotFound("environ not found")
 	}
 	p := &service.Property{}
 	err = rows.Scan(

@@ -126,7 +126,7 @@ func getGroup(tx *sql.Tx, ctx context.Context, id int) (*service.Group, error) {
 		return nil, err
 	}
 	if len(groups) == 0 {
-		return nil, service.NotFoundError{"group not found"}
+		return nil, service.NotFound("group not found")
 	}
 	return groups[0], nil
 }
@@ -137,7 +137,7 @@ func getGroupByName(tx *sql.Tx, ctx context.Context, name string) (*service.Grou
 		return nil, err
 	}
 	if len(groups) == 0 {
-		return nil, service.NotFoundError{"group not found"}
+		return nil, service.NotFound("group not found")
 	}
 	return groups[0], nil
 }

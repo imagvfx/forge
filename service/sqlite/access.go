@@ -250,7 +250,7 @@ func getAccessControl(tx *sql.Tx, ctx context.Context, id int) (*service.AccessC
 		return nil, err
 	}
 	if len(as) == 0 {
-		return nil, fmt.Errorf("access control not found")
+		return nil, service.NotFound("access control not found")
 	}
 	a := as[0]
 	return a, nil
@@ -273,7 +273,7 @@ func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name stri
 		return nil, err
 	}
 	if len(as) == 0 {
-		return nil, fmt.Errorf("access control not found")
+		return nil, service.NotFound("access control not found")
 	}
 	a := as[0]
 	return a, nil
@@ -327,7 +327,7 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO access_controls (
@@ -398,7 +398,7 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -471,7 +471,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.Exec(`
 		DELETE FROM access_controls

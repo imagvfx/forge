@@ -495,7 +495,6 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
 	su, err := s.svc.GetUserByEmail(ctx, user)
 	if err != nil {
-		err = fromServiceError(err)
 		return nil, err
 	}
 	u := &User{
@@ -510,7 +509,6 @@ func (s *Server) AddUser(ctx context.Context, user string) error {
 	u := &service.User{Email: user}
 	err := s.svc.AddUser(ctx, u)
 	if err != nil {
-		err = fromServiceError(err)
 		return err
 	}
 	return nil
@@ -519,7 +517,6 @@ func (s *Server) AddUser(ctx context.Context, user string) error {
 func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
 	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{})
 	if err != nil {
-		err = fromServiceError(err)
 		return nil, err
 	}
 	groups := make([]*Group, 0, len(sgroups))
@@ -536,7 +533,6 @@ func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
 func (s *Server) GetGroup(ctx context.Context, name string) (*Group, error) {
 	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{Name: &name})
 	if err != nil {
-		err = fromServiceError(err)
 		return nil, err
 	}
 	if len(sgroups) == 0 {
@@ -554,7 +550,6 @@ func (s *Server) AddGroup(ctx context.Context, group string) error {
 	g := &service.Group{Name: group}
 	err := s.svc.AddGroup(ctx, g)
 	if err != nil {
-		err = fromServiceError(err)
 		return err
 	}
 	return nil
@@ -568,7 +563,6 @@ func (s *Server) SetGroup(ctx context.Context, groupID string, group string) err
 	g := service.GroupUpdater{ID: id, Name: &group}
 	err = s.svc.UpdateGroup(ctx, g)
 	if err != nil {
-		err = fromServiceError(err)
 		return err
 	}
 	return nil
@@ -581,7 +575,6 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 	}
 	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{GroupID: &g.ID})
 	if err != nil {
-		err = fromServiceError(err)
 		return nil, err
 	}
 	members := make([]*Member, 0, len(svcMembers))
@@ -611,7 +604,6 @@ func (s *Server) AddGroupMember(ctx context.Context, group, member string) error
 	m := &service.Member{GroupID: g.ID, UserID: u.ID}
 	err = s.svc.AddGroupMember(ctx, m)
 	if err != nil {
-		err = fromServiceError(err)
 		return err
 	}
 	return nil
@@ -620,7 +612,6 @@ func (s *Server) AddGroupMember(ctx context.Context, group, member string) error
 func (s *Server) DeleteGroupMember(ctx context.Context, group, member string) error {
 	err := s.svc.DeleteGroupMember(ctx, group, member)
 	if err != nil {
-		err = fromServiceError(err)
 		return err
 	}
 	return nil

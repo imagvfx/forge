@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -40,6 +41,36 @@ type Service interface {
 	DeleteGroupMember(ctx context.Context, group, member string) error
 }
 
+type NotFoundError struct {
+	err error
+}
+
+func (e *NotFoundError) Error() string {
+	if e.err == nil {
+		return ""
+	}
+	return e.err.Error()
+}
+
+func NotFound(s string, is ...interface{}) *NotFoundError {
+	return &NotFoundError{fmt.Errorf(s, is...)}
+}
+
+type UnauthorizedError struct {
+	err error
+}
+
+func (e *UnauthorizedError) Error() string {
+	if e.err == nil {
+		return ""
+	}
+	return e.err.Error()
+}
+
+func Unauthorized(s string, is ...interface{}) *UnauthorizedError {
+	return &UnauthorizedError{fmt.Errorf(s, is...)}
+}
+
 type contextKey int
 
 const (
@@ -56,14 +87,6 @@ func UserEmailFromContext(ctx context.Context) string {
 		return ""
 	}
 	return email.(string)
-}
-
-type NotFoundError struct {
-	Err string
-}
-
-func (e NotFoundError) Error() string {
-	return e.Err
 }
 
 type Entry struct {

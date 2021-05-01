@@ -132,7 +132,7 @@ func getProperty(tx *sql.Tx, ctx context.Context, id int) (*service.Property, er
 		return nil, err
 	}
 	if len(props) == 0 {
-		return nil, fmt.Errorf("property not found")
+		return nil, service.NotFound("property not found")
 	}
 	p := props[0]
 	return p, nil
@@ -144,7 +144,7 @@ func getPropertyByPathName(tx *sql.Tx, ctx context.Context, path, name string) (
 		return nil, err
 	}
 	if len(props) == 0 {
-		return nil, fmt.Errorf("property not found")
+		return nil, service.NotFound("property not found")
 	}
 	p := props[0]
 	return p, nil
@@ -173,7 +173,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO properties (
@@ -240,7 +240,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -313,7 +313,7 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.ExecContext(ctx, `
 		DELETE FROM properties

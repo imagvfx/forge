@@ -142,7 +142,7 @@ func getEntryParent(tx *sql.Tx, ctx context.Context, id int) (*int, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, fmt.Errorf("entry not found: %v", id)
+		return nil, service.NotFound("entry not found: %v", id)
 	}
 	var parentID *int
 	err = rows.Scan(
@@ -174,7 +174,7 @@ func getEntry(tx *sql.Tx, ctx context.Context, id int) (*service.Entry, error) {
 		return nil, err
 	}
 	if len(ents) == 0 {
-		return nil, fmt.Errorf("entry not found")
+		return nil, service.NotFound("entry not found")
 	}
 	return ents[0], nil
 }
@@ -185,7 +185,7 @@ func getEntryByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Entr
 		return nil, err
 	}
 	if len(ents) == 0 {
-		return nil, fmt.Errorf("entry not found")
+		return nil, service.NotFound("entry not found")
 	}
 	return ents[0], nil
 }
@@ -230,7 +230,7 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	result, err := tx.Exec(`
 		INSERT INTO entries (
@@ -448,7 +448,7 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("user cannot modify entry")
+		return service.Unauthorized("user cannot modify entry")
 	}
 	relatedTables := []string{"properties", "environs", "access_controls", "logs"}
 	for _, table := range relatedTables {
