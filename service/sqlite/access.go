@@ -23,7 +23,8 @@ func createAccessControlsTable(tx *sql.Tx) error {
 			mode INTEGER NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			FOREIGN KEY (user_id) REFERENCES users (id),
-			UNIQUE (entry_id, user_id, group_id)
+			UNIQUE (entry_id, user_id),
+			UNIQUE (entry_id, group_id)
 		)
 	`)
 	if err != nil {
