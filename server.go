@@ -41,7 +41,6 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 		parentID = *e.ParentID
 	}
 	ent := &Entry{
-		srv:          s,
 		id:           e.ID,
 		parentID:     parentID,
 		path:         e.Path,
@@ -69,7 +68,6 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 			parentID = *e.ParentID
 		}
 		ent := &Entry{
-			srv:          s,
 			id:           e.ID,
 			parentID:     parentID,
 			path:         e.Path,
@@ -107,7 +105,6 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	props := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Properties {
 		p := &Property{
-			srv:       s,
 			entryPath: path,
 			name:      ktv.Key,
 			typ:       ktv.Type,
@@ -122,7 +119,6 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	envs := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Environs {
 		e := &Property{
-			srv:       s,
 			entryPath: path,
 			name:      ktv.Key,
 			typ:       ktv.Type,
@@ -199,7 +195,6 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			srv:       s,
 			id:        p.ID,
 			entryID:   p.EntryID,
 			entryPath: p.EntryPath,
@@ -218,7 +213,6 @@ func (s *Server) getProperty(ctx context.Context, path string, name string) (*Pr
 		return nil, err
 	}
 	prop := &Property{
-		srv:       s,
 		id:        p.ID,
 		entryID:   p.EntryID,
 		entryPath: p.EntryPath,
@@ -235,7 +229,6 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 		return err
 	}
 	env := &Property{
-		srv:       s,
 		entryID:   ent.ID,
 		entryPath: ent.Path,
 		name:      name,
@@ -289,7 +282,6 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			srv:       s,
 			id:        p.ID,
 			entryID:   p.EntryID,
 			entryPath: p.EntryPath,
@@ -308,7 +300,6 @@ func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, 
 		return nil, err
 	}
 	env := &Property{
-		srv:       s,
 		id:        e.ID,
 		entryID:   e.EntryID,
 		entryPath: e.EntryPath,
@@ -325,7 +316,6 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 		return err
 	}
 	env := &Property{
-		srv:       s,
 		entryID:   ent.ID,
 		entryPath: ent.Path,
 		name:      name,

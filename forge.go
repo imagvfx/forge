@@ -12,7 +12,6 @@ import (
 )
 
 type Entry struct {
-	srv          *Server
 	id           int
 	parentID     int
 	path         string
@@ -55,7 +54,6 @@ type Thumbnail struct {
 
 // Property can be either a normal property or an environment.
 type Property struct {
-	srv       *Server
 	id        int
 	entryID   int
 	entryPath string
