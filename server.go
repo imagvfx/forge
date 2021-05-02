@@ -41,10 +41,10 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 		parentID = *e.ParentID
 	}
 	ent := &Entry{
-		id:           e.ID,
-		parentID:     parentID,
-		path:         e.Path,
-		typ:          e.Type,
+		ID:           e.ID,
+		ParentID:     parentID,
+		Path:         e.Path,
+		Type:         e.Type,
 		HasThumbnail: e.HasThumbnail,
 	}
 	return ent, nil
@@ -68,10 +68,10 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 			parentID = *e.ParentID
 		}
 		ent := &Entry{
-			id:           e.ID,
-			parentID:     parentID,
-			path:         e.Path,
-			typ:          e.Type,
+			ID:           e.ID,
+			ParentID:     parentID,
+			Path:         e.Path,
+			Type:         e.Type,
 			HasThumbnail: e.HasThumbnail,
 		}
 		ents = append(ents, ent)
@@ -105,10 +105,10 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	props := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Properties {
 		p := &Property{
-			entryPath: path,
-			name:      ktv.Key,
-			typ:       ktv.Type,
-			value:     ktv.Value,
+			EntryPath: path,
+			Name:      ktv.Key,
+			Type:      ktv.Type,
+			Value:     ktv.Value,
 		}
 		err := p.Validate()
 		if err != nil {
@@ -119,10 +119,10 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	envs := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Environs {
 		e := &Property{
-			entryPath: path,
-			name:      ktv.Key,
-			typ:       ktv.Type,
-			value:     ktv.Value,
+			EntryPath: path,
+			Name:      ktv.Key,
+			Type:      ktv.Type,
+			Value:     ktv.Value,
 		}
 		err := e.Validate()
 		if err != nil {
@@ -195,12 +195,12 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			id:        p.ID,
-			entryID:   p.EntryID,
-			entryPath: p.EntryPath,
-			name:      p.Name,
-			typ:       p.Type,
-			value:     p.Value,
+			ID:        p.ID,
+			EntryID:   p.EntryID,
+			EntryPath: p.EntryPath,
+			Name:      p.Name,
+			Type:      p.Type,
+			Value:     p.Value,
 		}
 		props = append(props, prop)
 	}
@@ -213,12 +213,12 @@ func (s *Server) getProperty(ctx context.Context, path string, name string) (*Pr
 		return nil, err
 	}
 	prop := &Property{
-		id:        p.ID,
-		entryID:   p.EntryID,
-		entryPath: p.EntryPath,
-		name:      p.Name,
-		typ:       p.Type,
-		value:     p.Value,
+		ID:        p.ID,
+		EntryID:   p.EntryID,
+		EntryPath: p.EntryPath,
+		Name:      p.Name,
+		Type:      p.Type,
+		Value:     p.Value,
 	}
 	return prop, nil
 }
@@ -229,11 +229,11 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 		return err
 	}
 	env := &Property{
-		entryID:   ent.ID,
-		entryPath: ent.Path,
-		name:      name,
-		typ:       typ,
-		value:     value,
+		EntryID:   ent.ID,
+		EntryPath: ent.Path,
+		Name:      name,
+		Type:      typ,
+		Value:     value,
 	}
 	err = env.Validate()
 	if err != nil {
@@ -251,13 +251,13 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 	if err != nil {
 		return err
 	}
-	prop.value = value // validate the given value
+	prop.Value = value // validate the given value
 	err = prop.Validate()
 	if err != nil {
 		return err
 	}
 	err = s.svc.UpdateProperty(ctx, service.PropertyUpdater{
-		ID:    prop.id,
+		ID:    prop.ID,
 		Value: &value,
 	})
 	if err != nil {
@@ -282,12 +282,12 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			id:        p.ID,
-			entryID:   p.EntryID,
-			entryPath: p.EntryPath,
-			name:      p.Name,
-			typ:       p.Type,
-			value:     p.Value,
+			ID:        p.ID,
+			EntryID:   p.EntryID,
+			EntryPath: p.EntryPath,
+			Name:      p.Name,
+			Type:      p.Type,
+			Value:     p.Value,
 		}
 		props = append(props, prop)
 	}
@@ -300,12 +300,12 @@ func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, 
 		return nil, err
 	}
 	env := &Property{
-		id:        e.ID,
-		entryID:   e.EntryID,
-		entryPath: e.EntryPath,
-		name:      e.Name,
-		typ:       e.Type,
-		value:     e.Value,
+		ID:        e.ID,
+		EntryID:   e.EntryID,
+		EntryPath: e.EntryPath,
+		Name:      e.Name,
+		Type:      e.Type,
+		Value:     e.Value,
 	}
 	return env, nil
 }
@@ -316,11 +316,11 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 		return err
 	}
 	env := &Property{
-		entryID:   ent.ID,
-		entryPath: ent.Path,
-		name:      name,
-		typ:       typ,
-		value:     value,
+		EntryID:   ent.ID,
+		EntryPath: ent.Path,
+		Name:      name,
+		Type:      typ,
+		Value:     value,
 	}
 	err = env.Validate()
 	if err != nil {
@@ -338,13 +338,13 @@ func (s *Server) SetEnviron(ctx context.Context, path string, name, value string
 	if err != nil {
 		return err
 	}
-	env.value = value // validate the given value
+	env.Value = value // validate the given value
 	err = env.Validate()
 	if err != nil {
 		return err
 	}
 	err = s.svc.UpdateEnviron(ctx, service.PropertyUpdater{
-		ID:    env.id,
+		ID:    env.ID,
 		Value: &value,
 	})
 	if err != nil {

@@ -12,27 +12,15 @@ import (
 )
 
 type Entry struct {
-	id           int
-	parentID     int
-	path         string
-	typ          string
+	ID           int
+	ParentID     int
+	Path         string
+	Type         string
 	HasThumbnail bool
 }
 
-func (e *Entry) Path() string {
-	return e.path
-}
-
-func (e *Entry) Dir() string {
-	return filepath.Dir(e.path)
-}
-
 func (e *Entry) Name() string {
-	return filepath.Base(e.path)
-}
-
-func (e *Entry) Type() string {
-	return e.typ
+	return filepath.Base(e.Path)
 }
 
 func (e *Entry) MarshalJSON() ([]byte, error) {
@@ -40,7 +28,7 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 		Path       string
 		SubEntries []string
 	}{
-		Path: e.path,
+		Path: e.Path,
 	}
 	return json.Marshal(m)
 }
@@ -54,28 +42,12 @@ type Thumbnail struct {
 
 // Property can be either a normal property or an environment.
 type Property struct {
-	id        int
-	entryID   int
-	entryPath string
-	name      string
-	typ       string
-	value     string
-}
-
-func (p *Property) EntryPath() string {
-	return p.entryPath
-}
-
-func (p *Property) Type() string {
-	return p.typ
-}
-
-func (p *Property) Name() string {
-	return p.name
-}
-
-func (p *Property) Value() string {
-	return p.value
+	ID        int
+	EntryID   int
+	EntryPath string
+	Name      string
+	Type      string
+	Value     string
 }
 
 func (p *Property) Eval() string {
@@ -88,11 +60,11 @@ func (p *Property) Eval() string {
 		"date":       p.evalDate,
 		"int":        p.evalInt,
 	}
-	fn := eval[p.typ]
+	fn := eval[p.Type]
 	if fn == nil {
 		return ""
 	}
-	return fn(p.value)
+	return fn(p.Value)
 }
 
 func (p *Property) Validate() error {
@@ -105,11 +77,11 @@ func (p *Property) Validate() error {
 		"date":       p.validateDate,
 		"int":        p.validateInt,
 	}
-	fn := validate[p.typ]
+	fn := validate[p.Type]
 	if fn == nil {
-		return fmt.Errorf("unknown type of property: %v", p.typ)
+		return fmt.Errorf("unknown type of property: %v", p.Type)
 	}
-	return fn(p.value)
+	return fn(p.Value)
 }
 
 func (p *Property) evalText(s string) string {
@@ -157,7 +129,7 @@ func (p *Property) validateTimecode(s string) error {
 }
 
 func (p *Property) evalEntryPath(s string) string {
-	return filepath.Clean(filepath.Join(p.entryPath, s))
+	return filepath.Clean(filepath.Join(p.EntryPath, s))
 }
 
 func (p *Property) validateEntryPath(s string) error {
@@ -174,7 +146,7 @@ func (p *Property) validateEntryPath(s string) error {
 }
 
 func (p *Property) evalEntryName(s string) string {
-	return filepath.Base(filepath.Clean(filepath.Join(p.entryPath, s)))
+	return filepath.Base(filepath.Clean(filepath.Join(p.EntryPath, s)))
 }
 
 // Entry name property accepts path of an entry and returns it's name.
@@ -226,11 +198,11 @@ func (p *Property) validateInt(s string) error {
 
 func (p *Property) ServiceProperty() *service.Property {
 	sp := &service.Property{
-		EntryID:   p.entryID,
-		EntryPath: p.entryPath,
-		Name:      p.name,
-		Type:      p.typ,
-		Value:     p.value,
+		EntryID:   p.EntryID,
+		EntryPath: p.EntryPath,
+		Name:      p.Name,
+		Type:      p.Type,
+		Value:     p.Value,
 	}
 	return sp
 }
