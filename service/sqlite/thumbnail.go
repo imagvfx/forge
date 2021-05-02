@@ -46,12 +46,16 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
-		keys = append(keys, "id=?")
+		keys = append(keys, "thumbnails.id=?")
 		vals = append(vals, *find.ID)
 	}
 	if find.EntryID != nil {
-		keys = append(keys, "entry_id=?")
+		keys = append(keys, "thumbnails.entry_id=?")
 		vals = append(vals, *find.EntryID)
+	}
+	if find.EntryPath != nil {
+		keys = append(keys, "entries.path=?")
+		vals = append(vals, *find.EntryPath)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -59,10 +63,12 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			id,
-			entry_id,
-			data
+			thumbnails.id,
+			thumbnails.entry_id,
+			thumbnails.data,
+			entries.path
 		FROM thumbnails
+		LEFT JOIN entries ON thumbnails.entry_id = entries.id
 		`+where,
 		vals...,
 	)
@@ -77,6 +83,7 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 			&thumb.ID,
 			&thumb.EntryID,
 			&thumb.Data,
+			&thumb.EntryPath,
 		)
 		if err != nil {
 			return nil, err
@@ -115,11 +122,7 @@ func getThumbnailByID(tx *sql.Tx, ctx context.Context, id int) (*service.Thumbna
 }
 
 func getThumbnailByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Thumbnail, error) {
-	e, err := getEntryByPath(tx, ctx, path)
-	if err != nil {
-		return nil, err
-	}
-	thumbs, err := findThumbnails(tx, ctx, service.ThumbnailFinder{EntryID: &e.ID})
+	thumbs, err := findThumbnails(tx, ctx, service.ThumbnailFinder{EntryPath: &path})
 	if err != nil {
 		return nil, err
 	}
