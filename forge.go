@@ -47,9 +47,10 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 }
 
 type Thumbnail struct {
-	ID      int
-	EntryID int
-	Data    []byte
+	ID        int
+	EntryID   int
+	EntryPath string
+	Data      []byte
 }
 
 // Property can be either a normal property or an environment.

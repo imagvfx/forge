@@ -624,9 +624,10 @@ func (s *Server) GetThumbnail(ctx context.Context, path string) (*Thumbnail, err
 		return nil, err
 	}
 	thumb := &Thumbnail{
-		ID:      svcThumb.ID,
-		EntryID: svcThumb.EntryID,
-		Data:    svcThumb.Data,
+		ID:        svcThumb.ID,
+		EntryID:   svcThumb.EntryID,
+		Data:      svcThumb.Data,
+		EntryPath: svcThumb.EntryPath,
 	}
 	return thumb, nil
 }
