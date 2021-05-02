@@ -13,6 +13,7 @@ import (
 	"image"
 	_ "image/jpeg"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -55,6 +56,8 @@ func handleError(w http.ResponseWriter, err error) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	// Log unauthorized and undefined errors.
+	log.Print(err)
 	var unauthorized *service.UnauthorizedError
 	if errors.As(err, &unauthorized) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
