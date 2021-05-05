@@ -208,10 +208,9 @@ type Member struct {
 }
 
 type MemberFinder struct {
-	ID      *int
-	GroupID *int
-	Group   *string
-	Member  *string
+	ID     *int
+	Group  *string
+	Member *string
 }
 
 type Log struct {

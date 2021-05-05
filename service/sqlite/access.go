@@ -171,8 +171,8 @@ func userWrite(tx *sql.Tx, ctx context.Context, entID int) error {
 // It returns (nil, nil) when there is no access_control exists for the user.
 func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 	user := service.UserNameFromContext(ctx)
-	adminGroupID := 1
-	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: &adminGroupID})
+	adminGroup := "admin"
+	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &adminGroup})
 	if err != nil {
 		return nil, err
 	}

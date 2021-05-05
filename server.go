@@ -551,11 +551,7 @@ func (s *Server) SetGroup(ctx context.Context, groupID string, group string) err
 }
 
 func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member, error) {
-	g, err := s.GetGroup(ctx, group)
-	if err != nil {
-		return nil, err
-	}
-	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{GroupID: &g.ID})
+	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{Group: &group})
 	if err != nil {
 		return nil, err
 	}

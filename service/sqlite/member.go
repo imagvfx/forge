@@ -51,10 +51,6 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 		keys = append(keys, "group_members.id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.GroupID != nil {
-		keys = append(keys, "group_members.group_id=?")
-		vals = append(vals, *find.GroupID)
-	}
 	if find.Group != nil {
 		keys = append(keys, "groups.name=?")
 		vals = append(vals, *find.Group)
