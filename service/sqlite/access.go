@@ -104,6 +104,7 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			access_controls.entry_id,
 			entries.path,
 			accessors.name,
+			accessors.is_group,
 			access_controls.mode
 		FROM access_controls
 		LEFT JOIN entries ON access_controls.entry_id = entries.id
@@ -123,6 +124,7 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			&a.EntryID,
 			&a.EntryPath,
 			&a.Accessor,
+			&a.AccessorType,
 			&a.Mode,
 		)
 		if err != nil {
