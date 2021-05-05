@@ -18,13 +18,10 @@ func createAccessControlsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS access_controls (
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER NOT NULL,
-			user_id INTEGER,
-			group_id INTEGER,
+			accessor_id INTEGER,
 			mode INTEGER NOT NULL,
-			FOREIGN KEY (entry_id) REFERENCES entries (id),
-			FOREIGN KEY (user_id) REFERENCES users (id),
-			UNIQUE (entry_id, user_id),
-			UNIQUE (entry_id, group_id)
+			FOREIGN KEY (accessor_id) REFERENCES accessors (id),
+			UNIQUE (entry_id, accessor_id)
 		)
 	`)
 	if err != nil {
@@ -93,13 +90,9 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)
 	}
-	if find.User != nil {
-		keys = append(keys, "users.email=?")
-		vals = append(vals, *find.User)
-	}
-	if find.Group != nil {
-		keys = append(keys, "groups.name=?")
-		vals = append(vals, *find.Group)
+	if find.Accessor != nil {
+		keys = append(keys, "accessors.name=?")
+		vals = append(vals, *find.Accessor)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -110,15 +103,11 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			access_controls.id,
 			access_controls.entry_id,
 			entries.path,
-			access_controls.user_id,
-			access_controls.group_id,
-			access_controls.mode,
-			users.email,
-			groups.name
+			accessors.name,
+			access_controls.mode
 		FROM access_controls
 		LEFT JOIN entries ON access_controls.entry_id = entries.id
-		LEFT JOIN users ON access_controls.user_id = users.id
-		LEFT JOIN groups ON access_controls.group_id = groups.id
+		LEFT JOIN accessors ON access_controls.accessor_id = accessors.id
 		`+where,
 		vals...,
 	)
@@ -129,27 +118,15 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	acss := make([]*service.AccessControl, 0)
 	for rows.Next() {
 		a := &service.AccessControl{}
-		var user *string
-		var group *string
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryID,
 			&a.EntryPath,
-			&a.UserID,
-			&a.GroupID,
+			&a.Accessor,
 			&a.Mode,
-			&user,
-			&group,
 		)
 		if err != nil {
 			return nil, err
-		}
-		if user != nil {
-			a.Accessor = *user
-			a.AccessorType = 0
-		} else {
-			a.Accessor = *group
-			a.AccessorType = 1
 		}
 		acss = append(acss, a)
 	}
@@ -193,15 +170,14 @@ func userWrite(tx *sql.Tx, ctx context.Context, entID int) error {
 // It checks the parents recursively as access control inherits.
 // It returns (nil, nil) when there is no access_control exists for the user.
 func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
-	user := service.UserEmailFromContext(ctx)
-	u, err := getUserByEmail(tx, ctx, user)
+	user := service.UserNameFromContext(ctx)
+	adminGroupID := 1
+	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: &adminGroupID})
 	if err != nil {
 		return nil, err
 	}
-	adminGroupID := 1
-	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: &adminGroupID})
 	for _, admin := range admins {
-		if admin.UserID == u.ID {
+		if admin.Member == user {
 			// admins can read any entry.
 			rwMode := 1
 			return &rwMode, nil
@@ -215,23 +191,21 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 		// Lower entry has precedence to higher entry.
 		// In a same entry, user accessor has precedence to group accessor.
 		for _, a := range as {
-			if a.UserID == nil {
-				continue
-			}
-			if *a.UserID == u.ID {
+			if a.AccessorType == 0 && a.Accessor == user {
 				return &a.Mode, nil
 			}
 		}
 		for _, a := range as {
-			if a.GroupID == nil {
+			if a.AccessorType == 0 {
 				continue
 			}
-			members, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: a.GroupID})
+			// check groups only
+			members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &a.Accessor})
 			if err != nil {
 				return nil, err
 			}
 			for _, m := range members {
-				if m.UserID == u.ID {
+				if m.Member == user {
 					return &a.Mode, nil
 				}
 			}
@@ -266,17 +240,9 @@ func getAccessControl(tx *sql.Tx, ctx context.Context, id int) (*service.AccessC
 }
 
 func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
-	var user *string
-	var group *string
-	if strings.Contains(name, "@") {
-		user = &name
-	} else {
-		group = &name
-	}
 	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
 		EntryPath: &path,
-		User:      user,
-		Group:     group,
+		Accessor:  &name,
 	})
 	if err != nil {
 		return nil, err
@@ -286,31 +252,6 @@ func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name stri
 	}
 	a := as[0]
 	return a, nil
-}
-
-func attachAccessorInfo(tx *sql.Tx, ctx context.Context, a *service.AccessControl) error {
-	if a.UserID != nil && a.GroupID != nil {
-		return fmt.Errorf("both user_id and group_id is defined")
-	}
-	if a.UserID == nil && a.GroupID == nil {
-		return fmt.Errorf("both user_id and group_id is nil")
-	}
-	if a.UserID != nil {
-		u, err := getUser(tx, ctx, *a.UserID)
-		if err != nil {
-			return err
-		}
-		a.Accessor = u.Email
-		a.AccessorType = 0 // user
-	} else {
-		g, err := getGroup(tx, ctx, *a.GroupID)
-		if err != nil {
-			return err
-		}
-		a.Accessor = g.Name
-		a.AccessorType = 1 // group
-	}
-	return nil
 }
 
 func AddAccessControl(db *sql.DB, ctx context.Context, a *service.AccessControl) error {
@@ -335,18 +276,20 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	if err != nil {
 		return err
 	}
+	ac, err := getAccessor(tx, ctx, a.Accessor)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO access_controls (
 			entry_id,
-			user_id,
-			group_id,
+			accessor_id,
 			mode
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?)
 	`,
 		a.EntryID,
-		a.UserID,
-		a.GroupID,
+		ac.ID,
 		a.Mode,
 	)
 	if err != nil {
@@ -357,18 +300,18 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		return err
 	}
 	a.ID = int(id)
-	err = attachAccessorInfo(tx, ctx, a)
-	if err != nil {
-		return err
+	user := service.UserNameFromContext(ctx)
+	typ := 0
+	if ac.IsGroup {
+		typ = 1
 	}
-	user := service.UserEmailFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  a.EntryID,
 		User:     user,
 		Action:   "create",
 		Category: "access",
 		Name:     a.Accessor,
-		Type:     strconv.Itoa(a.AccessorType),
+		Type:     strconv.Itoa(typ),
 		Value:    strconv.Itoa(a.Mode),
 	})
 	if err != nil {
@@ -431,7 +374,7 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  a.EntryID,
 		User:     user,
@@ -489,7 +432,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 	if n != 1 {
 		return fmt.Errorf("want 1 access_control affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  a.EntryID,
 		User:     user,

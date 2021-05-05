@@ -118,8 +118,8 @@ func (s *Service) AddUser(ctx context.Context, u *service.User) error {
 	return AddUser(s.db, ctx, u)
 }
 
-func (s *Service) GetUserByEmail(ctx context.Context, user string) (*service.User, error) {
-	return GetUserByEmail(s.db, ctx, user)
+func (s *Service) GetUserByName(ctx context.Context, user string) (*service.User, error) {
+	return GetUserByName(s.db, ctx, user)
 }
 
 func (s *Service) FindGroups(ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {

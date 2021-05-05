@@ -253,7 +253,7 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	e.ID = int(id)
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.ID,
 		User:     user,
@@ -322,7 +322,7 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	}
 	// Let's log only for the entry (not for sub entries).
 	// This might be changed in the future.
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.ID,
 		User:     user,

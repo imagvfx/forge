@@ -14,10 +14,10 @@ func createGroupMembersTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS group_members (
 			id INTEGER PRIMARY KEY,
 			group_id INTEGER NOT NULL,
-			user_id INTEGER NOT NULL,
-			FOREIGN KEY (group_id) REFERENCES groups (id),
-			FOREIGN KEY (user_id) REFERENCES users (id),
-			UNIQUE (group_id, user_id)
+			member_id INTEGER NOT NULL,
+			FOREIGN KEY (group_id) REFERENCES accessors (id),
+			FOREIGN KEY (member_id) REFERENCES accessors (id),
+			UNIQUE (group_id, member_id)
 		)
 	`)
 	if err != nil {
@@ -60,7 +60,7 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 		vals = append(vals, *find.Group)
 	}
 	if find.Member != nil {
-		keys = append(keys, "users.email=?")
+		keys = append(keys, "members.name=?")
 		vals = append(vals, *find.Member)
 	}
 	where := ""
@@ -70,16 +70,12 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			group_members.id,
-			group_members.group_id,
-			group_members.user_id,
 			groups.name,
-			users.email
+			members.name
 		FROM group_members
-		LEFT JOIN groups ON group_members.group_id = groups.id
-		LEFT JOIN users ON group_members.user_id = users.id
-		`+where+`
-		ORDER BY group_members.id ASC
-	`,
+		LEFT JOIN accessors AS groups ON group_members.group_id = groups.id
+		LEFT JOIN accessors AS members ON group_members.member_id = members.id
+		`+where,
 		vals...,
 	)
 	if err != nil {
@@ -91,10 +87,8 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 		m := &service.Member{}
 		err := rows.Scan(
 			&m.ID,
-			&m.GroupID,
-			&m.UserID,
 			&m.Group,
-			&m.User,
+			&m.Member,
 		)
 		if err != nil {
 			return nil, err
@@ -133,16 +127,24 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 }
 
 func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
+	g, err := getGroupByName(tx, ctx, m.Group)
+	if err != nil {
+		return err
+	}
+	u, err := getUserByName(tx, ctx, m.Member)
+	if err != nil {
+		return err
+	}
 	// TODO: check the user is a member of admin group.
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO group_members (
 			group_id,
-			user_id
+			member_id
 		)
 		VALUES (?, ?)
 	`,
-		m.GroupID,
-		m.UserID,
+		g.ID,
+		u.ID,
 	)
 	if err != nil {
 		return err
@@ -177,9 +179,8 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) er
 	if err != nil {
 		return err
 	}
-	adminGroupID := 1
-	if m.GroupID == adminGroupID {
-		members, err := findGroupMembers(tx, ctx, service.MemberFinder{GroupID: &adminGroupID})
+	if m.Group == "admin" {
+		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &m.Group})
 		if err != nil {
 			return err
 		}

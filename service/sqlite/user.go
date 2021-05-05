@@ -8,20 +8,7 @@ import (
 	"github.com/imagvfx/forge/service"
 )
 
-func createUsersTable(tx *sql.Tx) error {
-	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
-			id INTEGER PRIMARY KEY,
-			email STRING NOT NULL UNIQUE,
-			name STRING NOT NULL
-		)
-	`)
-	if err != nil {
-		return err
-	}
-	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_users_email ON users (email)`)
-	return err
-}
+// see createAccessorTable for table creation.
 
 func FindUsers(db *sql.DB, ctx context.Context, find service.UserFinder) ([]*service.User, error) {
 	tx, err := db.BeginTx(ctx, nil)
@@ -43,13 +30,15 @@ func FindUsers(db *sql.DB, ctx context.Context, find service.UserFinder) ([]*ser
 func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*service.User, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
+	keys = append(keys, "is_group=?")
+	vals = append(vals, false)
 	if find.ID != nil {
 		keys = append(keys, "id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.Email != nil {
-		keys = append(keys, "email=?")
-		vals = append(vals, *find.Email)
+	if find.Name != nil {
+		keys = append(keys, "name=?")
+		vals = append(vals, *find.Name)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -58,9 +47,8 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
-			email,
 			name
-		FROM users
+		FROM accessors
 		`+where+`
 		ORDER BY id ASC
 	`,
@@ -75,7 +63,6 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 		u := &service.User{}
 		err := rows.Scan(
 			&u.ID,
-			&u.Email,
 			&u.Name,
 		)
 		if err != nil {
@@ -86,14 +73,14 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 	return users, nil
 }
 
-func GetUserByEmail(db *sql.DB, ctx context.Context, user string) (*service.User, error) {
+func GetUserByName(db *sql.DB, ctx context.Context, user string) (*service.User, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getUserByEmail(tx, ctx, user)
+	u, err := getUserByName(tx, ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +102,8 @@ func getUser(tx *sql.Tx, ctx context.Context, id int) (*service.User, error) {
 	return users[0], nil
 }
 
-func getUserByEmail(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
-	users, err := findUsers(tx, ctx, service.UserFinder{Email: &user})
+func getUserByName(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
+	users, err := findUsers(tx, ctx, service.UserFinder{Name: &user})
 	if err != nil {
 		return nil, err
 	}
@@ -145,13 +132,13 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 
 func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	result, err := tx.ExecContext(ctx, `
-		INSERT INTO users (
-			email,
+		INSERT INTO accessors (
+			is_group,
 			name
 		)
 		VALUES (?, ?)
 	`,
-		u.Email,
+		false,
 		u.Name,
 	)
 	if err != nil {
@@ -162,13 +149,12 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 		return err
 	}
 	u.ID = int(id)
-	if u.ID == 1 {
-		// make the user admin
-		adminGroupID := 1
-		ctx = service.ContextWithUserEmail(ctx, "system")
+	if u.ID == 2 {
+		// first user created, make the user admin
+		ctx = service.ContextWithUserName(ctx, "system")
 		err = addGroupMember(tx, ctx, &service.Member{
-			GroupID: adminGroupID,
-			UserID:  u.ID,
+			Group:  "admin",
+			Member: u.Name,
 		})
 		if err != nil {
 			return err

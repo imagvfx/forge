@@ -45,7 +45,7 @@
 			<form action="/api/delete-group-member" method="post"> [
 				<div> [
 					<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
-					<input readonly name="member" value="{{$m.User}}"> []
+					<input readonly name="member" value="{{$m.Member}}"> []
 					<input readonly name="back_to_referer" type="hidden" value="1"> []
 					<button type="submit"> [Delete]
 				]

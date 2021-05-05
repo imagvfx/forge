@@ -387,21 +387,14 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 		return err
 	}
 	ac := &service.AccessControl{
-		EntryID: ent.ID,
+		EntryID:  ent.ID,
+		Accessor: accessor,
 	}
 	switch accessor_type {
 	case "user":
-		u, err := s.GetUser(ctx, accessor)
-		if err != nil {
-			return err
-		}
-		ac.UserID = &u.ID
+		ac.AccessorType = 0
 	case "group":
-		g, err := s.GetGroup(ctx, accessor)
-		if err != nil {
-			return err
-		}
-		ac.GroupID = &g.ID
+		ac.AccessorType = 1
 	default:
 		return fmt.Errorf("unknown accessor type")
 	}
@@ -483,20 +476,19 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 }
 
 func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
-	su, err := s.svc.GetUserByEmail(ctx, user)
+	su, err := s.svc.GetUserByName(ctx, user)
 	if err != nil {
 		return nil, err
 	}
 	u := &User{
-		ID:    su.ID,
-		Email: su.Email,
-		Name:  su.Name,
+		ID:   su.ID,
+		Name: su.Name,
 	}
 	return u, nil
 }
 
 func (s *Server) AddUser(ctx context.Context, user string) error {
-	u := &service.User{Email: user}
+	u := &service.User{Name: user}
 	err := s.svc.AddUser(ctx, u)
 	if err != nil {
 		return err
@@ -570,11 +562,9 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 	members := make([]*Member, 0, len(svcMembers))
 	for _, sm := range svcMembers {
 		m := &Member{
-			ID:      sm.ID,
-			GroupID: sm.GroupID,
-			Group:   sm.Group,
-			UserID:  sm.UserID,
-			User:    sm.User,
+			ID:     sm.ID,
+			Group:  sm.Group,
+			Member: sm.Member,
 		}
 		members = append(members, m)
 	}
@@ -582,17 +572,8 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 }
 
 func (s *Server) AddGroupMember(ctx context.Context, group, member string) error {
-	g, err := s.GetGroup(ctx, group)
-	if err != nil {
-		return err
-	}
-	u, err := s.GetUser(ctx, member)
-	if err != nil {
-		fmt.Println("here?")
-		return err
-	}
-	m := &service.Member{GroupID: g.ID, UserID: u.ID}
-	err = s.svc.AddGroupMember(ctx, m)
+	m := &service.Member{Group: group, Member: member}
+	err := s.svc.AddGroupMember(ctx, m)
 	if err != nil {
 		return err
 	}

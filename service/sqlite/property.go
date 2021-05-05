@@ -194,7 +194,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 		return err
 	}
 	p.ID = int(id)
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  p.EntryID,
 		User:     user,
@@ -264,7 +264,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  p.EntryID,
 		User:     user,
@@ -322,7 +322,7 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  p.EntryID,
 		User:     user,

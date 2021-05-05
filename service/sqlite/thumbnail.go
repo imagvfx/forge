@@ -168,7 +168,7 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 		return err
 	}
 	thumb.ID = int(id)
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  thumb.EntryID,
 		User:     user,
@@ -231,7 +231,7 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  thumb.EntryID,
 		User:     user,
@@ -282,7 +282,7 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 thumbnail affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.ID,
 		User:     user,

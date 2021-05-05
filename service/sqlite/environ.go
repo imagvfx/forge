@@ -260,7 +260,7 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
 		return err
 	}
 	e.ID = int(id)
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.EntryID,
 		User:     user,
@@ -330,7 +330,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.EntryID,
 		User:     user,
@@ -388,7 +388,7 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 environ affected, got %v", n)
 	}
-	user := service.UserEmailFromContext(ctx)
+	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
 		EntryID:  e.EntryID,
 		User:     user,

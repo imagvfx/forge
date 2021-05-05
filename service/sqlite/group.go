@@ -9,31 +9,20 @@ import (
 	"github.com/imagvfx/forge/service"
 )
 
-func createGroupsTable(tx *sql.Tx) error {
-	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS groups (
-			id INTEGER PRIMARY KEY,
-			name STRING NOT NULL UNIQUE
-		)
-	`)
-	if err != nil {
-		return err
-	}
-	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_groups_name ON groups (name)`)
-	return err
-}
+// see createAccessorTable for table creation.
 
 // addAdminGroup adds 'admin' group to groups table.
+// admin group is created while initializing db, so it's the first created accessor.
 // Members of admin group are able to see/modify any entry.
 // The group isn't allowed to be renamed or deleted.
 func addAdminGroup(tx *sql.Tx) error {
 	_, err := tx.Exec(`
-		INSERT OR IGNORE INTO groups
-			(name)
+		INSERT OR IGNORE INTO accessors
+			(is_group, name)
 		VALUES
-			(?)
+			(?, ?)
 	`,
-		"admin",
+		true, "admin",
 	)
 	if err != nil {
 		return err
@@ -61,6 +50,8 @@ func FindGroups(db *sql.DB, ctx context.Context, find service.GroupFinder) ([]*s
 func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
+	keys = append(keys, "is_group=?")
+	vals = append(vals, true)
 	if find.ID != nil {
 		keys = append(keys, "id=?")
 		vals = append(vals, *find.ID)
@@ -77,7 +68,7 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 		SELECT
 			id,
 			name
-		FROM groups
+		FROM accessors
 		`+where+`
 		ORDER BY id ASC
 	`,
@@ -162,11 +153,13 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
 	// TODO: check the user is a member of admin group.
 	result, err := tx.ExecContext(ctx, `
-		INSERT INTO groups (
+		INSERT INTO accessors (
+			is_group,
 			name
 		)
-		VALUES (?)
+		VALUES (?, ?)
 	`,
+		true,
 		g.Name,
 	)
 	if err != nil {
@@ -210,7 +203,7 @@ func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) erro
 	}
 	vals = append(vals, upd.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
-		UPDATE groups
+		UPDATE accessors
 		SET `+strings.Join(keys, ", ")+`
 		WHERE id=?
 	`,

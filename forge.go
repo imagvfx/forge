@@ -280,9 +280,8 @@ func (l *Log) AccessControlString() string {
 }
 
 type User struct {
-	ID    int
-	Email string
-	Name  string
+	ID   int
+	Name string
 }
 
 type Group struct {
@@ -291,9 +290,7 @@ type Group struct {
 }
 
 type Member struct {
-	ID      int
-	GroupID int
-	Group   string
-	UserID  int
-	User    string
+	ID     int
+	Group  string
+	Member string
 }

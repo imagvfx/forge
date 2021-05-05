@@ -32,7 +32,7 @@ type Service interface {
 	DeleteAccessControl(ctx context.Context, path string, name string) error
 	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
 	AddUser(ctx context.Context, u *User) error
-	GetUserByEmail(ctx context.Context, user string) (*User, error)
+	GetUserByName(ctx context.Context, user string) (*User, error)
 	FindGroups(ctx context.Context, find GroupFinder) ([]*Group, error)
 	AddGroup(ctx context.Context, g *Group) error
 	UpdateGroup(ctx context.Context, upd GroupUpdater) error
@@ -74,15 +74,15 @@ func Unauthorized(s string, is ...interface{}) *UnauthorizedError {
 type contextKey int
 
 const (
-	userEmailContextKey = contextKey(iota + 1)
+	userNameContextKey = contextKey(iota + 1)
 )
 
-func ContextWithUserEmail(ctx context.Context, email string) context.Context {
-	return context.WithValue(ctx, userEmailContextKey, email)
+func ContextWithUserName(ctx context.Context, email string) context.Context {
+	return context.WithValue(ctx, userNameContextKey, email)
 }
 
-func UserEmailFromContext(ctx context.Context) string {
-	email := ctx.Value(userEmailContextKey)
+func UserNameFromContext(ctx context.Context) string {
+	email := ctx.Value(userNameContextKey)
 	if email == nil {
 		return ""
 	}
@@ -147,8 +147,6 @@ type AccessControl struct {
 	EntryID   int
 	EntryPath string
 	// either UserID or GroupID is not nil
-	UserID       *int
-	GroupID      *int
 	Accessor     string
 	AccessorType int
 	Mode         int
@@ -158,8 +156,7 @@ type AccessControlFinder struct {
 	ID        *int
 	EntryID   *int
 	EntryPath *string
-	User      *string
-	Group     *string
+	Accessor  *string
 }
 
 type AccessControlUpdater struct {
@@ -167,20 +164,26 @@ type AccessControlUpdater struct {
 	Mode *int
 }
 
+// Accessor is either a user or a group, that can be specified in entry access control list.
+type Accessor struct {
+	ID      int
+	Name    string
+	IsGroup bool
+}
+
 type User struct {
-	ID    int
-	Email string
-	Name  string
+	ID   int
+	Name string
 }
 
 type UserFinder struct {
-	ID    *int
-	Email *string
+	ID   *int
+	Name *string
 }
 
 type UserUpdater struct {
-	ID    int
-	Email *string
+	ID   int
+	Name *string
 }
 
 type Group struct {
@@ -199,11 +202,9 @@ type GroupUpdater struct {
 }
 
 type Member struct {
-	ID      int
-	GroupID int
-	Group   string
-	UserID  int
-	User    string
+	ID     int
+	Group  string
+	Member string
 }
 
 type MemberFinder struct {

@@ -65,11 +65,7 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	err = createUsersTable(tx)
-	if err != nil {
-		return err
-	}
-	err = createGroupsTable(tx)
+	err = createAccessorsTable(tx) // for user and group
 	if err != nil {
 		return err
 	}
