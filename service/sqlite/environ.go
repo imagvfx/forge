@@ -144,7 +144,7 @@ func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Pr
 	return p, nil
 }
 
-func getEnviron(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
+func getEnvironByID(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
 	envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryID: &id})
 	if err != nil {
 		return nil, err
@@ -244,7 +244,7 @@ func UpdateEnviron(db *sql.DB, ctx context.Context, upd service.PropertyUpdater)
 }
 
 func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
-	e, err := getEnviron(tx, ctx, upd.ID)
+	e, err := getEnvironByID(tx, ctx, upd.ID)
 	if err != nil {
 		return err
 	}
