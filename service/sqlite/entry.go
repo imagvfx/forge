@@ -244,12 +244,12 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	e.ID = int(id)
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  e.ID,
-		User:     user,
-		Action:   "create",
-		Category: "entry",
-		Name:     e.Path,
-		Type:     e.Type,
+		EntryPath: e.Path,
+		User:      user,
+		Action:    "create",
+		Category:  "entry",
+		Name:      e.Path,
+		Type:      e.Type,
 	})
 	if err != nil {
 		return err
@@ -297,11 +297,7 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 		return nil
 	}
 	newPath := filepath.Dir(path) + "/" + newName
-	e, err := getEntryByPath(tx, ctx, path)
-	if err != nil {
-		return err
-	}
-	err = userWrite(tx, ctx, filepath.Dir(path))
+	err := userWrite(tx, ctx, filepath.Dir(path))
 	if err != nil {
 		return err
 	}
@@ -313,11 +309,11 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	// This might be changed in the future.
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  e.ID,
-		User:     user,
-		Action:   "rename",
-		Category: "entry",
-		Name:     newName,
+		EntryPath: path,
+		User:      user,
+		Action:    "rename",
+		Category:  "entry",
+		Name:      newName,
 	})
 	if err != nil {
 		return err

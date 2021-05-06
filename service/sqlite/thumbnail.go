@@ -172,10 +172,10 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 	thumb.ID = int(id)
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "add",
-		Category: "thumbnail",
+		EntryPath: thumb.EntryPath,
+		User:      user,
+		Action:    "add",
+		Category:  "thumbnail",
 	})
 	if err != nil {
 		return err
@@ -236,16 +236,12 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	entryID, err := getEntryID(tx, ctx, upd.EntryPath)
-	if err != nil {
-		return err
-	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "update",
-		Category: "thumbnail",
+		EntryPath: upd.EntryPath,
+		User:      user,
+		Action:    "update",
+		Category:  "thumbnail",
 	})
 	if err != nil {
 		return nil
@@ -297,10 +293,10 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "delete",
-		Category: "thumbnail",
+		EntryPath: path,
+		User:      user,
+		Action:    "delete",
+		Category:  "thumbnail",
 	})
 	if err != nil {
 		return err

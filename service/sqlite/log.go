@@ -68,7 +68,7 @@ func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*servi
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			logs.id,
-			logs.entry_id,
+			entries.path,
 			logs.user,
 			logs.action,
 			logs.ctg,
@@ -90,7 +90,7 @@ func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*servi
 		l := &service.Log{}
 		err := rows.Scan(
 			&l.ID,
-			&l.EntryID,
+			&l.EntryPath,
 			&l.User,
 			&l.Action,
 			&l.Category,
@@ -108,6 +108,10 @@ func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*servi
 }
 
 func addLog(tx *sql.Tx, ctx context.Context, l *service.Log) error {
+	entryID, err := getEntryID(tx, ctx, l.EntryPath)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO logs (
 			entry_id,
@@ -120,7 +124,7 @@ func addLog(tx *sql.Tx, ctx context.Context, l *service.Log) error {
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`,
-		l.EntryID,
+		entryID,
 		l.User,
 		l.Action,
 		l.Category,

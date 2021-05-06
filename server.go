@@ -407,15 +407,15 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 	logs := make([]*Log, 0)
 	for _, l := range ls {
 		log := &Log{
-			ID:       l.ID,
-			EntryID:  l.EntryID,
-			User:     l.User,
-			Action:   l.Action,
-			Category: l.Category,
-			Name:     l.Name,
-			Type:     l.Type,
-			Value:    l.Value,
-			When:     l.When,
+			ID:        l.ID,
+			EntryPath: l.EntryPath,
+			User:      l.User,
+			Action:    l.Action,
+			Category:  l.Category,
+			Name:      l.Name,
+			Type:      l.Type,
+			Value:     l.Value,
+			When:      l.When,
 		}
 		logs = append(logs, log)
 	}

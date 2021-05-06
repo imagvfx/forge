@@ -182,13 +182,13 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 	p.ID = int(id)
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "create",
-		Category: "property",
-		Name:     p.Name,
-		Type:     p.Type,
-		Value:    p.Value,
+		EntryPath: p.EntryPath,
+		User:      user,
+		Action:    "create",
+		Category:  "property",
+		Name:      p.Name,
+		Type:      p.Type,
+		Value:     p.Value,
 	})
 	if err != nil {
 		return err
@@ -250,19 +250,15 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	entryID, err := getEntryID(tx, ctx, p.EntryPath)
-	if err != nil {
-		return err
-	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "update",
-		Category: "property",
-		Name:     p.Name,
-		Type:     p.Type,
-		Value:    p.Value,
+		EntryPath: p.EntryPath,
+		User:      user,
+		Action:    "update",
+		Category:  "property",
+		Name:      p.Name,
+		Type:      p.Type,
+		Value:     p.Value,
 	})
 	if err != nil {
 		return nil
@@ -312,18 +308,14 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	entryID, err := getEntryID(tx, ctx, p.EntryPath)
-	if err != nil {
-		return err
-	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "delete",
-		Category: "property",
-		Name:     p.Name,
-		Type:     p.Type,
+		EntryPath: p.EntryPath,
+		User:      user,
+		Action:    "delete",
+		Category:  "property",
+		Name:      p.Name,
+		Type:      p.Type,
 	})
 	if err != nil {
 		return nil

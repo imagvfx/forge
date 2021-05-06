@@ -288,13 +288,13 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		typ = 1
 	}
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "create",
-		Category: "access",
-		Name:     a.Accessor,
-		Type:     strconv.Itoa(typ),
-		Value:    strconv.Itoa(a.Mode),
+		EntryPath: a.EntryPath,
+		User:      user,
+		Action:    "create",
+		Category:  "access",
+		Name:      a.Accessor,
+		Type:      strconv.Itoa(typ),
+		Value:     strconv.Itoa(a.Mode),
 	})
 	if err != nil {
 		return err
@@ -356,19 +356,15 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	entryID, err := getEntryID(tx, ctx, a.EntryPath)
-	if err != nil {
-		return err
-	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "update",
-		Category: "access",
-		Name:     a.Accessor,
-		Type:     strconv.Itoa(a.AccessorType),
-		Value:    strconv.Itoa(a.Mode),
+		EntryPath: a.EntryPath,
+		User:      user,
+		Action:    "update",
+		Category:  "access",
+		Name:      a.Accessor,
+		Type:      strconv.Itoa(a.AccessorType),
+		Value:     strconv.Itoa(a.Mode),
 	})
 	if err != nil {
 		return err
@@ -419,18 +415,14 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 		return fmt.Errorf("want 1 access_control affected, got %v", n)
 	}
 	user := service.UserNameFromContext(ctx)
-	entryID, err := getEntryID(tx, ctx, path)
-	if err != nil {
-		return err
-	}
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  entryID,
-		User:     user,
-		Action:   "delete",
-		Category: "access",
-		Name:     a.Accessor,
-		Type:     strconv.Itoa(a.AccessorType),
-		Value:    "",
+		EntryPath: path,
+		User:      user,
+		Action:    "delete",
+		Category:  "access",
+		Name:      a.Accessor,
+		Type:      strconv.Itoa(a.AccessorType),
+		Value:     "",
 	})
 	if err != nil {
 		return nil

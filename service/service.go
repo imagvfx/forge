@@ -207,15 +207,15 @@ type MemberFinder struct {
 }
 
 type Log struct {
-	ID       int
-	EntryID  int
-	User     string
-	Action   string
-	Category string
-	Name     string
-	Type     string
-	Value    string
-	When     time.Time
+	ID        int
+	EntryPath string
+	User      string
+	Action    string
+	Category  string
+	Name      string
+	Type      string
+	Value     string
+	When      time.Time
 }
 
 type LogFinder struct {
