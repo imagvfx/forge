@@ -27,7 +27,6 @@ import (
 type pathHandler struct {
 	server *forge.Server
 	cfg    *forge.Config
-	oidc   *forge.OIDC
 }
 
 var pathHandlerFuncs = template.FuncMap{
