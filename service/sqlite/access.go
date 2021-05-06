@@ -82,10 +82,6 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 		keys = append(keys, "access_controls.id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.EntryID != nil {
-		keys = append(keys, "access_controls.entry_id=?")
-		vals = append(vals, *find.EntryID)
-	}
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)
@@ -101,7 +97,6 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			access_controls.id,
-			access_controls.entry_id,
 			entries.path,
 			accessors.name,
 			accessors.is_group,
@@ -121,7 +116,6 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 		a := &service.AccessControl{}
 		err := rows.Scan(
 			&a.ID,
-			&a.EntryID,
 			&a.EntryPath,
 			&a.Accessor,
 			&a.AccessorType,
@@ -223,23 +217,6 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 	return nil, nil
 }
 
-// getAccessControl finds and returns AccessControl by it's id.
-// The reason it doesn't use findAccessConrtol is the function is entry based.
-// I might refactor it.
-func getAccessControl(tx *sql.Tx, ctx context.Context, id int) (*service.AccessControl, error) {
-	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
-		ID: &id,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(as) == 0 {
-		return nil, service.NotFound("access control not found")
-	}
-	a := as[0]
-	return a, nil
-}
-
 func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
 	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
 		EntryPath: &path,
@@ -281,6 +258,10 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	if err != nil {
 		return err
 	}
+	entryID, err := getEntryID(tx, ctx, a.EntryPath)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO access_controls (
 			entry_id,
@@ -289,7 +270,7 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		)
 		VALUES (?, ?, ?)
 	`,
-		a.EntryID,
+		entryID,
 		ac.ID,
 		a.Mode,
 	)
@@ -307,7 +288,7 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		typ = 1
 	}
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  a.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "create",
 		Category: "access",
@@ -339,11 +320,11 @@ func UpdateAccessControl(db *sql.DB, ctx context.Context, upd service.AccessCont
 }
 
 func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessControlUpdater) error {
-	a, err := getAccessControl(tx, ctx, upd.ID)
+	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, a.EntryPath)
+	a, err := getAccessControlByPathName(tx, ctx, upd.EntryPath, upd.Accessor)
 	if err != nil {
 		return err
 	}
@@ -355,9 +336,9 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 		a.Mode = *upd.Mode
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update property %v", upd.ID)
+		return fmt.Errorf("need at least one field to update property %v:%v", upd.EntryPath, upd.Accessor)
 	}
-	vals = append(vals, upd.ID) // for where clause
+	vals = append(vals, a.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE access_controls
 		SET `+strings.Join(keys, ", ")+`
@@ -375,9 +356,13 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
+	entryID, err := getEntryID(tx, ctx, a.EntryPath)
+	if err != nil {
+		return err
+	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  a.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "update",
 		Category: "access",
@@ -434,8 +419,12 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 		return fmt.Errorf("want 1 access_control affected, got %v", n)
 	}
 	user := service.UserNameFromContext(ctx)
+	entryID, err := getEntryID(tx, ctx, path)
+	if err != nil {
+		return err
+	}
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  a.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "delete",
 		Category: "access",

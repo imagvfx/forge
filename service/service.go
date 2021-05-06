@@ -142,7 +142,6 @@ type PropertyUpdater struct {
 
 type AccessControl struct {
 	ID        int
-	EntryID   int
 	EntryPath string
 	// either UserID or GroupID is not nil
 	Accessor     string
@@ -152,14 +151,14 @@ type AccessControl struct {
 
 type AccessControlFinder struct {
 	ID        *int
-	EntryID   *int
 	EntryPath *string
 	Accessor  *string
 }
 
 type AccessControlUpdater struct {
-	ID   int
-	Mode *int
+	EntryPath string
+	Accessor  string
+	Mode      *int
 }
 
 // Accessor is either a user or a group, that can be specified in entry access control list.

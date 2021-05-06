@@ -329,7 +329,6 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 	for _, a := range as {
 		ac := &AccessControl{
 			ID:           a.ID,
-			EntryID:      a.EntryID,
 			EntryPath:    a.EntryPath,
 			Accessor:     a.Accessor,
 			AccessorType: AccessorType(a.AccessorType),
@@ -341,13 +340,9 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 }
 
 func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, accessor_type, mode string) error {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return err
-	}
 	ac := &service.AccessControl{
-		EntryID:  ent.ID,
-		Accessor: accessor,
+		EntryPath: path,
+		Accessor:  accessor,
 	}
 	switch accessor_type {
 	case "user":
@@ -365,20 +360,17 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 	default:
 		return fmt.Errorf("unknown access type")
 	}
-	err = s.svc.AddAccessControl(ctx, ac)
+	err := s.svc.AddAccessControl(ctx, ac)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Server) SetAccessControl(ctx context.Context, accessID string, mode string) error {
-	id, err := strconv.Atoi(accessID)
-	if err != nil {
-		return fmt.Errorf("invalid access id: %v", accessID)
-	}
+func (s *Server) SetAccessControl(ctx context.Context, path, accessor, mode string) error {
 	ac := service.AccessControlUpdater{
-		ID: id,
+		EntryPath: path,
+		Accessor:  accessor,
 	}
 	switch mode {
 	case "r":
@@ -390,7 +382,7 @@ func (s *Server) SetAccessControl(ctx context.Context, accessID string, mode str
 	default:
 		return fmt.Errorf("unknown access type")
 	}
-	err = s.svc.UpdateAccessControl(ctx, ac)
+	err := s.svc.UpdateAccessControl(ctx, ac)
 	if err != nil {
 		return err
 	}

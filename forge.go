@@ -234,7 +234,6 @@ func (t AccessorType) String() string {
 
 type AccessControl struct {
 	ID           int
-	EntryID      int
 	EntryPath    string
 	Accessor     string
 	AccessorType AccessorType

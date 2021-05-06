@@ -844,9 +844,10 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 		}
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
-		id := r.FormValue("id")
+		path := r.FormValue("path")
+		accessor := r.FormValue("accessor")
 		mode := r.FormValue("mode")
-		err = h.server.SetAccessControl(ctx, id, mode)
+		err = h.server.SetAccessControl(ctx, path, accessor, mode)
 		if err != nil {
 			return err
 		}
