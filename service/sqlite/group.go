@@ -111,17 +111,6 @@ func GetGroupByName(db *sql.DB, ctx context.Context, name string) (*service.Grou
 	return u, nil
 }
 
-func getGroup(tx *sql.Tx, ctx context.Context, id int) (*service.Group, error) {
-	groups, err := findGroups(tx, ctx, service.GroupFinder{ID: &id})
-	if err != nil {
-		return nil, err
-	}
-	if len(groups) == 0 {
-		return nil, service.NotFound("group not found")
-	}
-	return groups[0], nil
-}
-
 func getGroupByName(tx *sql.Tx, ctx context.Context, name string) (*service.Group, error) {
 	groups, err := findGroups(tx, ctx, service.GroupFinder{Name: &name})
 	if err != nil {

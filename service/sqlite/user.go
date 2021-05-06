@@ -91,17 +91,6 @@ func GetUserByName(db *sql.DB, ctx context.Context, user string) (*service.User,
 	return u, nil
 }
 
-func getUser(tx *sql.Tx, ctx context.Context, id int) (*service.User, error) {
-	users, err := findUsers(tx, ctx, service.UserFinder{ID: &id})
-	if err != nil {
-		return nil, err
-	}
-	if len(users) == 0 {
-		return nil, service.NotFound("user not found")
-	}
-	return users[0], nil
-}
-
 func getUserByName(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
 	users, err := findUsers(tx, ctx, service.UserFinder{Name: &user})
 	if err != nil {

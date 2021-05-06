@@ -88,17 +88,6 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	return members, nil
 }
 
-func getGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (*service.Member, error) {
-	members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group, Member: &member})
-	if err != nil {
-		return nil, err
-	}
-	if len(members) == 0 {
-		return nil, service.NotFound("member not found")
-	}
-	return members[0], nil
-}
-
 func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

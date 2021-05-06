@@ -120,18 +120,6 @@ func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*service.P
 	return p, nil
 }
 
-func getProperty(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
-	props, err := findProperties(tx, ctx, service.PropertyFinder{ID: &id})
-	if err != nil {
-		return nil, err
-	}
-	if len(props) == 0 {
-		return nil, service.NotFound("property not found")
-	}
-	p := props[0]
-	return p, nil
-}
-
 func getPropertyByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
 	props, err := findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
