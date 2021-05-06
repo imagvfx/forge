@@ -205,13 +205,13 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*servic
 
 func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if e.Path == "" {
-		fmt.Errorf("path unspecified")
+		return fmt.Errorf("path unspecified")
 	}
 	if e.Path == "/" {
-		fmt.Errorf("cannot create root path")
+		return fmt.Errorf("cannot create root path")
 	}
 	if !strings.HasPrefix(e.Path, "/") {
-		fmt.Errorf("path is not started with /")
+		return fmt.Errorf("path is not started with /")
 	}
 	parent := filepath.Dir(e.Path)
 	err := userWrite(tx, ctx, parent)
@@ -367,6 +367,9 @@ func updateEntryPath(tx *sql.Tx, ctx context.Context, path, newPath string) erro
 		newPath,
 		path,
 	)
+	if err != nil {
+		return err
+	}
 	n, err := result.RowsAffected()
 	if err != nil {
 		return err

@@ -172,6 +172,9 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
 		return err
 	}
 	entryID, err := getEntryID(tx, ctx, e.EntryPath)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO environs (
 			entry_id,

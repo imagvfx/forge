@@ -175,6 +175,9 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 		Action:   "add",
 		Category: "thumbnail",
 	})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -289,5 +292,8 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 		Action:   "delete",
 		Category: "thumbnail",
 	})
+	if err != nil {
+		return err
+	}
 	return nil
 }

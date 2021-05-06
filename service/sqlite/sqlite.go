@@ -11,7 +11,7 @@ import (
 // It returns an error if it cannot open the db.
 func Open(path string) (*sql.DB, error) {
 	if path == "" {
-		fmt.Errorf("db path required")
+		return nil, fmt.Errorf("db path required")
 	}
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
