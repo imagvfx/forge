@@ -104,20 +104,18 @@ type EntryFinder struct {
 
 type Thumbnail struct {
 	ID        int
-	EntryID   int
 	Data      []byte
 	EntryPath string
 }
 
 type ThumbnailFinder struct {
 	ID        *int
-	EntryID   *int
 	EntryPath *string
 }
 
 type ThumbnailUpdater struct {
-	ID   int
-	Data []byte
+	EntryPath string
+	Data      []byte
 }
 
 type Property struct {

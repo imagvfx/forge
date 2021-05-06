@@ -538,7 +538,6 @@ func (s *Server) GetThumbnail(ctx context.Context, path string) (*Thumbnail, err
 	}
 	thumb := &Thumbnail{
 		ID:        svcThumb.ID,
-		EntryID:   svcThumb.EntryID,
 		Data:      svcThumb.Data,
 		EntryPath: svcThumb.EntryPath,
 	}
@@ -569,19 +568,15 @@ func thumbnail(img image.Image, width, height int) image.Image {
 
 // AddThumbnail adds a thumbnail image to a entry.
 func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image) error {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return err
-	}
 	thumb := thumbnail(img, 192, 108)
 	buf := new(bytes.Buffer)
-	err = png.Encode(buf, thumb)
+	err := png.Encode(buf, thumb)
 	if err != nil {
 		return err
 	}
 	err = s.svc.AddThumbnail(ctx, &service.Thumbnail{
-		EntryID: ent.ID,
-		Data:    buf.Bytes(),
+		EntryPath: path,
+		Data:      buf.Bytes(),
 	})
 	if err != nil {
 		return err
@@ -596,13 +591,9 @@ func (s *Server) UpdateThumbnail(ctx context.Context, path string, img image.Ima
 	if err != nil {
 		return err
 	}
-	svcThumb, err := s.svc.GetThumbnail(ctx, path)
-	if err != nil {
-		return err
-	}
 	err = s.svc.UpdateThumbnail(ctx, service.ThumbnailUpdater{
-		ID:   svcThumb.ID,
-		Data: buf.Bytes(),
+		EntryPath: path,
+		Data:      buf.Bytes(),
 	})
 	if err != nil {
 		return err

@@ -49,10 +49,6 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 		keys = append(keys, "thumbnails.id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.EntryID != nil {
-		keys = append(keys, "thumbnails.entry_id=?")
-		vals = append(vals, *find.EntryID)
-	}
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)
@@ -64,7 +60,6 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			thumbnails.id,
-			thumbnails.entry_id,
 			thumbnails.data,
 			entries.path
 		FROM thumbnails
@@ -81,7 +76,6 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 		thumb := &service.Thumbnail{}
 		err := rows.Scan(
 			&thumb.ID,
-			&thumb.EntryID,
 			&thumb.Data,
 			&thumb.EntryPath,
 		)
@@ -150,6 +144,10 @@ func AddThumbnail(db *sql.DB, ctx context.Context, thumb *service.Thumbnail) err
 }
 
 func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) error {
+	entryID, err := getEntryID(tx, ctx, thumb.EntryPath)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO thumbnails (
 			entry_id,
@@ -157,7 +155,7 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 		)
 		VALUES (?, ?)
 	`,
-		thumb.EntryID,
+		entryID,
 		thumb.Data,
 	)
 	if err != nil {
@@ -170,7 +168,7 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 	thumb.ID = int(id)
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  thumb.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "add",
 		Category: "thumbnail",
@@ -199,11 +197,11 @@ func UpdateThumbnail(db *sql.DB, ctx context.Context, upd service.ThumbnailUpdat
 }
 
 func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdater) error {
-	thumb, err := getThumbnailByID(tx, ctx, upd.ID)
+	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, thumb.EntryPath)
+	thumb, err := getThumbnailByPath(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -214,9 +212,9 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 		vals = append(vals, upd.Data)
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update property %v", upd.ID)
+		return fmt.Errorf("need at least one field to update thumbnail: %v", upd.EntryPath)
 	}
-	vals = append(vals, upd.ID) // for where clause
+	vals = append(vals, thumb.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE thumbnails
 		SET `+strings.Join(keys, ", ")+`
@@ -234,9 +232,13 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
+	entryID, err := getEntryID(tx, ctx, upd.EntryPath)
+	if err != nil {
+		return err
+	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  thumb.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "update",
 		Category: "thumbnail",
@@ -265,7 +267,7 @@ func DeleteThumbnail(db *sql.DB, ctx context.Context, path string) error {
 }
 
 func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
-	e, err := getEntryByPath(tx, ctx, path)
+	entryID, err := getEntryID(tx, ctx, path)
 	if err != nil {
 		return err
 	}
@@ -273,7 +275,7 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 		DELETE FROM thumbnails
 		WHERE entry_id=?
 	`,
-		e.ID,
+		entryID,
 	)
 	if err != nil {
 		return err
@@ -287,7 +289,7 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  e.ID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "delete",
 		Category: "thumbnail",
