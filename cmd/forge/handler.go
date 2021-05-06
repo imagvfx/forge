@@ -576,10 +576,7 @@ func (h *apiHandler) HandleRenameEntry(w http.ResponseWriter, r *http.Request) {
 		}
 		newPath := filepath.Dir(path) + "/" + newName
 		if r.FormValue("back_to_referer") != "" {
-			referer := r.Header.Get("Referer")
-			if strings.Contains(referer, path) {
-				referer = strings.Replace(referer, path, newPath, 1)
-			}
+			referer := strings.Replace(r.Header.Get("Referer"), path, newPath, 1)
 			http.Redirect(w, r, referer, http.StatusSeeOther)
 		}
 		return nil
