@@ -38,13 +38,13 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 	defer tx.Rollback()
 	envmap := make(map[string]*service.Property)
 	for {
-		emap, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path})
+		envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
-		for name, e := range emap {
-			if envmap[name] == nil {
-				envmap[name] = e
+		for _, e := range envs {
+			if envmap[e.Name] == nil {
+				envmap[e.Name] = e
 			}
 		}
 		if path == "/" {
@@ -68,8 +68,7 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
-func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) (map[string]*service.Property, error) {
-
+func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -109,7 +108,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 		return nil, err
 	}
 	defer rows.Close()
-	envmap := make(map[string]*service.Property)
+	envs := make([]*service.Property, 0)
 	for rows.Next() {
 		e := &service.Property{}
 		err := rows.Scan(
@@ -123,9 +122,9 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 		if err != nil {
 			return nil, err
 		}
-		envmap[e.Name] = e
+		envs = append(envs, e)
 	}
-	return envmap, nil
+	return envs, nil
 }
 
 func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Property, error) {
