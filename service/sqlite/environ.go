@@ -368,7 +368,7 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, e.EntryPath)
+	err = userWrite(tx, ctx, path)
 	if err != nil {
 		return err
 	}
