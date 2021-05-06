@@ -104,17 +104,6 @@ func GetThumbnail(db *sql.DB, ctx context.Context, path string) (*service.Thumbn
 	return thumb, nil
 }
 
-func getThumbnailByID(tx *sql.Tx, ctx context.Context, id int) (*service.Thumbnail, error) {
-	thumbs, err := findThumbnails(tx, ctx, service.ThumbnailFinder{ID: &id})
-	if err != nil {
-		return nil, err
-	}
-	if len(thumbs) == 0 {
-		return nil, service.NotFound("thumbnail not found")
-	}
-	return thumbs[0], nil
-}
-
 func getThumbnail(tx *sql.Tx, ctx context.Context, path string) (*service.Thumbnail, error) {
 	thumbs, err := findThumbnails(tx, ctx, service.ThumbnailFinder{EntryPath: &path})
 	if err != nil {
