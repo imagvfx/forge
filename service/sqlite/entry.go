@@ -168,6 +168,23 @@ func getEntryByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Entr
 	return ents[0], nil
 }
 
+func getEntryID(tx *sql.Tx, ctx context.Context, path string) (int, error) {
+	rows, err := tx.QueryContext(ctx, "SELECT id FROM entries WHERE path=?", path)
+	if err != nil {
+		return -1, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return -1, service.NotFound("entry not found: %v", path)
+	}
+	var id int
+	err = rows.Scan(&id)
+	if err != nil {
+		return -1, err
+	}
+	return id, nil
+}
+
 func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*service.Property, envs []*service.Property) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -179,14 +196,12 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*servic
 		return err
 	}
 	for _, p := range props {
-		p.EntryID = e.ID
 		err := addProperty(tx, ctx, p)
 		if err != nil {
 			return err
 		}
 	}
 	for _, env := range envs {
-		env.EntryID = e.ID
 		err := addEnviron(tx, ctx, env)
 		if err != nil {
 			return err

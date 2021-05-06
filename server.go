@@ -163,7 +163,6 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	for _, p := range ps {
 		prop := &Property{
 			ID:        p.ID,
-			EntryID:   p.EntryID,
 			EntryPath: p.EntryPath,
 			Name:      p.Name,
 			Type:      p.Type,
@@ -181,7 +180,6 @@ func (s *Server) getProperty(ctx context.Context, path string, name string) (*Pr
 	}
 	prop := &Property{
 		ID:        p.ID,
-		EntryID:   p.EntryID,
 		EntryPath: p.EntryPath,
 		Name:      p.Name,
 		Type:      p.Type,
@@ -196,7 +194,6 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 		return err
 	}
 	env := &Property{
-		EntryID:   ent.ID,
 		EntryPath: ent.Path,
 		Name:      name,
 		Type:      typ,
@@ -224,8 +221,9 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 		return err
 	}
 	err = s.svc.UpdateProperty(ctx, service.PropertyUpdater{
-		ID:    prop.ID,
-		Value: &value,
+		EntryPath: path,
+		Name:      name,
+		Value:     &value,
 	})
 	if err != nil {
 		return err
@@ -250,7 +248,6 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	for _, p := range ps {
 		prop := &Property{
 			ID:        p.ID,
-			EntryID:   p.EntryID,
 			EntryPath: p.EntryPath,
 			Name:      p.Name,
 			Type:      p.Type,
@@ -268,7 +265,6 @@ func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, 
 	}
 	env := &Property{
 		ID:        e.ID,
-		EntryID:   e.EntryID,
 		EntryPath: e.EntryPath,
 		Name:      e.Name,
 		Type:      e.Type,
@@ -278,18 +274,13 @@ func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, 
 }
 
 func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value string) error {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return err
-	}
 	env := &Property{
-		EntryID:   ent.ID,
-		EntryPath: ent.Path,
+		EntryPath: path,
 		Name:      name,
 		Type:      typ,
 		Value:     value,
 	}
-	err = env.Validate()
+	err := env.Validate()
 	if err != nil {
 		return err
 	}
@@ -311,8 +302,9 @@ func (s *Server) SetEnviron(ctx context.Context, path string, name, value string
 		return err
 	}
 	err = s.svc.UpdateEnviron(ctx, service.PropertyUpdater{
-		ID:    env.ID,
-		Value: &value,
+		EntryPath: path,
+		Name:      name,
+		Value:     &value,
 	})
 	if err != nil {
 		return err

@@ -122,7 +122,6 @@ type ThumbnailUpdater struct {
 
 type Property struct {
 	ID        int
-	EntryID   int
 	EntryPath string
 	Name      string
 	Type      string
@@ -131,14 +130,14 @@ type Property struct {
 
 type PropertyFinder struct {
 	ID        *int
-	EntryID   *int
 	EntryPath *string
 	Name      *string
 }
 
 type PropertyUpdater struct {
-	ID    int
-	Value *string
+	EntryPath string
+	Name      string
+	Value     *string
 }
 
 type AccessControl struct {

@@ -57,10 +57,6 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 		keys = append(keys, "properties.id=?")
 		vals = append(vals, *find.ID)
 	}
-	if find.EntryID != nil {
-		keys = append(keys, "properties.entry_id=?")
-		vals = append(vals, *find.EntryID)
-	}
 	if find.Name != nil {
 		keys = append(keys, "properties.name=?")
 		vals = append(vals, *find.Name)
@@ -76,7 +72,6 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			properties.id,
-			properties.entry_id,
 			properties.name,
 			properties.typ,
 			properties.val,
@@ -95,7 +90,6 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 		p := &service.Property{}
 		err := rows.Scan(
 			&p.ID,
-			&p.EntryID,
 			&p.Name,
 			&p.Type,
 			&p.Value,
@@ -172,6 +166,10 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 	if err != nil {
 		return err
 	}
+	entryID, err := getEntryID(tx, ctx, p.EntryPath)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO properties (
 			entry_id,
@@ -181,7 +179,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 		)
 		VALUES (?, ?, ?, ?)
 	`,
-		p.EntryID,
+		entryID,
 		p.Type,
 		p.Name,
 		p.Value,
@@ -196,7 +194,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 	p.ID = int(id)
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  p.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "create",
 		Category: "property",
@@ -228,7 +226,7 @@ func UpdateProperty(db *sql.DB, ctx context.Context, upd service.PropertyUpdater
 }
 
 func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
-	p, err := getProperty(tx, ctx, upd.ID)
+	p, err := getPropertyByPathName(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
@@ -244,9 +242,9 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 		p.Value = *upd.Value // for logging
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update property %v", upd.ID)
+		return fmt.Errorf("need at least one field to update property %v:%v", upd.EntryPath, upd.Name)
 	}
-	vals = append(vals, upd.ID) // for where clause
+	vals = append(vals, p.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE properties
 		SET `+strings.Join(keys, ", ")+`
@@ -264,9 +262,13 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
+	entryID, err := getEntryID(tx, ctx, p.EntryPath)
+	if err != nil {
+		return err
+	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  p.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "update",
 		Category: "property",
@@ -322,9 +324,13 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
+	entryID, err := getEntryID(tx, ctx, p.EntryPath)
+	if err != nil {
+		return err
+	}
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryID:  p.EntryID,
+		EntryID:  entryID,
 		User:     user,
 		Action:   "delete",
 		Category: "property",

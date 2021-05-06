@@ -42,7 +42,6 @@ type Thumbnail struct {
 // Property can be either a normal property or an environment.
 type Property struct {
 	ID        int
-	EntryID   int
 	EntryPath string
 	Name      string
 	Type      string
@@ -197,7 +196,6 @@ func (p *Property) validateInt(s string) error {
 
 func (p *Property) ServiceProperty() *service.Property {
 	sp := &service.Property{
-		EntryID:   p.EntryID,
 		EntryPath: p.EntryPath,
 		Name:      p.Name,
 		Type:      p.Type,
