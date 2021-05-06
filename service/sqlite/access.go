@@ -172,6 +172,9 @@ func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 // It checks the parents recursively as access control inherits.
 // It returns (nil, nil) when there is no access_control exists for the user.
 func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) {
+	if path == "" {
+		return nil, fmt.Errorf("path should be specified for access check")
+	}
 	user := service.UserNameFromContext(ctx)
 	adminGroup := "admin"
 	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &adminGroup})
