@@ -144,6 +144,10 @@ func AddThumbnail(db *sql.DB, ctx context.Context, thumb *service.Thumbnail) err
 }
 
 func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) error {
+	err := userWrite(tx, ctx, thumb.EntryPath)
+	if err != nil {
+		return err
+	}
 	entryID, err := getEntryID(tx, ctx, thumb.EntryPath)
 	if err != nil {
 		return err
@@ -267,6 +271,10 @@ func DeleteThumbnail(db *sql.DB, ctx context.Context, path string) error {
 }
 
 func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
+	err := userWrite(tx, ctx, path)
+	if err != nil {
+		return err
+	}
 	entryID, err := getEntryID(tx, ctx, path)
 	if err != nil {
 		return err
