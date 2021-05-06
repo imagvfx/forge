@@ -455,7 +455,7 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	relatedTables := []string{"properties", "environs", "access_controls", "logs"}
+	relatedTables := []string{"thumbnails", "properties", "environs", "access_controls", "logs"}
 	for _, table := range relatedTables {
 		stmt := fmt.Sprintf(`
 			DELETE FROM %v

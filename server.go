@@ -151,24 +151,6 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	// Delete the thumbnail also.
-	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
-	thumbnailDir := filepath.Join(thumbnailRoot, path)
-	thumbnailFile := filepath.Join(thumbnailDir, "thumbnail.png")
-	files := []string{thumbnailFile, thumbnailDir}
-	for _, f := range files {
-		_, err = os.Stat(f)
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-			return err
-		}
-		err = os.Remove(f)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
