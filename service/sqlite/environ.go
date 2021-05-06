@@ -127,7 +127,7 @@ func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Pr
 		return nil, err
 	}
 	defer tx.Rollback()
-	p, err := getEnvironByPathName(tx, ctx, path, name)
+	p, err := getEnviron(tx, ctx, path, name)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Pr
 	return p, nil
 }
 
-func getEnvironByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
+func getEnviron(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
 	envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
 		return nil, err
@@ -235,7 +235,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	if err != nil {
 		return err
 	}
-	e, err := getEnvironByPathName(tx, ctx, upd.EntryPath, upd.Name)
+	e, err := getEnviron(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
@@ -305,7 +305,7 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	e, err := getEnvironByPathName(tx, ctx, path, name)
+	e, err := getEnviron(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}

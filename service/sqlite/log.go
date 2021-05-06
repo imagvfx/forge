@@ -40,7 +40,7 @@ func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*servi
 		return nil, err
 	}
 	defer tx.Rollback()
-	_, err = getEntryByPath(tx, ctx, find.EntryPath)
+	_, err = getEntry(tx, ctx, find.EntryPath)
 	if err != nil {
 		return nil, err
 	}

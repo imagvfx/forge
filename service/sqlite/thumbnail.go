@@ -93,7 +93,7 @@ func GetThumbnail(db *sql.DB, ctx context.Context, path string) (*service.Thumbn
 		return nil, err
 	}
 	defer tx.Rollback()
-	thumb, err := getThumbnailByPath(tx, ctx, path)
+	thumb, err := getThumbnail(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func getThumbnailByID(tx *sql.Tx, ctx context.Context, id int) (*service.Thumbna
 	return thumbs[0], nil
 }
 
-func getThumbnailByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Thumbnail, error) {
+func getThumbnail(tx *sql.Tx, ctx context.Context, path string) (*service.Thumbnail, error) {
 	thumbs, err := findThumbnails(tx, ctx, service.ThumbnailFinder{EntryPath: &path})
 	if err != nil {
 		return nil, err
@@ -205,7 +205,7 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if err != nil {
 		return err
 	}
-	thumb, err := getThumbnailByPath(tx, ctx, upd.EntryPath)
+	thumb, err := getThumbnail(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}

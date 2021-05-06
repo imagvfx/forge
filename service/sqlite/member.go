@@ -106,11 +106,11 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 }
 
 func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
-	g, err := getGroupByName(tx, ctx, m.Group)
+	g, err := getGroup(tx, ctx, m.Group)
 	if err != nil {
 		return err
 	}
-	u, err := getUserByName(tx, ctx, m.Member)
+	u, err := getUser(tx, ctx, m.Member)
 	if err != nil {
 		return err
 	}
@@ -157,11 +157,11 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) er
 			return fmt.Errorf("need at least 1 admin")
 		}
 	}
-	g, err := getGroupByName(tx, ctx, group)
+	g, err := getGroup(tx, ctx, group)
 	if err != nil {
 		return err
 	}
-	u, err := getUserByName(tx, ctx, member)
+	u, err := getUser(tx, ctx, member)
 	if err != nil {
 		return err
 	}

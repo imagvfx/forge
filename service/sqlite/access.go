@@ -39,7 +39,7 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*servi
 	defer tx.Rollback()
 	acm := make(map[string]*service.AccessControl)
 	for {
-		ent, err := getEntryByPath(tx, ctx, path)
+		ent, err := getEntry(tx, ctx, path)
 		if err != nil {
 			return nil, err
 		}
@@ -217,7 +217,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 	return nil, nil
 }
 
-func getAccessControlByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
+func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
 	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
 		EntryPath: &path,
 		Accessor:  &name,
@@ -324,7 +324,7 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if err != nil {
 		return err
 	}
-	a, err := getAccessControlByPathName(tx, ctx, upd.EntryPath, upd.Accessor)
+	a, err := getAccessControl(tx, ctx, upd.EntryPath, upd.Accessor)
 	if err != nil {
 		return err
 	}
@@ -394,7 +394,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 	if err != nil {
 		return err
 	}
-	a, err := getAccessControlByPathName(tx, ctx, path, name)
+	a, err := getAccessControl(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}

@@ -109,7 +109,7 @@ func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*service.P
 		return nil, err
 	}
 	defer tx.Rollback()
-	p, err := getPropertyByPathName(tx, ctx, path, name)
+	p, err := getProperty(tx, ctx, path, name)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*service.P
 	return p, nil
 }
 
-func getPropertyByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
+func getProperty(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
 	props, err := findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if err != nil {
 		return err
 	}
-	p, err := getPropertyByPathName(tx, ctx, upd.EntryPath, upd.Name)
+	p, err := getProperty(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	p, err := getPropertyByPathName(tx, ctx, path, name)
+	p, err := getProperty(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}

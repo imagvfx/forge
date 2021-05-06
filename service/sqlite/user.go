@@ -73,14 +73,14 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 	return users, nil
 }
 
-func GetUserByName(db *sql.DB, ctx context.Context, user string) (*service.User, error) {
+func GetUser(db *sql.DB, ctx context.Context, user string) (*service.User, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getUserByName(tx, ctx, user)
+	u, err := getUser(tx, ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func GetUserByName(db *sql.DB, ctx context.Context, user string) (*service.User,
 	return u, nil
 }
 
-func getUserByName(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
+func getUser(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
 	users, err := findUsers(tx, ctx, service.UserFinder{Name: &user})
 	if err != nil {
 		return nil, err

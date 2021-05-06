@@ -135,7 +135,7 @@ func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, err
 		return nil, err
 	}
 	defer tx.Rollback()
-	ent, err := getEntryByPath(tx, ctx, path)
+	ent, err := getEntry(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, err
 	return ent, nil
 }
 
-func getEntryByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, error) {
+func getEntry(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, error) {
 	ents, err := findEntries(tx, ctx, service.EntryFinder{Path: &path})
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if err != nil {
 		return err
 	}
-	p, err := getEntryByPath(tx, ctx, parent)
+	p, err := getEntry(tx, ctx, parent)
 	if err != nil {
 		return err
 	}
@@ -425,7 +425,7 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if rows.Err() != nil {
 		return rows.Err()
 	}
-	e, err := getEntryByPath(tx, ctx, path)
+	e, err := getEntry(tx, ctx, path)
 	if err != nil {
 		return err
 	}

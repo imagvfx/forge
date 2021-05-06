@@ -32,7 +32,7 @@ type Service interface {
 	DeleteAccessControl(ctx context.Context, path string, name string) error
 	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
 	AddUser(ctx context.Context, u *User) error
-	GetUserByName(ctx context.Context, user string) (*User, error)
+	GetUser(ctx context.Context, user string) (*User, error)
 	FindGroups(ctx context.Context, find GroupFinder) ([]*Group, error)
 	AddGroup(ctx context.Context, g *Group) error
 	UpdateGroup(ctx context.Context, upd GroupUpdater) error

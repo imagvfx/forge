@@ -423,7 +423,7 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 }
 
 func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
-	su, err := s.svc.GetUserByName(ctx, user)
+	su, err := s.svc.GetUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}

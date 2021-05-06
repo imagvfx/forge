@@ -93,14 +93,14 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 	return groups, nil
 }
 
-func GetGroupByName(db *sql.DB, ctx context.Context, name string) (*service.Group, error) {
+func GetGroup(db *sql.DB, ctx context.Context, name string) (*service.Group, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
 
-	u, err := getGroupByName(tx, ctx, name)
+	u, err := getGroup(tx, ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func GetGroupByName(db *sql.DB, ctx context.Context, name string) (*service.Grou
 	return u, nil
 }
 
-func getGroupByName(tx *sql.Tx, ctx context.Context, name string) (*service.Group, error) {
+func getGroup(tx *sql.Tx, ctx context.Context, name string) (*service.Group, error) {
 	groups, err := findGroups(tx, ctx, service.GroupFinder{Name: &name})
 	if err != nil {
 		return nil, err
