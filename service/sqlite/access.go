@@ -390,11 +390,11 @@ func DeleteAccessControl(db *sql.DB, ctx context.Context, path, name string) err
 }
 
 func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) error {
-	a, err := getAccessControlByPathName(tx, ctx, path, name)
+	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, a.EntryPath)
+	a, err := getAccessControlByPathName(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}

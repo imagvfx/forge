@@ -231,11 +231,11 @@ func UpdateEnviron(db *sql.DB, ctx context.Context, upd service.PropertyUpdater)
 }
 
 func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
-	e, err := getEnvironByPathName(tx, ctx, upd.EntryPath, upd.Name)
+	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, e.EntryPath)
+	e, err := getEnvironByPathName(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
@@ -301,11 +301,11 @@ func DeleteEnviron(db *sql.DB, ctx context.Context, path, name string) error {
 }
 
 func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
-	e, err := getEnvironByPathName(tx, ctx, path, name)
+	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, path)
+	e, err := getEnvironByPathName(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}

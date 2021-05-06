@@ -214,11 +214,11 @@ func UpdateProperty(db *sql.DB, ctx context.Context, upd service.PropertyUpdater
 }
 
 func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
-	p, err := getPropertyByPathName(tx, ctx, upd.EntryPath, upd.Name)
+	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, p.EntryPath)
+	p, err := getPropertyByPathName(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
@@ -284,11 +284,11 @@ func DeleteProperty(db *sql.DB, ctx context.Context, path, name string) error {
 }
 
 func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
-	p, err := getPropertyByPathName(tx, ctx, path, name)
+	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, p.EntryPath)
+	p, err := getPropertyByPathName(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
