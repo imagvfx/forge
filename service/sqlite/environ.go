@@ -145,74 +145,25 @@ func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Pr
 }
 
 func getEnviron(tx *sql.Tx, ctx context.Context, id int) (*service.Property, error) {
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			id,
-			entry_id,
-			name,
-			typ,
-			val
-		FROM environs
-		WHERE id=?`,
-		id,
-	)
+	envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryID: &id})
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	if !rows.Next() {
+	if len(envs) == 0 {
 		return nil, service.NotFound("environ not found")
 	}
-	e := &service.Property{}
-	err = rows.Scan(
-		&e.ID,
-		&e.EntryID,
-		&e.Name,
-		&e.Type,
-		&e.Value,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return e, nil
+	return envs[0], nil
 }
 
 func getEnvironByPathName(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
-	e, err := getEntryByPath(tx, ctx, path)
+	envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
 		return nil, err
 	}
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			id,
-			entry_id,
-			name,
-			typ,
-			val
-		FROM environs
-		WHERE entry_id=? AND name=?`,
-		e.ID,
-		name,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
+	if len(envs) == 0 {
 		return nil, service.NotFound("environ not found")
 	}
-	p := &service.Property{}
-	err = rows.Scan(
-		&p.ID,
-		&p.EntryID,
-		&p.Name,
-		&p.Type,
-		&p.Value,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return p, nil
+	return envs[0], nil
 }
 
 func AddEnviron(db *sql.DB, ctx context.Context, e *service.Property) error {
