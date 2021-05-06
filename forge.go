@@ -34,7 +34,6 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 
 type Thumbnail struct {
 	ID        int
-	EntryID   int
 	EntryPath string
 	Data      []byte
 }
