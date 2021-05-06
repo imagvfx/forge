@@ -40,7 +40,7 @@ func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*servi
 		return nil, err
 	}
 	defer tx.Rollback()
-	_, err = getEntry(tx, ctx, find.EntryID)
+	_, err = getEntryByPath(tx, ctx, find.EntryPath)
 	if err != nil {
 		return nil, err
 	}
@@ -59,24 +59,25 @@ func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*servi
 func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	keys = append(keys, "entry_id=?")
-	vals = append(vals, find.EntryID)
+	keys = append(keys, "entries.path=?")
+	vals = append(vals, find.EntryPath)
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			id,
-			entry_id,
-			user,
-			action,
-			ctg,
-			name,
-			typ,
-			val,
-			time
+			logs.id,
+			logs.entry_id,
+			logs.user,
+			logs.action,
+			logs.ctg,
+			logs.name,
+			logs.typ,
+			logs.val,
+			logs.time
 		FROM logs
+		LEFT JOIN entries ON logs.entry_id = entries.id
 		`+where,
 		vals...,
 	)

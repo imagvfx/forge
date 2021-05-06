@@ -223,5 +223,5 @@ type Log struct {
 }
 
 type LogFinder struct {
-	EntryID int
+	EntryPath string
 }

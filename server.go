@@ -414,12 +414,8 @@ func (s *Server) DeleteAccessControl(ctx context.Context, path string, name stri
 }
 
 func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return nil, err
-	}
 	ls, err := s.svc.FindLogs(ctx, service.LogFinder{
-		EntryID: ent.ID,
+		EntryPath: path,
 	})
 	if err != nil {
 		return nil, err
