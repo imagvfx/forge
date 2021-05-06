@@ -558,7 +558,6 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 	members := make([]*Member, 0, len(svcMembers))
 	for _, sm := range svcMembers {
 		m := &Member{
-			ID:     sm.ID,
 			Group:  sm.Group,
 			Member: sm.Member,
 		}

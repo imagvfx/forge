@@ -47,10 +47,6 @@ func FindGroupMembers(db *sql.DB, ctx context.Context, find service.MemberFinder
 func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.ID != nil {
-		keys = append(keys, "group_members.id=?")
-		vals = append(vals, *find.ID)
-	}
 	if find.Group != nil {
 		keys = append(keys, "groups.name=?")
 		vals = append(vals, *find.Group)
@@ -65,7 +61,6 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			group_members.id,
 			groups.name,
 			members.name
 		FROM group_members
@@ -82,7 +77,6 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 	for rows.Next() {
 		m := &service.Member{}
 		err := rows.Scan(
-			&m.ID,
 			&m.Group,
 			&m.Member,
 		)
@@ -131,8 +125,7 @@ func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
 	if err != nil {
 		return err
 	}
-	// TODO: check the user is a member of admin group.
-	result, err := tx.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 		INSERT INTO group_members (
 			group_id,
 			member_id
@@ -145,11 +138,6 @@ func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
 	if err != nil {
 		return err
 	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	m.ID = int(id)
 	return nil
 }
 
@@ -171,12 +159,8 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) er
 }
 
 func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) error {
-	m, err := getGroupMember(tx, ctx, group, member)
-	if err != nil {
-		return err
-	}
-	if m.Group == "admin" {
-		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &m.Group})
+	if group == "admin" {
+		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group})
 		if err != nil {
 			return err
 		}
@@ -184,14 +168,30 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) er
 			return fmt.Errorf("need at least 1 admin")
 		}
 	}
-	_, err = tx.ExecContext(ctx, `
+	g, err := getGroupByName(tx, ctx, group)
+	if err != nil {
+		return err
+	}
+	u, err := getUserByName(tx, ctx, member)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
 		DELETE FROM group_members
-		WHERE id=?
+		WHERE group_id=? AND member_id=?
 	`,
-		m.ID,
+		g.ID,
+		u.ID,
 	)
 	if err != nil {
 		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return service.NotFound("%q is not a member of group %q", member, group)
 	}
 	return nil
 }

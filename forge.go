@@ -290,7 +290,6 @@ type Group struct {
 }
 
 type Member struct {
-	ID     int
 	Group  string
 	Member string
 }

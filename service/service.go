@@ -202,13 +202,11 @@ type GroupUpdater struct {
 }
 
 type Member struct {
-	ID     int
 	Group  string
 	Member string
 }
 
 type MemberFinder struct {
-	ID     *int
 	Group  *string
 	Member *string
 }
