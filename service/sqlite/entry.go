@@ -129,31 +129,6 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	return ents, nil
 }
 
-// getEntryParent get the entry's parent without checking user permission.
-// It shouldn't be used except permission checks.
-func getEntryParent(tx *sql.Tx, ctx context.Context, id int) (*int, error) {
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			parent_id
-		FROM entries
-		WHERE id=?
-	`,
-		id,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return nil, service.NotFound("entry not found: %v", id)
-	}
-	var parentID *int
-	err = rows.Scan(
-		&parentID,
-	)
-	return parentID, nil
-}
-
 func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
