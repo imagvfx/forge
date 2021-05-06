@@ -91,16 +91,15 @@ func UserNameFromContext(ctx context.Context) string {
 
 type Entry struct {
 	ID           int
-	ParentID     *int // nil if root entry
 	Path         string
 	Type         string
 	HasThumbnail bool
 }
 
 type EntryFinder struct {
-	ID       *int
-	ParentID *int
-	Path     *string
+	ID         *int
+	ParentPath *string
+	Path       *string
 }
 
 type Thumbnail struct {

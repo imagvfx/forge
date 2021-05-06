@@ -13,7 +13,6 @@ import (
 
 type Entry struct {
 	ID           int
-	ParentID     int
 	Path         string
 	Type         string
 	HasThumbnail bool

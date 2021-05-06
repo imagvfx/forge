@@ -72,9 +72,9 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.Path)
 	}
-	if find.ParentID != nil {
-		keys = append(keys, "entries.parent_id=?")
-		vals = append(vals, find.ParentID)
+	if find.ParentPath != nil {
+		keys = append(keys, "parents.path=?")
+		vals = append(vals, *find.ParentPath)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -83,11 +83,11 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			entries.id,
-			entries.parent_id,
 			entries.path,
 			entries.typ,
 			thumbnails.id
 		FROM entries
+		LEFT JOIN entries AS parents ON entries.parent_id = parents.id
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
 		`+where+`
 		ORDER BY entries.id ASC
@@ -104,7 +104,6 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
-			&e.ParentID,
 			&e.Path,
 			&e.Type,
 			&thumbID,
@@ -240,18 +239,21 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if err != nil {
 		return err
 	}
-	// NOTE: I didn't validate e.ParentID as I am going to remove it.
+	p, err := getEntryByPath(tx, ctx, parent)
+	if err != nil {
+		return err
+	}
 	result, err := tx.Exec(`
 		INSERT INTO entries (
-			parent_id,
 			path,
-			typ
+			typ,
+			parent_id
 		)
 		VALUES (?, ?, ?)
 	`,
-		e.ParentID,
 		e.Path,
 		e.Type,
+		p.ID,
 	)
 	if err != nil {
 		return err

@@ -36,13 +36,8 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 	if err != nil {
 		return nil, err
 	}
-	parentID := -1
-	if e.ParentID != nil {
-		parentID = *e.ParentID
-	}
 	ent := &Entry{
 		ID:           e.ID,
-		ParentID:     parentID,
 		Path:         e.Path,
 		Type:         e.Type,
 		HasThumbnail: e.HasThumbnail,
@@ -51,25 +46,16 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 }
 
 func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) {
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return nil, err
-	}
 	es, err := s.svc.FindEntries(ctx, service.EntryFinder{
-		ParentID: &ent.ID,
+		ParentPath: &path,
 	})
 	if err != nil {
 		return nil, err
 	}
 	ents := make([]*Entry, 0)
 	for _, e := range es {
-		parentID := -1
-		if e.ParentID != nil {
-			parentID = *e.ParentID
-		}
 		ent := &Entry{
 			ID:           e.ID,
-			ParentID:     parentID,
 			Path:         e.Path,
 			Type:         e.Type,
 			HasThumbnail: e.HasThumbnail,
@@ -98,9 +84,8 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 		return fmt.Errorf("cannot create a child of type %q from %q", typ, p.Type)
 	}
 	e := &service.Entry{
-		ParentID: &p.ID,
-		Path:     path,
-		Type:     typ,
+		Path: path,
+		Type: typ,
 	}
 	props := make([]*service.Property, 0)
 	for _, ktv := range s.cfg.Struct[typ].Properties {
