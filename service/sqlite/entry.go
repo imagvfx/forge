@@ -146,17 +146,6 @@ func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, err
 	return ent, nil
 }
 
-func getEntry(tx *sql.Tx, ctx context.Context, id int) (*service.Entry, error) {
-	ents, err := findEntries(tx, ctx, service.EntryFinder{ID: &id})
-	if err != nil {
-		return nil, err
-	}
-	if len(ents) == 0 {
-		return nil, service.NotFound("entry not found")
-	}
-	return ents[0], nil
-}
-
 func getEntryByPath(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, error) {
 	ents, err := findEntries(tx, ctx, service.EntryFinder{Path: &path})
 	if err != nil {
