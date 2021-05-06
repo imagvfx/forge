@@ -115,7 +115,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		if thumbID != nil {
 			e.HasThumbnail = true
 		}
-		err = userRead(tx, ctx, e.ID)
+		err = userRead(tx, ctx, e.Path)
 		if err != nil {
 			var e *service.NotFoundError
 			if !errors.As(err, &e) {
@@ -226,13 +226,21 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*servic
 }
 
 func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
-	if e.ParentID == nil {
-		fmt.Errorf("parent id unspecified")
+	if e.Path == "" {
+		fmt.Errorf("path unspecified")
 	}
-	err := userWrite(tx, ctx, *e.ParentID)
+	if e.Path == "/" {
+		fmt.Errorf("cannot create root path")
+	}
+	if !strings.HasPrefix(e.Path, "/") {
+		fmt.Errorf("path is not started with /")
+	}
+	parent := filepath.Dir(e.Path)
+	err := userWrite(tx, ctx, parent)
 	if err != nil {
 		return err
 	}
+	// NOTE: I didn't validate e.ParentID as I am going to remove it.
 	result, err := tx.Exec(`
 		INSERT INTO entries (
 			parent_id,
@@ -312,7 +320,7 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, *e.ParentID)
+	err = userWrite(tx, ctx, filepath.Dir(path))
 	if err != nil {
 		return err
 	}
@@ -441,7 +449,7 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, *e.ParentID)
+	err = userWrite(tx, ctx, filepath.Dir(path))
 	if err != nil {
 		return err
 	}

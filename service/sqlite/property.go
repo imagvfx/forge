@@ -168,7 +168,7 @@ func AddProperty(db *sql.DB, ctx context.Context, p *service.Property) error {
 }
 
 func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
-	err := userWrite(tx, ctx, p.EntryID)
+	err := userWrite(tx, ctx, p.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -232,7 +232,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, p.EntryID)
+	err = userWrite(tx, ctx, p.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,7 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, p.EntryID)
+	err = userWrite(tx, ctx, p.EntryPath)
 	if err != nil {
 		return err
 	}

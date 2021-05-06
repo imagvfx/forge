@@ -200,7 +200,7 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, thumb.EntryID)
+	err = userWrite(tx, ctx, thumb.EntryPath)
 	if err != nil {
 		return err
 	}

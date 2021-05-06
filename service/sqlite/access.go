@@ -137,8 +137,8 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 
 // userRead returns an error if the user cannot read the entry.
 // It returns service.NotFound error when the context user doesn't have read permission.
-func userRead(tx *sql.Tx, ctx context.Context, entID int) error {
-	mode, err := userAccessMode(tx, ctx, entID)
+func userRead(tx *sql.Tx, ctx context.Context, path string) error {
+	mode, err := userAccessMode(tx, ctx, path)
 	if err != nil {
 		return err
 	}
@@ -152,8 +152,8 @@ func userRead(tx *sql.Tx, ctx context.Context, entID int) error {
 // userWrite returns an error if the user cannot write the entry.
 // It returns service.NotFound error when the context user doesn't have read permission or
 // returns service.Unauthorized error when the context user doesn't have write permission.
-func userWrite(tx *sql.Tx, ctx context.Context, entID int) error {
-	mode, err := userAccessMode(tx, ctx, entID)
+func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
+	mode, err := userAccessMode(tx, ctx, path)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func userWrite(tx *sql.Tx, ctx context.Context, entID int) error {
 // userAccessMode returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
 // It returns (nil, nil) when there is no access_control exists for the user.
-func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
+func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) {
 	user := service.UserNameFromContext(ctx)
 	adminGroup := "admin"
 	admins, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &adminGroup})
@@ -186,7 +186,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 		}
 	}
 	for {
-		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryID: &entID})
+		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
@@ -212,14 +212,10 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, entID int) (*int, error) {
 				}
 			}
 		}
-		parentID, err := getEntryParent(tx, ctx, entID)
-		if err != nil {
-			return nil, err
-		}
-		if parentID == nil {
+		if path == "/" {
 			break
 		}
-		entID = *parentID
+		path = filepath.Dir(path)
 	}
 	return nil, nil
 }
@@ -274,7 +270,7 @@ func AddAccessControl(db *sql.DB, ctx context.Context, a *service.AccessControl)
 }
 
 func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl) error {
-	err := userWrite(tx, ctx, a.EntryID)
+	err := userWrite(tx, ctx, a.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -344,7 +340,7 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, a.EntryID)
+	err = userWrite(tx, ctx, a.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -414,7 +410,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, a.EntryID)
+	err = userWrite(tx, ctx, a.EntryPath)
 	if err != nil {
 		return err
 	}

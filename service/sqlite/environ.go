@@ -234,7 +234,7 @@ func AddEnviron(db *sql.DB, ctx context.Context, e *service.Property) error {
 }
 
 func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
-	err := userWrite(tx, ctx, e.EntryID)
+	err := userWrite(tx, ctx, e.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -298,7 +298,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, e.EntryID)
+	err = userWrite(tx, ctx, e.EntryPath)
 	if err != nil {
 		return err
 	}
@@ -368,7 +368,7 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	err = userWrite(tx, ctx, e.EntryID)
+	err = userWrite(tx, ctx, e.EntryPath)
 	if err != nil {
 		return err
 	}
