@@ -64,10 +64,6 @@ func FindEntries(db *sql.DB, ctx context.Context, find service.EntryFinder) ([]*
 func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.ID != nil {
-		keys = append(keys, "entries.id=?")
-		vals = append(vals, *find.ID)
-	}
 	if find.Path != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.Path)

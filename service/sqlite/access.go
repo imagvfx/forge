@@ -78,10 +78,6 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*servi
 func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.ID != nil {
-		keys = append(keys, "access_controls.id=?")
-		vals = append(vals, *find.ID)
-	}
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)

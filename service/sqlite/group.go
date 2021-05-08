@@ -52,10 +52,6 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 	vals := make([]interface{}, 0)
 	keys = append(keys, "is_group=?")
 	vals = append(vals, true)
-	if find.ID != nil {
-		keys = append(keys, "id=?")
-		vals = append(vals, *find.ID)
-	}
 	if find.Name != nil {
 		keys = append(keys, "name=?")
 		vals = append(vals, *find.Name)

@@ -45,10 +45,6 @@ func FindThumbnails(db *sql.DB, ctx context.Context, find service.ThumbnailFinde
 func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinder) ([]*service.Thumbnail, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.ID != nil {
-		keys = append(keys, "thumbnails.id=?")
-		vals = append(vals, *find.ID)
-	}
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)

@@ -71,10 +71,6 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.ID != nil {
-		keys = append(keys, "environs.id=?")
-		vals = append(vals, *find.ID)
-	}
 	if find.Name != nil {
 		keys = append(keys, "environs.name=?")
 		vals = append(vals, *find.Name)

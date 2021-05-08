@@ -97,7 +97,6 @@ type Entry struct {
 }
 
 type EntryFinder struct {
-	ID         *int
 	ParentPath *string
 	Path       *string
 }
@@ -109,7 +108,6 @@ type Thumbnail struct {
 }
 
 type ThumbnailFinder struct {
-	ID        *int
 	EntryPath *string
 }
 
@@ -127,7 +125,6 @@ type Property struct {
 }
 
 type PropertyFinder struct {
-	ID        *int
 	EntryPath *string
 	Name      *string
 }
@@ -148,7 +145,6 @@ type AccessControl struct {
 }
 
 type AccessControlFinder struct {
-	ID        *int
 	EntryPath *string
 	Accessor  *string
 }
@@ -172,7 +168,6 @@ type User struct {
 }
 
 type UserFinder struct {
-	ID   *int
 	Name *string
 }
 
@@ -187,7 +182,6 @@ type Group struct {
 }
 
 type GroupFinder struct {
-	ID   *int
 	Name *string
 }
 
