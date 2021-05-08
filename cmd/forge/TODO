@@ -1,5 +1,2 @@
-resize thumbnail on recieve
-store thumbnail in db
-user to ctx in sqlite service
 store entry type default props, etc in db
 prevent delete default props, etc of the entry
