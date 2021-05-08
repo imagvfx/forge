@@ -162,6 +162,22 @@ type Accessor struct {
 	IsGroup bool
 }
 
+type Log struct {
+	ID        int
+	EntryPath string
+	User      string
+	Action    string
+	Category  string
+	Name      string
+	Type      string
+	Value     string
+	When      time.Time
+}
+
+type LogFinder struct {
+	EntryPath string
+}
+
 type User struct {
 	ID   int
 	Name string
@@ -198,20 +214,4 @@ type Member struct {
 type MemberFinder struct {
 	Group  *string
 	Member *string
-}
-
-type Log struct {
-	ID        int
-	EntryPath string
-	User      string
-	Action    string
-	Category  string
-	Name      string
-	Type      string
-	Value     string
-	When      time.Time
-}
-
-type LogFinder struct {
-	EntryPath string
 }
