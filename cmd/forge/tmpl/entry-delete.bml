@@ -97,7 +97,7 @@
 				]
 				<div> [
 				{{range $ac := $.AccessControls}}
-					{{$inherit := ne $ac.EntryPath $.Entry.Path}}
+					{{if eq $ac.EntryPath $.Entry.Path}}
 					<form action="/api/delete-access-control" method="post"> [
 						<div> [
 							<input readonly name="id" type="hidden" value="{{$ac.ID}}"> []
@@ -107,6 +107,7 @@
 							<button type="submit"> [Delete]
 						]
 					]
+					{{end}}
 				{{end}}
 				]
 			]

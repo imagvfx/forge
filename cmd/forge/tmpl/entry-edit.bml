@@ -159,7 +159,7 @@
 				]
 				<div> [
 				{{range $ac := $.AccessControls}}
-					{{$inherit := ne $ac.EntryPath $.Entry.Path}}
+					{{if eq $ac.EntryPath $.Entry.Path}}
 					<form action="/api/set-access-control" method="post"> [
 						<div> [
 							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -167,13 +167,10 @@
 							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type" style="width:10em;box-sizing:border-box"> []
 							<input name="mode" type="text" value="{{$ac.Mode}}" placeholder="r, rw"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							{{if $inherit}}
-								inherited from '{{$ac.EntryPath}}'
-							{{else}}
-								<button type="submit"> [Set]
-							{{end}}
+							<button type="submit"> [Set]
 						]
 					]
+					{{end}}
 				{{end}}
 				]
 			]
