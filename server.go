@@ -30,7 +30,7 @@ func NewServer(svc service.Service, cfg *Config) *Server {
 
 func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 	if path == "" {
-		return nil, fmt.Errorf("path emtpy")
+		return nil, fmt.Errorf("entry path not specified")
 	}
 	e, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
@@ -46,6 +46,9 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 }
 
 func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) {
+	if path == "" {
+		return nil, fmt.Errorf("entry path not specified")
+	}
 	es, err := s.svc.FindEntries(ctx, service.EntryFinder{
 		ParentPath: &path,
 	})
@@ -66,6 +69,12 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 }
 
 func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
+	if path == "" {
+		return fmt.Errorf("entry path not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("entry type not specified")
+	}
 	path = filepath.ToSlash(path)
 	parent := filepath.Dir(path)
 	p, err := s.svc.GetEntry(ctx, parent)
@@ -123,6 +132,12 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 }
 
 func (s *Server) RenameEntry(ctx context.Context, path, newName string) error {
+	if path == "" {
+		return fmt.Errorf("entry path not specified")
+	}
+	if newName == "" {
+		return fmt.Errorf("new entry name not specified")
+	}
 	err := s.svc.RenameEntry(ctx, path, newName)
 	if err != nil {
 		return err
@@ -147,6 +162,9 @@ func (s *Server) RenameEntry(ctx context.Context, path, newName string) error {
 }
 
 func (s *Server) DeleteEntry(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("entry path not specified")
+	}
 	err := s.svc.DeleteEntry(ctx, path)
 	if err != nil {
 		return err
@@ -155,6 +173,9 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 }
 
 func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property, error) {
+	if path == "" {
+		return nil, fmt.Errorf("entry path not specified")
+	}
 	ps, err := s.svc.EntryProperties(ctx, path)
 	if err != nil {
 		return nil, err
@@ -174,6 +195,12 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 }
 
 func (s *Server) getProperty(ctx context.Context, path string, name string) (*Property, error) {
+	if path == "" {
+		return nil, fmt.Errorf("property path not specified")
+	}
+	if name == "" {
+		return nil, fmt.Errorf("property name not specified")
+	}
 	p, err := s.svc.GetProperty(ctx, path, name)
 	if err != nil {
 		return nil, err
@@ -189,6 +216,18 @@ func (s *Server) getProperty(ctx context.Context, path string, name string) (*Pr
 }
 
 func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value string) error {
+	if path == "" {
+		return fmt.Errorf("property path not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("property name not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("property type not specified")
+	}
+	if value == "" {
+		return fmt.Errorf("property value not specified")
+	}
 	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
@@ -211,6 +250,15 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 }
 
 func (s *Server) SetProperty(ctx context.Context, path string, name, value string) error {
+	if path == "" {
+		return fmt.Errorf("property path not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("property name not specified")
+	}
+	if path == "" {
+		return fmt.Errorf("property value not specified")
+	}
 	prop, err := s.getProperty(ctx, path, name)
 	if err != nil {
 		return err
@@ -232,6 +280,12 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 }
 
 func (s *Server) DeleteProperty(ctx context.Context, path string, name string) error {
+	if path == "" {
+		return fmt.Errorf("property path not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("property name not specified")
+	}
 	err := s.svc.DeleteProperty(ctx, path, name)
 	if err != nil {
 		return err
@@ -240,6 +294,9 @@ func (s *Server) DeleteProperty(ctx context.Context, path string, name string) e
 }
 
 func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, error) {
+	if path == "" {
+		return nil, fmt.Errorf("environ path not specified")
+	}
 	ps, err := s.svc.EntryEnvirons(ctx, path)
 	if err != nil {
 		return nil, err
@@ -259,6 +316,12 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 }
 
 func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, error) {
+	if path == "" {
+		return nil, fmt.Errorf("environ path not specified")
+	}
+	if name == "" {
+		return nil, fmt.Errorf("environ name not specified")
+	}
 	e, err := s.svc.GetEnviron(ctx, path, name)
 	if err != nil {
 		return nil, err
@@ -274,6 +337,18 @@ func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, 
 }
 
 func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value string) error {
+	if path == "" {
+		return fmt.Errorf("environ path not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("environ name not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("environ type not specified")
+	}
+	if value == "" {
+		return fmt.Errorf("environ value not specified")
+	}
 	env := &Property{
 		EntryPath: path,
 		Name:      name,
@@ -292,6 +367,15 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 }
 
 func (s *Server) SetEnviron(ctx context.Context, path string, name, value string) error {
+	if path == "" {
+		return fmt.Errorf("environ path not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("environ name not specified")
+	}
+	if value == "" {
+		return fmt.Errorf("environ value not specified")
+	}
 	env, err := s.getEnviron(ctx, path, name)
 	if err != nil {
 		return err
@@ -313,6 +397,12 @@ func (s *Server) SetEnviron(ctx context.Context, path string, name, value string
 }
 
 func (s *Server) DeleteEnviron(ctx context.Context, path string, name string) error {
+	if path == "" {
+		return fmt.Errorf("environ path not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("environ name not specified")
+	}
 	err := s.svc.DeleteEnviron(ctx, path, name)
 	if err != nil {
 		return err
@@ -321,6 +411,9 @@ func (s *Server) DeleteEnviron(ctx context.Context, path string, name string) er
 }
 
 func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*AccessControl, error) {
+	if path == "" {
+		return nil, fmt.Errorf("access control path not specified")
+	}
 	as, err := s.svc.EntryAccessControls(ctx, path)
 	if err != nil {
 		return nil, err
@@ -340,6 +433,18 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 }
 
 func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, accessor_type, mode string) error {
+	if path == "" {
+		return fmt.Errorf("access control path not specified")
+	}
+	if accessor == "" {
+		return fmt.Errorf("accessor not specified")
+	}
+	if accessor_type == "" {
+		return fmt.Errorf("accessor type not specified")
+	}
+	if mode == "" {
+		return fmt.Errorf("access mode not specified")
+	}
 	ac := &service.AccessControl{
 		EntryPath: path,
 		Accessor:  accessor,
@@ -368,6 +473,15 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 }
 
 func (s *Server) SetAccessControl(ctx context.Context, path, accessor, mode string) error {
+	if path == "" {
+		return fmt.Errorf("access control path not specified")
+	}
+	if accessor == "" {
+		return fmt.Errorf("accessor not specified")
+	}
+	if mode == "" {
+		return fmt.Errorf("access mode not specified")
+	}
 	ac := service.AccessControlUpdater{
 		EntryPath: path,
 		Accessor:  accessor,
@@ -389,8 +503,14 @@ func (s *Server) SetAccessControl(ctx context.Context, path, accessor, mode stri
 	return nil
 }
 
-func (s *Server) DeleteAccessControl(ctx context.Context, path string, name string) error {
-	err := s.svc.DeleteAccessControl(ctx, path, name)
+func (s *Server) DeleteAccessControl(ctx context.Context, path string, accessor string) error {
+	if path == "" {
+		return fmt.Errorf("access control path not specified")
+	}
+	if accessor == "" {
+		return fmt.Errorf("accessor not specified")
+	}
+	err := s.svc.DeleteAccessControl(ctx, path, accessor)
 	if err != nil {
 		return err
 	}
@@ -398,6 +518,9 @@ func (s *Server) DeleteAccessControl(ctx context.Context, path string, name stri
 }
 
 func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
+	if path == "" {
+		return nil, fmt.Errorf("log path not specified")
+	}
 	ls, err := s.svc.FindLogs(ctx, service.LogFinder{
 		EntryPath: path,
 	})
@@ -423,6 +546,9 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 }
 
 func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
+	if user == "" {
+		return nil, fmt.Errorf("user not specified")
+	}
 	su, err := s.svc.GetUser(ctx, user)
 	if err != nil {
 		return nil, err
@@ -435,6 +561,9 @@ func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
 }
 
 func (s *Server) AddUser(ctx context.Context, user string) error {
+	if user == "" {
+		return fmt.Errorf("user not specified")
+	}
 	u := &service.User{Name: user}
 	err := s.svc.AddUser(ctx, u)
 	if err != nil {
@@ -459,13 +588,16 @@ func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
 	return groups, nil
 }
 
-func (s *Server) GetGroup(ctx context.Context, name string) (*Group, error) {
-	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{Name: &name})
+func (s *Server) GetGroup(ctx context.Context, group string) (*Group, error) {
+	if group == "" {
+		return nil, fmt.Errorf("group not specified")
+	}
+	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{Name: &group})
 	if err != nil {
 		return nil, err
 	}
 	if len(sgroups) == 0 {
-		return nil, fmt.Errorf("group not exist: %v", name)
+		return nil, fmt.Errorf("group not exist: %v", group)
 	}
 	sg := sgroups[0]
 	g := &Group{
@@ -476,6 +608,9 @@ func (s *Server) GetGroup(ctx context.Context, name string) (*Group, error) {
 }
 
 func (s *Server) AddGroup(ctx context.Context, group string) error {
+	if group == "" {
+		return fmt.Errorf("group not specified")
+	}
 	g := &service.Group{Name: group}
 	err := s.svc.AddGroup(ctx, g)
 	if err != nil {
@@ -485,6 +620,12 @@ func (s *Server) AddGroup(ctx context.Context, group string) error {
 }
 
 func (s *Server) SetGroup(ctx context.Context, groupID string, group string) error {
+	if groupID == "" {
+		return fmt.Errorf("group id not specified")
+	}
+	if group == "" {
+		return fmt.Errorf("group not specified")
+	}
 	id, err := strconv.Atoi(groupID)
 	if err != nil {
 		return fmt.Errorf("invalid group id: %v", groupID)
@@ -498,6 +639,9 @@ func (s *Server) SetGroup(ctx context.Context, groupID string, group string) err
 }
 
 func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member, error) {
+	if group == "" {
+		return nil, fmt.Errorf("group not specified")
+	}
 	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{Group: &group})
 	if err != nil {
 		return nil, err
@@ -514,6 +658,12 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 }
 
 func (s *Server) AddGroupMember(ctx context.Context, group, member string) error {
+	if group == "" {
+		return fmt.Errorf("group not specified")
+	}
+	if member == "" {
+		return fmt.Errorf("member not specified")
+	}
 	m := &service.Member{Group: group, Member: member}
 	err := s.svc.AddGroupMember(ctx, m)
 	if err != nil {
@@ -523,6 +673,12 @@ func (s *Server) AddGroupMember(ctx context.Context, group, member string) error
 }
 
 func (s *Server) DeleteGroupMember(ctx context.Context, group, member string) error {
+	if group == "" {
+		return fmt.Errorf("group not specified")
+	}
+	if member == "" {
+		return fmt.Errorf("member not specified")
+	}
 	err := s.svc.DeleteGroupMember(ctx, group, member)
 	if err != nil {
 		return err
@@ -532,6 +688,9 @@ func (s *Server) DeleteGroupMember(ctx context.Context, group, member string) er
 
 // GetThumbnail gets a thumbnail image of a entry.
 func (s *Server) GetThumbnail(ctx context.Context, path string) (*Thumbnail, error) {
+	if path == "" {
+		return nil, fmt.Errorf("thumbnail path not specified")
+	}
 	svcThumb, err := s.svc.GetThumbnail(ctx, path)
 	if err != nil {
 		return nil, err
@@ -568,6 +727,12 @@ func thumbnail(img image.Image, width, height int) image.Image {
 
 // AddThumbnail adds a thumbnail image to a entry.
 func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image) error {
+	if path == "" {
+		return fmt.Errorf("thumbnail path not specified")
+	}
+	if img == nil {
+		return fmt.Errorf("thumbnail image not specified")
+	}
 	thumb := thumbnail(img, 192, 108)
 	buf := new(bytes.Buffer)
 	err := png.Encode(buf, thumb)
@@ -585,6 +750,12 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image)
 }
 
 func (s *Server) UpdateThumbnail(ctx context.Context, path string, img image.Image) error {
+	if path == "" {
+		return fmt.Errorf("thumbnail path not specified")
+	}
+	if img == nil {
+		return fmt.Errorf("thumbnail image not specified")
+	}
 	thumb := thumbnail(img, 192, 108)
 	buf := new(bytes.Buffer)
 	err := png.Encode(buf, thumb)
@@ -602,6 +773,9 @@ func (s *Server) UpdateThumbnail(ctx context.Context, path string, img image.Ima
 }
 
 func (s *Server) DeleteThumbnail(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("thumbnail path not specified")
+	}
 	err := s.svc.DeleteThumbnail(ctx, path)
 	if err != nil {
 		return err
