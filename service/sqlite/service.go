@@ -114,6 +114,10 @@ func (s *Service) FindLogs(ctx context.Context, find service.LogFinder) ([]*serv
 	return FindLogs(s.db, ctx, find)
 }
 
+func (s *Service) GetLogs(ctx context.Context, path, ctg, name string) ([]*service.Log, error) {
+	return GetLogs(s.db, ctx, path, ctg, name)
+}
+
 func (s *Service) AddUser(ctx context.Context, u *service.User) error {
 	return AddUser(s.db, ctx, u)
 }

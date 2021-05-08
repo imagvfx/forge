@@ -272,23 +272,43 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
+		ctg := r.FormValue("category")
+		name := r.FormValue("name")
 		path := r.URL.Path
 		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
 			return err
 		}
-		logs, err := h.server.EntryLogs(ctx, path)
+		logs, err := h.server.GetLogs(ctx, path, ctg, name)
 		if err != nil {
 			return err
 		}
+		updateLogsByDate := make(map[string][]*forge.Log)
+		for _, l := range logs {
+			if l.Value == "" {
+				continue
+			}
+			l.When = l.When.Local()
+			date := l.When.Format("2006/01/02")
+			dateLogs := updateLogsByDate[date]
+			if dateLogs == nil {
+				dateLogs = make([]*forge.Log, 0)
+			}
+			dateLogs = append(dateLogs, l)
+			updateLogsByDate[date] = dateLogs
+		}
 		recipe := struct {
-			User  string
-			Entry *forge.Entry
-			Logs  []*forge.Log
+			User             string
+			Entry            *forge.Entry
+			Category         string
+			Name             string
+			UpdateLogsByDate map[string][]*forge.Log
 		}{
-			User:  user,
-			Entry: ent,
-			Logs:  logs,
+			User:             user,
+			Entry:            ent,
+			Category:         ctg,
+			Name:             name,
+			UpdateLogsByDate: updateLogsByDate,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry-logs.bml", recipe)
 		if err != nil {

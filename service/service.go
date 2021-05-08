@@ -31,6 +31,7 @@ type Service interface {
 	UpdateAccessControl(ctx context.Context, upd AccessControlUpdater) error
 	DeleteAccessControl(ctx context.Context, path string, name string) error
 	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
+	GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error)
 	AddUser(ctx context.Context, u *User) error
 	GetUser(ctx context.Context, user string) (*User, error)
 	FindGroups(ctx context.Context, find GroupFinder) ([]*Group, error)
@@ -175,7 +176,9 @@ type Log struct {
 }
 
 type LogFinder struct {
-	EntryPath string
+	EntryPath *string
+	Category  *string
+	Name      *string
 }
 
 type User struct {

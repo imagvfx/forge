@@ -40,10 +40,6 @@ func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*servi
 		return nil, err
 	}
 	defer tx.Rollback()
-	_, err = getEntry(tx, ctx, find.EntryPath)
-	if err != nil {
-		return nil, err
-	}
 	props, err := findLogs(tx, ctx, find)
 	if err != nil {
 		return nil, err
@@ -59,8 +55,18 @@ func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*servi
 func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	keys = append(keys, "entries.path=?")
-	vals = append(vals, find.EntryPath)
+	if find.EntryPath != nil {
+		keys = append(keys, "entries.path=?")
+		vals = append(vals, *find.EntryPath)
+	}
+	if find.Category != nil {
+		keys = append(keys, "logs.ctg=?")
+		vals = append(vals, *find.Category)
+	}
+	if find.Name != nil {
+		keys = append(keys, "logs.name=?")
+		vals = append(vals, *find.Name)
+	}
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
@@ -103,6 +109,38 @@ func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*servi
 			return nil, err
 		}
 		logs = append(logs, l)
+	}
+	return logs, nil
+}
+
+func GetLogs(db *sql.DB, ctx context.Context, path, ctg, name string) ([]*service.Log, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	log, err := getLogs(tx, ctx, path, ctg, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return log, nil
+}
+
+func getLogs(tx *sql.Tx, ctx context.Context, path, ctg, name string) ([]*service.Log, error) {
+	logs, err := findLogs(tx, ctx, service.LogFinder{
+		EntryPath: &path,
+		Category:  &ctg,
+		Name:      &name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(logs) == 0 {
+		return nil, service.NotFound("log not found")
 	}
 	return logs, nil
 }

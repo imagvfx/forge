@@ -522,8 +522,40 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 		return nil, fmt.Errorf("log path not specified")
 	}
 	ls, err := s.svc.FindLogs(ctx, service.LogFinder{
-		EntryPath: path,
+		EntryPath: &path,
 	})
+	if err != nil {
+		return nil, err
+	}
+	logs := make([]*Log, 0)
+	for _, l := range ls {
+		log := &Log{
+			ID:        l.ID,
+			EntryPath: l.EntryPath,
+			User:      l.User,
+			Action:    l.Action,
+			Category:  l.Category,
+			Name:      l.Name,
+			Type:      l.Type,
+			Value:     l.Value,
+			When:      l.When,
+		}
+		logs = append(logs, log)
+	}
+	return logs, nil
+}
+
+func (s *Server) GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error) {
+	if path == "" {
+		return nil, fmt.Errorf("log path not specified")
+	}
+	if ctg == "" {
+		return nil, fmt.Errorf("log ctg not specified")
+	}
+	if name == "" {
+		return nil, fmt.Errorf("log name not specified")
+	}
+	ls, err := s.svc.GetLogs(ctx, path, ctg, name)
 	if err != nil {
 		return nil, err
 	}
