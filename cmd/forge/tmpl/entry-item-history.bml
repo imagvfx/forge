@@ -14,19 +14,18 @@
 					History of {{$.Category}} {{$.Name}}
 				]
 				<div> [
-				{{range $date, $dateLogs := $.UpdateLogsByDate}}
-					<div style="height:2rem;display:flex;justify-content:center;align-items:center"> [- {{$date}} -]
-					{{range $l := $dateLogs}}
-						<div> [
-							<div style="font-size:0.9rem"> [{{$l.User}}]
-							<div style="display:flex;align-items:end"> [
-								<div style="flex:1;border:solid 1px grey;border-radius:5px;padding:8px"> [{{$l.Value}}]
-								<div style="width:2px"> []
-								<div style="font-size:0.7rem;color:#666"> [{{$l.When.Local.Format "15:04:05"}}]
-							]
+				{{range $log := $.History}}
+					<div> [
+						<div style="display:flex;justify-content:space-between;align-items:end"> [
+							<div style="font-size:0.9rem;color:#222"> [{{$log.User}}]
+							<div style="font-size:0.7rem;color:#666"> [{{$log.When.Local.Format "2006/01/02 15:04:05"}}]
 						]
-						<div style="height:1rem"> []
-					{{end}}
+						<div style="display:flex"> [
+							<div style="flex:1;border:solid 1px grey;border-radius:5px;padding:8px"> [{{$log.Value}}]
+							<div style="width:2px"> []
+						]
+					]
+					<div style="height:1rem"> []
 				{{end}}
 				]
 			]

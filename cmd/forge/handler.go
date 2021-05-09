@@ -284,32 +284,27 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				return err
 			}
-			updateLogsByDate := make(map[string][]*forge.Log)
+			// history is selected set of logs of an item.
+			history := make([]*forge.Log, 0)
 			for _, l := range logs {
 				if l.Value == "" {
 					continue
 				}
 				l.When = l.When.Local()
-				date := l.When.Format("2006/01/02")
-				dateLogs := updateLogsByDate[date]
-				if dateLogs == nil {
-					dateLogs = make([]*forge.Log, 0)
-				}
-				dateLogs = append(dateLogs, l)
-				updateLogsByDate[date] = dateLogs
+				history = append(history, l)
 			}
 			recipe := struct {
-				User             string
-				Entry            *forge.Entry
-				Category         string
-				Name             string
-				UpdateLogsByDate map[string][]*forge.Log
+				User     string
+				Entry    *forge.Entry
+				Category string
+				Name     string
+				History  []*forge.Log
 			}{
-				User:             user,
-				Entry:            ent,
-				Category:         ctg,
-				Name:             name,
-				UpdateLogsByDate: updateLogsByDate,
+				User:     user,
+				Entry:    ent,
+				Category: ctg,
+				Name:     name,
+				History:  history,
 			}
 			err = Tmpl.ExecuteTemplate(w, "entry-item-history.bml", recipe)
 			if err != nil {
