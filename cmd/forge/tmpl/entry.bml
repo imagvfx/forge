@@ -43,7 +43,7 @@
 					]
 					<div class="content"> [
 					{{range $p := $.Properties}}
-						<div> [{{$p.Name}}{{if $p.Eval}} = {{$p.Eval}}{{end}} <a href="?tab=logs&category=property&name={{$p.Name}}"> [(log)]]
+						<div> [{{$p.Name}}{{if $p.Eval}} = {{$p.Eval}}{{end}} <a style="color:#bbb" href="?tab=logs&category=property&name={{$p.Name}}"> [(history)]]
 					{{end}}
 					]
 				]
@@ -57,7 +57,7 @@
 						{{if $inherit}}
 							<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}}]]
 						{{else}}
-							<div> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}} <a href="?tab=logs&category=environ&name={{$e.Name}}"> [(log)]]
+							<div> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}} <a style="color:#bbb" href="?tab=logs&category=environ&name={{$e.Name}}"> [(history)]]
 						{{end}}
 					{{end}}
 					]
@@ -72,7 +72,7 @@
 						{{if $inherit}}
 							<div> [<a href="{{$a.EntryPath}}"> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}}]]
 						{{else}}
-							<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}} <a href="?tab=logs&category=access&name={{$a.Accessor}}"> [(log)]]
+							<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}} <a style="color:#bbb" href="?tab=logs&category=access&name={{$a.Accessor}}"> [(history)]]
 						{{end}}
 					{{end}}
 					]
