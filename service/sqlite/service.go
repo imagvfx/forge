@@ -18,6 +18,38 @@ func NewService(db *sql.DB) *Service {
 	return s
 }
 
+func (s *Service) EntryTypes(ctx context.Context) ([]string, error) {
+	return EntryTypes(s.db, ctx)
+}
+
+func (s *Service) AddEntryType(ctx context.Context, name string) error {
+	return AddEntryType(s.db, ctx, name)
+}
+
+func (s *Service) RenameEntryType(ctx context.Context, name, newName string) error {
+	return RenameEntryType(s.db, ctx, name, newName)
+}
+
+func (s *Service) DeleteEntryType(ctx context.Context, name string) error {
+	return DeleteEntryType(s.db, ctx, name)
+}
+
+func (s *Service) FindEntryDefaults(ctx context.Context, find service.EntryDefaultFinder) ([]*service.EntryDefault, error) {
+	return FindEntryDefaults(s.db, ctx, find)
+}
+
+func (s *Service) AddEntryDefault(ctx context.Context, d *service.EntryDefault) error {
+	return AddEntryDefault(s.db, ctx, d)
+}
+
+func (s *Service) UpdateEntryDefault(ctx context.Context, upd service.EntryDefaultUpdater) error {
+	return UpdateEntryDefault(s.db, ctx, upd)
+}
+
+func (s *Service) DeleteEntryDefault(ctx context.Context, entType, ctg, name string) error {
+	return DeleteEntryDefault(s.db, ctx, entType, ctg, name)
+}
+
 func (s *Service) FindEntries(ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
 	return FindEntries(s.db, ctx, find)
 }

@@ -423,6 +423,52 @@ func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
+type entryTypeHandler struct {
+	server *forge.Server
+}
+
+func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		if user == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+		ctx := service.ContextWithUserName(r.Context(), user)
+		entTypes, err := h.server.EntryTypes(ctx)
+		if err != nil {
+			return err
+		}
+		entDefaults := make(map[string][]*forge.EntryDefault)
+		for _, t := range entTypes {
+			items, err := h.server.EntryDefaults(ctx, t)
+			if err != nil {
+				return err
+			}
+			entDefaults[t] = items
+		}
+		recipe := struct {
+			User          string
+			EntryTypes    []string
+			EntryDefaults map[string][]*forge.EntryDefault
+		}{
+			User:          user,
+			EntryTypes:    entTypes,
+			EntryDefaults: entDefaults,
+		}
+		err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
 type loginHandler struct {
 	server *forge.Server
 	oidc   *forge.OIDC
@@ -560,6 +606,183 @@ type OIDCPayload struct {
 
 type apiHandler struct {
 	server *forge.Server
+}
+
+func (h *apiHandler) HandleAddEntryType(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		name := r.FormValue("name")
+		err = h.server.AddEntryType(ctx, name)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+}
+
+func (h *apiHandler) HandleRenameEntryType(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		name := r.FormValue("name")
+		newName := r.FormValue("new_name")
+		err = h.server.RenameEntryType(ctx, name, newName)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+	}
+}
+
+func (h *apiHandler) HandleDeleteEntryType(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		// parent, if suggested, will be used as prefix of the path.
+		name := r.FormValue("name")
+		err = h.server.DeleteEntryType(ctx, name)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+	}
+}
+
+func (h *apiHandler) HandleAddEntryDefault(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		entType := r.FormValue("entry_type")
+		ctg := r.FormValue("category")
+		name := r.FormValue("name")
+		typ := r.FormValue("type")
+		value := r.FormValue("value")
+		err = h.server.AddEntryDefault(ctx, entType, ctg, name, typ, value)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+}
+
+func (h *apiHandler) HandleSetEntryDefault(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		entType := r.FormValue("entry_type")
+		ctg := r.FormValue("category")
+		name := r.FormValue("name")
+		typ := r.FormValue("type")
+		value := r.FormValue("value")
+		err = h.server.SetEntryDefault(ctx, entType, ctg, name, typ, value)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+	}
+}
+
+func (h *apiHandler) HandleDeleteEntryDefault(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		// parent, if suggested, will be used as prefix of the path.
+		entType := r.FormValue("entry_type")
+		ctg := r.FormValue("category")
+		name := r.FormValue("name")
+		err = h.server.DeleteEntryDefault(ctx, entType, ctg, name)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+	}
 }
 
 func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {

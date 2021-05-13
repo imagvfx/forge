@@ -7,6 +7,14 @@ import (
 )
 
 type Service interface {
+	EntryTypes(ctx context.Context) ([]string, error)
+	AddEntryType(ctx context.Context, name string) error
+	RenameEntryType(ctx context.Context, name, newName string) error
+	DeleteEntryType(ctx context.Context, name string) error
+	FindEntryDefaults(ctx context.Context, find EntryDefaultFinder) ([]*EntryDefault, error)
+	AddEntryDefault(ctx context.Context, d *EntryDefault) error
+	UpdateEntryDefault(ctx context.Context, upd EntryDefaultUpdater) error
+	DeleteEntryDefault(ctx context.Context, entType, ctg, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
 	AddEntry(ctx context.Context, ent *Entry, props []*Property, envs []*Property) error
@@ -100,6 +108,34 @@ type Entry struct {
 type EntryFinder struct {
 	ParentPath *string
 	Path       *string
+}
+
+type EntryTypeUpdater struct {
+	ID   int
+	Name *string
+}
+
+type EntryDefault struct {
+	ID        int
+	EntryType string
+	Category  string
+	Name      string
+	Type      string
+	Value     string
+}
+
+type EntryDefaultFinder struct {
+	EntryType *string
+	Category  *string
+	Name      *string
+}
+
+type EntryDefaultUpdater struct {
+	EntryType string
+	Category  string
+	Name      string
+	Type      *string
+	Value     *string
 }
 
 type Thumbnail struct {

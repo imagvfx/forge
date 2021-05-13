@@ -32,6 +32,16 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+// EntryDefault is property, environ or sub-entry defined for entry type,
+// So it will be automatically created while creation of an entry of the entry type.
+type EntryDefault struct {
+	EntryType string
+	Category  string
+	Name      string
+	Type      string
+	Value     string
+}
+
 type Thumbnail struct {
 	ID        int
 	EntryPath string

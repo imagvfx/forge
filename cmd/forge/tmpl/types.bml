@@ -1,0 +1,80 @@
+<!doctype html>
+<html> [
+	<head> [
+		{{template "style"}}
+	]
+	<body> [
+		{{template "nav" $}}
+		<h1> [
+			Entry Types
+		]
+		<form action="/api/add-entry-type" method="post"> [
+			<div> [
+				<input name="name" type="text" value="" placeholder="name"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button type="submit"> [Add]
+			]
+		]
+		<div style="height:1rem"> []
+		{{range $t := $.EntryTypes}}
+		<div> [
+			<form style="display:inline-block" action="/api/delete-entry-type" method="post"> [
+				<input name="name" type="hidden" value="{{$t}}"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button style="padding:0;color:red" type="submit"> [-]
+			]
+			<form style="display:inline-block" action="/api/rename-entry-type" method="post"> [
+				<input readonly name="name" type="hidden" value="{{$t}}"> []
+				<input name="new_name" type="text" value="{{$t}}"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button style="display:none" type="submit"> [Rename]
+			]
+		]
+		{{end}}
+		{{range $t := $.EntryTypes}}
+		<div> [
+			<h4> [
+				<form action="/api/delete-entry-type" method="post"> [{{$t}}]
+			]
+			<div> [
+				<form action="/api/add-entry-default" method="post"> [
+					<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
+					<select name="category"> [
+						<option value="sub_entry"> [sub entry]
+						<option value="property"> [property]
+						<option value="environ"> [environ]
+					]
+					<input name="name" type="text" value="" placeholder="name"> []
+					<input name="type" type="text" value="" placeholder="type"> []
+					<input name="value" type="text" value="" placeholder="value"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Add]
+				]
+			]
+			<div style="height:1rem"> []
+			{{$defaults := index $.EntryDefaults $t}}
+			{{range $d := $defaults}}
+			<div> [
+				<form style="display:inline-block" action="/api/delete-entry-default" method="post"> [
+					<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
+					<input readonly name="category" type="hidden" value="{{$d.Category}}"> []
+					<input readonly name="name" type="hidden" value="{{$d.Name}}"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button style="padding:0;color:red" type="submit"> [-]
+				]
+				<form style="display:inline-block" action="/api/set-entry-default" method="post"> [
+					<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
+					<input readonly name="category" type="text" value="{{$d.Category}}"> []
+					<input readonly name="name" type="text" value="{{$d.Name}}"> []
+					<input name="type" type="text" value="{{$d.Type}}"> []
+					<input name="value" type="text" value="{{$d.Value}}"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button style="display:none" type="submit"> [Set]
+				]
+			]
+			{{end}}
+		{{end}}
+		]
+	]
+]
+

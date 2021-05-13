@@ -172,6 +172,149 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 	return nil
 }
 
+func (s *Server) EntryTypes(ctx context.Context) ([]string, error) {
+	names, err := s.svc.EntryTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return names, nil
+}
+
+func (s *Server) AddEntryType(ctx context.Context, name string) error {
+	if name == "" {
+		return fmt.Errorf("entry type name not specified")
+	}
+	err := s.svc.AddEntryType(ctx, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) RenameEntryType(ctx context.Context, name, newName string) error {
+	if name == "" {
+		return fmt.Errorf("current entry type name not specified")
+	}
+	if newName == "" {
+		return fmt.Errorf("new entry type name not specified")
+	}
+	err := s.svc.RenameEntryType(ctx, name, newName)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteEntryType(ctx context.Context, name string) error {
+	if name == "" {
+		return fmt.Errorf("entry type name not specified")
+	}
+	err := s.svc.DeleteEntryType(ctx, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) EntryDefaults(ctx context.Context, entType string) ([]*EntryDefault, error) {
+	if entType == "" {
+		return nil, fmt.Errorf("entry type name not specified")
+	}
+	ds, err := s.svc.FindEntryDefaults(ctx, service.EntryDefaultFinder{EntryType: &entType})
+	if err != nil {
+		return nil, err
+	}
+	defaults := make([]*EntryDefault, 0)
+	for _, d := range ds {
+		def := &EntryDefault{
+			EntryType: d.EntryType,
+			Category:  d.Category,
+			Type:      d.Type,
+			Name:      d.Name,
+			Value:     d.Value,
+		}
+		defaults = append(defaults, def)
+	}
+	return defaults, nil
+}
+
+func (s *Server) AddEntryDefault(ctx context.Context, entType, ctg, name, typ, value string) error {
+	if entType == "" {
+		return fmt.Errorf("entry default entry type not specified")
+	}
+	if ctg == "" {
+		return fmt.Errorf("entry default category not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("entry default name not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("entry default type not specified")
+	}
+	if value == "" {
+		return fmt.Errorf("entry default value not specified")
+	}
+	d := &service.EntryDefault{
+		EntryType: entType,
+		Category:  ctg,
+		Name:      name,
+		Type:      typ,
+		Value:     value,
+	}
+	err := s.svc.AddEntryDefault(ctx, d)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) SetEntryDefault(ctx context.Context, entType, ctg, name, typ, value string) error {
+	if entType == "" {
+		return fmt.Errorf("entry default entry type not specified")
+	}
+	if ctg == "" {
+		return fmt.Errorf("entry default category not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("entry default name not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("entry default type not specified")
+	}
+	if value == "" {
+		return fmt.Errorf("entry default value not specified")
+	}
+	upd := service.EntryDefaultUpdater{
+		EntryType: entType,
+		Category:  ctg,
+		Name:      name,
+		Type:      &typ,
+		Value:     &value,
+	}
+	err := s.svc.UpdateEntryDefault(ctx, upd)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteEntryDefault(ctx context.Context, entType, ctg, name string) error {
+	if entType == "" {
+		return fmt.Errorf("entry default entry type not specified")
+	}
+	if ctg == "" {
+		return fmt.Errorf("entry default category not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("entry default name not specified")
+	}
+	err := s.svc.DeleteEntryDefault(ctx, entType, ctg, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property, error) {
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")

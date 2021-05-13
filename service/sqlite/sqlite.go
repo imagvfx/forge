@@ -37,6 +37,18 @@ func Init(db *sql.DB) error {
 	}
 	defer tx.Rollback()
 	fmt.Println("create entries table!")
+	err = createEntryTypesTable(tx)
+	if err != nil {
+		return err
+	}
+	err = addRootEntryType(tx)
+	if err != nil {
+		return err
+	}
+	err = createEntryDefaultTable(tx)
+	if err != nil {
+		return err
+	}
 	err = createEntriesTable(tx)
 	if err != nil {
 		return err
