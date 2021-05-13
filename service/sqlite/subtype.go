@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func createSubEntryTypes(tx *sql.Tx) error {
+func createSubEntryTypesTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS sub_entry_types (
 			id INTEGER PRIMARY KEY,

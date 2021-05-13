@@ -9,7 +9,7 @@ import (
 	"github.com/imagvfx/forge/service"
 )
 
-func createEntryDefaultTable(tx *sql.Tx) error {
+func createEntryDefaultsTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS entry_defaults (
 			id INTEGER PRIMARY KEY,

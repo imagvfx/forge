@@ -45,7 +45,7 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	err = createEntryDefaultTable(tx)
+	err = createEntryDefaultsTable(tx)
 	if err != nil {
 		return err
 	}
