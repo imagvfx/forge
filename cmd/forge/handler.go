@@ -443,8 +443,14 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		subEntryTypes := make(map[string][]string)
 		entDefaults := make(map[string][]*forge.EntryDefault)
 		for _, t := range entTypes {
+			subTypes, err := h.server.SubEntryTypes(ctx, t)
+			if err != nil {
+				return err
+			}
+			subEntryTypes[t] = subTypes
 			items, err := h.server.EntryDefaults(ctx, t)
 			if err != nil {
 				return err
@@ -454,10 +460,12 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		recipe := struct {
 			User          string
 			EntryTypes    []string
+			SubEntryTypes map[string][]string
 			EntryDefaults map[string][]*forge.EntryDefault
 		}{
 			User:          user,
 			EntryTypes:    entTypes,
+			SubEntryTypes: subEntryTypes,
 			EntryDefaults: entDefaults,
 		}
 		err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
@@ -689,6 +697,64 @@ func (h *apiHandler) HandleDeleteEntryType(w http.ResponseWriter, r *http.Reques
 	}()
 	if err != nil {
 		handleError(w, err)
+	}
+}
+
+func (h *apiHandler) HandleAddSubEntryType(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		parentType := r.FormValue("parent_type")
+		subType := r.FormValue("sub_type")
+		err = h.server.AddSubEntryType(ctx, parentType, subType)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
+	}
+}
+
+func (h *apiHandler) HandleDeleteSubEntryType(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		parentType := r.FormValue("parent_type")
+		subType := r.FormValue("sub_type")
+		err = h.server.DeleteSubEntryType(ctx, parentType, subType)
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	if err != nil {
+		handleError(w, err)
+		return
 	}
 }
 

@@ -12,15 +12,15 @@ func createSubEntryTypesTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			parent_id INTEGER NOT NULL,
 			sub_id INTRGER NOT NULL,
-			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
-			FOREIGN KEY (sub_entry_type_id) REFERENCES entry_types (id),
-			UNIQUE (entry_type_id, sub_entry_type_id)
+			FOREIGN KEY (parent_id) REFERENCES entry_types (id),
+			FOREIGN KEY (sub_id) REFERENCES entry_types (id),
+			UNIQUE (parent_id, sub_id)
 		)
 	`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_sub_entry_types_entry_type_id ON sub_entry_types (entry_type_id)`)
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_sub_entry_types_parent_id ON sub_entry_types (parent_id)`)
 	return err
 }
 
@@ -91,12 +91,6 @@ func AddSubEntryType(db *sql.DB, ctx context.Context, parentType, subType string
 }
 
 func addSubEntryType(tx *sql.Tx, ctx context.Context, parentType, subType string) error {
-	if parentType == "" {
-		return fmt.Errorf("parent entry type not specified")
-	}
-	if subType == "" {
-		return fmt.Errorf("sub entry type not specified")
-	}
 	parentTypeID, err := getEntryTypeID(tx, ctx, parentType)
 	if err != nil {
 		return err
@@ -139,12 +133,6 @@ func DeleteSubEntryType(db *sql.DB, ctx context.Context, parentType, subType str
 }
 
 func deleteSubEntryType(tx *sql.Tx, ctx context.Context, parentType, subType string) error {
-	if parentType == "" {
-		return fmt.Errorf("parent entry type not specified")
-	}
-	if subType == "" {
-		return fmt.Errorf("sub entry type not specified")
-	}
 	parentTypeID, err := getEntryTypeID(tx, ctx, parentType)
 	if err != nil {
 		return err

@@ -11,6 +11,9 @@ type Service interface {
 	AddEntryType(ctx context.Context, name string) error
 	RenameEntryType(ctx context.Context, name, newName string) error
 	DeleteEntryType(ctx context.Context, name string) error
+	SubEntryTypes(ctx context.Context, parentType string) ([]string, error)
+	AddSubEntryType(ctx context.Context, parentType, subType string) error
+	DeleteSubEntryType(ctx context.Context, parentType, subType string) error
 	FindEntryDefaults(ctx context.Context, find EntryDefaultFinder) ([]*EntryDefault, error)
 	AddEntryDefault(ctx context.Context, d *EntryDefault) error
 	UpdateEntryDefault(ctx context.Context, upd EntryDefaultUpdater) error

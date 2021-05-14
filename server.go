@@ -216,6 +216,45 @@ func (s *Server) DeleteEntryType(ctx context.Context, name string) error {
 	return nil
 }
 
+func (s *Server) SubEntryTypes(ctx context.Context, parentType string) ([]string, error) {
+	if parentType == "" {
+		return nil, fmt.Errorf("parent entry type not specified")
+	}
+	subs, err := s.svc.SubEntryTypes(ctx, parentType)
+	if err != nil {
+		return nil, err
+	}
+	return subs, nil
+}
+
+func (s *Server) AddSubEntryType(ctx context.Context, parentType, subType string) error {
+	if parentType == "" {
+		return fmt.Errorf("parent entry type not specified")
+	}
+	if subType == "" {
+		return fmt.Errorf("sub entry type not specified")
+	}
+	err := s.svc.AddSubEntryType(ctx, parentType, subType)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteSubEntryType(ctx context.Context, parentType, subType string) error {
+	if parentType == "" {
+		return fmt.Errorf("parent entry type not specified")
+	}
+	if subType == "" {
+		return fmt.Errorf("sub entry type not specified")
+	}
+	err := s.svc.DeleteSubEntryType(ctx, parentType, subType)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) EntryDefaults(ctx context.Context, entType string) ([]*EntryDefault, error) {
 	if entType == "" {
 		return nil, fmt.Errorf("entry type name not specified")

@@ -151,6 +151,8 @@ func main() {
 	mux.HandleFunc("/api/add-entry-type", api.HandleAddEntryType)
 	mux.HandleFunc("/api/rename-entry-type", api.HandleRenameEntryType)
 	mux.HandleFunc("/api/delete-entry-type", api.HandleDeleteEntryType)
+	mux.HandleFunc("/api/add-sub-entry-type", api.HandleAddSubEntryType)
+	mux.HandleFunc("/api/delete-sub-entry-type", api.HandleDeleteSubEntryType)
 	mux.HandleFunc("/api/add-entry-default", api.HandleAddEntryDefault)
 	mux.HandleFunc("/api/set-entry-default", api.HandleSetEntryDefault)
 	mux.HandleFunc("/api/delete-entry-default", api.HandleDeleteEntryDefault)
