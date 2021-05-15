@@ -48,21 +48,66 @@ func createEntryDefaultSubEntriesTable(tx *sql.Tx) error {
 	return err
 }
 
+func createEntryDefaultPropertiesTable(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		CREATE TABLE IF NOT EXISTS entry_default_properties (
+			id INTEGER PRIMARY KEY,
+			entry_type_id INTEGER NOT NULL,
+			name STRING NOT NULL,
+			type STRING NOT NULL,
+			value STRING NOT NULL,
+			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
+			UNIQUE (entry_type_id, name)
+		)
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_entry_default_properties_entry_type_id ON entry_default_properties (entry_type_id)`)
+	return err
+}
+
+func createEntryDefaultEnvironsTable(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		CREATE TABLE IF NOT EXISTS entry_default_environs (
+			id INTEGER PRIMARY KEY,
+			entry_type_id INTEGER NOT NULL,
+			name STRING NOT NULL,
+			type STRING NOT NULL,
+			value STRING NOT NULL,
+			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
+			UNIQUE (entry_type_id, name)
+		)
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_entry_default_environs_entry_type_id ON entry_default_environs (entry_type_id)`)
+	return err
+}
+
 func FindEntryDefaults(db *sql.DB, ctx context.Context, find service.EntryDefaultFinder) ([]*service.EntryDefault, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	defaults, err := findEntryDefaults(tx, ctx, find)
-	if err != nil {
-		return nil, err
-	}
+	defaults := make([]*service.EntryDefault, 0)
 	subs, err := findEntryDefaultSubEntries(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
 	defaults = append(defaults, subs...)
+	props, err := findEntryDefaultProperties(tx, ctx, find)
+	if err != nil {
+		return nil, err
+	}
+	defaults = append(defaults, props...)
+	envs, err := findEntryDefaultEnvirons(tx, ctx, find)
+	if err != nil {
+		return nil, err
+	}
+	defaults = append(defaults, envs...)
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
@@ -172,6 +217,104 @@ func findEntryDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.En
 	return defaults, nil
 }
 
+func findEntryDefaultProperties(tx *sql.Tx, ctx context.Context, find service.EntryDefaultFinder) ([]*service.EntryDefault, error) {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if find.EntryType != nil {
+		keys = append(keys, "entry_types.name=?")
+		vals = append(vals, *find.EntryType)
+	}
+	if find.Name != nil {
+		keys = append(keys, "entry_default_properties.name=?")
+		vals = append(vals, *find.Name)
+	}
+	where := ""
+	if len(keys) != 0 {
+		where = "WHERE " + strings.Join(keys, " AND ")
+	}
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			entry_types.name,
+			entry_default_properties.name,
+			entry_default_properties.type,
+			entry_default_properties.value
+		FROM entry_default_properties
+		LEFT JOIN entry_types ON entry_default_properties.entry_type_id = entry_types.id
+		`+where,
+		vals...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	defaults := make([]*service.EntryDefault, 0)
+	for rows.Next() {
+		d := &service.EntryDefault{
+			Category: "property",
+		}
+		err := rows.Scan(
+			&d.EntryType,
+			&d.Name,
+			&d.Type,
+			&d.Value,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defaults = append(defaults, d)
+	}
+	return defaults, nil
+}
+
+func findEntryDefaultEnvirons(tx *sql.Tx, ctx context.Context, find service.EntryDefaultFinder) ([]*service.EntryDefault, error) {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if find.EntryType != nil {
+		keys = append(keys, "entry_types.name=?")
+		vals = append(vals, *find.EntryType)
+	}
+	if find.Name != nil {
+		keys = append(keys, "entry_default_environs.name=?")
+		vals = append(vals, *find.Name)
+	}
+	where := ""
+	if len(keys) != 0 {
+		where = "WHERE " + strings.Join(keys, " AND ")
+	}
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			entry_types.name,
+			entry_default_environs.name,
+			entry_default_environs.type,
+			entry_default_environs.value
+		FROM entry_default_environs
+		LEFT JOIN entry_types ON entry_default_environs.entry_type_id = entry_types.id
+		`+where,
+		vals...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	defaults := make([]*service.EntryDefault, 0)
+	for rows.Next() {
+		d := &service.EntryDefault{
+			Category: "environ",
+		}
+		err := rows.Scan(
+			&d.EntryType,
+			&d.Name,
+			&d.Type,
+			&d.Value,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defaults = append(defaults, d)
+	}
+	return defaults, nil
+}
+
 func AddEntryDefault(db *sql.DB, ctx context.Context, d *service.EntryDefault) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -184,11 +327,18 @@ func AddEntryDefault(db *sql.DB, ctx context.Context, d *service.EntryDefault) e
 		if err != nil {
 			return err
 		}
-	default:
-		err = addEntryDefault(tx, ctx, d)
+	case "property":
+		err = addEntryDefaultProperty(tx, ctx, d)
 		if err != nil {
 			return err
 		}
+	case "environ":
+		err = addEntryDefaultEnviron(tx, ctx, d)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("invalid category for entry default: %v", d.Category)
 	}
 	err = tx.Commit()
 	if err != nil {
@@ -261,6 +411,66 @@ func addEntryDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.EntryDe
 	return nil
 }
 
+func addEntryDefaultProperty(tx *sql.Tx, ctx context.Context, d *service.EntryDefault) error {
+	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		INSERT INTO entry_default_properties (
+			entry_type_id,
+			name,
+			type,
+			value
+		)
+		VALUES (?, ?, ?, ?)
+	`,
+		typeID,
+		d.Name,
+		d.Type,
+		d.Value,
+	)
+	if err != nil {
+		return err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	d.ID = int(id)
+	return nil
+}
+
+func addEntryDefaultEnviron(tx *sql.Tx, ctx context.Context, d *service.EntryDefault) error {
+	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		INSERT INTO entry_default_environs (
+			entry_type_id,
+			name,
+			type,
+			value
+		)
+		VALUES (?, ?, ?, ?)
+	`,
+		typeID,
+		d.Name,
+		d.Type,
+		d.Value,
+	)
+	if err != nil {
+		return err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	d.ID = int(id)
+	return nil
+}
+
 func UpdateEntryDefault(db *sql.DB, ctx context.Context, upd service.EntryDefaultUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -273,11 +483,18 @@ func UpdateEntryDefault(db *sql.DB, ctx context.Context, upd service.EntryDefaul
 		if err != nil {
 			return err
 		}
-	default:
-		err := updateEntryDefault(tx, ctx, upd)
+	case "property":
+		err := updateEntryDefaultProperty(tx, ctx, upd)
 		if err != nil {
 			return err
 		}
+	case "environ":
+		err := updateEntryDefaultEnviron(tx, ctx, upd)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("invalid category for entry default: %v", upd.Category)
 	}
 	err = tx.Commit()
 	if err != nil {
@@ -353,6 +570,70 @@ func updateEntryDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.Ent
 	return nil
 }
 
+func updateEntryDefaultProperty(tx *sql.Tx, ctx context.Context, upd service.EntryDefaultUpdater) error {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if upd.Type != nil {
+		keys = append(keys, "type=?")
+		vals = append(vals, *upd.Type)
+	}
+	if upd.Value != nil {
+		keys = append(keys, "value=?")
+		vals = append(vals, *upd.Value)
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("need at least one field to update entry default: %v %v %v", upd.EntryType, "property", upd.Name)
+	}
+	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
+	if err != nil {
+		return err
+	}
+	vals = append(vals, typeID, upd.Name) // for where clause
+	_, err = tx.ExecContext(ctx, `
+		UPDATE entry_default_properties
+		SET `+strings.Join(keys, ", ")+`
+		WHERE entry_type_id=? AND name=?
+	`,
+		vals...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func updateEntryDefaultEnviron(tx *sql.Tx, ctx context.Context, upd service.EntryDefaultUpdater) error {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if upd.Type != nil {
+		keys = append(keys, "type=?")
+		vals = append(vals, *upd.Type)
+	}
+	if upd.Value != nil {
+		keys = append(keys, "value=?")
+		vals = append(vals, *upd.Value)
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("need at least one field to update entry default: %v %v %v", upd.EntryType, "environ", upd.Name)
+	}
+	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
+	if err != nil {
+		return err
+	}
+	vals = append(vals, typeID, upd.Name) // for where clause
+	_, err = tx.ExecContext(ctx, `
+		UPDATE entry_default_environs
+		SET `+strings.Join(keys, ", ")+`
+		WHERE entry_type_id=? AND name=?
+	`,
+		vals...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func DeleteEntryDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -365,11 +646,18 @@ func DeleteEntryDefault(db *sql.DB, ctx context.Context, entryType, ctg, name st
 		if err != nil {
 			return err
 		}
-	default:
-		err := deleteEntryDefault(tx, ctx, entryType, ctg, name)
+	case "property":
+		err := deleteEntryDefaultProperty(tx, ctx, entryType, name)
 		if err != nil {
 			return err
 		}
+	case "environ":
+		err := deleteEntryDefaultEnviron(tx, ctx, entryType, name)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("invalid category for entry default: %v", ctg)
 	}
 	err = tx.Commit()
 	if err != nil {
@@ -425,6 +713,56 @@ func deleteEntryDefaultSubEntry(tx *sql.Tx, ctx context.Context, entryType, name
 	}
 	if n == 0 {
 		return service.NotFound("no such entry default for entry type %v: %v %v", entryType, "sub_entry", name)
+	}
+	return nil
+}
+
+func deleteEntryDefaultProperty(tx *sql.Tx, ctx context.Context, entryType, name string) error {
+	typeID, err := getEntryTypeID(tx, ctx, entryType)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		DELETE FROM entry_default_properties
+		WHERE entry_type_id=? AND name=?
+	`,
+		typeID,
+		name,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return service.NotFound("no such entry default for entry type %v: %v %v", entryType, "property", name)
+	}
+	return nil
+}
+
+func deleteEntryDefaultEnviron(tx *sql.Tx, ctx context.Context, entryType, name string) error {
+	typeID, err := getEntryTypeID(tx, ctx, entryType)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		DELETE FROM entry_default_environs
+		WHERE entry_type_id=? AND name=?
+	`,
+		typeID,
+		name,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return service.NotFound("no such entry default for entry type %v: %v %v", entryType, "environ", name)
 	}
 	return nil
 }
