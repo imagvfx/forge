@@ -53,6 +53,10 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	err = createEntryDefaultSubEntriesTable(tx)
+	if err != nil {
+		return err
+	}
 	err = createEntriesTable(tx)
 	if err != nil {
 		return err

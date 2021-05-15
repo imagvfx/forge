@@ -42,18 +42,14 @@ func SubEntryTypes(db *sql.DB, ctx context.Context, parentType string) ([]string
 }
 
 func findSubEntryTypes(tx *sql.Tx, ctx context.Context, parentType string) ([]string, error) {
-	parentTypeID, err := getEntryTypeID(tx, ctx, parentType)
-	if err != nil {
-		return nil, err
-	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			subs.name
 		FROM sub_entry_types
+		LEFT JOIN entry_types AS parents ON sub_entry_types.parent_id = parents.id
 		LEFT JOIN entry_types AS subs ON sub_entry_types.sub_id = subs.id
-		WHERE sub_entry_types.parent_id=?
-	`,
-		parentTypeID,
+		WHERE parents.name=?`,
+		parentType,
 	)
 	if err != nil {
 		return nil, err
@@ -71,6 +67,30 @@ func findSubEntryTypes(tx *sql.Tx, ctx context.Context, parentType string) ([]st
 		subTypes = append(subTypes, t)
 	}
 	return subTypes, nil
+}
+
+func getSubEntryTypeID(tx *sql.Tx, ctx context.Context, parentType, subType string) (int, error) {
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			sub_entry_types.id
+		FROM sub_entry_types
+		LEFT JOIN entry_types AS parents ON sub_entry_types.parent_id = parents.id
+		LEFT JOIN entry_types AS subs ON sub_entry_types.sub_id = subs.id
+		WHERE parents.name=? AND subs.name=?`,
+		parentType, subType,
+	)
+	if err != nil {
+		return -1, err
+	}
+	if !rows.Next() {
+		return -1, fmt.Errorf("sub entry type not found")
+	}
+	var id int
+	err = rows.Scan(&id)
+	if err != nil {
+		return -1, err
+	}
+	return id, nil
 }
 
 func AddSubEntryType(db *sql.DB, ctx context.Context, parentType, subType string) error {

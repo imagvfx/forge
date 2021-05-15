@@ -290,9 +290,6 @@ func (s *Server) AddEntryDefault(ctx context.Context, entType, ctg, name, typ, v
 	if typ == "" {
 		return fmt.Errorf("entry default type not specified")
 	}
-	if value == "" {
-		return fmt.Errorf("entry default value not specified")
-	}
 	d := &service.EntryDefault{
 		EntryType: entType,
 		Category:  ctg,
