@@ -166,15 +166,6 @@ func UpdateEntryDefault(db *sql.DB, ctx context.Context, upd service.EntryDefaul
 }
 
 func updateEntryDefault(tx *sql.Tx, ctx context.Context, upd service.EntryDefaultUpdater) error {
-	if upd.EntryType == "" {
-		return fmt.Errorf("entry type of entry default not specified")
-	}
-	if upd.Category == "" {
-		return fmt.Errorf("category of entry default not specified")
-	}
-	if upd.Name == "" {
-		return fmt.Errorf("name of entry default not specified")
-	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Type != nil {
