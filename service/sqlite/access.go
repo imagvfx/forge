@@ -166,11 +166,11 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 		return nil, fmt.Errorf("path should be specified for access check")
 	}
 	user := service.UserNameFromContext(ctx)
-	ok, err := userIsAdmin(tx, ctx, user)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
 	if err != nil {
 		return nil, err
 	}
-	if ok {
+	if yes {
 		// admins can read any entry.
 		rwMode := 1
 		return &rwMode, nil
@@ -191,15 +191,13 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 			if a.AccessorType == 0 {
 				continue
 			}
-			// check groups only
-			members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &a.Accessor})
+			// groups
+			yes, err := isGroupMember(tx, ctx, a.Accessor, user)
 			if err != nil {
 				return nil, err
 			}
-			for _, m := range members {
-				if m.Member == user {
-					return &a.Mode, nil
-				}
+			if yes {
+				return &a.Mode, nil
 			}
 		}
 		if path == "/" {
@@ -208,15 +206,6 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 		path = filepath.Dir(path)
 	}
 	return nil, nil
-}
-
-func userIsAdmin(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
-	adminGroup := "admin"
-	_, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &adminGroup, Member: &user})
-	if err != nil {
-		return false, err
-	}
-	return true, nil
 }
 
 func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
