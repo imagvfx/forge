@@ -444,14 +444,14 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		subEntryTypes := make(map[string][]string)
-		entDefaults := make(map[string][]*forge.EntryDefault)
+		entDefaults := make(map[string][]*forge.Default)
 		for _, t := range entTypes {
 			subTypes, err := h.server.SubEntryTypes(ctx, t)
 			if err != nil {
 				return err
 			}
 			subEntryTypes[t] = subTypes
-			items, err := h.server.EntryDefaults(ctx, t)
+			items, err := h.server.Defaults(ctx, t)
 			if err != nil {
 				return err
 			}
@@ -461,12 +461,12 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User          string
 			EntryTypes    []string
 			SubEntryTypes map[string][]string
-			EntryDefaults map[string][]*forge.EntryDefault
+			Defaults      map[string][]*forge.Default
 		}{
 			User:          user,
 			EntryTypes:    entTypes,
 			SubEntryTypes: subEntryTypes,
-			EntryDefaults: entDefaults,
+			Defaults:      entDefaults,
 		}
 		err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
 		if err != nil {
@@ -758,7 +758,7 @@ func (h *apiHandler) HandleDeleteSubEntryType(w http.ResponseWriter, r *http.Req
 	}
 }
 
-func (h *apiHandler) HandleAddEntryDefault(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleAddDefault(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
@@ -775,7 +775,7 @@ func (h *apiHandler) HandleAddEntryDefault(w http.ResponseWriter, r *http.Reques
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err = h.server.AddEntryDefault(ctx, entType, ctg, name, typ, value)
+		err = h.server.AddDefault(ctx, entType, ctg, name, typ, value)
 		if err != nil {
 			return err
 		}
@@ -790,7 +790,7 @@ func (h *apiHandler) HandleAddEntryDefault(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h *apiHandler) HandleSetEntryDefault(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleSetDefault(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
@@ -807,7 +807,7 @@ func (h *apiHandler) HandleSetEntryDefault(w http.ResponseWriter, r *http.Reques
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
-		err = h.server.SetEntryDefault(ctx, entType, ctg, name, typ, value)
+		err = h.server.SetDefault(ctx, entType, ctg, name, typ, value)
 		if err != nil {
 			return err
 		}
@@ -821,7 +821,7 @@ func (h *apiHandler) HandleSetEntryDefault(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h *apiHandler) HandleDeleteEntryDefault(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleDeleteDefault(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
@@ -837,7 +837,7 @@ func (h *apiHandler) HandleDeleteEntryDefault(w http.ResponseWriter, r *http.Req
 		entType := r.FormValue("entry_type")
 		ctg := r.FormValue("category")
 		name := r.FormValue("name")
-		err = h.server.DeleteEntryDefault(ctx, entType, ctg, name)
+		err = h.server.DeleteDefault(ctx, entType, ctg, name)
 		if err != nil {
 			return err
 		}

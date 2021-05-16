@@ -63,7 +63,7 @@
 				<div style="font-size:0.8rem"> [
 					Defaults
 				]
-				<form action="/api/add-entry-default" method="post"> [
+				<form action="/api/add-default" method="post"> [
 					<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
 					<select name="category"> [
 						<option value="sub_entry"> [sub entry]
@@ -77,17 +77,17 @@
 					<button type="submit"> [Add]
 				]
 				<div style="height:0.5rem"> []
-				{{$defaults := index $.EntryDefaults $t}}
+				{{$defaults := index $.Defaults $t}}
 				{{range $d := $defaults}}
 				<div> [
-					<form style="display:inline-block" action="/api/delete-entry-default" method="post"> [
+					<form style="display:inline-block" action="/api/delete-default" method="post"> [
 						<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
 						<input readonly name="category" type="hidden" value="{{$d.Category}}"> []
 						<input readonly name="name" type="hidden" value="{{$d.Name}}"> []
 						<input readonly name="back_to_referer" type="hidden" value="1"> []
 						<button style="padding:0;color:red" type="submit"> [-]
 					]
-					<form style="display:inline-block" action="/api/set-entry-default" method="post"> [
+					<form style="display:inline-block" action="/api/set-default" method="post"> [
 						<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
 						<input readonly name="category" type="text" value="{{$d.Category}}"> []
 						<input readonly name="name" type="text" value="{{$d.Name}}"> []

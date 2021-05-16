@@ -14,10 +14,10 @@ type Service interface {
 	SubEntryTypes(ctx context.Context, parentType string) ([]string, error)
 	AddSubEntryType(ctx context.Context, parentType, subType string) error
 	DeleteSubEntryType(ctx context.Context, parentType, subType string) error
-	FindEntryDefaults(ctx context.Context, find EntryDefaultFinder) ([]*EntryDefault, error)
-	AddEntryDefault(ctx context.Context, d *EntryDefault) error
-	UpdateEntryDefault(ctx context.Context, upd EntryDefaultUpdater) error
-	DeleteEntryDefault(ctx context.Context, entType, ctg, name string) error
+	FindDefaults(ctx context.Context, find DefaultFinder) ([]*Default, error)
+	AddDefault(ctx context.Context, d *Default) error
+	UpdateDefault(ctx context.Context, upd DefaultUpdater) error
+	DeleteDefault(ctx context.Context, entType, ctg, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
 	AddEntry(ctx context.Context, ent *Entry, props []*Property, envs []*Property) error
@@ -118,7 +118,7 @@ type EntryTypeUpdater struct {
 	Name *string
 }
 
-type EntryDefault struct {
+type Default struct {
 	ID        int
 	EntryType string
 	Category  string
@@ -127,13 +127,13 @@ type EntryDefault struct {
 	Value     string
 }
 
-type EntryDefaultFinder struct {
+type DefaultFinder struct {
 	EntryType *string
 	Category  *string
 	Name      *string
 }
 
-type EntryDefaultUpdater struct {
+type DefaultUpdater struct {
 	EntryType string
 	Category  string
 	Name      string

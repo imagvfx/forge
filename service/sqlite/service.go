@@ -46,20 +46,20 @@ func (s *Service) DeleteSubEntryType(ctx context.Context, parentType, subType st
 	return DeleteSubEntryType(s.db, ctx, parentType, subType)
 }
 
-func (s *Service) FindEntryDefaults(ctx context.Context, find service.EntryDefaultFinder) ([]*service.EntryDefault, error) {
-	return FindEntryDefaults(s.db, ctx, find)
+func (s *Service) FindDefaults(ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+	return FindDefaults(s.db, ctx, find)
 }
 
-func (s *Service) AddEntryDefault(ctx context.Context, d *service.EntryDefault) error {
-	return AddEntryDefault(s.db, ctx, d)
+func (s *Service) AddDefault(ctx context.Context, d *service.Default) error {
+	return AddDefault(s.db, ctx, d)
 }
 
-func (s *Service) UpdateEntryDefault(ctx context.Context, upd service.EntryDefaultUpdater) error {
-	return UpdateEntryDefault(s.db, ctx, upd)
+func (s *Service) UpdateDefault(ctx context.Context, upd service.DefaultUpdater) error {
+	return UpdateDefault(s.db, ctx, upd)
 }
 
-func (s *Service) DeleteEntryDefault(ctx context.Context, entType, ctg, name string) error {
-	return DeleteEntryDefault(s.db, ctx, entType, ctg, name)
+func (s *Service) DeleteDefault(ctx context.Context, entType, ctg, name string) error {
+	return DeleteDefault(s.db, ctx, entType, ctg, name)
 }
 
 func (s *Service) FindEntries(ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {

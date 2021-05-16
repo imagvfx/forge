@@ -49,15 +49,15 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	err = createEntryDefaultSubEntriesTable(tx)
+	err = createDefaultSubEntriesTable(tx)
 	if err != nil {
 		return err
 	}
-	err = createEntryDefaultPropertiesTable(tx)
+	err = createDefaultPropertiesTable(tx)
 	if err != nil {
 		return err
 	}
-	err = createEntryDefaultEnvironsTable(tx)
+	err = createDefaultEnvironsTable(tx)
 	if err != nil {
 		return err
 	}
