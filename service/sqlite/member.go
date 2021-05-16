@@ -105,6 +105,14 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to add group member: %v", user)
+	}
 	err = addGroupMember(tx, ctx, m)
 	if err != nil {
 		return err
@@ -147,6 +155,14 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) er
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to delete group member: %v", user)
+	}
 	err = deleteGroupMember(tx, ctx, group, member)
 	if err != nil {
 		return err

@@ -124,6 +124,14 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to add group: %v", user)
+	}
 	err = addGroup(tx, ctx, g)
 	if err != nil {
 		return err
@@ -164,6 +172,14 @@ func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) erro
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to update group: %v", user)
+	}
 	err = updateGroup(tx, ctx, upd)
 	if err != nil {
 		return err
