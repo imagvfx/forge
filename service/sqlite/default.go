@@ -248,6 +248,14 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to add default: %v", user)
+	}
 	switch d.Category {
 	case "sub_entry":
 		err = addDefaultSubEntry(tx, ctx, d)
@@ -372,6 +380,14 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to update default: %v", user)
+	}
 	switch upd.Category {
 	case "sub_entry":
 		err := updateDefaultSubEntry(tx, ctx, upd)
@@ -503,6 +519,14 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to delete default: %v", user)
+	}
 	switch ctg {
 	case "sub_entry":
 		err := deleteDefaultSubEntry(tx, ctx, entryType, name)
