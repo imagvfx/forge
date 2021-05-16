@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/imagvfx/forge/service"
 )
 
 func createSubEntryTypesTable(tx *sql.Tx) error {
@@ -99,6 +101,14 @@ func AddSubEntryType(db *sql.DB, ctx context.Context, parentType, subType string
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to add sub-entry type: %v", user)
+	}
 	err = addSubEntryType(tx, ctx, parentType, subType)
 	if err != nil {
 		return err
@@ -141,6 +151,14 @@ func DeleteSubEntryType(db *sql.DB, ctx context.Context, parentType, subType str
 		return err
 	}
 	defer tx.Rollback()
+	user := service.UserNameFromContext(ctx)
+	yes, err := isGroupMember(tx, ctx, "admin", user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return service.Unauthorized("user doesn't have permission to delete sub-entry type: %v", user)
+	}
 	err = deleteSubEntryType(tx, ctx, parentType, subType)
 	if err != nil {
 		return err
