@@ -106,7 +106,7 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
@@ -156,7 +156,7 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) er
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}

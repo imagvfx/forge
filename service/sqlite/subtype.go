@@ -102,7 +102,7 @@ func AddSubEntryType(db *sql.DB, ctx context.Context, parentType, subType string
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func DeleteSubEntryType(db *sql.DB, ctx context.Context, parentType, subType str
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}

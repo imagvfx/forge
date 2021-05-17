@@ -166,7 +166,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 		return nil, fmt.Errorf("path should be specified for access check")
 	}
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -206,6 +206,14 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 		path = filepath.Dir(path)
 	}
 	return nil, nil
+}
+
+func isAdmin(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
+	if user == "system" {
+		// system will be implictly treated as admin.
+		return true, nil
+	}
+	return isGroupMember(tx, ctx, "admin", user)
 }
 
 func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {

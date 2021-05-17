@@ -249,7 +249,7 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
@@ -381,7 +381,7 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
@@ -520,7 +520,7 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}

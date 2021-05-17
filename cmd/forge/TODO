@@ -1,4 +1,4 @@
-store entry type default props, etc in db
+implement default access controls
 validate types and values of default props/envs
 prevent delete default props, etc of the entry
 log based on id of property/environ/access *internally*

@@ -125,7 +125,7 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
@@ -173,7 +173,7 @@ func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) erro
 	}
 	defer tx.Rollback()
 	user := service.UserNameFromContext(ctx)
-	yes, err := isGroupMember(tx, ctx, "admin", user)
+	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}

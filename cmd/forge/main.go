@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"html/template"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/gorilla/securecookie"
 	"github.com/imagvfx/forge"
+	"github.com/imagvfx/forge/service"
 	"github.com/imagvfx/forge/service/sqlite"
 	"github.com/kybin/bml"
 )
@@ -105,6 +107,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	dbCreated := false
+	_, err = os.Stat(dbpath)
+	if err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			log.Fatal(err)
+		}
+		dbCreated = true
+	}
 	db, err := sqlite.Open(dbpath)
 	if err != nil {
 		log.Fatal(err)
@@ -116,6 +126,43 @@ func main() {
 	}
 	svc := sqlite.NewService(db)
 	server := forge.NewServer(svc, cfg)
+	if dbCreated {
+		// TODO: when fatal raised from this block,
+		// remaining code will not be called even if we re-run the program,
+		// as the db has already created.
+		// how to handle this better?
+		ctx := service.ContextWithUserName(context.Background(), "system")
+		for typ := range cfg.Struct {
+			if typ == "root" {
+				// root entry type should be already created.
+				continue
+			}
+			err = server.AddEntryType(ctx, typ)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		for typ, s := range cfg.Struct {
+			for _, subtype := range s.SubEntryTypes {
+				err := server.AddSubEntryType(ctx, typ, subtype)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			for _, p := range s.Properties {
+				err := server.AddDefault(ctx, typ, "property", p.Key, p.Type, p.Value)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			for _, p := range s.Environs {
+				err := server.AddDefault(ctx, typ, "environ", p.Key, p.Type, p.Value)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+	}
 	login := &loginHandler{
 		server: server,
 		oidc: &forge.OIDC{
