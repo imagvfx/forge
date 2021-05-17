@@ -113,7 +113,10 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		subtyps := h.cfg.Struct[ent.Type].SubEntryTypes
+		subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
+		if err != nil {
+			return err
+		}
 		recipe := struct {
 			User           string
 			Entry          *forge.Entry
@@ -173,7 +176,10 @@ func (h *pathHandler) HandleEntryEdit(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		subtyps := h.cfg.Struct[ent.Type].SubEntryTypes
+		subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
+		if err != nil {
+			return err
+		}
 		recipe := struct {
 			User           string
 			Entry          *forge.Entry
@@ -233,7 +239,10 @@ func (h *pathHandler) HandleEntryDelete(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			return err
 		}
-		subtyps := h.cfg.Struct[ent.Type].SubEntryTypes
+		subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
+		if err != nil {
+			return err
+		}
 		recipe := struct {
 			User           string
 			Entry          *forge.Entry

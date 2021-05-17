@@ -20,7 +20,7 @@ type Service interface {
 	DeleteDefault(ctx context.Context, entType, ctg, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
-	AddEntry(ctx context.Context, ent *Entry, props []*Property, envs []*Property) error
+	AddEntry(ctx context.Context, ent *Entry) error
 	RenameEntry(ctx context.Context, path string, newName string) error
 	DeleteEntry(ctx context.Context, path string) error
 	AddThumbnail(ctx context.Context, thumb *Thumbnail) error

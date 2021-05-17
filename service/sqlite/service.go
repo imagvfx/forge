@@ -70,8 +70,8 @@ func (s *Service) GetEntry(ctx context.Context, path string) (*service.Entry, er
 	return GetEntry(s.db, ctx, path)
 }
 
-func (s *Service) AddEntry(ctx context.Context, ent *service.Entry, props []*service.Property, env []*service.Property) error {
-	return AddEntry(s.db, ctx, ent, props, env)
+func (s *Service) AddEntry(ctx context.Context, ent *service.Entry) error {
+	return AddEntry(s.db, ctx, ent)
 }
 
 func (s *Service) RenameEntry(ctx context.Context, path, newName string) error {

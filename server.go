@@ -82,7 +82,10 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 		return fmt.Errorf("error on parent check: %v", err)
 	}
 	allow := false
-	subtyps := s.cfg.Struct[p.Type].SubEntryTypes
+	subtyps, err := s.SubEntryTypes(ctx, p.Type)
+	if err != nil {
+		return err
+	}
 	for _, subtyp := range subtyps {
 		if subtyp == typ {
 			allow = true
@@ -96,35 +99,7 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 		Path: path,
 		Type: typ,
 	}
-	props := make([]*service.Property, 0)
-	for _, ktv := range s.cfg.Struct[typ].Properties {
-		p := &Property{
-			EntryPath: path,
-			Name:      ktv.Key,
-			Type:      ktv.Type,
-			Value:     ktv.Value,
-		}
-		err := p.Validate()
-		if err != nil {
-			return err
-		}
-		props = append(props, p.ServiceProperty())
-	}
-	envs := make([]*service.Property, 0)
-	for _, ktv := range s.cfg.Struct[typ].Environs {
-		e := &Property{
-			EntryPath: path,
-			Name:      ktv.Key,
-			Type:      ktv.Type,
-			Value:     ktv.Value,
-		}
-		err := e.Validate()
-		if err != nil {
-			return err
-		}
-		envs = append(envs, e.ServiceProperty())
-	}
-	err = s.svc.AddEntry(ctx, e, props, envs)
+	err = s.svc.AddEntry(ctx, e)
 	if err != nil {
 		return err
 	}

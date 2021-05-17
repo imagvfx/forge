@@ -170,7 +170,7 @@ func getEntryID(tx *sql.Tx, ctx context.Context, path string) (int, error) {
 	return id, nil
 }
 
-func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*service.Property, envs []*service.Property) error {
+func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -180,14 +180,48 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry, props []*servic
 	if err != nil {
 		return err
 	}
-	for _, p := range props {
-		err := addProperty(tx, ctx, p)
+	defSubs, err := findDefaultSubEntries(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
+	if err != nil {
+		return err
+	}
+	for _, d := range defSubs {
+		de := &service.Entry{
+			Path: filepath.Join(e.Path, d.Name),
+			Type: d.Type,
+		}
+		err := addEntry(tx, ctx, de)
 		if err != nil {
 			return err
 		}
 	}
-	for _, env := range envs {
-		err := addEnviron(tx, ctx, env)
+	defProps, err := findDefaultProperties(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
+	if err != nil {
+		return err
+	}
+	for _, d := range defProps {
+		dp := &service.Property{
+			EntryPath: e.Path,
+			Name:      d.Name,
+			Type:      d.Type,
+			Value:     d.Value,
+		}
+		err := addProperty(tx, ctx, dp)
+		if err != nil {
+			return err
+		}
+	}
+	defEnvs, err := findDefaultEnvirons(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
+	if err != nil {
+		return err
+	}
+	for _, d := range defEnvs {
+		denv := &service.Property{
+			EntryPath: e.Path,
+			Name:      d.Name,
+			Type:      d.Type,
+			Value:     d.Value,
+		}
+		err := addEnviron(tx, ctx, denv)
 		if err != nil {
 			return err
 		}
