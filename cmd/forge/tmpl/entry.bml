@@ -29,7 +29,7 @@
 							<a style="display:flex" href="{{$e.Path}}"> [
 								<img src="/thumbnail{{$e.Path}}" height="60px" width="90px" alt="" style="border:1px solid #AAAAAA"> []
 								<div style="width:{{$pad}}"> []
-								<div style="width:90px"> [{{$e.Name}}]
+								<div style="width:90px;color:black"> [<b> [{{$e.Name}}]]
 							]
 							<div style="flex:1;display:grid;grid-template-columns:repeat(4, 1fr)"> [
 								{{range $name := $defaultProps}}
