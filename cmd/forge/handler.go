@@ -101,6 +101,38 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		sort.Slice(subEnts, func(i, j int) bool {
 			return subEnts[i].Name() < subEnts[j].Name()
 		})
+		subEntsByType := make(map[string][]*forge.Entry)
+		subEntProps := make(map[string]map[string]*forge.Property)
+		for _, e := range subEnts {
+			if subEntsByType[e.Type] == nil {
+				subEntsByType[e.Type] = make([]*forge.Entry, 0)
+			}
+			subEntsByType[e.Type] = append(subEntsByType[e.Type], e)
+			props, err := h.server.EntryProperties(ctx, e.Path)
+			if err != nil {
+				return err
+			}
+			subProps := make(map[string]*forge.Property)
+			for _, p := range props {
+				subProps[p.Name] = p
+			}
+			subEntProps[e.Type] = subProps
+
+		}
+		defaultProps := make(map[string][]string)
+		for typ := range subEntsByType {
+			defaultProps[typ] = make([]string, 0)
+			defaults, err := h.server.Defaults(ctx, typ)
+			if err != nil {
+				return err
+			}
+			for _, d := range defaults {
+				if d.Category == "property" {
+					// Only show default properties, for now.
+					defaultProps[typ] = append(defaultProps[typ], d.Name)
+				}
+			}
+		}
 		props, err := h.server.EntryProperties(ctx, path)
 		if err != nil {
 			return err
@@ -118,21 +150,25 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		recipe := struct {
-			User           string
-			Entry          *forge.Entry
-			SubEntries     []*forge.Entry
-			Properties     []*forge.Property
-			Environs       []*forge.Property
-			SubEntryTypes  []string
-			AccessControls []*forge.AccessControl
+			User               string
+			Entry              *forge.Entry
+			SubEntriesByType   map[string][]*forge.Entry
+			SubEntryProperties map[string]map[string]*forge.Property
+			DefaultProperties  map[string][]string
+			Properties         []*forge.Property
+			Environs           []*forge.Property
+			SubEntryTypes      []string
+			AccessControls     []*forge.AccessControl
 		}{
-			User:           user,
-			Entry:          ent,
-			SubEntries:     subEnts,
-			Properties:     props,
-			Environs:       envs,
-			SubEntryTypes:  subtyps,
-			AccessControls: acs,
+			User:               user,
+			Entry:              ent,
+			SubEntriesByType:   subEntsByType,
+			SubEntryProperties: subEntProps,
+			DefaultProperties:  defaultProps,
+			Properties:         props,
+			Environs:           envs,
+			SubEntryTypes:      subtyps,
+			AccessControls:     acs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 		if err != nil {

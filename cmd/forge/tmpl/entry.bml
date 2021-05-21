@@ -6,7 +6,7 @@
 	<body> [
 		{{template "nav" $}}
 		<div style="display:flex;justify-content:space-between"> [
-			<div name="left" style="flex:1"> [
+			<div name="left" style="flex:1;margin-right:1rem"> [
 				<h1> [
 					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
 				]
@@ -14,9 +14,37 @@
 					Sub Entry
 				]
 				<div> [
-				{{range $.SubEntries}}
-					<div> [
-						<a href="{{.Path}}"> [<img src="/thumbnail{{.Path}}" height="60" width="90" alt="" style="border:1px solid #AAAAAA"> [] {{.Name}}]
+				{{range $i, $t := $.SubEntryTypes}}
+					{{if $i}}
+					<div style="height:1rem"> []
+					{{end}}
+					<div> [{{$t}}]
+					<div style="display:grid;grid-template-columns:1fr;border-top:1px solid #DDD;border-left:1px solid #DDD"> [
+						{{$entries := index $.SubEntriesByType $t}}
+						{{$props := index $.SubEntryProperties $t}}
+						{{$defaultProps := index $.DefaultProperties $t}}
+						{{range $j, $e := $entries}}
+						{{$pad := "0.5rem"}}
+						<div style="display:flex;padding:{{$pad}};border-bottom:1px solid #DDD;border-right:1px solid #DDD"> [
+							<a style="display:flex" href="{{$e.Path}}"> [
+								<img src="/thumbnail{{$e.Path}}" height="60px" width="90px" alt="" style="border:1px solid #AAAAAA"> []
+								<div style="width:{{$pad}}"> []
+								<div style="width:90px"> [{{$e.Name}}]
+							]
+							<div style="flex:1;display:grid;grid-template-columns:repeat(4, 1fr)"> [
+								{{range $name := $defaultProps}}
+									<div> [
+										<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
+										{{$p := index $props $name}}
+										{{if $p}}
+										<div style="height:0.2rem"> []
+										<div style="font-size:0.8rem"> [{{$p.Value}}]
+										{{end}}
+									]
+								{{end}}
+							]
+						]
+						{{end}}
 					]
 				{{end}}
 				]

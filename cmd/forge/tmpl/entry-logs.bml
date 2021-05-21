@@ -6,7 +6,7 @@
 	<body> [
 		{{template "nav" $}}
 		<div style="display:flex;justify-content:space-between"> [
-			<div name="left" style="flex:1"> [
+			<div name="left" style="flex:1;margin-right:1rem"> [
 				<h1> [
 					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
 				]
