@@ -1,5 +1,14 @@
 {{define "style"}}
 <style> [
+	html {
+		height: 100%;
+	}
+	body {
+		margin: 0;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
 	a {
 		text-decoration: none;
 	}

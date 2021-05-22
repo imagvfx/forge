@@ -5,10 +5,10 @@
 	]
 	<body> [
 		{{template "nav" $}}
-		<div style="display:flex;justify-content:space-between"> [
-			<div name="left" style="flex:1;margin-right:1rem"> [
+		<div style="flex:1;display:flex;justify-content:space-between"> [
+			<div name="left" style="flex:1;border-right:1px solid #DDD;padding:1rem;background-color:#F7F7F7;"> [
 				<h1> [
-					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
+					{{pathLinks $.Entry.Path}}
 				]
 				<h4> [
 					Sub Entry
@@ -49,7 +49,7 @@
 				{{end}}
 				]
 			]
-			<div name="right" style="width:600px"> [
+			<div name="right" style="width:600px;padding:1rem;"> [
 				{{if eq $.Tab "view"}}
 					{{template "entry-view-tab" $}}
 				{{else if eq $.Tab "edit"}}

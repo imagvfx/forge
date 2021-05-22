@@ -1,10 +1,9 @@
 {{define "nav"}}
-	<div style="display:flex;justify-content:space-between"> [
-		<div> [
-			<a href="/"> [forge]
-			| <a href="/types"> [types]
-			| <a href="/groups"> [groups]
-		]
-		<div> [{{$.User}} (<a href="/logout"> [logout])]
+	<div style="padding:0.5rem;display:flex;justify-content:space-between;align-items:center;background-color:black"> [
+		<a style="color:#FFF;font-size:1.5rem" href="/"> [forge]
+		<a style="margin-left:3rem;color:#FFF" href="/types"> [types]
+		<a style="margin-left:2rem;color:#FFF" href="/groups"> [groups]
+		<div style="flex:1"> []
+		<div style="color:#FFF"> [{{$.User}} <a style="color:#777" href="/logout"> [(logout)]]
 	]
 {{end}}
