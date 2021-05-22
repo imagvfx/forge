@@ -339,7 +339,7 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	// This might be changed in the future.
 	user := service.UserNameFromContext(ctx)
 	err = addLog(tx, ctx, &service.Log{
-		EntryPath: path,
+		EntryPath: newPath,
 		User:      user,
 		Action:    "rename",
 		Category:  "entry",
