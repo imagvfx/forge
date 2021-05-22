@@ -313,8 +313,11 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	if path == "/" {
 		return fmt.Errorf("cannot rename root entry")
 	}
+	if !strings.HasPrefix(path, "/") {
+		return fmt.Errorf("entry path should be started with /")
+	}
 	if strings.HasSuffix(path, "/") {
-		return fmt.Errorf("entry path shouldn't end with /")
+		return fmt.Errorf("entry path shouldn't be ended with /")
 	}
 	if newName == "" {
 		return fmt.Errorf("need a new name for rename")
@@ -326,11 +329,16 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	if newName == base {
 		return nil
 	}
-	newPath := filepath.Dir(path) + "/" + newName
-	err := userWrite(tx, ctx, filepath.Dir(path))
+	parent := filepath.Dir(path)
+	if path == "/" {
+		// the result is slash(/), should be empty string.
+		parent = ""
+	}
+	err := userWrite(tx, ctx, parent)
 	if err != nil {
 		return err
 	}
+	newPath := filepath.Join(parent, newName)
 	err = updateEntryPath(tx, ctx, path, newPath)
 	if err != nil {
 		return err
