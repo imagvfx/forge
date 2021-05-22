@@ -1,180 +1,160 @@
-<!doctype html>
-<html> [
-	<head> [
-		{{template "style"}}
+{{define "entry-edit-tab"}}
+<div> [
+	<h4> [
+		<div style="display:flex"> [
+			<a href="?"> [View]
+			<div style="width:0.5rem"> []
+			<a href="?tab=edit"> [Edit]
+			<div style="width:0.5rem"> []
+			<a href="?tab=delete"> [Delete]
+			<div style="flex:1"> []
+			<a href="?tab=logs"> [Logs]
+		]
 	]
-	<body> [
-		{{template "nav" $}}
-		<div style="display:flex;justify-content:space-between"> [
-			<div name="left" style="flex:1;margin-right:1rem"> [
-				<h1> [
-					<div> [
-						{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
-						<form action="/api/rename-entry" method="post"  style="display:inline-block"> [
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="new-name" type="text" value=""> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Rename]
-						]
-					]
-				]
-				<h4> [
-					Sub Entry
-					{{if $.SubEntryTypes}}
-					<form action="/api/add-entry" method="post"> [
-						<div> [
-							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="path" type="text" value=""> []
-							<select name="type" value=""> [
-							{{range $t := $.SubEntryTypes}}
-								<option value={{$t}}> [{{$t}}]
-							{{end}}
-							]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
-					{{end}}
-				]
-				<div> [
-				{{range $.SubEntries}}
-					<div> [
-						<a href="{{.Path}}"> [<img src="/thumbnail{{.Path}}" height="60" width="90" alt="" style="border:1px solid #AAAAAA"> [] {{.Name}}]
-					]
-				{{end}}
-				]
+	<h3> [
+		{{$.Entry.Name}} ({{$.Entry.Type}})
+	]
+	<div> [
+		<form action="/api/rename-entry" method="post"  style="display:inline-block"> [
+			<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+			<input name="new-name" type="text" value=""> []
+			<input readonly name="back_to_referer" type="hidden" value="1"> []
+			<button type="submit"> [Rename]
+		]
+	]
+	{{if $.SubEntryTypes}}
+	<div> [
+		<div style="height:1rem"> []
+		<form action="/api/add-entry" method="post"> [
+			<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
+			<input name="path" type="text" value="" placeholder="sub-entry"> []
+			<select name="type" value=""> [
+			{{range $t := $.SubEntryTypes}}
+			      <option value={{$t}}> [{{$t}}]
+			{{end}}
 			]
-			<div name="right" style="width:600px"> [
-				<h4> [
-					<div style="display:flex"> [
-						<a href="?"> [View]
-						<div style="width:0.5rem"> []
-						<a href="?tab=edit"> [Edit]
-						<div style="width:0.5rem"> []
-						<a href="?tab=delete"> [Delete]
-						<div style="flex:1"> []
-						<a href="?tab=logs"> [Logs]
-					]
-				]
-				<h4> [
-					<img src="/thumbnail{{$.Entry.Path}}" height="108" width="192" alt="" style="border:1px solid #AAAAAA"> []
-					<form action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="post" enctype="multipart/form-data"> [
-						<div> [
-							<input name="file" type="file" accept="image/png, image/jpeg"> []
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Upload]
-						]
-					]
-				]
-				<div style="height:1px"> []
-				<h4> [
-					Property
-					<form action="/api/add-property" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="name" type="text" value="" placeholder="name"> []
-							<select name="type" style="width:10em"> [
-								<option value="text"> [text]
-								<option value="user"> [user]
-								<option value="date"> [date]
-								<option value="timecode"> [timecode]
-								<option value="int"> [int]
-								<option value="entry_path"> [entry_path]
-								<option value="entry_name"> [entry_name]
-							]
-							<input name="value" type="text" value="" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
-				]
-				<div> [
-				{{range $.Properties}}
-					<form action="/api/set-property" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
-							<input readonly name="type" type="text" value="{{.Type}}" placeholder="type" style="width:10em;box-sizing:border-box"> []
-							<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							{{if ne .EntryPath $.Entry.Path}}inherited from '{{.EntryPath}}'{{end}}
-							<button type="submit"> [Set]
-						]
-					]
-				{{end}}
-				]
-				<h4> [
-					Environ
-					<form action="/api/add-environ" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="name" type="text" value="" placeholder="name"> []
-							<select name="type" style="width:10em"> [
-								<option value="text"> [text]
-								<option value="user"> [user]
-								<option value="date"> [date]
-								<option value="timecode"> [timecode]
-								<option value="int"> [int]
-								<option value="entry_path"> [entry_path]
-								<option value="entry_name"> [entry_name]
-							]
-							<input name="value" type="text" value="" placeholder="value"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
-				]
-				<div> [
-				{{range $env := $.Environs}}
-					{{if eq $env.EntryPath $.Entry.Path}}
-						<form action="/api/set-environ" method="post"> [
-							<div> [
-								<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
-								<input readonly name="type" type="text" value="{{$env.Type}}" placeholder="name" style="width:10em;box-sizing:border-box"> []
-								<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button type="submit"> [Set]
-							]
-						]
-					{{end}}
-				{{end}}
-				]
-				<h4> [
-					Access Control
-					<form action="/api/add-access-control" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="accessor" type="text" value="" placeholder="accessor"> []
-							<select name="accessor_type" style="width:10em"> [
-								<option value="user"> [user]
-								<option value="group"> [group]
-							]
-							<input name="mode" type="text" value="" placeholder="r, rw"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-					]
-				]
-				<div> [
-				{{range $ac := $.AccessControls}}
-					{{if eq $ac.EntryPath $.Entry.Path}}
-					<form action="/api/set-access-control" method="post"> [
-						<div> [
-							<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input readonly name="accessor" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
-							<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type" style="width:10em;box-sizing:border-box"> []
-							<input name="mode" type="text" value="{{$ac.Mode}}" placeholder="r, rw"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Set]
-						]
-					]
-					{{end}}
-				{{end}}
-				]
+			<input readonly name="back_to_referer" type="hidden" value="1"> []
+			<button type="submit"> [Add]
+		]
+	]
+	{{end}}
+	<div style="height:1.5rem"> []
+	<div> [
+		<img src="/thumbnail{{$.Entry.Path}}" height="108" width="192" alt="" style="border:1px solid #AAAAAA"> []
+		<form action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="post" enctype="multipart/form-data"> [
+			<div> [
+				<input name="file" type="file" accept="image/png, image/jpeg"> []
+				<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button type="submit"> [Upload]
 			]
 		]
 	]
+	<div style="height:1px"> []
+	<h4> [
+		Property
+		<form action="/api/add-property" method="post"> [
+			<div> [
+				<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+				<input name="name" type="text" value="" placeholder="name"> []
+				<select name="type" style="width:10em"> [
+					<option value="text"> [text]
+					<option value="user"> [user]
+					<option value="date"> [date]
+					<option value="timecode"> [timecode]
+					<option value="int"> [int]
+					<option value="entry_path"> [entry_path]
+					<option value="entry_name"> [entry_name]
+				]
+				<input name="value" type="text" value="" placeholder="value"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button type="submit"> [Add]
+			]
+		]
+	]
+	<div> [
+	{{range $.Properties}}
+		<form action="/api/set-property" method="post"> [
+			<div> [
+				<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+				<input readonly name="name" type="text" value="{{.Name}}" placeholder="name"> []
+				<input readonly name="type" type="text" value="{{.Type}}" placeholder="type" style="width:10em;box-sizing:border-box"> []
+				<input name="value" type="text" value="{{.Value}}" placeholder="value"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				{{if ne .EntryPath $.Entry.Path}}inherited from '{{.EntryPath}}'{{end}}
+				<button type="submit"> [Set]
+			]
+		]
+	{{end}}
+	]
+	<h4> [
+		Environ
+		<form action="/api/add-environ" method="post"> [
+			<div> [
+				<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+				<input name="name" type="text" value="" placeholder="name"> []
+				<select name="type" style="width:10em"> [
+					<option value="text"> [text]
+					<option value="user"> [user]
+					<option value="date"> [date]
+					<option value="timecode"> [timecode]
+					<option value="int"> [int]
+					<option value="entry_path"> [entry_path]
+					<option value="entry_name"> [entry_name]
+				]
+				<input name="value" type="text" value="" placeholder="value"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button type="submit"> [Add]
+			]
+		]
+	]
+	<div> [
+	{{range $env := $.Environs}}
+		{{if eq $env.EntryPath $.Entry.Path}}
+			<form action="/api/set-environ" method="post"> [
+				<div> [
+					<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+					<input readonly name="name" type="text" value="{{$env.Name}}" placeholder="name"> []
+					<input readonly name="type" type="text" value="{{$env.Type}}" placeholder="name" style="width:10em;box-sizing:border-box"> []
+					<input name="value" type="text" value="{{$env.Value}}" placeholder="value"> []
+					<input readonly name="back_to_referer" type="hidden" value="1"> []
+					<button type="submit"> [Set]
+				]
+			]
+		{{end}}
+	{{end}}
+	]
+	<h4> [
+		Access Control
+		<form action="/api/add-access-control" method="post"> [
+			<div> [
+				<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+				<input name="accessor" type="text" value="" placeholder="accessor"> []
+				<select name="accessor_type" style="width:10em"> [
+					<option value="user"> [user]
+					<option value="group"> [group]
+				]
+				<input name="mode" type="text" value="" placeholder="r, rw"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button type="submit"> [Add]
+			]
+		]
+	]
+	<div> [
+	{{range $ac := $.AccessControls}}
+		{{if eq $ac.EntryPath $.Entry.Path}}
+		<form action="/api/set-access-control" method="post"> [
+			<div> [
+				<input readonly name="path" type="hidden" value="{{$.Entry.Path}}"> []
+				<input readonly name="accessor" type="text" value="{{$ac.Accessor}}" placeholder="accessor"> []
+				<input readonly name="accessor_type" type="text" value="{{$ac.AccessorType}}" placeholder="accessor type" style="width:10em;box-sizing:border-box"> []
+				<input name="mode" type="text" value="{{$ac.Mode}}" placeholder="r, rw"> []
+				<input readonly name="back_to_referer" type="hidden" value="1"> []
+				<button type="submit"> [Set]
+			]
+		]
+		{{end}}
+	{{end}}
+	]
 ]
-
+{{end}}

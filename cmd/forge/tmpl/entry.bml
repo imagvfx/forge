@@ -50,61 +50,13 @@
 				]
 			]
 			<div name="right" style="width:600px"> [
-				<h4> [
-					<div style="display:flex"> [
-						<a href="?"> [View]
-						<div style="width:0.5rem"> []
-						<a href="?tab=edit"> [Edit]
-						<div style="width:0.5rem"> []
-						<a href="?tab=delete"> [Delete]
-						<div style="flex:1"> []
-						<a href="?tab=logs"> [Logs]
-					]
-				]
-				<h4> [
-					<img src="/thumbnail{{$.Entry.Path}}" height="108" width="192" alt="" style="border:1px solid #AAAAAA"> []
-				]
-				<div style="height:1px"> []
-				<div class="collapsible"> [
-					<h4 class="title" style="cursor:pointer"> [
-						Property ({{len $.Properties}})
-					]
-					<div class="content"> [
-					{{range $p := $.Properties}}
-						<div> [{{$p.Name}}{{if $p.Eval}} = {{$p.Eval}}{{end}} <a style="color:#bbb" href="?tab=logs&category=property&name={{$p.Name}}"> [(history)]]
-					{{end}}
-					]
-				]
-				<div class="collapsible"> [
-					<h4 class="title" style="cursor:pointer"> [
-						Environ ({{len $.Environs}})
-					]
-					<div class="content" style="display:none"> [
-					{{range $e := $.Environs}}
-						{{$inherit := ne $e.EntryPath $.Entry.Path}}
-						{{if $inherit}}
-							<div> [<a href="{{$e.EntryPath}}"> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}}]]
-						{{else}}
-							<div> [{{$e.Name}}{{if $e.Eval}} = {{$e.Eval}}{{end}} <a style="color:#bbb" href="?tab=logs&category=environ&name={{$e.Name}}"> [(history)]]
-						{{end}}
-					{{end}}
-					]
-				]
-				<div class="collapsible"> [
-					<h4 class="title" style="cursor:pointer"> [
-						Access Control ({{len $.AccessControls}})
-					]
-					<div class="content" style="display:none"> [
-					{{range $a := $.AccessControls}}
-						{{$inherit := ne $a.EntryPath $.Entry.Path}}
-						{{if $inherit}}
-							<div> [<a href="{{$a.EntryPath}}"> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}}]]
-						{{else}}
-							<div> [{{$a.Accessor}} {{$a.AccessorType}} = {{$a.Mode}} <a style="color:#bbb" href="?tab=logs&category=access&name={{$a.Accessor}}"> [(history)]]
-						{{end}}
-					{{end}}
-					]
-				]
+				{{if eq $.Tab "view"}}
+					{{template "entry-view-tab" $}}
+				{{else if eq $.Tab "edit"}}
+					{{template "entry-edit-tab" $}}
+				{{else if eq $.Tab "delete"}}
+					{{template "entry-delete-tab" $}}
+				{{end}}
 			]
 		]
 	]

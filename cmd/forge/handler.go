@@ -68,14 +68,16 @@ func handleError(w http.ResponseWriter, err error) {
 func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	tab := r.FormValue("tab")
 	switch tab {
+	case "":
+		tab = "view"
+	case "view":
+	case "edit":
+	case "delete":
 	case "logs":
 		h.HandleEntryLogs(w, r)
 		return
-	case "edit":
-		h.HandleEntryEdit(w, r)
-		return
-	case "delete":
-		h.HandleEntryDelete(w, r)
+	default:
+		handleError(w, fmt.Errorf("invalid tab: %v", tab))
 		return
 	}
 	err := func() error {
@@ -151,6 +153,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		}
 		recipe := struct {
 			User               string
+			Tab                string
 			Entry              *forge.Entry
 			SubEntriesByType   map[string][]*forge.Entry
 			SubEntryProperties map[string]map[string]*forge.Property
@@ -161,6 +164,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			AccessControls     []*forge.AccessControl
 		}{
 			User:               user,
+			Tab:                tab,
 			Entry:              ent,
 			SubEntriesByType:   subEntsByType,
 			SubEntryProperties: subEntProps,
