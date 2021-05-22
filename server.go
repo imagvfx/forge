@@ -3,11 +3,9 @@ package forge
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"image"
 	"image/png"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -114,22 +112,6 @@ func (s *Server) RenameEntry(ctx context.Context, path, newName string) error {
 		return fmt.Errorf("new entry name not specified")
 	}
 	err := s.svc.RenameEntry(ctx, path, newName)
-	if err != nil {
-		return err
-	}
-	// Move the thumbnail also.
-	newPath := filepath.Dir(path) + "/" + newName
-	thumbnailRoot := filepath.Join(s.cfg.UserdataRoot, "thumbnail")
-	thumbnailDir := filepath.Join(thumbnailRoot, path)
-	newThumbnailDir := filepath.Join(thumbnailRoot, newPath)
-	_, err = os.Stat(thumbnailDir)
-	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
-		return nil
-	}
-	err = os.Rename(thumbnailDir, newThumbnailDir)
 	if err != nil {
 		return err
 	}
