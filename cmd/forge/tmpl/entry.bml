@@ -15,40 +15,42 @@
 				]
 				<div> [
 				{{range $i, $t := $.SubEntryTypes}}
-					{{if $i}}
-					<div style="height:1rem"> []
-					{{end}}
-					<div> [{{$t}}]
-					<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
-						{{$entries := index $.SubEntriesByType $t}}
-						{{$props := index $.SubEntryProperties $t}}
-						{{$defaultProps := index $.DefaultProperties $t}}
-						{{range $j, $e := $entries}}
-						{{$pad := "0.5rem"}}
-						{{if $j}}
-						<div style="border-top:1px solid #DDD"> []
+					{{$entries := index $.SubEntriesByType $t}}
+					{{if $entries}}
+						{{if $i}}
+						<div style="height:1rem"> []
 						{{end}}
-						<div style="display:flex;padding:{{$pad}}"> [
-							<a style="display:flex" href="{{$e.Path}}"> [
-								<img src="/thumbnail{{$e.Path}}" height="60px" width="90px" alt="" style="border:1px solid #AAAAAA"> []
-								<div style="width:{{$pad}}"> []
-								<div style="width:90px;color:black"> [<b> [{{$e.Name}}]]
+						<div> [{{$t}}]
+						<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
+							{{$props := index $.SubEntryProperties $t}}
+							{{$defaultProps := index $.DefaultProperties $t}}
+							{{range $j, $e := $entries}}
+							{{$pad := "0.5rem"}}
+							{{if $j}}
+							<div style="border-top:1px solid #DDD"> []
+							{{end}}
+							<div style="display:flex;padding:{{$pad}}"> [
+								<a style="display:flex" href="{{$e.Path}}"> [
+									<img src="/thumbnail{{$e.Path}}" height="60px" width="90px" alt="" style="border:1px solid #AAAAAA"> []
+									<div style="width:{{$pad}}"> []
+									<div style="width:90px;color:black"> [<b> [{{$e.Name}}]]
+								]
+								<div style="flex:1;display:grid;grid-template-columns:repeat(4, 1fr)"> [
+									{{range $name := $defaultProps}}
+										<div> [
+											<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
+											{{$p := index $props $name}}
+											{{if $p}}
+											<div style="height:0.2rem"> []
+											<div style="font-size:0.8rem"> [{{$p.Value}}]
+											{{end}}
+										]
+									{{end}}
+								]
 							]
-							<div style="flex:1;display:grid;grid-template-columns:repeat(4, 1fr)"> [
-								{{range $name := $defaultProps}}
-									<div> [
-										<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
-										{{$p := index $props $name}}
-										{{if $p}}
-										<div style="height:0.2rem"> []
-										<div style="font-size:0.8rem"> [{{$p.Value}}]
-										{{end}}
-									]
-								{{end}}
-							]
+							{{end}}
 						]
-						{{end}}
-					]
+					{{end}}
 				{{end}}
 				]
 			]
