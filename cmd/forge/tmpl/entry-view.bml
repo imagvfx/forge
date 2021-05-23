@@ -2,7 +2,7 @@
 <div> [
 	<h4> [
 		<div style="display:flex"> [
-			<a href="?"> [View]
+			<a href="?tab=view"> [View]
 			<div style="width:0.5rem"> []
 			<a href="?tab=edit"> [Edit]
 			<div style="width:0.5rem"> []

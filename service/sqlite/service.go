@@ -170,6 +170,14 @@ func (s *Service) GetUser(ctx context.Context, user string) (*service.User, erro
 	return GetUser(s.db, ctx, user)
 }
 
+func (s *Service) GetUserSetting(ctx context.Context, user string) (*service.UserSetting, error) {
+	return GetUserSetting(s.db, ctx, user)
+}
+
+func (s *Service) UpdateUserSetting(ctx context.Context, upd service.UserSettingUpdater) error {
+	return UpdateUserSetting(s.db, ctx, upd)
+}
+
 func (s *Service) FindGroups(ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
 	return FindGroups(s.db, ctx, find)
 }

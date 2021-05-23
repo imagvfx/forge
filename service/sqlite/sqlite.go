@@ -93,6 +93,10 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	err = createUserSettingsTable(tx)
+	if err != nil {
+		return err
+	}
 	err = addAdminGroup(tx)
 	if err != nil {
 		return err

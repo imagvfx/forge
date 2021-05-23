@@ -740,6 +740,46 @@ func (s *Server) AddUser(ctx context.Context, user string) error {
 	return nil
 }
 
+func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting, error) {
+	if user == "" {
+		return nil, fmt.Errorf("user not specified")
+	}
+	ss, err := s.svc.GetUserSetting(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	us := &UserSetting{
+		ID:           ss.ID,
+		User:         ss.User,
+		EntryPageTab: ss.EntryPageTab,
+	}
+	return us, nil
+}
+
+func (s *Server) UpdateUserEntryPageTab(ctx context.Context, user string, tab string) error {
+	if user == "" {
+		return fmt.Errorf("user not specified")
+	}
+	if tab == "" {
+		return fmt.Errorf("user setting for entry page tab not specified")
+	}
+	switch tab {
+	case "view":
+	case "edit":
+	case "delete":
+	default:
+		return fmt.Errorf("invalid entry page tab: %v", tab)
+	}
+	err := s.svc.UpdateUserSetting(ctx, service.UserSettingUpdater{
+		User:         user,
+		EntryPageTab: &tab,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
 	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{})
 	if err != nil {

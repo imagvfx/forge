@@ -55,11 +55,11 @@
 				]
 			]
 			<div name="right" style="width:600px;padding:1rem;"> [
-				{{if eq $.Tab "view"}}
+				{{if eq $.UserSetting.EntryPageTab "view"}}
 					{{template "entry-view-tab" $}}
-				{{else if eq $.Tab "edit"}}
+				{{else if eq $.UserSetting.EntryPageTab "edit"}}
 					{{template "entry-edit-tab" $}}
-				{{else if eq $.Tab "delete"}}
+				{{else if eq $.UserSetting.EntryPageTab "delete"}}
 					{{template "entry-delete-tab" $}}
 				{{end}}
 			]

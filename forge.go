@@ -289,6 +289,12 @@ type User struct {
 	Name string
 }
 
+type UserSetting struct {
+	ID           int
+	User         string
+	EntryPageTab string
+}
+
 type Group struct {
 	ID   int
 	Name string

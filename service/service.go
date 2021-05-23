@@ -45,6 +45,8 @@ type Service interface {
 	GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error)
 	AddUser(ctx context.Context, u *User) error
 	GetUser(ctx context.Context, user string) (*User, error)
+	GetUserSetting(ctx context.Context, user string) (*UserSetting, error)
+	UpdateUserSetting(ctx context.Context, upd UserSettingUpdater) error
 	FindGroups(ctx context.Context, find GroupFinder) ([]*Group, error)
 	AddGroup(ctx context.Context, g *Group) error
 	UpdateGroup(ctx context.Context, upd GroupUpdater) error
@@ -232,6 +234,21 @@ type UserFinder struct {
 type UserUpdater struct {
 	ID   int
 	Name *string
+}
+
+type UserSetting struct {
+	ID           int
+	User         string
+	EntryPageTab string
+}
+
+type UserSettingFinder struct {
+	User *string
+}
+
+type UserSettingUpdater struct {
+	User         string
+	EntryPageTab *string
 }
 
 type Group struct {

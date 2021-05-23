@@ -98,6 +98,28 @@ func getUser(tx *sql.Tx, ctx context.Context, user string) (*service.User, error
 	return users[0], nil
 }
 
+func getUserID(tx *sql.Tx, ctx context.Context, user string) (int, error) {
+	rows, err := tx.QueryContext(ctx, `
+		SELECT id FROM accessors
+		WHERE is_group=? AND name=?
+	`,
+		false, user,
+	)
+	if err != nil {
+		return -1, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return -1, service.NotFound("user not found: %v", user)
+	}
+	var id int
+	err = rows.Scan(&id)
+	if err != nil {
+		return -1, err
+	}
+	return id, nil
+}
+
 func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -108,6 +130,10 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 	if err != nil {
 		return err
 	}
+	err = addUserSetting(tx, ctx, &service.UserSetting{
+		User:         u.Name,
+		EntryPageTab: "view",
+	})
 	err = tx.Commit()
 	if err != nil {
 		return err

@@ -69,7 +69,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	tab := r.FormValue("tab")
 	switch tab {
 	case "":
-		tab = "view"
 	case "view":
 	case "edit":
 	case "delete":
@@ -91,6 +90,16 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
+		if tab != "" {
+			err := h.server.UpdateUserEntryPageTab(ctx, user, tab)
+			if err != nil {
+				return err
+			}
+		}
+		setting, err := h.server.GetUserSetting(ctx, user)
+		if err != nil {
+			return err
+		}
 		path := r.URL.Path
 		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
@@ -153,7 +162,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		}
 		recipe := struct {
 			User               string
-			Tab                string
+			UserSetting        *forge.UserSetting
 			Entry              *forge.Entry
 			SubEntriesByType   map[string][]*forge.Entry
 			SubEntryProperties map[string]map[string]*forge.Property
@@ -164,7 +173,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			AccessControls     []*forge.AccessControl
 		}{
 			User:               user,
-			Tab:                tab,
+			UserSetting:        setting,
 			Entry:              ent,
 			SubEntriesByType:   subEntsByType,
 			SubEntryProperties: subEntProps,
