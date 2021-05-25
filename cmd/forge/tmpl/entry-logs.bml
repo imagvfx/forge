@@ -5,8 +5,8 @@
 	]
 	<body> [
 		{{template "nav" $}}
-		<div style="display:flex;justify-content:space-between"> [
-			<div name="left" style="flex:1;margin-right:1rem"> [
+		<div class="main"> [
+			<div class="left"> [
 				<h1> [
 					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
 				]
@@ -17,19 +17,6 @@
 				{{range $log := $.Logs}}
 					<div> [{{$log}}]
 				{{end}}
-				]
-			]
-			<div name="right" style="width:600px"> [
-				<h4> [
-					<div style="display:flex"> [
-						<a href="?tab=view"> [View]
-						<div style="width:0.5rem"> []
-						<a href="?tab=edit"> [Edit]
-						<div style="width:0.5rem"> []
-						<a href="?tab=delete"> [Delete]
-						<div style="flex:1"> []
-						<a href="?tab=logs"> [Logs]
-					]
 				]
 			]
 		]

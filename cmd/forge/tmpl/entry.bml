@@ -5,8 +5,8 @@
 	]
 	<body> [
 		{{template "nav" $}}
-		<div style="flex:1;display:flex;justify-content:space-between"> [
-			<div name="left" style="flex:1;border-right:1px solid #DDD;padding:1rem;background-color:#F7F7F7;"> [
+		<div class="main"> [
+			<div class="left"> [
 				<h1> [
 					{{pathLinks $.Entry.Path}}
 				]
@@ -54,7 +54,7 @@
 				{{end}}
 				]
 			]
-			<div name="right" style="width:600px;padding:1rem;"> [
+			<div class="right"> [
 				<h4> [
 					<div style="display:flex"> [
 						<a href="?tab=view"> [View]

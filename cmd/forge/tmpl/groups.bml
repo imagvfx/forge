@@ -5,53 +5,57 @@
 	]
 	<body> [
 		{{template "nav" $}}
-		<h1> [
-			Groups
-		]
-		<h4> [
-			<form action="/api/add-group" method="post"> [
+		<div class="main"> [
+			<div class="one"> [
+				<h1> [
+					Groups
+				]
+				<h4> [
+					<form action="/api/add-group" method="post"> [
+						<div> [
+							<input name="group" type="text" value="" placeholder="group"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Add]
+						]
+					]
+				]
 				<div> [
-					<input name="group" type="text" value="" placeholder="group"> []
-					<input readonly name="back_to_referer" type="hidden" value="1"> []
-					<button type="submit"> [Add]
+				{{range $g := $.Groups}}
+					<form action="/api/set-group" method="post"> [
+						<div> [
+							<input readonly name="id" type="hidden" value="{{$g.ID}}"> []
+							<input name="group" type="text" value="{{$g.Name}}" placeholder="group"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Set]
+						]
+					]
+				{{end}}
+				]
+				{{range $g := $.Groups}}
+				<div> [
+					<h4> [{{$g.Name}}]
+					<form action="/api/add-group-member" method="post"> [
+						<div> [
+							<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
+							<input name="member" type="text" value="" placeholder="user"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Add]
+						]
+					]
+					{{$members := index $.Members $g.Name}}
+					{{range $m := $members}}
+					<form action="/api/delete-group-member" method="post"> [
+						<div> [
+							<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
+							<input readonly name="member" value="{{$m.Member}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button type="submit"> [Delete]
+						]
+					]
+					{{end}}
+				{{end}}
 				]
 			]
-		]
-		<div> [
-		{{range $g := $.Groups}}
-			<form action="/api/set-group" method="post"> [
-				<div> [
-					<input readonly name="id" type="hidden" value="{{$g.ID}}"> []
-					<input name="group" type="text" value="{{$g.Name}}" placeholder="group"> []
-					<input readonly name="back_to_referer" type="hidden" value="1"> []
-					<button type="submit"> [Set]
-				]
-			]
-		{{end}}
-		]
-		{{range $g := $.Groups}}
-		<div> [
-			<h4> [{{$g.Name}}]
-			<form action="/api/add-group-member" method="post"> [
-				<div> [
-					<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
-					<input name="member" type="text" value="" placeholder="user"> []
-					<input readonly name="back_to_referer" type="hidden" value="1"> []
-					<button type="submit"> [Add]
-				]
-			]
-			{{$members := index $.Members $g.Name}}
-			{{range $m := $members}}
-			<form action="/api/delete-group-member" method="post"> [
-				<div> [
-					<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
-					<input readonly name="member" value="{{$m.Member}}"> []
-					<input readonly name="back_to_referer" type="hidden" value="1"> []
-					<button type="submit"> [Delete]
-				]
-			]
-			{{end}}
-		{{end}}
 		]
 	]
 ]

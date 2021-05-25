@@ -15,5 +15,26 @@
 	a:hover {
 		text-decoration: underline;
 	}
+	.main {
+		flex: 1;
+		display: flex;
+		// justify-content: space-between;
+	}
+	// left and right is a pair used in main class.
+	.left {
+		flex: 1;
+		border-right: 1px solid #DDD;
+		padding: 1rem;
+		background-color: #F7F7F7;
+	}
+	.right {
+		width: 600px;
+		padding: 1rem;
+	}
+	// one is used alone in main class.
+	.one {
+		padding: 1rem;
+		flex: 1;
+	}
 ]
 {{end}}
