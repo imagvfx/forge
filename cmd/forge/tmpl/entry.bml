@@ -22,9 +22,9 @@
 						{{end}}
 						<div> [{{$t}}]
 						<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
-							{{$props := index $.SubEntryProperties $t}}
 							{{$defaultProps := index $.DefaultProperties $t}}
 							{{range $j, $e := $entries}}
+							{{$props := index $.SubEntryProperties $e.Name}}
 							{{$pad := "0.5rem"}}
 							{{if $j}}
 							<div style="border-top:1px solid #DDD"> []

@@ -127,8 +127,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			for _, p := range props {
 				subProps[p.Name] = p
 			}
-			subEntProps[e.Type] = subProps
-
+			subEntProps[e.Name()] = subProps
 		}
 		defaultProps := make(map[string][]string)
 		for typ := range subEntsByType {
