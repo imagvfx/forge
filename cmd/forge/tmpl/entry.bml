@@ -31,7 +31,11 @@
 							{{end}}
 							<div style="display:flex;padding:{{$pad}}"> [
 								<a style="display:flex" href="{{$e.Path}}"> [
-									<img src="/thumbnail{{$e.Path}}" height="60px" width="90px" alt="" style="border:1px solid #AAAAAA"> []
+									{{if $e.HasThumbnail}}
+									<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;background-color:#DDDDDD"> []
+									{{else}}
+									<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#DDDDDD"> []
+									{{end}}
 									<div style="width:{{$pad}}"> []
 									<div style="width:90px;color:black"> [<b> [{{$e.Name}}]]
 								]

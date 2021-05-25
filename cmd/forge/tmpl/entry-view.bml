@@ -4,7 +4,11 @@
 		{{$.Entry.Name}} ({{$.Entry.Type}})
 	]
 	<div> [
-		<img src="/thumbnail{{$.Entry.Path}}" height="108" width="192" alt="" style="border:1px solid #AAAAAA"> []
+		{{if $.Entry.HasThumbnail}}
+		<img src="/thumbnail{{$.Entry.Path}}" width="192px" height="108px" style="border:1px solid #CCCCCC;background-color:#DDDDDD"> []
+		{{else}}
+		<div style="width:192px;height:108px;border:1px solid #CCCCCC;background-color:#DDDDDD"> []
+		{{end}}
 	]
 	<div style="height:1px"> []
 	<div class="collapsible"> [
