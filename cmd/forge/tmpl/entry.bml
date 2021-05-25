@@ -55,6 +55,17 @@
 				]
 			]
 			<div name="right" style="width:600px;padding:1rem;"> [
+				<h4> [
+					<div style="display:flex"> [
+						<a href="?tab=view"> [View]
+						<div style="width:0.5rem"> []
+						<a href="?tab=edit"> [Edit]
+						<div style="width:0.5rem"> []
+						<a href="?tab=delete"> [Delete]
+						<div style="flex:1"> []
+						<a href="?tab=logs"> [Logs]
+					]
+				]
 				{{if eq $.UserSetting.EntryPageTab "view"}}
 					{{template "entry-view-tab" $}}
 				{{else if eq $.UserSetting.EntryPageTab "edit"}}
