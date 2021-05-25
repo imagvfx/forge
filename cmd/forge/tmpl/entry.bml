@@ -25,21 +25,20 @@
 							{{$defaultProps := index $.DefaultProperties $t}}
 							{{range $j, $e := $entries}}
 							{{$props := index $.SubEntryProperties $e.Name}}
-							{{$pad := "0.5rem"}}
+							{{$pad := "0.3rem"}}
 							{{if $j}}
 							<div style="border-top:1px solid #DDD"> []
 							{{end}}
-							<div style="display:flex;padding:{{$pad}}"> [
-								<a style="display:flex" href="{{$e.Path}}"> [
+							<div style="display:flex"> [
+								<a style="padding:{{$pad}};width:96px" href="{{$e.Path}}"> [
 									{{if $e.HasThumbnail}}
-									<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;background-color:#DDDDDD"> []
+									<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;background-color:#DDDDDD;vertical-align:middle"> []
 									{{else}}
 									<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#DDDDDD"> []
 									{{end}}
-									<div style="width:{{$pad}}"> []
-									<div style="width:90px;color:black"> [<b> [{{$e.Name}}]]
+									<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
 								]
-								<div style="flex:1;display:grid;grid-template-columns:repeat(4, 1fr)"> [
+								<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat(4, 1fr)"> [
 									{{range $name := $defaultProps}}
 										<div> [
 											<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
