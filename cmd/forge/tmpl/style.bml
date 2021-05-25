@@ -18,7 +18,7 @@
 	.main {
 		flex: 1;
 		display: flex;
-		// justify-content: space-between;
+		overflow: scroll;
 	}
 	// left and right is a pair used in main class.
 	.left {
