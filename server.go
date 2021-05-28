@@ -749,31 +749,28 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 		return nil, err
 	}
 	us := &UserSetting{
-		ID:           ss.ID,
-		User:         ss.User,
-		EntryPageTab: ss.EntryPageTab,
+		ID:                      ss.ID,
+		User:                    ss.User,
+		EntryPageTab:            ss.EntryPageTab,
+		EntryPagePropertyFilter: ss.EntryPagePropertyFilter,
 	}
 	return us, nil
 }
 
-func (s *Server) UpdateUserEntryPageTab(ctx context.Context, user string, tab string) error {
-	if user == "" {
+func (s *Server) UpdateUserSetting(ctx context.Context, upd service.UserSettingUpdater) error {
+	if upd.User == "" {
 		return fmt.Errorf("user not specified")
 	}
-	if tab == "" {
-		return fmt.Errorf("user setting for entry page tab not specified")
+	if upd.EntryPageTab != nil {
+		switch *upd.EntryPageTab {
+		case "view":
+		case "edit":
+		case "delete":
+		default:
+			return fmt.Errorf("invalid entry page tab: %v", upd.EntryPageTab)
+		}
 	}
-	switch tab {
-	case "view":
-	case "edit":
-	case "delete":
-	default:
-		return fmt.Errorf("invalid entry page tab: %v", tab)
-	}
-	err := s.svc.UpdateUserSetting(ctx, service.UserSettingUpdater{
-		User:         user,
-		EntryPageTab: &tab,
-	})
+	err := s.svc.UpdateUserSetting(ctx, upd)
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -14,6 +15,7 @@ func createUserSettingsTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			user_id INTERGER NOT NULL,
 			entry_page_tab STRING,
+			entry_page_property_filter STRING,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)
@@ -56,7 +58,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		SELECT
 			user_settings.id,
 			accessors.name,
-			user_settings.entry_page_tab
+			user_settings.entry_page_tab,
+			user_settings.entry_page_property_filter
 		FROM user_settings
 		LEFT JOIN accessors ON user_settings.user_id = accessors.id
 		`+where,
@@ -66,6 +69,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		return nil, err
 	}
 	defer rows.Close()
+	var filter []byte
 	settings := make([]*service.UserSetting, 0)
 	for rows.Next() {
 		s := &service.UserSetting{}
@@ -73,7 +77,12 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			&s.ID,
 			&s.User,
 			&s.EntryPageTab,
+			&filter,
 		)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(filter, &s.EntryPagePropertyFilter)
 		if err != nil {
 			return nil, err
 		}
@@ -120,15 +129,21 @@ func addUserSetting(tx *sql.Tx, ctx context.Context, s *service.UserSetting) err
 	if err != nil {
 		return err
 	}
+	filter, err := json.Marshal(s.EntryPagePropertyFilter)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO user_settings (
 			user_id,
-			entry_page_tab
+			entry_page_tab,
+			entry_page_property_filter
 		)
-		VALUES (?, ?)
+		VALUES (?, ?, ?)
 	`,
 		userID,
 		s.EntryPageTab,
+		filter,
 	)
 	if err != nil {
 		return err
@@ -159,6 +174,10 @@ func UpdateUserSetting(db *sql.DB, ctx context.Context, upd service.UserSettingU
 }
 
 func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingUpdater) error {
+	u, err := getUserSetting(tx, ctx, upd.User)
+	if err != nil {
+		return err
+	}
 	userID, err := getUserID(tx, ctx, upd.User)
 	if err != nil {
 		return err
@@ -168,6 +187,23 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 	if upd.EntryPageTab != nil {
 		keys = append(keys, "entry_page_tab=?")
 		vals = append(vals, *upd.EntryPageTab)
+	}
+	var filterBytes []byte
+	if upd.EntryPagePropertyFilter != nil {
+		// Update current filter.
+		filter := u.EntryPagePropertyFilter
+		if filter == nil {
+			filter = make(map[string]string)
+		}
+		for entryType, f := range upd.EntryPagePropertyFilter {
+			filter[entryType] = f
+		}
+		filterBytes, err = json.Marshal(filter)
+		if err != nil {
+			return err
+		}
+		keys = append(keys, "entry_page_property_filter=?")
+		vals = append(vals, filterBytes)
 	}
 	vals = append(vals, userID) // for where clause
 	_, err = tx.ExecContext(ctx, `

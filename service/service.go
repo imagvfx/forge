@@ -237,9 +237,10 @@ type UserUpdater struct {
 }
 
 type UserSetting struct {
-	ID           int
-	User         string
-	EntryPageTab string
+	ID                      int
+	User                    string
+	EntryPageTab            string
+	EntryPagePropertyFilter map[string]string
 }
 
 type UserSettingFinder struct {
@@ -247,8 +248,9 @@ type UserSettingFinder struct {
 }
 
 type UserSettingUpdater struct {
-	User         string
-	EntryPageTab *string
+	User                    string
+	EntryPageTab            *string
+	EntryPagePropertyFilter map[string]string
 }
 
 type Group struct {

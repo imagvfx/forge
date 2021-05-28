@@ -222,6 +222,7 @@ func main() {
 	mux.HandleFunc("/api/set-group", api.HandleSetGroup)
 	mux.HandleFunc("/api/add-group-member", api.HandleAddGroupMember)
 	mux.HandleFunc("/api/delete-group-member", api.HandleDeleteGroupMember)
+	mux.HandleFunc("/api/set-user-setting", api.HandleSetUserSetting)
 
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)

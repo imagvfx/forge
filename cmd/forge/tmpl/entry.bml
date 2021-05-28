@@ -20,9 +20,17 @@
 						{{if $i}}
 						<div style="height:1rem"> []
 						{{end}}
-						<div> [{{$t}}]
+						<div style="display:flex"> [
+							<div style="margin-right:5px"> [{{$t}}]
+							<form action="/api/set-user-setting" method="POST"> [
+								<input name="entry_page_property_filter_key" type="hidden" value="{{$t}}"> []
+								<input name="entry_page_property_filter_value" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+						]
+						<div style="height:0.5rem"> []
 						<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
-							{{$defaultProps := index $.DefaultProperties $t}}
+							{{$propFilters := index $.PropertyFilters $t}}
 							{{range $j, $e := $entries}}
 							{{$props := index $.SubEntryProperties $e.Name}}
 							{{$pad := "0.3rem"}}
@@ -38,8 +46,8 @@
 									{{end}}
 									<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
 								]
-								<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat(4, 1fr)"> [
-									{{range $name := $defaultProps}}
+								<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat({{min (len $propFilters) 4}}, 1fr)"> [
+									{{range $name := $propFilters}}
 										<div> [
 											<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
 											{{$p := index $props $name}}

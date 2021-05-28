@@ -30,6 +30,12 @@ type pathHandler struct {
 }
 
 var pathHandlerFuncs = template.FuncMap{
+	"min": func(a, b int) int {
+		if a < b {
+			return a
+		}
+		return b
+	},
 	"pathLinks": func(path string) (template.HTML, error) {
 		if !strings.HasPrefix(path, "/") {
 			return "", fmt.Errorf("path should start with /")
@@ -91,7 +97,10 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
 		if tab != "" {
-			err := h.server.UpdateUserEntryPageTab(ctx, user, tab)
+			err := h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
+				User:         user,
+				EntryPageTab: &tab,
+			})
 			if err != nil {
 				return err
 			}
@@ -129,17 +138,22 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			}
 			subEntProps[e.Name()] = subProps
 		}
-		defaultProps := make(map[string][]string)
+		propFilters := make(map[string][]string)
 		for typ := range subEntsByType {
-			defaultProps[typ] = make([]string, 0)
-			defaults, err := h.server.Defaults(ctx, typ)
-			if err != nil {
-				return err
-			}
-			for _, d := range defaults {
-				if d.Category == "property" {
-					// Only show default properties, for now.
-					defaultProps[typ] = append(defaultProps[typ], d.Name)
+			propFilters[typ] = make([]string, 0)
+			if setting.EntryPagePropertyFilter != nil && setting.EntryPagePropertyFilter[typ] != "" {
+				filter := setting.EntryPagePropertyFilter[typ]
+				propFilters[typ] = strings.Fields(filter)
+			} else {
+				defaults, err := h.server.Defaults(ctx, typ)
+				if err != nil {
+					return err
+				}
+				for _, d := range defaults {
+					if d.Category == "property" {
+						// Only show default properties, for now.
+						propFilters[typ] = append(propFilters[typ], d.Name)
+					}
 				}
 			}
 		}
@@ -165,7 +179,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Entry              *forge.Entry
 			SubEntriesByType   map[string][]*forge.Entry
 			SubEntryProperties map[string]map[string]*forge.Property
-			DefaultProperties  map[string][]string
+			PropertyFilters    map[string][]string
 			Properties         []*forge.Property
 			Environs           []*forge.Property
 			SubEntryTypes      []string
@@ -176,7 +190,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Entry:              ent,
 			SubEntriesByType:   subEntsByType,
 			SubEntryProperties: subEntProps,
-			DefaultProperties:  defaultProps,
+			PropertyFilters:    propFilters,
 			Properties:         props,
 			Environs:           envs,
 			SubEntryTypes:      subtyps,
@@ -1493,4 +1507,43 @@ func (h *apiHandler) HandleDeleteThumbnail(w http.ResponseWriter, r *http.Reques
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}
+}
+
+func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		tab := r.FormValue("entry_page_tab")
+		var pTab *string
+		if tab != "" {
+			pTab = &tab
+		}
+		entryType := r.FormValue("entry_page_property_filter_key")
+		filter := r.FormValue("entry_page_property_filter_value")
+		propertyFilter := make(map[string]string)
+		if entryType != "" {
+			propertyFilter[entryType] = filter
+		}
+		err = h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
+			User:                    user,
+			EntryPageTab:            pTab,
+			EntryPagePropertyFilter: propertyFilter,
+		})
+		if err != nil {
+			return err
+		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
+		return nil
+	}()
+	handleError(w, err)
 }
