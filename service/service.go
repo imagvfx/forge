@@ -19,6 +19,7 @@ type Service interface {
 	UpdateDefault(ctx context.Context, upd DefaultUpdater) error
 	DeleteDefault(ctx context.Context, entType, ctg, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
+	SearchEntries(ctx context.Context, search EntrySearcher) ([]*Entry, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
 	AddEntry(ctx context.Context, ent *Entry) error
 	RenameEntry(ctx context.Context, path string, newName string) error
@@ -113,6 +114,13 @@ type Entry struct {
 type EntryFinder struct {
 	ParentPath *string
 	Path       *string
+}
+
+type EntrySearcher struct {
+	SearchRoot string
+	EntryType  string
+	Names      []string
+	Properties []string
 }
 
 type EntryTypeUpdater struct {

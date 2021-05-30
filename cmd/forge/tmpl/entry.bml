@@ -26,53 +26,57 @@
 					Sub Entry
 				]
 				<div> [
-				{{range $i, $t := $.SubEntryTypes}}
-					{{$entries := index $.SubEntriesByType $t}}
-					{{if $entries}}
-						{{if $i}}
-						<div style="height:1rem"> []
-						{{end}}
-						<div style="display:flex"> [
-							<div style="margin-right:5px"> [{{$t}}]
-							<form action="/api/set-user-setting" method="POST"> [
-								<input name="entry_page_property_filter_key" type="hidden" value="{{$t}}"> []
-								<input name="entry_page_property_filter_value" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-							]
-						]
-						<div style="height:0.5rem"> []
-						<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
-							{{$propFilters := index $.PropertyFilters $t}}
-							{{range $j, $e := $entries}}
-							{{$props := index $.SubEntryProperties $e.Name}}
-							{{$pad := "0.3rem"}}
-							{{if $j}}
-							<div style="border-top:1px solid #DDD"> []
+				{{range $parent, $entsByType := $.SubEntriesByParentByType}}
+					{{if ne $parent $.Entry.Path}}<h5> [From <a href="{{$parent}}"> [{{$parent}}]]{{end}}
+					{{$i := 0}}
+					{{range $t, $entries := $entsByType}}
+						{{if $entries}}
+							{{if $i}}
+							<div style="height:1rem"> []
 							{{end}}
 							<div style="display:flex"> [
-								<a style="padding:{{$pad}};width:96px" href="{{$e.Path}}"> [
-									{{if $e.HasThumbnail}}
-									<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;background-color:#DDDDDD;vertical-align:middle"> []
-									{{else}}
-									<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#DDDDDD"> []
-									{{end}}
-									<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
-								]
-								<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat({{min (len $propFilters) 4}}, 1fr)"> [
-									{{range $name := $propFilters}}
-										<div> [
-											<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
-											{{$p := index $props $name}}
-											{{if $p}}
-											<div style="height:0.2rem"> []
-											<div style="font-size:0.8rem"> [{{$p.Value}}]
-											{{end}}
-										]
-									{{end}}
+								<div style="margin-right:5px"> [{{$t}}]
+								<form action="/api/set-user-setting" method="POST"> [
+									<input name="entry_page_property_filter_key" type="hidden" value="{{$t}}"> []
+									<input name="entry_page_property_filter_value" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
+									<input readonly name="back_to_referer" type="hidden" value="1"> []
 								]
 							]
-							{{end}}
-						]
+							<div style="height:0.5rem"> []
+							<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
+								{{$propFilters := index $.PropertyFilters $t}}
+								{{range $j, $e := $entries}}
+								{{$props := index $.SubEntryProperties $e.Path}}
+								{{$pad := "0.3rem"}}
+								{{if $j}}
+								<div style="border-top:1px solid #DDD"> []
+								{{end}}
+								<div style="display:flex"> [
+									<a style="padding:{{$pad}};width:96px" href="{{$e.Path}}"> [
+										{{if $e.HasThumbnail}}
+										<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;background-color:#DDDDDD;vertical-align:middle"> []
+										{{else}}
+										<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#DDDDDD"> []
+										{{end}}
+										<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
+									]
+									<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat({{min (len $propFilters) 4}}, 1fr)"> [
+										{{range $name := $propFilters}}
+											<div> [
+												<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
+												{{$p := index $props $name}}
+												{{if $p}}
+												<div style="height:0.2rem"> []
+												<div style="font-size:0.8rem"> [{{$p.Value}}]
+												{{end}}
+											]
+										{{end}}
+									]
+								]
+								{{end}}
+							]
+						{{$i = inc $i}}
+						{{end}}
 					{{end}}
 				{{end}}
 				]

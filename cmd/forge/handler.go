@@ -30,6 +30,9 @@ type pathHandler struct {
 }
 
 var pathHandlerFuncs = template.FuncMap{
+	"inc": func(i int) int {
+		return i + 1
+	},
 	"min": func(a, b int) int {
 		if a < b {
 			return a
@@ -114,20 +117,46 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		subEnts, err := h.server.SubEntries(ctx, path)
-		if err != nil {
-			return err
+		var subEnts []*forge.Entry
+		entryType := r.FormValue("search_entry_type")
+		if entryType != "" {
+			query := r.FormValue("search_query")
+			subEnts, err = h.server.SearchEntries(ctx, path, entryType, query)
+			if err != nil {
+				return err
+			}
+		} else {
+			subEnts, err = h.server.SubEntries(ctx, path)
+			if err != nil {
+				return err
+			}
 		}
 		sort.Slice(subEnts, func(i, j int) bool {
 			return subEnts[i].Name() < subEnts[j].Name()
 		})
-		subEntsByType := make(map[string][]*forge.Entry)
+		subEntTypes := make(map[string]bool)
+		subEntsByParentByType := make(map[string]map[string][]*forge.Entry)
 		subEntProps := make(map[string]map[string]*forge.Property)
 		for _, e := range subEnts {
-			if subEntsByType[e.Type] == nil {
-				subEntsByType[e.Type] = make([]*forge.Entry, 0)
+			// subEntTypes
+			if !subEntTypes[e.Type] {
+				subEntTypes[e.Type] = true
 			}
-			subEntsByType[e.Type] = append(subEntsByType[e.Type], e)
+			// subEntsByParentByType
+			parent := filepath.Dir(e.Path)
+			if e.Path == "/" {
+				parent = ""
+			}
+			if subEntsByParentByType[parent] == nil {
+				subEntsByParentByType[parent] = make(map[string][]*forge.Entry)
+			}
+			byType := subEntsByParentByType[parent]
+			if byType[e.Type] == nil {
+				byType[e.Type] = make([]*forge.Entry, 0)
+			}
+			byType[e.Type] = append(byType[e.Type], e)
+			subEntsByParentByType[parent] = byType
+			// subProps
 			props, err := h.server.EntryProperties(ctx, e.Path)
 			if err != nil {
 				return err
@@ -136,10 +165,10 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			for _, p := range props {
 				subProps[p.Name] = p
 			}
-			subEntProps[e.Name()] = subProps
+			subEntProps[e.Path] = subProps
 		}
 		propFilters := make(map[string][]string)
-		for typ := range subEntsByType {
+		for typ := range subEntTypes {
 			propFilters[typ] = make([]string, 0)
 			if setting.EntryPagePropertyFilter != nil && setting.EntryPagePropertyFilter[typ] != "" {
 				filter := setting.EntryPagePropertyFilter[typ]
@@ -178,29 +207,29 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		recipe := struct {
-			User               string
-			UserSetting        *forge.UserSetting
-			Entry              *forge.Entry
-			SubEntriesByType   map[string][]*forge.Entry
-			SubEntryProperties map[string]map[string]*forge.Property
-			PropertyFilters    map[string][]string
-			Properties         []*forge.Property
-			Environs           []*forge.Property
-			SubEntryTypes      []string
-			AccessControls     []*forge.AccessControl
-			AllEntryTypes      []string
+			User                     string
+			UserSetting              *forge.UserSetting
+			Entry                    *forge.Entry
+			SubEntriesByParentByType map[string]map[string][]*forge.Entry
+			SubEntryProperties       map[string]map[string]*forge.Property
+			PropertyFilters          map[string][]string
+			Properties               []*forge.Property
+			Environs                 []*forge.Property
+			SubEntryTypes            []string
+			AccessControls           []*forge.AccessControl
+			AllEntryTypes            []string
 		}{
-			User:               user,
-			UserSetting:        setting,
-			Entry:              ent,
-			SubEntriesByType:   subEntsByType,
-			SubEntryProperties: subEntProps,
-			PropertyFilters:    propFilters,
-			Properties:         props,
-			Environs:           envs,
-			SubEntryTypes:      subtyps,
-			AccessControls:     acs,
-			AllEntryTypes:      alltyps,
+			User:                     user,
+			UserSetting:              setting,
+			Entry:                    ent,
+			SubEntriesByParentByType: subEntsByParentByType,
+			SubEntryProperties:       subEntProps,
+			PropertyFilters:          propFilters,
+			Properties:               props,
+			Environs:                 envs,
+			SubEntryTypes:            subtyps,
+			AccessControls:           acs,
+			AllEntryTypes:            alltyps,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 		if err != nil {

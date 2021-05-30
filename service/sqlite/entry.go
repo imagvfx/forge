@@ -125,6 +125,95 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	return ents, nil
 }
 
+func SearchEntries(db *sql.DB, ctx context.Context, search service.EntrySearcher) ([]*service.Entry, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	ents, err := searchEntries(tx, ctx, search)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return ents, nil
+}
+
+func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher) ([]*service.Entry, error) {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	keys = append(keys, "entries.path LIKE ?")
+	vals = append(vals, search.SearchRoot+`/%`)
+	keys = append(keys, "entries.typ=?")
+	vals = append(vals, search.EntryType)
+	for _, n := range search.Names {
+		keys = append(keys, "entries.path LIKE ?")
+		vals = append(vals, `%/`+n)
+	}
+	for _, p := range search.Properties {
+		kv := strings.SplitN(p, "=", 2)
+		if len(kv) != 2 {
+			return nil, fmt.Errorf("property should be key=value form")
+		}
+		keys = append(keys, "(properties.name=? AND properties.val=?)")
+		vals = append(vals, kv[0], kv[1])
+	}
+	where := ""
+	if len(keys) != 0 {
+		where = "WHERE " + strings.Join(keys, " AND ")
+	}
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			entries.id,
+			entries.path,
+			entries.typ,
+			thumbnails.id
+		FROM entries
+		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
+		LEFT JOIN properties ON entries.id = properties.entry_id
+		`+where+`
+		GROUP BY entries.id
+	`,
+		vals...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	ents := make([]*service.Entry, 0)
+	for rows.Next() {
+		e := &service.Entry{}
+		var thumbID *int
+		err := rows.Scan(
+			&e.ID,
+			&e.Path,
+			&e.Type,
+			&thumbID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if thumbID != nil {
+			e.HasThumbnail = true
+		}
+		err = userRead(tx, ctx, e.Path)
+		if err != nil {
+			var e *service.NotFoundError
+			if !errors.As(err, &e) {
+				return nil, err
+			}
+			// userRead returns service.NotFoundError
+			// because of the user doesn't have permission to see the entry.
+			continue
+		}
+		ents = append(ents, e)
+	}
+	return ents, nil
+}
+
 func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

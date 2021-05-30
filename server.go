@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/imagvfx/forge/service"
 	"golang.org/x/image/draw"
@@ -49,6 +50,59 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 	}
 	es, err := s.svc.FindEntries(ctx, service.EntryFinder{
 		ParentPath: &path,
+	})
+	if err != nil {
+		return nil, err
+	}
+	ents := make([]*Entry, 0)
+	for _, e := range es {
+		ent := &Entry{
+			ID:           e.ID,
+			Path:         e.Path,
+			Type:         e.Type,
+			HasThumbnail: e.HasThumbnail,
+		}
+		ents = append(ents, ent)
+	}
+	return ents, nil
+}
+
+func (s *Server) SearchEntries(ctx context.Context, path, entryType, query string) ([]*Entry, error) {
+	if path == "" {
+		return nil, fmt.Errorf("entry path not specified")
+	}
+	if entryType == "" {
+		return nil, fmt.Errorf("search entry type not specified")
+	}
+	found := false
+	entTypes, err := s.svc.EntryTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, t := range entTypes {
+		if t == entryType {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("unknown entry type: %v", entryType)
+	}
+	names := make([]string, 0)
+	props := make([]string, 0)
+	for _, tok := range strings.Fields(query) {
+		toks := strings.SplitN(tok, "=", 2)
+		if len(toks) == 1 {
+			names = append(names, tok)
+		} else {
+			props = append(props, tok)
+		}
+	}
+	es, err := s.svc.SearchEntries(ctx, service.EntrySearcher{
+		SearchRoot: path,
+		EntryType:  entryType,
+		Names:      names,
+		Properties: props,
 	})
 	if err != nil {
 		return nil, err
