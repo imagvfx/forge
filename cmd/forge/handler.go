@@ -173,6 +173,10 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		alltyps, err := h.server.EntryTypes(ctx)
+		if err != nil {
+			return err
+		}
 		recipe := struct {
 			User               string
 			UserSetting        *forge.UserSetting
@@ -184,6 +188,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Environs           []*forge.Property
 			SubEntryTypes      []string
 			AccessControls     []*forge.AccessControl
+			AllEntryTypes      []string
 		}{
 			User:               user,
 			UserSetting:        setting,
@@ -195,6 +200,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Environs:           envs,
 			SubEntryTypes:      subtyps,
 			AccessControls:     acs,
+			AllEntryTypes:      alltyps,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 		if err != nil {

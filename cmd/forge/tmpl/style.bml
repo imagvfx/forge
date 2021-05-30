@@ -40,5 +40,39 @@
 		padding: 1rem;
 		flex: 1;
 	}
+	.search-box-left {
+		appearance: none;
+		-webkit-appearance: none;
+		margin: 0;
+		box-sizing: content-box;
+		height: 1.2rem;
+		border: 1px solid #CCC;
+		border-radius: 3px 0 0 3px;
+		padding: 0.3rem;
+		font-size:0.9rem;
+	}
+	.search-box-center {
+		appearance: none;
+		-webkit-appearance: none;
+		box-sizing: content-box;
+		margin: 0;
+		height: 1.2rem;
+		border: 1px solid #CCC;
+		border-left: 0;
+		border-right: 0;
+		padding: 0.3rem;
+		font-size:0.9rem;
+	}
+	.search-box-right {
+		appearance: none;
+		-webkit-appearance: none;
+		margin: 0;
+		box-sizing: content-box;
+		height: 1.2rem;
+		border: 1px solid #CCC;
+		border-radius: 0 3px 3px 0;
+		padding: 0.3rem;
+		font-size:0.9rem;
+	}
 ]
 {{end}}

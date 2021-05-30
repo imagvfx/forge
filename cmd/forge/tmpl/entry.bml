@@ -7,8 +7,20 @@
 		{{template "nav" $}}
 		<div class="main"> [
 			<div class="left"> [
-				<h1> [
-					{{pathLinks $.Entry.Path}}
+				<div style="display:flex;align-items:center"> [
+					<h1> [
+						{{pathLinks $.Entry.Path}}
+					]
+					<div style="flex:1;min-width:1rem"> []
+					<form style="display:flex"> [
+						<select name="search_entry_type"class="search-box-left"> [
+						{{range $t := $.AllEntryTypes}}
+							<option value="{{$t}}"> [{{$t}}]
+						{{end}}
+						]
+						<input name="search_query" type="text" class="search-box-center" style="width:20rem" placeholder="search" value=""> []
+						<button class="search-box-right" style="background-color:inherit"> [Go]
+					]
 				]
 				<h4> [
 					Sub Entry
