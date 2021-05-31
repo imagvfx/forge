@@ -986,12 +986,15 @@ func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
 		ctx := service.ContextWithUserName(r.Context(), user)
 		// parent, if suggested, will be used as prefix of the path.
 		parent := r.FormValue("parent")
-		path := r.FormValue("path")
-		path = filepath.Join(parent, path)
+		name := r.FormValue("name")
 		typ := r.FormValue("type")
-		err = h.server.AddEntry(ctx, path, typ)
-		if err != nil {
-			return err
+		for _, n := range strings.Fields(name) {
+			// treat seperate field a child name
+			path := filepath.Join(parent, n)
+			err := h.server.AddEntry(ctx, path, typ)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	}()

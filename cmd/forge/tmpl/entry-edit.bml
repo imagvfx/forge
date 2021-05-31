@@ -16,7 +16,7 @@
 		<div style="height:1rem"> []
 		<form action="/api/add-entry" method="post"> [
 			<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-			<input name="path" type="text" value="" placeholder="sub-entry"> []
+			<input name="name" type="text" value="" placeholder="sub-entry"> []
 			<select name="type" value=""> [
 			{{range $t := $.SubEntryTypes}}
 			      <option value={{$t}}> [{{$t}}]
