@@ -120,6 +120,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		resultsFromSearch := false
 		var subEnts []*forge.Entry
 		entryType := r.FormValue("search_entry_type")
+		query := r.FormValue("search_query")
 		if entryType != "" {
 			resultsFromSearch = true
 			if entryType != setting.EntryPageSearchEntryType {
@@ -133,7 +134,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				// the update doesn't affect current page
 				setting.EntryPageSearchEntryType = entryType
 			}
-			query := r.FormValue("search_query")
 			subEnts, err = h.server.SearchEntries(ctx, path, entryType, query)
 			if err != nil {
 				return err
@@ -223,6 +223,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User                     string
 			UserSetting              *forge.UserSetting
 			Entry                    *forge.Entry
+			SearchQuery              string
 			ResultsFromSearch        bool
 			SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 			SubEntryProperties       map[string]map[string]*forge.Property
@@ -236,6 +237,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User:                     user,
 			UserSetting:              setting,
 			Entry:                    ent,
+			SearchQuery:              query,
 			ResultsFromSearch:        resultsFromSearch,
 			SubEntriesByTypeByParent: subEntsByTypeByParent,
 			SubEntryProperties:       subEntProps,

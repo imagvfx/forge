@@ -18,7 +18,7 @@
 							<option value="{{$t}}" {{if eq $t $.UserSetting.EntryPageSearchEntryType}}selected{{end}}> [{{$t}}]
 						{{end}}
 						]
-						<input name="search_query" type="text" class="search-box-center" style="width:20rem" placeholder="search" value=""> []
+						<input name="search_query" type="text" class="search-box-center" style="width:20rem" placeholder="search" value="{{$.SearchQuery}}"> []
 						<button class="search-box-right" style="background-color:inherit"> [Go]
 					]
 				]
