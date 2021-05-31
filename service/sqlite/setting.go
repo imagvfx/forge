@@ -16,6 +16,7 @@ func createUserSettingsTable(tx *sql.Tx) error {
 			user_id INTERGER NOT NULL,
 			entry_page_tab STRING,
 			entry_page_property_filter STRING,
+			entry_page_search_entry_type STRING,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)
@@ -59,7 +60,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			user_settings.id,
 			accessors.name,
 			user_settings.entry_page_tab,
-			user_settings.entry_page_property_filter
+			user_settings.entry_page_property_filter,
+			user_settings.entry_page_search_entry_type
 		FROM user_settings
 		LEFT JOIN accessors ON user_settings.user_id = accessors.id
 		`+where,
@@ -69,15 +71,16 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		return nil, err
 	}
 	defer rows.Close()
-	var filter []byte
 	settings := make([]*service.UserSetting, 0)
 	for rows.Next() {
 		s := &service.UserSetting{}
+		var filter []byte
 		err := rows.Scan(
 			&s.ID,
 			&s.User,
 			&s.EntryPageTab,
 			&filter,
+			&s.EntryPageSearchEntryType,
 		)
 		if err != nil {
 			return nil, err
@@ -137,13 +140,15 @@ func addUserSetting(tx *sql.Tx, ctx context.Context, s *service.UserSetting) err
 		INSERT INTO user_settings (
 			user_id,
 			entry_page_tab,
-			entry_page_property_filter
+			entry_page_property_filter,
+			entry_page_search_entry_type
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		userID,
 		s.EntryPageTab,
 		filter,
+		s.EntryPageSearchEntryType,
 	)
 	if err != nil {
 		return err
@@ -204,6 +209,10 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		}
 		keys = append(keys, "entry_page_property_filter=?")
 		vals = append(vals, filterBytes)
+	}
+	if upd.EntryPageSearchEntryType != nil {
+		keys = append(keys, "entry_page_search_entry_type=?")
+		vals = append(vals, *upd.EntryPageSearchEntryType)
 	}
 	vals = append(vals, userID) // for where clause
 	_, err = tx.ExecContext(ctx, `

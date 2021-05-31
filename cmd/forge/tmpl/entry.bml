@@ -13,9 +13,9 @@
 					]
 					<div style="flex:1;min-width:1rem"> []
 					<form style="display:flex"> [
-						<select name="search_entry_type"class="search-box-left"> [
+						<select name="search_entry_type" class="search-box-left"> [
 						{{range $t := $.AllEntryTypes}}
-							<option value="{{$t}}"> [{{$t}}]
+							<option value="{{$t}}" {{if eq $t $.UserSetting.EntryPageSearchEntryType}}selected{{end}}> [{{$t}}]
 						{{end}}
 						]
 						<input name="search_query" type="text" class="search-box-center" style="width:20rem" placeholder="search" value=""> []
@@ -23,6 +23,11 @@
 					]
 				]
 				<div> [
+				{{if $.ResultsFromSearch}}
+					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
+				{{else}}
+					{{if not $.SubEntriesByTypeByParent}}No children{{end}}
+				{{end}}
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div style="display:flex;align-items:center"> [
 						<H4 style="margin-right:5px"> [{{$t}}]

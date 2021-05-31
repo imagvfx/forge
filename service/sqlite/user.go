@@ -134,6 +134,9 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 		User:         u.Name,
 		EntryPageTab: "view",
 	})
+	if err != nil {
+		return err
+	}
 	err = tx.Commit()
 	if err != nil {
 		return err

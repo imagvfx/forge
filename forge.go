@@ -290,10 +290,11 @@ type User struct {
 }
 
 type UserSetting struct {
-	ID                      int
-	User                    string
-	EntryPageTab            string
-	EntryPagePropertyFilter map[string]string
+	ID                       int
+	User                     string
+	EntryPageTab             string
+	EntryPagePropertyFilter  map[string]string
+	EntryPageSearchEntryType string
 }
 
 type Group struct {

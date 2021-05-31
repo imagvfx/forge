@@ -803,10 +803,11 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 		return nil, err
 	}
 	us := &UserSetting{
-		ID:                      ss.ID,
-		User:                    ss.User,
-		EntryPageTab:            ss.EntryPageTab,
-		EntryPagePropertyFilter: ss.EntryPagePropertyFilter,
+		ID:                       ss.ID,
+		User:                     ss.User,
+		EntryPageTab:             ss.EntryPageTab,
+		EntryPagePropertyFilter:  ss.EntryPagePropertyFilter,
+		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
 	}
 	return us, nil
 }
