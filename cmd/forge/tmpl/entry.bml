@@ -22,26 +22,23 @@
 						<button class="search-box-right" style="background-color:inherit"> [Go]
 					]
 				]
-				<h4> [
-					Sub Entry
-				]
 				<div> [
-				{{range $parent, $entsByType := $.SubEntriesByParentByType}}
-					{{if ne $parent $.Entry.Path}}<h5> [From <a href="{{$parent}}"> [{{$parent}}]]{{end}}
+				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
+					<div style="display:flex;align-items:center"> [
+						<H4 style="margin-right:5px"> [{{$t}}]
+						<form action="/api/set-user-setting" method="POST"> [
+							<input name="entry_page_property_filter_key" type="hidden" value="{{$t}}"> []
+							<input name="entry_page_property_filter_value" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
+					]
 					{{$i := 0}}
-					{{range $t, $entries := $entsByType}}
+					{{range $parent, $entries := $entsByParent}}
 						{{if $entries}}
 							{{if $i}}
 							<div style="height:1rem"> []
 							{{end}}
-							<div style="display:flex"> [
-								<div style="margin-right:5px"> [{{$t}}]
-								<form action="/api/set-user-setting" method="POST"> [
-									<input name="entry_page_property_filter_key" type="hidden" value="{{$t}}"> []
-									<input name="entry_page_property_filter_value" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-							]
+							{{if ne $parent $.Entry.Path}}<h5> [From <a href="{{$parent}}"> [{{$parent}}]]{{end}}
 							<div style="height:0.5rem"> []
 							<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
 								{{$propFilters := index $.PropertyFilters $t}}

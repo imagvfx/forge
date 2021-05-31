@@ -135,27 +135,27 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return subEnts[i].Name() < subEnts[j].Name()
 		})
 		subEntTypes := make(map[string]bool)
-		subEntsByParentByType := make(map[string]map[string][]*forge.Entry)
+		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
 		subEntProps := make(map[string]map[string]*forge.Property)
 		for _, e := range subEnts {
 			// subEntTypes
 			if !subEntTypes[e.Type] {
 				subEntTypes[e.Type] = true
 			}
-			// subEntsByParentByType
+			// subEntsByTypeByParent
+			if subEntsByTypeByParent[e.Type] == nil {
+				subEntsByTypeByParent[e.Type] = make(map[string][]*forge.Entry)
+			}
+			byParent := subEntsByTypeByParent[e.Type]
 			parent := filepath.Dir(e.Path)
 			if e.Path == "/" {
 				parent = ""
 			}
-			if subEntsByParentByType[parent] == nil {
-				subEntsByParentByType[parent] = make(map[string][]*forge.Entry)
+			if byParent[parent] == nil {
+				byParent[parent] = make([]*forge.Entry, 0)
 			}
-			byType := subEntsByParentByType[parent]
-			if byType[e.Type] == nil {
-				byType[e.Type] = make([]*forge.Entry, 0)
-			}
-			byType[e.Type] = append(byType[e.Type], e)
-			subEntsByParentByType[parent] = byType
+			byParent[parent] = append(byParent[parent], e)
+			subEntsByTypeByParent[e.Type] = byParent
 			// subProps
 			props, err := h.server.EntryProperties(ctx, e.Path)
 			if err != nil {
@@ -210,7 +210,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User                     string
 			UserSetting              *forge.UserSetting
 			Entry                    *forge.Entry
-			SubEntriesByParentByType map[string]map[string][]*forge.Entry
+			SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 			SubEntryProperties       map[string]map[string]*forge.Property
 			PropertyFilters          map[string][]string
 			Properties               []*forge.Property
@@ -222,7 +222,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User:                     user,
 			UserSetting:              setting,
 			Entry:                    ent,
-			SubEntriesByParentByType: subEntsByParentByType,
+			SubEntriesByTypeByParent: subEntsByTypeByParent,
 			SubEntryProperties:       subEntProps,
 			PropertyFilters:          propFilters,
 			Properties:               props,
