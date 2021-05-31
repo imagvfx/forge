@@ -808,6 +808,7 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 		EntryPageTab:             ss.EntryPageTab,
 		EntryPagePropertyFilter:  ss.EntryPagePropertyFilter,
 		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
+		EntryPageSortProperty:    ss.EntryPageSortProperty,
 	}
 	return us, nil
 }
@@ -823,6 +824,18 @@ func (s *Server) UpdateUserSetting(ctx context.Context, upd service.UserSettingU
 		case "delete":
 		default:
 			return fmt.Errorf("invalid entry page tab: %v", upd.EntryPageTab)
+		}
+	}
+	if upd.EntryPageSortProperty != nil {
+		for _, p := range upd.EntryPageSortProperty {
+			if len(p) == 0 {
+				return fmt.Errorf("sort order and property not defined")
+			}
+			order := p[:1]
+			if order != "+" && order != "-" {
+				// "+" means ascending, "-" means descending
+				return fmt.Errorf("invalid sort order: want + or -, got %v", order)
+			}
 		}
 	}
 	err := s.svc.UpdateUserSetting(ctx, upd)

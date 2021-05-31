@@ -32,8 +32,25 @@
 					<div style="display:flex;align-items:center"> [
 						<H4 style="margin-right:5px"> [{{$t}}]
 						<form action="/api/set-user-setting" method="POST"> [
-							<input name="entry_page_property_filter_key" type="hidden" value="{{$t}}"> []
-							<input name="entry_page_property_filter_value" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
+							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
+							<input name="entry_page_property_filter" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
+							<button style="display:none" name="update_filter" value="1"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
+						<div style="flex:1"> []
+						<form action="/api/set-user-setting" method="POST"> [
+							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
+							{{$sortProp := index $.UserSetting.EntryPageSortProperty $t}}
+							{{$prop := sortProperty $sortProp}}
+							<select name="entry_page_sort_property"> [
+								<option value=""> [(name)]
+							{{range $p := index $.DefaultProperties $t}}
+								<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
+							{{end}}
+							]
+							{{$desc := sortDesc $sortProp}}
+							<input name="entry_page_sort_desc" type="checkbox" {{if $desc}}checked{{end}}> []
+							<button name="update_sort" value="1"> [Sort]
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 					]

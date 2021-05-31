@@ -53,6 +53,27 @@ var pathHandlerFuncs = template.FuncMap{
 		}
 		return template.HTML(full), nil
 	},
+	"sortProperty": func(p string) string {
+		if len(p) == 0 {
+			return ""
+		}
+		if len(p) == 1 {
+			// only sort order defined
+			return ""
+		}
+		return p[1:]
+	},
+	"sortDesc": func(p string) bool {
+		if len(p) == 0 {
+			return false
+		}
+		order := p[0]
+		// '+' means ascending, '-' means descending order
+		if order == '-' {
+			return true
+		}
+		return false
+	},
 }
 
 func handleError(w http.ResponseWriter, err error) {
@@ -180,23 +201,23 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			}
 			subEntProps[e.Path] = subProps
 		}
+		defaultProps := make(map[string][]string)
 		propFilters := make(map[string][]string)
 		for typ := range subEntTypes {
-			propFilters[typ] = make([]string, 0)
+			defaults, err := h.server.Defaults(ctx, typ)
+			if err != nil {
+				return err
+			}
+			for _, d := range defaults {
+				if d.Category == "property" {
+					defaultProps[typ] = append(defaultProps[typ], d.Name)
+				}
+			}
 			if setting.EntryPagePropertyFilter != nil && setting.EntryPagePropertyFilter[typ] != "" {
 				filter := setting.EntryPagePropertyFilter[typ]
 				propFilters[typ] = strings.Fields(filter)
 			} else {
-				defaults, err := h.server.Defaults(ctx, typ)
-				if err != nil {
-					return err
-				}
-				for _, d := range defaults {
-					if d.Category == "property" {
-						// Only show default properties, for now.
-						propFilters[typ] = append(propFilters[typ], d.Name)
-					}
-				}
+				propFilters[typ] = defaultProps[typ]
 			}
 		}
 		props, err := h.server.EntryProperties(ctx, path)
@@ -227,6 +248,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			ResultsFromSearch        bool
 			SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 			SubEntryProperties       map[string]map[string]*forge.Property
+			DefaultProperties        map[string][]string
 			PropertyFilters          map[string][]string
 			Properties               []*forge.Property
 			Environs                 []*forge.Property
@@ -242,6 +264,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			SubEntriesByTypeByParent: subEntsByTypeByParent,
 			SubEntryProperties:       subEntProps,
 			PropertyFilters:          propFilters,
+			DefaultProperties:        defaultProps,
 			Properties:               props,
 			Environs:                 envs,
 			SubEntryTypes:            subtyps,
@@ -1581,16 +1604,30 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 		if tab != "" {
 			pTab = &tab
 		}
-		entryType := r.FormValue("entry_page_property_filter_key")
-		filter := r.FormValue("entry_page_property_filter_value")
-		propertyFilter := make(map[string]string)
-		if entryType != "" {
-			propertyFilter[entryType] = filter
+		entryType := r.FormValue("entry_page_entry_type")
+		filter := r.FormValue("entry_page_property_filter")
+		var propertyFilter map[string]string
+		if r.FormValue("update_filter") != "" {
+			propertyFilter = map[string]string{
+				entryType: filter,
+			}
+		}
+		var sortProperty map[string]string
+		if r.FormValue("update_sort") != "" {
+			sortProp := r.FormValue("entry_page_sort_property") // sort by entry name if empty
+			sortPrefix := "+"
+			if r.FormValue("entry_page_sort_desc") != "" {
+				sortPrefix = "-"
+			}
+			sortProperty = map[string]string{
+				entryType: sortPrefix + sortProp,
+			}
 		}
 		err = h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
 			User:                    user,
 			EntryPageTab:            pTab,
 			EntryPagePropertyFilter: propertyFilter,
+			EntryPageSortProperty:   sortProperty,
 		})
 		if err != nil {
 			return err

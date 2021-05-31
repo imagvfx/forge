@@ -293,8 +293,9 @@ type UserSetting struct {
 	ID                       int
 	User                     string
 	EntryPageTab             string
-	EntryPagePropertyFilter  map[string]string
 	EntryPageSearchEntryType string
+	EntryPagePropertyFilter  map[string]string
+	EntryPageSortProperty    map[string]string
 }
 
 type Group struct {

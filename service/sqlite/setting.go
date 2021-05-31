@@ -15,8 +15,9 @@ func createUserSettingsTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			user_id INTERGER NOT NULL,
 			entry_page_tab STRING,
-			entry_page_property_filter STRING,
 			entry_page_search_entry_type STRING,
+			entry_page_property_filter STRING,
+			entry_page_sort_property STRING,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)
@@ -60,8 +61,9 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			user_settings.id,
 			accessors.name,
 			user_settings.entry_page_tab,
+			user_settings.entry_page_search_entry_type,
 			user_settings.entry_page_property_filter,
-			user_settings.entry_page_search_entry_type
+			user_settings.entry_page_sort_property
 		FROM user_settings
 		LEFT JOIN accessors ON user_settings.user_id = accessors.id
 		`+where,
@@ -75,17 +77,23 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 	for rows.Next() {
 		s := &service.UserSetting{}
 		var filter []byte
+		var sortProp []byte
 		err := rows.Scan(
 			&s.ID,
 			&s.User,
 			&s.EntryPageTab,
-			&filter,
 			&s.EntryPageSearchEntryType,
+			&filter,
+			&sortProp,
 		)
 		if err != nil {
 			return nil, err
 		}
 		err = json.Unmarshal(filter, &s.EntryPagePropertyFilter)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(sortProp, &s.EntryPageSortProperty)
 		if err != nil {
 			return nil, err
 		}
@@ -136,19 +144,25 @@ func addUserSetting(tx *sql.Tx, ctx context.Context, s *service.UserSetting) err
 	if err != nil {
 		return err
 	}
+	sortProp, err := json.Marshal(s.EntryPageSortProperty)
+	if err != nil {
+		return err
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO user_settings (
 			user_id,
 			entry_page_tab,
+			entry_page_search_entry_type,
 			entry_page_property_filter,
-			entry_page_search_entry_type
+			entry_page_sort_property
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`,
 		userID,
 		s.EntryPageTab,
-		filter,
 		s.EntryPageSearchEntryType,
+		filter,
+		sortProp,
 	)
 	if err != nil {
 		return err
@@ -179,7 +193,7 @@ func UpdateUserSetting(db *sql.DB, ctx context.Context, upd service.UserSettingU
 }
 
 func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingUpdater) error {
-	u, err := getUserSetting(tx, ctx, upd.User)
+	setting, err := getUserSetting(tx, ctx, upd.User)
 	if err != nil {
 		return err
 	}
@@ -193,14 +207,18 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		keys = append(keys, "entry_page_tab=?")
 		vals = append(vals, *upd.EntryPageTab)
 	}
+	if upd.EntryPageSearchEntryType != nil {
+		keys = append(keys, "entry_page_search_entry_type=?")
+		vals = append(vals, *upd.EntryPageSearchEntryType)
+	}
 	var filterBytes []byte
 	if upd.EntryPagePropertyFilter != nil {
-		// Update current filter.
-		filter := u.EntryPagePropertyFilter
+		filter := setting.EntryPagePropertyFilter
 		if filter == nil {
 			filter = make(map[string]string)
 		}
 		for entryType, f := range upd.EntryPagePropertyFilter {
+			// update
 			filter[entryType] = f
 		}
 		filterBytes, err = json.Marshal(filter)
@@ -210,9 +228,22 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		keys = append(keys, "entry_page_property_filter=?")
 		vals = append(vals, filterBytes)
 	}
-	if upd.EntryPageSearchEntryType != nil {
-		keys = append(keys, "entry_page_search_entry_type=?")
-		vals = append(vals, *upd.EntryPageSearchEntryType)
+	var sortPropBytes []byte
+	if upd.EntryPageSortProperty != nil {
+		sortProp := setting.EntryPageSortProperty
+		if sortProp == nil {
+			sortProp = make(map[string]string)
+		}
+		for entryType, prop := range upd.EntryPageSortProperty {
+			// update
+			sortProp[entryType] = prop
+		}
+		sortPropBytes, err = json.Marshal(sortProp)
+		if err != nil {
+			return err
+		}
+		keys = append(keys, "entry_page_sort_property=?")
+		vals = append(vals, sortPropBytes)
 	}
 	vals = append(vals, userID) // for where clause
 	_, err = tx.ExecContext(ctx, `
