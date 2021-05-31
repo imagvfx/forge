@@ -60,7 +60,7 @@
 							{{if $i}}
 							<div style="height:1rem"> []
 							{{end}}
-							{{if ne $parent $.Entry.Path}}<h5> [From <a href="{{$parent}}"> [{{$parent}}]]{{end}}
+							{{if $.ResultsFromSearch}}<h5> [From <a href="{{$parent}}"> [{{$parent}}]]{{end}}
 							<div style="height:0.5rem"> []
 							<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
 								{{$propFilters := index $.PropertyFilters $t}}
