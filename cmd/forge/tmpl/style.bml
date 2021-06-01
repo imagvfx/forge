@@ -79,7 +79,6 @@
 		background-repeat: no-repeat;
 		background-position: center center;
 		background-size: 0.5rem 0.5rem;
-		appearance: none;
 		-webkit-appearance: none;
 		border: 1px solid #DDD
 	}
