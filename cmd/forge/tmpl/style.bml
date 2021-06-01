@@ -1,5 +1,5 @@
 {{define "style"}}
-<style> [
+<style> [```
 	html {
 		min-height: 100%;
 		display:flex;
@@ -74,5 +74,20 @@
 		padding: 0.3rem;
 		font-size:0.9rem;
 	}
-]
+	#sort_desc_cb {
+		display: block;
+		background-repeat: no-repeat;
+		background-position: center center;
+		background-size: 0.5rem 0.5rem;
+		appearance: none;
+		-webkit-appearance: none;
+		border: 1px solid #DDD
+	}
+	#sort_desc_cb:not(:checked) {
+		background-image: url("/asset/down-arrow.svg");
+	}
+	#sort_desc_cb:checked {
+		background-image: url("/asset/up-arrow.svg");
+	}
+```]
 {{end}}

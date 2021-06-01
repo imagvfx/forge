@@ -223,6 +223,8 @@ func main() {
 	mux.HandleFunc("/api/add-group-member", api.HandleAddGroupMember)
 	mux.HandleFunc("/api/delete-group-member", api.HandleDeleteGroupMember)
 	mux.HandleFunc("/api/set-user-setting", api.HandleSetUserSetting)
+	fs := http.FileServer(http.Dir("asset"))
+	mux.Handle("/asset/", http.StripPrefix("/asset/", fs))
 
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)
