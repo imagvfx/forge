@@ -165,9 +165,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
-		sort.Slice(subEnts, func(i, j int) bool {
-			return subEnts[i].Name() < subEnts[j].Name()
-		})
 		subEntTypes := make(map[string]bool)
 		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
 		subEntProps := make(map[string]map[string]*forge.Property)
@@ -200,6 +197,48 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				subProps[p.Name] = p
 			}
 			subEntProps[e.Path] = subProps
+		}
+		for t, byParent := range subEntsByTypeByParent {
+			var prop string
+			var desc bool
+			sortProp := setting.EntryPageSortProperty[t]
+			if sortProp != "" {
+				prefix := sortProp[0]
+				prop = sortProp[1:]
+				if prefix == '-' {
+					desc = true
+				}
+			}
+			for _, ents := range byParent {
+				sort.Slice(ents, func(i, j int) bool {
+					if prop == "" {
+						if !desc {
+							return ents[i].Name() < ents[j].Name()
+						}
+						return ents[i].Name() > ents[j].Name()
+					}
+					iv := subEntProps[ents[i].Path][prop].Eval()
+					jv := subEntProps[ents[j].Path][prop].Eval()
+					less := iv < jv
+					if iv == jv {
+						less = ents[i].Name() < ents[j].Name()
+					}
+					if desc {
+						less = !less
+					}
+					if iv == "" || jv == "" {
+						// Entry with empty value should stand behind of non-empty value
+						// regardless of the order type.
+						if iv == "" {
+							less = false
+						} else {
+							less = true
+						}
+					}
+					return less
+				})
+			}
+
 		}
 		defaultProps := make(map[string][]string)
 		propFilters := make(map[string][]string)
