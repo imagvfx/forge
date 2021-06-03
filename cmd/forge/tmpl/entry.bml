@@ -34,6 +34,7 @@
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div style="display:flex;align-items:center"> [
 						<H4 style="margin-right:5px"> [{{$t}}]
+						<!-- Property Filter -->
 						<form action="/api/set-user-setting" method="POST"> [
 							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
 							<input name="entry_page_property_filter" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
@@ -41,12 +42,13 @@
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 						<div style="flex:1"> []
+						<!-- Sort -->
 						<form action="/api/set-user-setting" style="display:flex;align-items:center" method="POST"> [
 							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
 							{{$sortProp := index $.UserSetting.EntryPageSortProperty $t}}
 							{{$prop := sortProperty $sortProp}}
 							{{$desc := sortDesc $sortProp}}
-							<select name="entry_page_sort_property" style="appearance:none;height:1.2rem;border:1px solid #DDD;border-radius:2px;padding:0 0.3rem;"> [
+							<select name="entry_page_sort_property" style="appearance:none;min-width:6rem;height:1.2rem;border:1px solid #DDD;border-radius:2px;padding:0 0.3rem;"> [
 								<option value=""> [(name)]
 							{{range $p := index $.DefaultProperties $t}}
 								<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
