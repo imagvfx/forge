@@ -69,6 +69,8 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 
 func (s *Server) SearchEntries(ctx context.Context, path, entryType, query string) ([]*Entry, error) {
 	if path == "" {
+		// Search from root requires an empty path,
+		// but it is not allowed intensionally.
 		return nil, fmt.Errorf("entry path not specified")
 	}
 	if entryType == "" {
