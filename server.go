@@ -90,21 +90,10 @@ func (s *Server) SearchEntries(ctx context.Context, path, entryType, query strin
 	if !found {
 		return nil, fmt.Errorf("unknown entry type: %v", entryType)
 	}
-	names := make([]string, 0)
-	props := make([]string, 0)
-	for _, tok := range strings.Fields(query) {
-		toks := strings.SplitN(tok, "=", 2)
-		if len(toks) == 1 {
-			names = append(names, tok)
-		} else {
-			props = append(props, tok)
-		}
-	}
 	es, err := s.svc.SearchEntries(ctx, service.EntrySearcher{
 		SearchRoot: path,
 		EntryType:  entryType,
-		Names:      names,
-		Properties: props,
+		Keywords:   strings.Fields(query),
 	})
 	if err != nil {
 		return nil, err

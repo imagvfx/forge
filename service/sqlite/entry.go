@@ -149,17 +149,41 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 	vals = append(vals, search.SearchRoot+`/%`)
 	keys = append(keys, "entries.typ=?")
 	vals = append(vals, search.EntryType)
-	for _, n := range search.Names {
-		keys = append(keys, "entries.path LIKE ?")
-		vals = append(vals, `%/`+n)
-	}
-	for _, p := range search.Properties {
-		kv := strings.SplitN(p, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("property should be key=value form")
+	for _, p := range search.Keywords {
+		p = strings.TrimSpace(p)
+		if p == "" {
+			continue
 		}
-		keys = append(keys, "(properties.name=? AND properties.val=?)")
-		vals = append(vals, kv[0], kv[1])
+		idxColon := strings.Index(p, ":")
+		idxEqual := strings.Index(p, "=")
+		if idxColon == -1 && idxEqual == -1 {
+			// generic search; not tied to a property
+			keys = append(keys, "(entries.path LIKE ? OR properties.val LIKE ?)")
+			vals = append(vals, search.SearchRoot+`/%`+p+`%`, `%`+p+`%`)
+			continue
+		}
+		// Check which is appeared earlier.
+		if idxColon == -1 {
+			idxColon = len(p)
+		}
+		if idxEqual == -1 {
+			idxEqual = len(p)
+		}
+		idx := idxColon
+		exactSearch := false
+		if idxEqual < idxColon {
+			idx = idxEqual
+			exactSearch = true
+		}
+		k := p[:idx]
+		v := p[idx+1:] // exclude colon or equal
+		if exactSearch {
+			keys = append(keys, "(properties.name=? AND properties.val=?)")
+			vals = append(vals, k, v)
+		} else {
+			keys = append(keys, "(properties.name=? AND properties.val LIKE ?)")
+			vals = append(vals, k, `%`+v+`%`)
+		}
 	}
 	where := ""
 	if len(keys) != 0 {

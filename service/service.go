@@ -119,8 +119,7 @@ type EntryFinder struct {
 type EntrySearcher struct {
 	SearchRoot string
 	EntryType  string
-	Names      []string
-	Properties []string
+	Keywords   []string
 }
 
 type EntryTypeUpdater struct {
