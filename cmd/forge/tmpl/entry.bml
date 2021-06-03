@@ -12,6 +12,8 @@
 						{{pathLinks $.Entry.Path}}
 					]
 					<div style="flex:1;min-width:1rem"> []
+					<!-- Search Box -->
+					{{if ne $.Entry.Path "/"}}
 					<form style="display:flex"> [
 						<select name="search_entry_type" class="search-box-left"> [
 						{{range $t := $.AllEntryTypes}}
@@ -21,6 +23,7 @@
 						<input name="search_query" type="text" class="search-box-center" style="width:20rem" placeholder="search" value="{{$.SearchQuery}}"> []
 						<button class="search-box-right" style="background-color:inherit"> [Go]
 					]
+					{{end}}
 				]
 				<div> [
 				{{if $.ResultsFromSearch}}
