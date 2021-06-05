@@ -217,11 +217,17 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 						}
 						return ents[i].Name() > ents[j].Name()
 					}
-					iv := subEntProps[ents[i].Path][prop].Eval()
-					jv := subEntProps[ents[j].Path][prop].Eval()
-					less := iv < jv
-					if iv == jv {
+					ip := subEntProps[ents[i].Path][prop]
+					jp := subEntProps[ents[j].Path][prop]
+					iv := ip.Eval()
+					jv := jp.Eval()
+					var less bool
+					if ip.Type != jp.Type {
+						less = ip.Type < jp.Type
+					} else if iv == jv {
 						less = ents[i].Name() < ents[j].Name()
+					} else {
+						less = forge.LessProperty(ip.Type, iv, jv)
 					}
 					if desc {
 						less = !less

@@ -57,6 +57,22 @@ type Property struct {
 	Value     string
 }
 
+func LessProperty(t, a, b string) bool {
+	switch t {
+	case "int":
+		ia, erra := strconv.Atoi(a)
+		ib, errb := strconv.Atoi(b)
+		if erra != nil {
+			return true
+		}
+		if errb != nil {
+			return false
+		}
+		return ia < ib
+	}
+	return a < b
+}
+
 func (p *Property) Eval() string {
 	eval := map[string]func(string) string{
 		"timecode":   p.evalTimecode,
