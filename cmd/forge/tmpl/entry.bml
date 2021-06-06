@@ -87,8 +87,8 @@
 									<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat({{min (len $propFilters) 4}}, 1fr)"> [
 										{{range $name := $propFilters}}
 											<div> [
-												<div style="font-size:0.75rem;color:#AAA"> [{{$name}}]
 												{{$p := index $props $name}}
+												<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showPropertyUpdater('{{$e.Path}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
 												{{if $p}}
 												<div style="height:0.2rem"> []
 												<div style="font-size:0.8rem"> [{{$p.Value}}]
@@ -103,6 +103,19 @@
 						{{end}}
 					{{end}}
 				{{end}}
+				]
+				<div id="propertyUpdater" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
+					<div class="entryLabel" style="padding:0.5rem;background-color:#BDD"> []
+					<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
+						<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
+						<form action="/api/set-property" style="flex:1;display:flex;gap:0.5rem" method="POST"> [
+							<input name="path" class="entryInput" type="hidden"> []
+							<input name="name" class="nameInput" type="hidden"> []
+							<input name="value" class="valueInput" style="flex:1"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button> [Update]
+						]
+					]
 				]
 			]
 			<div class="right"> [
@@ -130,6 +143,28 @@
 ]
 
 <script> [`
+function showPropertyUpdater(entry, name, type, value) {
+	let updater = document.getElementById("propertyUpdater");
+	updater.style.display = "block";
+	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
+	updater.getElementsByClassName("entryInput")[0].value = entry;
+	updater.getElementsByClassName("nameLabel")[0].innerText = name;
+	updater.getElementsByClassName("nameInput")[0].value = name;
+	let oldValueInput = updater.getElementsByClassName("valueInput")[0];
+	let valueInput;
+	if (type == "text") {
+		valueInput = document.createElement("textarea");
+	} else {
+		valueInput = document.createElement("input");
+	}
+	valueInput.name = "value";
+	valueInput.classList.add("valueInput");
+	valueInput.style.flex = 1;
+	oldValueInput.parentNode.replaceChild(valueInput, oldValueInput);
+	valueInput.placeholder = type;
+	valueInput.value = value;
+}
+
 function toggleCollapse() {
 	let collapsible = this.parentElement;
 	let content = collapsible.getElementsByClassName("content")[0];
