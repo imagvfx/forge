@@ -175,6 +175,7 @@ function showPropertyUpdater(entry, name, type, value) {
 	oldValueInput.parentNode.replaceChild(valueInput, oldValueInput);
 	valueInput.placeholder = type;
 	valueInput.value = value;
+	valueInput.focus();
 }
 
 function hidePropertyUpdater() {
