@@ -675,35 +675,39 @@ type loginHandler struct {
 
 func (h *loginHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
-		// state prevents hijacking of communication
-		seed := make([]byte, 1024)
-		rand.Read(seed)
-		hs := sha256.New()
-		hs.Write(seed)
-		state := fmt.Sprintf("%x", hs.Sum(nil))
 
 		session, err := getSession(r)
 		if err != nil {
 			clearSession(w)
 			return err
 		}
-		session["state"] = state
+		// state prevents hijacking of communication
+		//
+		// Note: Google Chrome (and maybe other browsers too) secretly loads this page again from background.
+		// Skip to create a new state in that case, as that will break this whole login process.
+		if session["state"] == "" {
+			seed := make([]byte, 1024)
+			rand.Read(seed)
+			hs := sha256.New()
+			hs.Write(seed)
+			state := fmt.Sprintf("%x", hs.Sum(nil))
+			session["state"] = state
+		}
 		setSession(w, session)
 
 		// nonce prevents replay attack
-		seed = make([]byte, 1024)
+		seed := make([]byte, 1024)
 		rand.Read(seed)
-		hs = sha256.New()
+		hs := sha256.New()
 		hs.Write(seed)
 		nonce := fmt.Sprintf("%x", hs.Sum(nil))
-
 		recipe := struct {
 			OIDC      *forge.OIDC
 			OIDCState string
 			OIDCNonce string
 		}{
 			OIDC:      h.oidc,
-			OIDCState: state,
+			OIDCState: session["state"],
 			OIDCNonce: nonce,
 		}
 		err = Tmpl.ExecuteTemplate(w, "login.bml", recipe)
@@ -775,6 +779,8 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		session["user"] = user
+		// session["state"] was created for login. Need to clear it for possible re-login.
+		session["state"] = ""
 		err = setSession(w, session)
 		if err != nil {
 			return err
