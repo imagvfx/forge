@@ -289,7 +289,16 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	defer tx.Rollback()
-	err = addEntry(tx, ctx, e)
+	addEntryR(tx, ctx, e)
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
+	err := addEntry(tx, ctx, e)
 	if err != nil {
 		return err
 	}
@@ -302,7 +311,7 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 			Path: filepath.Join(e.Path, d.Name),
 			Type: d.Type,
 		}
-		err := addEntry(tx, ctx, de)
+		err := addEntryR(tx, ctx, de)
 		if err != nil {
 			return err
 		}
@@ -338,10 +347,6 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 		if err != nil {
 			return err
 		}
-	}
-	err = tx.Commit()
-	if err != nil {
-		return err
 	}
 	return nil
 }
