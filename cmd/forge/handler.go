@@ -835,10 +835,7 @@ func (h *apiHandler) HandleAddEntryType(w http.ResponseWriter, r *http.Request) 
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleRenameEntryType(w http.ResponseWriter, r *http.Request) {
@@ -864,9 +861,7 @@ func (h *apiHandler) HandleRenameEntryType(w http.ResponseWriter, r *http.Reques
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteEntryType(w http.ResponseWriter, r *http.Request) {
@@ -892,9 +887,7 @@ func (h *apiHandler) HandleDeleteEntryType(w http.ResponseWriter, r *http.Reques
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddSubEntryType(w http.ResponseWriter, r *http.Request) {
@@ -920,10 +913,7 @@ func (h *apiHandler) HandleAddSubEntryType(w http.ResponseWriter, r *http.Reques
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteSubEntryType(w http.ResponseWriter, r *http.Request) {
@@ -949,10 +939,7 @@ func (h *apiHandler) HandleDeleteSubEntryType(w http.ResponseWriter, r *http.Req
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddDefault(w http.ResponseWriter, r *http.Request) {
@@ -981,10 +968,7 @@ func (h *apiHandler) HandleAddDefault(w http.ResponseWriter, r *http.Request) {
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleSetDefault(w http.ResponseWriter, r *http.Request) {
@@ -1013,9 +997,7 @@ func (h *apiHandler) HandleSetDefault(w http.ResponseWriter, r *http.Request) {
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteDefault(w http.ResponseWriter, r *http.Request) {
@@ -1043,9 +1025,7 @@ func (h *apiHandler) HandleDeleteDefault(w http.ResponseWriter, r *http.Request)
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
@@ -1072,15 +1052,12 @@ func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleRenameEntry(w http.ResponseWriter, r *http.Request) {
@@ -1109,9 +1086,7 @@ func (h *apiHandler) HandleRenameEntry(w http.ResponseWriter, r *http.Request) {
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request) {
@@ -1144,9 +1119,7 @@ func (h *apiHandler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request) {
 		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
@@ -1169,15 +1142,12 @@ func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
@@ -1199,15 +1169,12 @@ func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteProperty(w http.ResponseWriter, r *http.Request) {
@@ -1228,15 +1195,12 @@ func (h *apiHandler) HandleDeleteProperty(w http.ResponseWriter, r *http.Request
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
@@ -1259,15 +1223,12 @@ func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
@@ -1289,15 +1250,12 @@ func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteEnviron(w http.ResponseWriter, r *http.Request) {
@@ -1318,15 +1276,12 @@ func (h *apiHandler) HandleDeleteEnviron(w http.ResponseWriter, r *http.Request)
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Request) {
@@ -1349,15 +1304,12 @@ func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Reque
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Request) {
@@ -1379,15 +1331,12 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteAccessControl(w http.ResponseWriter, r *http.Request) {
@@ -1408,15 +1357,12 @@ func (h *apiHandler) HandleDeleteAccessControl(w http.ResponseWriter, r *http.Re
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
@@ -1436,15 +1382,12 @@ func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
@@ -1465,15 +1408,12 @@ func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddGroupMember(w http.ResponseWriter, r *http.Request) {
@@ -1494,15 +1434,12 @@ func (h *apiHandler) HandleAddGroupMember(w http.ResponseWriter, r *http.Request
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Request) {
@@ -1523,15 +1460,12 @@ func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Requ
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) {
@@ -1561,15 +1495,12 @@ func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleUpdateThumbnail(w http.ResponseWriter, r *http.Request) {
@@ -1599,15 +1530,12 @@ func (h *apiHandler) HandleUpdateThumbnail(w http.ResponseWriter, r *http.Reques
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleDeleteThumbnail(w http.ResponseWriter, r *http.Request) {
@@ -1627,15 +1555,12 @@ func (h *apiHandler) HandleDeleteThumbnail(w http.ResponseWriter, r *http.Reques
 		if err != nil {
 			return err
 		}
+		if r.FormValue("back_to_referer") != "" {
+			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		}
 		return nil
 	}()
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
+	handleError(w, err)
 }
 
 func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request) {
