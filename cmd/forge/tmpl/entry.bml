@@ -1,4 +1,5 @@
 <!doctype html>
+<meta name="viewport" content="width=device-width" initial-scale="1">
 <html> [
 	<head> [
 		{{template "style"}}
@@ -7,20 +8,19 @@
 		{{template "nav" $}}
 		<div class="main"> [
 			<div class="left"> [
-				<div style="display:flex;align-items:center"> [
-					<h1> [
+				<div style="display:flex;align-items:center;flex-wrap:wrap"> [
+					<h1 style="flex:3"> [
 						{{pathLinks $.Entry.Path}}
 					]
-					<div style="flex:1;min-width:1rem"> []
 					<!-- Search Box -->
 					{{if ne $.Entry.Path "/"}}
-					<form style="display:flex"> [
+					<form style="display:flex;flex:1"> [
 						<select name="search_entry_type" class="search-box-left"> [
 						{{range $t := $.AllEntryTypes}}
 							<option value="{{$t}}" {{if eq $t $.UserSetting.EntryPageSearchEntryType}}selected{{end}}> [{{$t}}]
 						{{end}}
 						]
-						<input name="search_query" type="text" class="search-box-center" style="width:20rem" placeholder="search" value="{{$.SearchQuery}}"> []
+						<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
 						<button class="search-box-right" style="background-color:inherit"> [Go]
 					]
 					{{end}}
@@ -63,7 +63,7 @@
 					{{if not $.SubEntriesByTypeByParent}}No children{{end}}
 				{{end}}
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
-					<div style="display:flex;align-items:center"> [
+					<div style="display:flex;align-items:center;flex-wrap:wrap"> [
 						<H4 style="margin-right:5px"> [{{$t}}]
 						<!-- Property Filter -->
 						<form action="/api/set-user-setting" method="POST"> [
@@ -115,9 +115,9 @@
 										{{end}}
 										<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
 									]
-									<div style="flex:1;padding:{{$pad}};display:grid;grid-template-columns:repeat({{min (len $propFilters) 4}}, 1fr)"> [
+									<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
 										{{range $name := $propFilters}}
-											<div> [
+											<div style="width:12rem;"> [
 												{{$p := index $props $name}}
 												<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showPropertyUpdater('{{$e.Path}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
 												{{if $p}}
@@ -151,26 +151,6 @@
 						]
 					]
 				]
-			]
-			<div class="right"> [
-				<h4> [
-					<div style="display:flex"> [
-						<a href="?tab=view"> [View]
-						<div style="width:0.5rem"> []
-						<a href="?tab=edit"> [Edit]
-						<div style="width:0.5rem"> []
-						<a href="?tab=delete"> [Delete]
-						<div style="flex:1"> []
-						<a href="?tab=logs"> [Logs]
-					]
-				]
-				{{if eq $.UserSetting.EntryPageTab "view"}}
-					{{template "entry-view-tab" $}}
-				{{else if eq $.UserSetting.EntryPageTab "edit"}}
-					{{template "entry-edit-tab" $}}
-				{{else if eq $.UserSetting.EntryPageTab "delete"}}
-					{{template "entry-delete-tab" $}}
-				{{end}}
 			]
 		]
 	]
