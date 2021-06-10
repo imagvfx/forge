@@ -25,6 +25,37 @@
 					]
 					{{end}}
 				]
+				<div id="entry-items"> [
+					<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;font-size:0.75rem;color:#555"> [
+						<div id="property-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showPropertyItems()"> [Property ({{len $.Properties}})]
+						<div id="environ-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showEnvironItems()"> [Environ ({{len $.Environs}})]
+						<div id="access-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showAccessItems()"> [Access ({{len $.AccessControls}})]
+					]
+					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
+						{{range $p := $.Properties}}
+						<div class="property-items" style="display:none;width:8rem"> [
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showPropertyUpdater('{{$.Entry.Path}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
+							<div style="height:0.2rem"> []
+							<div style="font-size:0.8rem"> [{{$p.Eval}}]
+						]
+						{{end}}
+						{{range $e := $.Environs}}
+						<div class="environ-items" style="display:none;width:8rem"> [
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer"> [{{$e.Name}}]
+							<div style="height:0.2rem"> []
+							<div style="font-size:0.8rem"> [{{$e.Eval}}]
+						]
+						{{end}}
+						{{range $a := $.AccessControls}}
+						<div class="access-items" style="display:none;width:8rem"> [
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer"> [{{$a.Name}}]
+							<div style="height:0.2rem"> []
+							<div style="font-size:0.8rem"> [{{$a.Value}}]
+						]
+						{{end}}
+					]
+				]
+				<div style="margin-top:2rem;border-top:1px solid #E9E9E9"> []
 				<div> [
 				{{if $.ResultsFromSearch}}
 					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
@@ -145,12 +176,89 @@
 	]
 ]
 
+<style> [`
+.item-category {
+	border-radius: 2px;
+	padding: 0.3rem;
+	background-color:#E9E9E9;
+	cursor: pointer;
+}
+
+.item-category.selected {
+	background-color:#DDDFFF;
+}
+`]
+
 <script> [`
 document.onkeydown = keyPressed;
 
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
 		togglePropertyUpdater();
+	}
+}
+
+function hideAllItems() {
+	let items = document.getElementById("entry-items");
+	document.getElementById("property-category").classList.remove("selected");
+	let props = items.getElementsByClassName("property-items");
+	for (let p of props) {
+		p.style.display = "none";
+	}
+	document.getElementById("environ-category").classList.remove("selected");
+	let envs = items.getElementsByClassName("environ-items");
+	for (let e of envs) {
+		e.style.display = "none";
+	}
+	document.getElementById("access-category").classList.remove("selected");
+	let accesses = items.getElementsByClassName("access-items");
+	for (let a of accesses) {
+		a.style.display = "none";
+	}
+}
+
+function showPropertyItems() {
+	let cls = document.getElementById("property-category").classList;
+	let selected = cls.contains("selected")
+	hideAllItems();
+	if (selected) {
+		return;
+	}
+	cls.add("selected");
+	let items = document.getElementById("entry-items");
+	let props = items.getElementsByClassName("property-items");
+	for (let p of props) {
+		p.style.display = "block";
+	}
+}
+
+function showEnvironItems() {
+	let cls = document.getElementById("environ-category").classList;
+	let selected = cls.contains("selected")
+	hideAllItems();
+	if (selected) {
+		return;
+	}
+	cls.add("selected");
+	let items = document.getElementById("entry-items");
+	let envs = items.getElementsByClassName("environ-items");
+	for (let e of envs) {
+		e.style.display = "block";
+	}
+}
+
+function showAccessItems() {
+	let cls = document.getElementById("access-category").classList;
+	let selected = cls.contains("selected")
+	hideAllItems();
+	if (selected) {
+		return;
+	}
+	cls.add("selected");
+	let items = document.getElementById("entry-items");
+	let accesses = items.getElementsByClassName("access-items");
+	for (let a of accesses) {
+		a.style.display = "block";
 	}
 }
 
