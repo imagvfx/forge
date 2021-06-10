@@ -33,21 +33,21 @@
 					]
 					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 						{{range $p := $.Properties}}
-						<div class="property-items" style="display:none;width:8rem"> [
+						<div class="property-items" style="display:none"> [
 							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showPropertyUpdater('{{$.Entry.Path}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
 							<div style="height:0.2rem"> []
 							<div style="font-size:0.8rem"> [{{$p.Eval}}]
 						]
 						{{end}}
 						{{range $e := $.Environs}}
-						<div class="environ-items" style="display:none;width:8rem"> [
+						<div class="environ-items" style="display:none"> [
 							<div style="font-size:0.75rem;color:#AAA;cursor:pointer"> [{{$e.Name}}]
 							<div style="height:0.2rem"> []
 							<div style="font-size:0.8rem"> [{{$e.Eval}}]
 						]
 						{{end}}
 						{{range $a := $.AccessControls}}
-						<div class="access-items" style="display:none;width:8rem"> [
+						<div class="access-items" style="display:none"> [
 							<div style="font-size:0.75rem;color:#AAA;cursor:pointer"> [{{$a.Name}}]
 							<div style="height:0.2rem"> []
 							<div style="font-size:0.8rem"> [{{$a.Value}}]
@@ -186,6 +186,18 @@
 
 .item-category.selected {
 	background-color:#DDDFFF;
+}
+
+.property-items, .environ-items, .access-items {
+	width: 12rem;
+	height: 4rem;
+	padding: 0.3rem;
+	padding-bottom: 0.5rem;
+	padding-right: 0.5rem;
+	background-color: #FFF;
+	border-radius: 2px;
+	border: 1px solid #EEE;
+	overflow: auto;
 }
 `]
 
