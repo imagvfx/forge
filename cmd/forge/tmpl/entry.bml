@@ -41,14 +41,14 @@
 						{{end}}
 						{{range $e := $.Environs}}
 						<div class="environ-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer"> [{{$e.Name}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
 							<div style="height:0.2rem"> []
 							<div style="font-size:0.8rem"> [{{$e.Eval}}]
 						]
 						{{end}}
 						{{range $a := $.AccessControls}}
 						<div class="access-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer"> [{{$a.Name}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.Name}}', '{{$a.Type}}', '{{$a.Value}}')"> [{{$a.Name}}]
 							<div style="height:0.2rem"> []
 							<div style="font-size:0.8rem"> [{{$a.Value}}]
 						]
