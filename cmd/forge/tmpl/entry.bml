@@ -27,9 +27,9 @@
 				]
 				<div id="entry-items"> [
 					<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;font-size:0.75rem;color:#555"> [
-						<div id="property-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showPropertyItems()"> [Property ({{len $.Properties}})]
-						<div id="environ-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showEnvironItems()"> [Environ ({{len $.Environs}})]
-						<div id="access-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showAccessItems()"> [Access ({{len $.AccessControls}})]
+						<div id="property-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showItems('property')"> [Property ({{len $.Properties}})]
+						<div id="environ-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
+						<div id="access-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
 					]
 					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 						{{range $p := $.Properties}}
@@ -209,8 +209,8 @@ function hideAllItems() {
 	}
 }
 
-function showPropertyItems() {
-	let cls = document.getElementById("property-category").classList;
+function showItems(ctg) {
+	let cls = document.getElementById(ctg + "-category").classList;
 	let selected = cls.contains("selected")
 	hideAllItems();
 	if (selected) {
@@ -218,39 +218,9 @@ function showPropertyItems() {
 	}
 	cls.add("selected");
 	let items = document.getElementById("entry-items");
-	let props = items.getElementsByClassName("property-items");
+	let props = items.getElementsByClassName(ctg + "-items");
 	for (let p of props) {
 		p.style.display = "block";
-	}
-}
-
-function showEnvironItems() {
-	let cls = document.getElementById("environ-category").classList;
-	let selected = cls.contains("selected")
-	hideAllItems();
-	if (selected) {
-		return;
-	}
-	cls.add("selected");
-	let items = document.getElementById("entry-items");
-	let envs = items.getElementsByClassName("environ-items");
-	for (let e of envs) {
-		e.style.display = "block";
-	}
-}
-
-function showAccessItems() {
-	let cls = document.getElementById("access-category").classList;
-	let selected = cls.contains("selected")
-	hideAllItems();
-	if (selected) {
-		return;
-	}
-	cls.add("selected");
-	let items = document.getElementById("entry-items");
-	let accesses = items.getElementsByClassName("access-items");
-	for (let a of accesses) {
-		a.style.display = "block";
 	}
 }
 
