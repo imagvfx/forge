@@ -1297,9 +1297,9 @@ func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Reque
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
 		path := r.FormValue("path")
-		accessor := r.FormValue("accessor")
-		accessor_type := r.FormValue("accessor_type")
-		mode := r.FormValue("mode")
+		accessor := r.FormValue("name")
+		accessor_type := r.FormValue("type")
+		mode := r.FormValue("value")
 		err = h.server.AddAccessControl(ctx, path, accessor, accessor_type, mode)
 		if err != nil {
 			return err
@@ -1325,8 +1325,8 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
 		path := r.FormValue("path")
-		accessor := r.FormValue("accessor")
-		mode := r.FormValue("mode")
+		accessor := r.FormValue("name")
+		mode := r.FormValue("value")
 		err = h.server.SetAccessControl(ctx, path, accessor, mode)
 		if err != nil {
 			return err

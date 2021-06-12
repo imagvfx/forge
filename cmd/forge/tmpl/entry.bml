@@ -48,7 +48,7 @@
 						{{end}}
 						{{range $a := $.AccessControls}}
 						<div class="access-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.Name}}', '{{$a.Type}}', '{{$a.Value}}')"> [{{$a.Name}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Name}}]
 							<div style="height:0.2rem"> []
 							<div style="font-size:0.8rem"> [{{$a.Value}}]
 						]
