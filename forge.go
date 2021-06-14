@@ -73,6 +73,19 @@ func LessProperty(t, a, b string) bool {
 	return a < b
 }
 
+func PropertyTypes() []string {
+	return []string{
+		"text",
+		// sort by name except text
+		"date",
+		"entry_path",
+		"entry_name",
+		"int",
+		"timecode",
+		"user",
+	}
+}
+
 func (p *Property) Eval() string {
 	eval := map[string]func(string) string{
 		"timecode":   p.evalTimecode,
@@ -249,6 +262,13 @@ const (
 	UserAccessor = AccessorType(iota)
 	GroupAccessor
 )
+
+func AccessorTypes() []string {
+	return []string{
+		"user",
+		"group",
+	}
+}
 
 func (t AccessorType) String() string {
 	if t == UserAccessor {

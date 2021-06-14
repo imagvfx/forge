@@ -74,6 +74,13 @@ var pathHandlerFuncs = template.FuncMap{
 		}
 		return false
 	},
+	"marshalJS": func(v interface{}) (template.JS, error) {
+		b, err := json.Marshal(v)
+		if err != nil {
+			return "", err
+		}
+		return template.JS(string(b)), nil
+	},
 }
 
 func handleError(w http.ResponseWriter, err error) {
@@ -293,11 +300,13 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			ResultsFromSearch        bool
 			SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 			SubEntryProperties       map[string]map[string]*forge.Property
+			PropertyTypes            []string
 			DefaultProperties        map[string][]string
 			PropertyFilters          map[string][]string
 			Properties               []*forge.Property
 			Environs                 []*forge.Property
 			SubEntryTypes            []string
+			AccessorTypes            []string
 			AccessControls           []*forge.AccessControl
 			AllEntryTypes            []string
 		}{
@@ -308,11 +317,13 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			ResultsFromSearch:        resultsFromSearch,
 			SubEntriesByTypeByParent: subEntsByTypeByParent,
 			SubEntryProperties:       subEntProps,
-			PropertyFilters:          propFilters,
+			PropertyTypes:            forge.PropertyTypes(),
 			DefaultProperties:        defaultProps,
+			PropertyFilters:          propFilters,
 			Properties:               props,
 			Environs:                 envs,
 			SubEntryTypes:            subtyps,
+			AccessorTypes:            forge.AccessorTypes(),
 			AccessControls:           acs,
 			AllEntryTypes:            alltyps,
 		}
@@ -1284,7 +1295,7 @@ func (h *apiHandler) HandleDeleteEnviron(w http.ResponseWriter, r *http.Request)
 	handleError(w, err)
 }
 
-func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleAddAccess(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
@@ -1312,7 +1323,7 @@ func (h *apiHandler) HandleAddAccessControl(w http.ResponseWriter, r *http.Reque
 	handleError(w, err)
 }
 
-func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleSetAccess(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
@@ -1339,7 +1350,7 @@ func (h *apiHandler) HandleSetAccessControl(w http.ResponseWriter, r *http.Reque
 	handleError(w, err)
 }
 
-func (h *apiHandler) HandleDeleteAccessControl(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleDeleteAccess(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
