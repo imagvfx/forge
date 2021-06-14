@@ -26,10 +26,19 @@
 					{{end}}
 				]
 				<div id="entry-items"> [
-					<div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;font-size:0.75rem;color:#555"> [
-						<div id="property-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showItems('property')"> [Property ({{len $.Properties}})]
-						<div id="environ-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
-						<div id="access-category" class="item-category" style="border-radius:2px;padding:0.3rem" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
+					<div style="display:flex;gap:1.2rem;margin-bottom:1.5rem;font-size:0.75rem;color:#555"> [
+						<div id="property-box" class="item-box" style="display:flex"> [
+							<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
+							<div class="item-adder"> [+]
+						]
+						<div id="environ-box" class="item-box" style="display:flex"> [
+							<div id="environ-category" class="item-category" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
+							<div class="item-adder"> [+]
+						]
+						<div id="access-box" class="item-box" style="display:flex"> [
+							<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
+							<div class="item-adder"> [+]
+						]
 					]
 					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 						{{range $p := $.Properties}}
@@ -158,22 +167,45 @@
 
 <style> [`
 .item-category {
-	border-radius: 2px;
 	padding: 0.3rem;
-	background-color:#E9E9E9;
+	border-radius: 2px 0 0 2px;
 	cursor: pointer;
 }
 
-.item-category.selected {
-	background-color:#DDDFFF;
+.item-box:hover .item-category {
+	background-color: #EEE;
+}
+
+.item-box.selected .item-category {
+	background-color:#E0EEEE;
+}
+
+.item-adder {
+	padding: 0.3rem;
+	border-radius: 0 2px 2px 0;
+	color: #999;
+	cursor: pointer;
+}
+
+.item-box:hover .item-adder {
+	background-color: #EEE;
+}
+
+.item-box.selected .item-adder {
+	background-color:#E0EEEE;
+
+}
+
+.item-adder:hover {
+	color: #555;
 }
 
 .property-items, .environ-items, .access-items {
 	width: 12rem;
 	height: 4rem;
 	padding: 0.3rem;
-	padding-bottom: 0.5rem;
 	padding-right: 0.5rem;
+	padding-bottom: 0.5rem;
 	background-color: #FFF;
 	border-radius: 2px;
 	border: 1px solid #EEE;
@@ -192,17 +224,17 @@ function keyPressed(ev) {
 
 function hideAllItems() {
 	let items = document.getElementById("entry-items");
-	document.getElementById("property-category").classList.remove("selected");
+	document.getElementById("property-box").classList.remove("selected");
 	let props = items.getElementsByClassName("property-items");
 	for (let p of props) {
 		p.style.display = "none";
 	}
-	document.getElementById("environ-category").classList.remove("selected");
+	document.getElementById("environ-box").classList.remove("selected");
 	let envs = items.getElementsByClassName("environ-items");
 	for (let e of envs) {
 		e.style.display = "none";
 	}
-	document.getElementById("access-category").classList.remove("selected");
+	document.getElementById("access-box").classList.remove("selected");
 	let accesses = items.getElementsByClassName("access-items");
 	for (let a of accesses) {
 		a.style.display = "none";
@@ -210,7 +242,7 @@ function hideAllItems() {
 }
 
 function showItems(ctg) {
-	let cls = document.getElementById(ctg + "-category").classList;
+	let cls = document.getElementById(ctg + "-box").classList;
 	let selected = cls.contains("selected")
 	hideAllItems();
 	if (selected) {
