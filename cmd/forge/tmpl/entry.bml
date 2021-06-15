@@ -72,33 +72,42 @@
 					{{if not $.SubEntriesByTypeByParent}}No children{{end}}
 				{{end}}
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
+					<h4> [{{$t}}]
+					{{if not $.ResultsFromSearch}}
 					<div style="display:flex;align-items:center;flex-wrap:wrap"> [
-						<H4 style="margin-right:5px"> [{{$t}}]
+						<!-- Add SubEntry -->
+						<form action="/api/add-entry" style="display:flex;margin-right:2rem" method="POST"> [
+							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
+							<input name="type" type="hidden" value="{{$t}}"> []
+							<input name="name" style="border:1px solid #DDD;border-right:0;border-radius:2px 0 0 2px" placeholder="name"> []
+							<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [Add]
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
 						<!-- Property Filter -->
-						<form action="/api/set-user-setting" method="POST"> [
+						<form action="/api/set-user-setting" style="flex:1;display:flex;margin-right:2rem" method="POST"> [
 							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
-							<input name="entry_page_property_filter" type="text" style="border:1px solid #DDD;border-radius:2px;width:20rem;background-color:inherit;color:#AAA" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}"> []
+							<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}" placeholder="filter"> []
 							<button style="display:none" name="update_filter" value="1"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
-						<div style="flex:1"> []
 						<!-- Sort -->
 						<form action="/api/set-user-setting" style="display:flex;align-items:center" method="POST"> [
 							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
 							{{$sortProp := index $.UserSetting.EntryPageSortProperty $t}}
 							{{$prop := sortProperty $sortProp}}
 							{{$desc := sortDesc $sortProp}}
-							<select name="entry_page_sort_property" style="appearance:none;min-width:6rem;height:1.2rem;border:1px solid #DDD;border-radius:2px;padding:0 0.3rem;"> [
+							<select name="entry_page_sort_property" style="appearance:none;margin-right:0.5rem;min-width:6rem;border:1px solid #DDD;border-radius:2px;"> [
 								<option value=""> [(name)]
 							{{range $p := index $.DefaultProperties $t}}
 								<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
 							{{end}}
 							]
-							<input id="sort_desc_cb" name="entry_page_sort_desc" style="margin-right:0;width:1.2rem;height:1.2rem;border-radius:2px 0 0 2px;background-color:#F3F3F3" type="checkbox" {{if $desc}}checked{{end}}> []
-							<button name="update_sort" style="appearance:none;height:1.2rem;border:1px solid #DDD;border-left:0;border-radius:0 2px 2px 0;background-color:#F3F3F3" value="1"> [Sort]
+							<input id="sort_desc_cb" name="entry_page_sort_desc" style="margin:0;width:1.2rem;border-radius:2px 0 0 2px;background-color:#F3F3F3;height:20px" type="checkbox" {{if $desc}}checked{{end}}> []
+							<button name="update_sort" style="appearance:none;border:1px solid #DDD;border-left:0;border-radius:0 2px 2px 0;background-color:#F3F3F3" value="1"> [Sort]
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 					]
+					{{end}}
 					{{$i := 0}}
 					{{range $parent, $entries := $entsByParent}}
 						{{if $entries}}
