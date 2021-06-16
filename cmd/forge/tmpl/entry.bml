@@ -74,7 +74,7 @@
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
 					<h4> [{{$t}}]
 					{{if not $.ResultsFromSearch}}
-					<div style="display:flex;align-items:center;flex-wrap:wrap"> [
+					<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:0.5rem;"> [
 						<!-- Add SubEntry -->
 						<form action="/api/add-entry" style="display:flex;margin-right:2rem" method="POST"> [
 							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
