@@ -166,6 +166,10 @@ func (s *Service) GetLogs(ctx context.Context, path, ctg, name string) ([]*servi
 	return GetLogs(s.db, ctx, path, ctg, name)
 }
 
+func (s *Service) FindUsers(ctx context.Context, find service.UserFinder) ([]*service.User, error) {
+	return FindUsers(s.db, ctx, find)
+}
+
 func (s *Service) AddUser(ctx context.Context, u *service.User) error {
 	return AddUser(s.db, ctx, u)
 }

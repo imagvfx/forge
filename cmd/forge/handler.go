@@ -580,6 +580,43 @@ func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
+type userHandler struct {
+	server *forge.Server
+}
+
+func (h *userHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		if user == "" {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+		}
+		ctx := service.ContextWithUserName(r.Context(), user)
+		users, err := h.server.Users(ctx)
+		if err != nil {
+			return err
+		}
+		recipe := struct {
+			User    string
+			Users   []*forge.User
+			Members map[string][]*forge.Member
+		}{
+			User:  user,
+			Users: users,
+		}
+		err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
 type groupHandler struct {
 	server *forge.Server
 }

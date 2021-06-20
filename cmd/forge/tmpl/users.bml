@@ -1,0 +1,22 @@
+<!doctype html>
+<html> [
+	<head> [
+		{{template "style"}}
+	]
+	<body> [
+		{{template "nav" $}}
+		<div class="main"> [
+			<div class="one"> [
+				<h1> [
+					Users
+				]
+				{{range $u := $.Users}}
+					<div style="display:flex"> [
+						<div> [{{$u.Name}}]
+					]
+				{{end}}
+			]
+		]
+	]
+]
+

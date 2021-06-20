@@ -182,10 +182,13 @@ func main() {
 		server: server,
 		cfg:    cfg,
 	}
-	typ := &entryTypeHandler{
+	user := &userHandler{
 		server: server,
 	}
 	group := &groupHandler{
+		server: server,
+	}
+	typ := &entryTypeHandler{
 		server: server,
 	}
 	api := &apiHandler{
@@ -199,8 +202,9 @@ func main() {
 	mux.HandleFunc("/login", login.Handle)
 	mux.HandleFunc("/login/callback/google", login.HandleCallback)
 	mux.HandleFunc("/logout", login.HandleLogout)
-	mux.HandleFunc("/types", typ.Handle)
+	mux.HandleFunc("/users", user.Handle)
 	mux.HandleFunc("/groups", group.Handle)
+	mux.HandleFunc("/types", typ.Handle)
 	mux.HandleFunc("/api/add-entry-type", api.HandleAddEntryType)
 	mux.HandleFunc("/api/rename-entry-type", api.HandleRenameEntryType)
 	mux.HandleFunc("/api/delete-entry-type", api.HandleDeleteEntryType)

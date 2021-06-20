@@ -758,6 +758,22 @@ func (s *Server) GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, e
 	return logs, nil
 }
 
+func (s *Server) Users(ctx context.Context) ([]*User, error) {
+	svcUsers, err := s.svc.FindUsers(ctx, service.UserFinder{})
+	if err != nil {
+		return nil, err
+	}
+	users := make([]*User, 0)
+	for _, su := range svcUsers {
+		u := &User{
+			ID:   su.ID,
+			Name: su.Name,
+		}
+		users = append(users, u)
+	}
+	return users, nil
+}
+
 func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
 	if user == "" {
 		return nil, fmt.Errorf("user not specified")

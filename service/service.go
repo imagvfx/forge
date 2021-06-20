@@ -44,6 +44,7 @@ type Service interface {
 	DeleteAccessControl(ctx context.Context, path string, name string) error
 	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
 	GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error)
+	FindUsers(ctx context.Context, find UserFinder) ([]*User, error)
 	AddUser(ctx context.Context, u *User) error
 	GetUser(ctx context.Context, user string) (*User, error)
 	GetUserSetting(ctx context.Context, user string) (*UserSetting, error)
