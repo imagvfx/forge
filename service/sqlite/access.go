@@ -124,6 +124,10 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 // userRead returns an error if the user cannot read the entry.
 // It returns service.NotFound error when the context user doesn't have read permission.
 func userRead(tx *sql.Tx, ctx context.Context, path string) error {
+	if path == "/" {
+		// Everyone should be able to access root.
+		return nil
+	}
 	mode, err := userAccessMode(tx, ctx, path)
 	if err != nil {
 		return err
