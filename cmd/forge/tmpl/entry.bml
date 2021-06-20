@@ -89,8 +89,6 @@
 				<div> [
 				{{if $.ResultsFromSearch}}
 					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
-				{{else}}
-					{{if not $.SubEntriesByTypeByParent}}No children{{end}}
 				{{end}}
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
 					<h3> [{{$t}}]
