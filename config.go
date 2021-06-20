@@ -23,9 +23,10 @@ func NewConfig() *Config {
 
 type EntryStruct struct {
 	Type          string
+	SubEntryTypes []string
+	SubEntries    []KeyTypeValue
 	Properties    []KeyTypeValue
 	Environs      []KeyTypeValue
-	SubEntryTypes []string
 }
 
 type KeyTypeValue struct {
@@ -46,9 +47,43 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 	}
 	s := &EntryStruct{}
 	s.Type = typ
+	s.SubEntryTypes = make([]string, 0)
+	s.SubEntries = make([]KeyTypeValue, 0)
 	s.Properties = make([]KeyTypeValue, 0)
 	s.Environs = make([]KeyTypeValue, 0)
-	s.SubEntryTypes = make([]string, 0)
+	subtypsTree := typTree.(*toml.Tree).GetArray("sub_entry_types")
+	if subtypsTree != nil {
+		subtyps, ok := subtypsTree.([]string)
+		if !ok {
+			return nil, fmt.Errorf("cannot convert [%v].sub_entry_types as []string", s.Type)
+		}
+		for _, t := range subtyps {
+			if t == "root" {
+				return nil, fmt.Errorf("root type cannot be refered in sub_entry_types: %v", s.Type)
+			}
+		}
+		s.SubEntryTypes = subtyps
+	}
+	subEntsTree := typTree.(*toml.Tree).GetArray("sub_entries")
+	if subEntsTree != nil {
+		subEnts, ok := subEntsTree.([]string)
+		if !ok {
+			return nil, fmt.Errorf("cannot convert [%v].sub_entries as []string", s.Type)
+		}
+		for _, ent := range subEnts {
+			k_t := strings.SplitN(ent, " ", 2)
+			if len(k_t) != 2 {
+				return nil, fmt.Errorf("sub_entries should have entry in a 'entry_name entry_type' form")
+			}
+			k := k_t[0]
+			t := k_t[1]
+			ktv := KeyTypeValue{
+				Key:  k,
+				Type: t,
+			}
+			s.SubEntries = append(s.SubEntries, ktv)
+		}
+	}
 	propsTree := typTree.(*toml.Tree).GetArray("properties")
 	if propsTree != nil {
 		props, ok := propsTree.([]string)
@@ -98,19 +133,6 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 			}
 			s.Environs = append(s.Environs, ktv)
 		}
-	}
-	subtypsTree := typTree.(*toml.Tree).GetArray("sub_entry_types")
-	if subtypsTree != nil {
-		subtyps, ok := subtypsTree.([]string)
-		if !ok {
-			return nil, fmt.Errorf("cannot convert [%v].sub_entry_types as []string", s.Type)
-		}
-		for _, t := range subtyps {
-			if t == "root" {
-				return nil, fmt.Errorf("root type cannot be refered in sub_entry_types: %v", s.Type)
-			}
-		}
-		s.SubEntryTypes = subtyps
 	}
 	return s, nil
 }
@@ -175,7 +197,6 @@ func LoadConfig(configDir string) (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
 		}
-		fmt.Println(s.Type)
 		c.Structs = append(c.Structs, s)
 	}
 	if len(c.Structs) == 0 || c.Structs[0].Type != "root" {

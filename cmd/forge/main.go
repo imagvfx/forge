@@ -149,6 +149,12 @@ func main() {
 					log.Fatal(err)
 				}
 			}
+			for _, p := range s.SubEntries {
+				err := server.AddDefault(ctx, s.Type, "sub_entry", p.Key, p.Type, p.Value)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 			for _, p := range s.Properties {
 				err := server.AddDefault(ctx, s.Type, "property", p.Key, p.Type, p.Value)
 				if err != nil {
