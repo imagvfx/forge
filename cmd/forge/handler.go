@@ -172,16 +172,20 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
-		subEntTypes := make(map[string]bool)
 		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
+		if !resultsFromSearch {
+			subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
+			if err != nil {
+				return err
+			}
+			for _, t := range subtyps {
+				subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
+			}
+		}
 		subEntProps := make(map[string]map[string]*forge.Property)
 		for _, e := range subEnts {
-			// subEntTypes
-			if !subEntTypes[e.Type] {
-				subEntTypes[e.Type] = true
-			}
-			// subEntsByTypeByParent
 			if subEntsByTypeByParent[e.Type] == nil {
+				// This should come from search results.
 				subEntsByTypeByParent[e.Type] = make(map[string][]*forge.Entry)
 			}
 			byParent := subEntsByTypeByParent[e.Type]
@@ -205,6 +209,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			}
 			subEntProps[e.Path] = subProps
 		}
+		// sort
 		for t, byParent := range subEntsByTypeByParent {
 			var prop string
 			var desc bool
@@ -253,9 +258,10 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}
+		// property filter
 		defaultProps := make(map[string][]string)
 		propFilters := make(map[string][]string)
-		for typ := range subEntTypes {
+		for typ := range subEntsByTypeByParent {
 			defaults, err := h.server.Defaults(ctx, typ)
 			if err != nil {
 				return err
@@ -281,10 +287,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		acs, err := h.server.EntryAccessControls(ctx, path)
-		if err != nil {
-			return err
-		}
-		subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
 		if err != nil {
 			return err
 		}
@@ -322,7 +324,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			PropertyFilters:          propFilters,
 			Properties:               props,
 			Environs:                 envs,
-			SubEntryTypes:            subtyps,
 			AccessorTypes:            forge.AccessorTypes(),
 			AccessControls:           acs,
 			AllEntryTypes:            alltyps,
