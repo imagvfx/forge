@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"sort"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -39,9 +38,6 @@ func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*service.P
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(props, func(i, j int) bool {
-		return props[i].Name < props[j].Name
-	})
 	err = tx.Commit()
 	if err != nil {
 		return nil, err

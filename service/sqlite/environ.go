@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -56,9 +55,6 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 	for _, e := range envmap {
 		envs = append(envs, e)
 	}
-	sort.Slice(envs, func(i, j int) bool {
-		return envs[i].Name < envs[j].Name
-	})
 	err = tx.Commit()
 	if err != nil {
 		return nil, err

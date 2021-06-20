@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -64,9 +63,6 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*servi
 	for _, a := range acm {
 		acs = append(acs, a)
 	}
-	sort.Slice(acs, func(i, j int) bool {
-		return acs[i].Accessor < acs[j].Accessor
-	})
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
