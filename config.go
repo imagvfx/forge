@@ -3,6 +3,7 @@ package forge
 import (
 	"fmt"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/pelletier/go-toml"
@@ -10,17 +11,15 @@ import (
 
 type Config struct {
 	UserdataRoot string
-	Struct       StructConfig
+	Structs      []*EntryStruct
 }
 
 func NewConfig() *Config {
 	c := &Config{
-		Struct: StructConfig{},
+		Structs: make([]*EntryStruct, 0),
 	}
 	return c
 }
-
-type StructConfig map[string]*EntryStruct
 
 type EntryStruct struct {
 	Type          string
@@ -116,6 +115,44 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 	return s, nil
 }
 
+// Match go-toml.Tree keys to the same order with the file.
+// Would be great it can be done with go-toml package, but didn't find the way.
+func orderedKeys(t *toml.Tree) []string {
+	type keyPos struct {
+		Key  string
+		Line int
+		Col  int
+	}
+	keys := t.Keys()
+	poses := make([]keyPos, len(keys))
+	for i, k := range keys {
+		subt := t.Get(k).(*toml.Tree)
+		p := keyPos{
+			Key:  k,
+			Line: subt.Position().Line,
+			Col:  subt.Position().Col,
+		}
+		poses[i] = p
+	}
+	sort.Slice(poses, func(i, j int) bool {
+		if poses[i].Line < poses[j].Line {
+			return true
+		}
+		if poses[i].Line > poses[j].Line {
+			return false
+		}
+		if poses[i].Col < poses[j].Col {
+			return true
+		}
+		return false
+	})
+	ordkeys := make([]string, len(poses))
+	for i, p := range poses {
+		ordkeys[i] = p.Key
+	}
+	return ordkeys
+}
+
 func LoadConfig(configDir string) (*Config, error) {
 	c := NewConfig()
 	forgeToml := filepath.Join(configDir, "forge.toml")
@@ -133,14 +170,15 @@ func LoadConfig(configDir string) (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
 	}
-	for _, k := range structConfig.Keys() {
+	for _, k := range orderedKeys(structConfig) {
 		s, err := getEntryStruct(structConfig, k)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
 		}
-		c.Struct[s.Type] = s
+		fmt.Println(s.Type)
+		c.Structs = append(c.Structs, s)
 	}
-	if c.Struct["root"] == nil {
+	if len(c.Structs) == 0 || c.Structs[0].Type != "root" {
 		return nil, fmt.Errorf("root entry structure is not defined")
 	}
 	return c, nil

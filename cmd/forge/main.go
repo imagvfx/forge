@@ -132,31 +132,31 @@ func main() {
 		// as the db has already created.
 		// how to handle this better?
 		ctx := service.ContextWithUserName(context.Background(), "system")
-		for typ := range cfg.Struct {
-			if typ == "root" {
+		for _, s := range cfg.Structs {
+			if s.Type == "root" {
 				// root entry type should be already created.
 				continue
 			}
-			err = server.AddEntryType(ctx, typ)
+			err = server.AddEntryType(ctx, s.Type)
 			if err != nil {
 				log.Fatal(err)
 			}
 		}
-		for typ, s := range cfg.Struct {
+		for _, s := range cfg.Structs {
 			for _, subtype := range s.SubEntryTypes {
-				err := server.AddSubEntryType(ctx, typ, subtype)
+				err := server.AddSubEntryType(ctx, s.Type, subtype)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 			for _, p := range s.Properties {
-				err := server.AddDefault(ctx, typ, "property", p.Key, p.Type, p.Value)
+				err := server.AddDefault(ctx, s.Type, "property", p.Key, p.Type, p.Value)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}
 			for _, p := range s.Environs {
-				err := server.AddDefault(ctx, typ, "environ", p.Key, p.Type, p.Value)
+				err := server.AddDefault(ctx, s.Type, "environ", p.Key, p.Type, p.Value)
 				if err != nil {
 					log.Fatal(err)
 				}
