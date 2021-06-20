@@ -15,47 +15,89 @@ properties = [
 	"sup user",
 	"pd user",
 	"pm user",
-	"note text",
 ]
 
 sub_entry_types = [
-	"group",
+	"shotgrp",
+	"assetgrp",
+]
+
+sub_entries = [
+	"shot shotgrp",
+	"asset assetgrp",
 ]
 
 
-[group]
+[shotgrp]
 
 environs = [
-	"GROUP entry_name=.",
-]
-
-properties = [
-	"note text",
+	"GROUP entry_name=."
 ]
 
 sub_entry_types = [
-	"unit",
+	"shot",
 ]
 
 
-[unit]
+[shot]
 
 environs = [
 	"UNIT entry_name=.",
 ]
 
 properties = [
+	"status text",
 	"cg text",
 	"direction text",
-	"timecode_in timecode",
-	"timecode_out timecode",
 	"note text",
-	"delivery date",
+	"tc_in timecode",
+	"tc_out timecode",
+	"difficulty text",
 	"priority int",
+	"due date",
 ]
 
 sub_entry_types = [
 	"part",
+]
+
+sub_entries = [
+	"comp part",
+]
+
+
+[assetgrp]
+
+environs = [
+	"GROUP entry_name=."
+]
+
+sub_entry_types = [
+	"asset",
+]
+
+[asset]
+
+environs = [
+	"UNIT entry_name=.",
+]
+
+properties = [
+	"status text",
+	"cg text",
+	"direction text",
+	"note text",
+	"difficulty text",
+	"priority int",
+	"due date",
+]
+
+sub_entry_types = [
+	"part",
+]
+
+sub_entries = [
+	"mod part",
 ]
 
 
@@ -66,11 +108,14 @@ environs = [
 ]
 
 properties = [
-	"confirm text",
 ]
 
 sub_entry_types = [
 	"elem",
+]
+
+sub_entries = [
+	"main elem",
 ]
 
 
@@ -86,6 +131,10 @@ properties = [
 
 sub_entry_types = [
 	"ver",
+]
+
+sub_entries = [
+	"v001 ver",
 ]
 
 
