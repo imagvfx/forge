@@ -449,6 +449,7 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 	if err != nil {
 		return err
 	}
+	value = prop.Value // corrected
 	err = s.svc.UpdateProperty(ctx, service.PropertyUpdater{
 		EntryPath: path,
 		Name:      name,
