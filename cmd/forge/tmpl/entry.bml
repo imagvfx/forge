@@ -92,25 +92,25 @@
 						{{end}}
 					]
 				]
-				<div style="margin-top:2rem;border-top:1px solid #E9E9E9"> []
 				<div> [
 				{{if $.ResultsFromSearch}}
 					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
 				{{end}}
 				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
-					<h3> [{{$t}}]
+					<div style="margin-top:3rem;border-top:1px solid #E9E9E9"> []
 					{{if not $.ResultsFromSearch}}
-					<div style="display:flex;align-items:center;flex-wrap:wrap;margin-bottom:0.5rem;"> [
+					<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2rem;margin-bottom:0.5rem;"> [
+						<h3> [{{$t}}]
 						<!-- Add SubEntry -->
-						<form action="/api/add-entry" style="display:flex;margin-right:2rem" method="POST"> [
+						<form action="/api/add-entry" style="display:flex" method="POST"> [
 							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
 							<input name="type" type="hidden" value="{{$t}}"> []
 							<input name="name" style="border:1px solid #DDD;border-right:0;border-radius:2px 0 0 2px" placeholder="name"> []
-							<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [Add]
+							<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [+]
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 						<!-- Property Filter -->
-						<form action="/api/set-user-setting" style="flex:1;display:flex;margin-right:2rem" method="POST"> [
+						<form action="/api/set-user-setting" style="flex:1;display:flex" method="POST"> [
 							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
 							<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}" placeholder="filter"> []
 							<button style="display:none" name="update_filter" value="1"> []
