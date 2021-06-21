@@ -214,6 +214,8 @@ func (p *Property) validateDate(s string) (string, error) {
 		// unset
 		return s, nil
 	}
+	// turn a value like yyyy-mm-dd to yyyy/mm/dd
+	s = strings.ReplaceAll(s, "-", "/")
 	_, err := time.Parse("2006/01/02", s)
 	if err != nil {
 		return "", fmt.Errorf("invalid date string: need yyyy/mm/dd (ex: 2006/01/02)")
