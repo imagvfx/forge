@@ -60,6 +60,13 @@
 							<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
 							<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
 						]
+						<div style="flex:1"> []
+						<form action="/api/delete-entry" method="post"> [
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<button id="delete-entry-button" style="display:none"> []
+							<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
 					]
 					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 						{{range $p := $.Properties}}
