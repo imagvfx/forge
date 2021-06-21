@@ -1160,7 +1160,10 @@ func (h *apiHandler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request) {
 			referer := r.Header.Get("Referer")
 			toks := strings.SplitN(referer, "?", 2)
 			url := toks[0]
-			parm := toks[1]
+			parm := ""
+			if len(toks) == 2 {
+				parm = toks[1]
+			}
 			if strings.HasSuffix(url, path) {
 				referer = filepath.Dir(path) + "?" + parm
 			}
