@@ -73,21 +73,21 @@
 						<div class="property-items" style="display:none"> [
 							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
 							<div style="height:0.2rem"> []
-							<div style="font-size:0.8rem"> [{{$p.Eval}}]
+							<div style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
 						]
 						{{end}}
 						{{range $e := $.Environs}}
 						<div class="environ-items" style="display:none"> [
 							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
 							<div style="height:0.2rem"> []
-							<div style="font-size:0.8rem"> [{{$e.Eval}}]
+							<div style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
 						]
 						{{end}}
 						{{range $a := $.AccessControls}}
 						<div class="access-items" style="display:none"> [
 							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
 							<div style="height:0.2rem"> []
-							<div style="font-size:0.8rem"> [{{$a.Mode}}]
+							<div style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
 						]
 						{{end}}
 					]
@@ -166,7 +166,7 @@
 												<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater('{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
 												{{if $p}}
 												<div style="height:0.2rem"> []
-												<div style="font-size:0.8rem"> [{{$p.Value}}]
+												<div style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Eval}}]
 												{{end}}
 											]
 										{{end}}

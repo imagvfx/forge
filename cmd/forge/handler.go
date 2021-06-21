@@ -81,6 +81,14 @@ var pathHandlerFuncs = template.FuncMap{
 		}
 		return template.JS(string(b)), nil
 	},
+	"divEachLine": func(s string) template.HTML {
+		t := ""
+		lines := strings.Split(s, "\n")
+		for _, line := range lines {
+			t += "<div>" + line + "</div>"
+		}
+		return template.HTML(t)
+	},
 }
 
 func handleError(w http.ResponseWriter, err error) {
