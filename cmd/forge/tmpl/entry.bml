@@ -189,7 +189,7 @@
 						<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
 							<input name="path" class="entryInput" type="hidden"> []
 							<input name="name" class="nameInput" type="hidden"> []
-							<input name="value" class="valueInput" style="flex:1"> []
+							<textarea name="value" class="valueInput submitInputOnCtrlEnter" style="flex:1"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button> [Update]
 						]
@@ -205,7 +205,7 @@
 							<input name="path" class="entryInput" type="hidden"> []
 							<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
 							<select name="type" class="typeSelect" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-							<input name="value" class="valueInput"> []
+							<textarea name="value" class="valueInput submitInputOnCtrlEnter"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button style="box-sizing:border-box;height:1.5rem"> [Add]
 						]
@@ -274,6 +274,19 @@
 `]
 
 <script> [`
+window.onload = function() {
+	let inputs = document.getElementsByClassName("submitInputOnCtrlEnter");
+	for (input of inputs) {
+		input.onkeydown = function(ev) {
+			if (ev.ctrlKey && ev.code == "Enter") {
+				ev.stopPropagation();
+				ev.preventDefault();
+				this.parentElement.submit();
+			}
+		}
+	}
+}
+
 function updateThumbnail() {
 	document.getElementById("add-thumbnail-form").submit();
 }
@@ -333,17 +346,7 @@ function showItemUpdater(entry, ctg, name, type, value) {
 	updater.getElementsByClassName("nameLabel")[0].innerText = name;
 	updater.getElementsByClassName("nameInput")[0].value = name;
 	updater.getElementsByClassName("valueForm")[0].action = "/api/set-" + ctg
-	let oldValueInput = updater.getElementsByClassName("valueInput")[0];
-	let valueInput;
-	if (type == "text") {
-		valueInput = document.createElement("textarea");
-	} else {
-		valueInput = document.createElement("input");
-	}
-	valueInput.name = "value";
-	valueInput.classList.add("valueInput");
-	valueInput.style.flex = 1;
-	oldValueInput.parentNode.replaceChild(valueInput, oldValueInput);
+	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;
 	valueInput.value = value;
 	valueInput.focus();
@@ -380,21 +383,6 @@ function showItemAdder(entry, ctg) {
 		option.text = t;
 		typeSel.appendChild(option)
 	}
-	let changeValueInput = function() {
-		let oldValueInput = adder.getElementsByClassName("valueInput")[0];
-		let valueInput;
-		if (typeSel.value == "text") {
-			valueInput = document.createElement("textarea");
-		} else {
-			valueInput = document.createElement("input");
-		}
-		valueInput.name = "value";
-		valueInput.classList.add("valueInput");
-		valueInput.style.flex = 1;
-		oldValueInput.parentNode.replaceChild(valueInput, oldValueInput);
-	}
-	changeValueInput();
-	typeSel.onchange = changeValueInput;
 	adder.getElementsByClassName("valueForm")[0].action = "/api/add-" + ctg;
 	nameInput.focus();
 }
