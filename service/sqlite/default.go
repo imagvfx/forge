@@ -311,6 +311,7 @@ func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) err
 		return err
 	}
 	d.ID = int(id)
+	// TODO: should I add sub_entry when a default created?
 	return nil
 }
 
@@ -341,6 +342,20 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *service.Default) err
 		return err
 	}
 	d.ID = int(id)
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO properties (
+			entry_id,
+			name,
+			typ,
+			val
+		) SELECT id, ?, ?, ? FROM entries WHERE type_id=?
+		ON CONFLICT DO NOTHING
+	`,
+		d.Name, d.Type, d.Value, typeID,
+	)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -371,6 +386,20 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *service.Default) erro
 		return err
 	}
 	d.ID = int(id)
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO environs (
+			entry_id,
+			name,
+			typ,
+			val
+		) SELECT id, ?, ?, ? FROM entries WHERE type_id=?
+		ON CONFLICT DO NOTHING
+	`,
+		d.Name, d.Type, d.Value, typeID,
+	)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
