@@ -17,7 +17,7 @@ func createEntriesTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			parent_id INTEGER,
 			path STRING NOT NULL UNIQUE,
-			typ STRING NOT NULL,
+			type_id INT NOT NULL,
 			FOREIGN KEY (parent_id) REFERENCES entries (id)
 		)
 	`)
@@ -31,11 +31,11 @@ func createEntriesTable(tx *sql.Tx) error {
 func addRootEntry(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO entries
-			(id, path, typ)
+			(id, path, type_id)
 		VALUES
 			(?, ?, ?)
 	`,
-		0, "/", "root",
+		1, "/", 1, // sqlite IDs are 1 based
 	)
 	if err != nil {
 		return err
@@ -80,10 +80,11 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		SELECT
 			entries.id,
 			entries.path,
-			entries.typ,
+			entry_types.name,
 			thumbnails.id
 		FROM entries
 		LEFT JOIN entries AS parents ON entries.parent_id = parents.id
+		LEFT JOIN entry_types ON entries.type_id = entry_types.id
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
 		`+where+`
 		ORDER BY entries.id ASC
@@ -147,7 +148,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entries.path LIKE ?")
 	vals = append(vals, search.SearchRoot+`/%`)
-	keys = append(keys, "entries.typ=?")
+	keys = append(keys, "entry_types.name=?")
 	vals = append(vals, search.EntryType)
 	for _, p := range search.Keywords {
 		p = strings.TrimSpace(p)
@@ -193,11 +194,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		SELECT
 			entries.id,
 			entries.path,
-			entries.typ,
+			entry_types.name,
 			thumbnails.id
 		FROM entries
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
 		LEFT JOIN properties ON entries.id = properties.entry_id
+		LEFT JOIN entry_types ON entries.type_id = entry_types.id
 		`+where+`
 		GROUP BY entries.id
 	`,
@@ -361,8 +363,12 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if !strings.HasPrefix(e.Path, "/") {
 		return fmt.Errorf("path is not started with /")
 	}
+	typeID, err := getEntryTypeID(tx, ctx, e.Type)
+	if err != nil {
+		return err
+	}
 	parent := filepath.Dir(e.Path)
-	err := userWrite(tx, ctx, parent)
+	err = userWrite(tx, ctx, parent)
 	if err != nil {
 		return err
 	}
@@ -373,13 +379,13 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	result, err := tx.Exec(`
 		INSERT INTO entries (
 			path,
-			typ,
+			type_id,
 			parent_id
 		)
 		VALUES (?, ?, ?)
 	`,
 		e.Path,
-		e.Type,
+		typeID,
 		p.ID,
 	)
 	if err != nil {
