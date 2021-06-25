@@ -111,19 +111,6 @@ func handleError(w http.ResponseWriter, err error) {
 }
 
 func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
-	tab := r.FormValue("tab")
-	switch tab {
-	case "":
-	case "view":
-	case "edit":
-	case "delete":
-	case "logs":
-		h.HandleEntryLogs(w, r)
-		return
-	default:
-		handleError(w, fmt.Errorf("invalid tab: %v", tab))
-		return
-	}
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
@@ -135,15 +122,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
-		if tab != "" {
-			err := h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
-				User:         user,
-				EntryPageTab: &tab,
-			})
-			if err != nil {
-				return err
-			}
-		}
 		setting, err := h.server.GetUserSetting(ctx, user)
 		if err != nil {
 			return err
@@ -337,132 +315,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			AllEntryTypes:            alltyps,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
-		if err != nil {
-			return err
-		}
-		return nil
-	}()
-	handleError(w, err)
-}
-
-func (h *pathHandler) HandleEntryEdit(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.URL.Path
-		ent, err := h.server.GetEntry(ctx, path)
-		if err != nil {
-			return err
-		}
-		subEnts, err := h.server.SubEntries(ctx, path)
-		if err != nil {
-			return err
-		}
-		props, err := h.server.EntryProperties(ctx, path)
-		if err != nil {
-			return err
-		}
-		envs, err := h.server.EntryEnvirons(ctx, path)
-		if err != nil {
-			return err
-		}
-		acs, err := h.server.EntryAccessControls(ctx, path)
-		if err != nil {
-			return err
-		}
-		subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
-		if err != nil {
-			return err
-		}
-		recipe := struct {
-			User           string
-			Entry          *forge.Entry
-			SubEntries     []*forge.Entry
-			Properties     []*forge.Property
-			Environs       []*forge.Property
-			SubEntryTypes  []string
-			AccessControls []*forge.AccessControl
-		}{
-			User:           user,
-			Entry:          ent,
-			SubEntries:     subEnts,
-			Properties:     props,
-			Environs:       envs,
-			SubEntryTypes:  subtyps,
-			AccessControls: acs,
-		}
-		err = Tmpl.ExecuteTemplate(w, "entry-edit.bml", recipe)
-		if err != nil {
-			return err
-		}
-		return nil
-	}()
-	handleError(w, err)
-}
-
-func (h *pathHandler) HandleEntryDelete(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.URL.Path
-		ent, err := h.server.GetEntry(ctx, path)
-		if err != nil {
-			return err
-		}
-		subEnts, err := h.server.SubEntries(ctx, path)
-		if err != nil {
-			return err
-		}
-		props, err := h.server.EntryProperties(ctx, path)
-		if err != nil {
-			return err
-		}
-		envs, err := h.server.EntryEnvirons(ctx, path)
-		if err != nil {
-			return err
-		}
-		acs, err := h.server.EntryAccessControls(ctx, path)
-		if err != nil {
-			return err
-		}
-		subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
-		if err != nil {
-			return err
-		}
-		recipe := struct {
-			User           string
-			Entry          *forge.Entry
-			SubEntries     []*forge.Entry
-			Properties     []*forge.Property
-			Environs       []*forge.Property
-			SubEntryTypes  []string
-			AccessControls []*forge.AccessControl
-		}{
-			User:           user,
-			Entry:          ent,
-			SubEntries:     subEnts,
-			Properties:     props,
-			Environs:       envs,
-			SubEntryTypes:  subtyps,
-			AccessControls: acs,
-		}
-		err = Tmpl.ExecuteTemplate(w, "entry-delete.bml", recipe)
 		if err != nil {
 			return err
 		}
