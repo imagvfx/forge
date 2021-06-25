@@ -22,13 +22,10 @@
 	.main {
 		flex: 1;
 		display: flex;
+		flex-direction: column;
 	}
 	// left and right is a pair used in main class.
 	.left {
-		flex: 1;
-		border-right: 1px solid #DDD;
-		padding: 1rem;
-		background-color: #F7F7F7;
 	}
 	.right {
 		width: 600px;
