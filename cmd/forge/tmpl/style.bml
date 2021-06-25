@@ -22,7 +22,6 @@
 	.main {
 		flex: 1;
 		display: flex;
-		overflow: scroll;
 	}
 	// left and right is a pair used in main class.
 	.left {
