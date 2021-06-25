@@ -7,7 +7,7 @@
 	<body> [
 		{{template "nav" $}}
 		<div class="main"> [
-			<div class="entry" style="padding:1.5rem;background-color:#F7F7F7;border-bottom:1.5px solid #EEE"> [
+			<div class="entry" style="padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 					<div style="margin-right:1rem;display:flex;align-items:start"> [
 						<div class="thumb-box" style="display:flex"> [
@@ -93,7 +93,7 @@
 					]
 				]
 			]
-			<div class="subEntries" style="flex:1;background-color:#FEFEFE;padding:1.5rem"> [
+			<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem"> [
 			{{if $.ResultsFromSearch}}
 				{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
 			{{end}}
@@ -159,9 +159,9 @@
 								<div style="display:flex"> [
 									<a style="padding:{{$pad}};width:96px" href="{{$e.Path}}"> [
 										{{if $e.HasThumbnail}}
-										<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;vertical-align:middle"> []
+										<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4"> []
 										{{else}}
-										<div style="width:96px;height:54px;border:1px solid #CCCCCC"> []
+										<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#F4F4F4"> []
 										{{end}}
 										<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
 									]
