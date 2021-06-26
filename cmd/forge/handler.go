@@ -85,7 +85,13 @@ var pathHandlerFuncs = template.FuncMap{
 		t := ""
 		lines := strings.Split(s, "\n")
 		for _, line := range lines {
-			t += "<div>" + line + "</div>"
+			if strings.TrimSpace(line) == "" {
+				// Empty line should occupy the same area.
+				// TODO: better solution for this?
+				t += "<div style='visibility:hidden'>|</div>"
+			} else {
+				t += "<div>" + line + "</div>"
+			}
 		}
 		return template.HTML(t)
 	},
