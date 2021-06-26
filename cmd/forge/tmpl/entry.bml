@@ -23,7 +23,7 @@
 							<div style="width:128px;height:72px;border:1px solid #CCCCCC"> []
 							<form id="add-thumbnail-form" action="/api/add-thumbnail" method="POST" enctype="multipart/form-data"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input id="thumbnail" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail()"> []
+								<input id="thumbnail" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
 								<label for="thumbnail" class="thumb-button" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer"> [+]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
@@ -148,7 +148,7 @@
 							{{if $.ResultsFromSearch}}
 								<h5> [From <a href="{{$parent}}"> [{{$parent}}]]
 							{{end}}
-							<div style="display:grid;grid-template-columns:1fr;border:1px solid #DDD;border-radius:4px"> [
+							<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
 								{{$propFilters := index $.PropertyFilters $t}}
 								{{range $k, $e := $entries}}
 								{{$props := index $.SubEntryProperties $e.Path}}
@@ -156,14 +156,30 @@
 								{{if $k}}
 								<div style="border-top:1px solid #DDD"> []
 								{{end}}
-								<div style="display:flex"> [
-									<a style="padding:{{$pad}};width:96px" href="{{$e.Path}}"> [
-										{{if $e.HasThumbnail}}
-										<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4"> []
-										{{else}}
-										<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#F4F4F4"> []
-										{{end}}
-										<div style="margin-top:{{$pad}};width:96px;color:black"> [<b> [{{$e.Name}}]]
+								<div class="subEntry" style="flex:1;display:flex;color:black"> [
+									<div class="subEntryLink" style="padding:{{$pad}};width:96px"> [
+										<a class="thumb-box" style="display:flex;color:black;text-decoration:none" href="{{$e.Path}}"> [
+											{{if $e.HasThumbnail}}
+											<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4"> []
+											<form action="/api/delete-thumbnail" method="POST"> [
+												<input name="path" type="hidden" value="{{$e.Path}}"> []
+												<button id="delete-thumb-{{$k}}" style="display:none"> []
+												<label for="delete-thumb-{{$k}}" class="subEntryThumbButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+												<input readonly name="back_to_referer" type="hidden" value="1"> []
+											]
+											{{else}}
+											<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#F4F4F4"> []
+											<form action="/api/add-thumbnail" method="POST" enctype="multipart/form-data"> [
+												<input name="path" type="hidden" value="{{$e.Path}}"> []
+												<input id="thumbnail-{{$k}}" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
+												<label for="thumbnail-{{$k}}" class="subEntryThumbButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
+												<input readonly name="back_to_referer" type="hidden" value="1"> []
+											]
+											{{end}}
+										]
+										<a style="color:black" href="{{$e.Path}}"> [
+											<div class="subEntryName" style="margin-top:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
+										]
 									]
 									<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
 										{{range $name := $propFilters}}
@@ -233,6 +249,23 @@
 	background-color: #DDD;
 }
 
+.subEntryThumbButton {
+	opacity: 0;
+}
+
+.subEntryThumbButton:hover {
+	opacity: 0.8;
+	background-color: #DDD;
+}
+
+.subEntryName {
+	text-decoration: none;
+}
+
+.subEntryLink:hover .subEntryName {
+	text-decoration: underline;
+}
+
 .item-category {
 	padding: 0.3rem;
 	border-radius: 2px 0 0 2px;
@@ -294,8 +327,8 @@ window.onload = function() {
 	}
 }
 
-function updateThumbnail() {
-	document.getElementById("add-thumbnail-form").submit();
+function updateThumbnail(thumbInput) {
+	thumbInput.parentElement.submit();
 }
 
 let LastItemAdderOrUpdater;
