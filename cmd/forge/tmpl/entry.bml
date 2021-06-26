@@ -213,7 +213,8 @@
 					<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
 						<input name="path" class="entryInput" type="hidden"> []
 						<input name="name" class="nameInput" type="hidden"> []
-						<textarea name="value" class="valueInput submitInputOnCtrlEnter" style="flex:1"> []
+						<input name="type" class="typeInput typeHolder" type="hidden"> []
+						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
 						<input readonly name="back_to_referer" type="hidden" value="1"> []
 						<button> [Update]
 					]
@@ -228,8 +229,8 @@
 					<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
 						<input name="path" class="entryInput" type="hidden"> []
 						<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
-						<select name="type" class="typeSelect" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-						<textarea name="value" class="valueInput submitInputOnCtrlEnter"> []
+						<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
+						<textarea name="value" class="valueInput updaterOrAdderInput"> []
 						<input readonly name="back_to_referer" type="hidden" value="1"> []
 						<button style="box-sizing:border-box;height:1.5rem"> [Add]
 					]
@@ -311,9 +312,16 @@
 
 <script> [`
 window.onload = function() {
-	let inputs = document.getElementsByClassName("submitInputOnCtrlEnter");
+	let inputs = document.getElementsByClassName("updaterOrAdderInput");
 	for (input of inputs) {
 		input.onkeydown = function(ev) {
+			if (!ev.ctrlKey && ev.code == "Enter") {
+				let typeHolder = this.parentElement.getElementsByClassName("typeHolder")[0];
+				if (typeHolder.value != "text") {
+					ev.stopPropagation();
+					ev.preventDefault();
+				}
+			}
 			if (ev.ctrlKey && ev.code == "Enter") {
 				ev.stopPropagation();
 				ev.preventDefault();
@@ -407,6 +415,7 @@ function showItemUpdater(entry, ctg, name, type, value) {
 	updater.getElementsByClassName("entryInput")[0].value = entry;
 	updater.getElementsByClassName("nameLabel")[0].innerText = name;
 	updater.getElementsByClassName("nameInput")[0].value = name;
+	updater.getElementsByClassName("typeInput")[0].value = type;
 	updater.getElementsByClassName("valueForm")[0].action = "/api/set-" + ctg
 	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;
