@@ -315,13 +315,6 @@ window.onload = function() {
 	let inputs = document.getElementsByClassName("updaterOrAdderInput");
 	for (input of inputs) {
 		input.onkeydown = function(ev) {
-			if (!ev.ctrlKey && ev.code == "Enter") {
-				let typeHolder = this.parentElement.getElementsByClassName("typeHolder")[0];
-				if (typeHolder.value != "text") {
-					ev.stopPropagation();
-					ev.preventDefault();
-				}
-			}
 			if (ev.ctrlKey && ev.code == "Enter") {
 				ev.stopPropagation();
 				ev.preventDefault();
