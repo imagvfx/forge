@@ -1056,6 +1056,7 @@ func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
+		value = strings.TrimSpace(value)
 		err = h.server.AddProperty(ctx, path, name, typ, value)
 		if err != nil {
 			return err
@@ -1083,6 +1084,7 @@ func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		value := r.FormValue("value")
+		value = strings.TrimSpace(value)
 		err = h.server.SetProperty(ctx, path, name, value)
 		if err != nil {
 			return err
@@ -1137,6 +1139,7 @@ func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		typ := r.FormValue("type")
 		value := r.FormValue("value")
+		value = strings.TrimSpace(value)
 		err = h.server.AddEnviron(ctx, path, name, typ, value)
 		if err != nil {
 			return err
@@ -1164,6 +1167,7 @@ func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
 		path := r.FormValue("path")
 		name := r.FormValue("name")
 		value := r.FormValue("value")
+		value = strings.TrimSpace(value)
 		err = h.server.SetEnviron(ctx, path, name, value)
 		if err != nil {
 			return err
@@ -1218,6 +1222,7 @@ func (h *apiHandler) HandleAddAccess(w http.ResponseWriter, r *http.Request) {
 		accessor := r.FormValue("name")
 		accessor_type := r.FormValue("type")
 		mode := r.FormValue("value")
+		mode = strings.TrimSpace(mode)
 		err = h.server.AddAccessControl(ctx, path, accessor, accessor_type, mode)
 		if err != nil {
 			return err
@@ -1245,6 +1250,7 @@ func (h *apiHandler) HandleSetAccess(w http.ResponseWriter, r *http.Request) {
 		path := r.FormValue("path")
 		accessor := r.FormValue("name")
 		mode := r.FormValue("value")
+		mode = strings.TrimSpace(mode)
 		err = h.server.SetAccessControl(ctx, path, accessor, mode)
 		if err != nil {
 			return err
