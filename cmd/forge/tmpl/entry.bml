@@ -10,24 +10,24 @@
 			<div class="entry" style="padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 					<div style="margin-right:1rem;display:flex;align-items:start"> [
-						<div class="entryThumbnail" style="display:flex"> [
+						<div class="entryThumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
 							{{if $.Entry.HasThumbnail}}
 							<img src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="border:1px solid #CCC"> []
-							<form action="/api/delete-thumbnail" method="POST"> [
-								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<button id="delete-thumb" style="display:none"> []
-								<label for="delete-thumb" class="entryThumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-							]
 							{{else}}
 							<div style="width:128px;height:72px;border:1px solid #CCCCCC"> []
-							<form id="add-thumbnail-form" action="/api/add-thumbnail" method="POST" enctype="multipart/form-data"> [
+							{{end}}
+							<form class="updateThumbnail" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input id="thumbnail" class="entryAddThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
-								<label for="thumbnail" class="entryThumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer"> [+]
+								<input id="thumbnail" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
+								<label for="thumbnail" class="updateThumbnailButton thumbnailButton" style="{{if $.Entry.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer"> [+]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
-							{{end}}
+							<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<button id="delete-thumb" style="display:none"> []
+								<label for="delete-thumb" class="deleteThumbnailButton thumbnailButton" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
 						]
 					]
 					<div style="flex:3;font-size:2rem"> [
@@ -158,24 +158,24 @@
 								{{end}}
 								<div class="subEntry" style="flex:1;display:flex;color:black"> [
 									<div class="subEntryLink" style="padding:{{$pad}};width:96px"> [
-										<a class="entryThumbnail" style="display:flex;color:black;text-decoration:none" href="{{$e.Path}}"> [
+										<a class="entryThumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none" href="{{$e.Path}}"> [
 											{{if $e.HasThumbnail}}
 											<img src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4"> []
-											<form action="/api/delete-thumbnail" method="POST"> [
-												<input name="path" type="hidden" value="{{$e.Path}}"> []
-												<button id="delete-thumb-{{$k}}" style="display:none"> []
-												<label for="delete-thumb-{{$k}}" class="entryThumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
-												<input readonly name="back_to_referer" type="hidden" value="1"> []
-											]
 											{{else}}
 											<div style="width:96px;height:54px;border:1px solid #CCCCCC;background-color:#F4F4F4"> []
-											<form action="/api/add-thumbnail" method="POST" enctype="multipart/form-data"> [
+											{{end}}
+											<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 												<input name="path" type="hidden" value="{{$e.Path}}"> []
-												<input id="thumbnail-{{$k}}" class="entryAddThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
-												<label for="thumbnail-{{$k}}" class="entryThumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
+												<input id="thumbnail-{{$k}}" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
+												<label for="thumbnail-{{$k}}" class="updateThumbnailButton thumbnailButton" style="{{if $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
 												<input readonly name="back_to_referer" type="hidden" value="1"> []
 											]
-											{{end}}
+											<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
+												<input name="path" type="hidden" value="{{$e.Path}}"> []
+												<button id="delete-thumb-{{$k}}" style="display:none"> []
+												<label for="delete-thumb-{{$k}}" class="deleteThumbnailButton thumbnailButton" style="{{if not $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+												<input readonly name="back_to_referer" type="hidden" value="1"> []
+											]
 										]
 										<a style="color:black" href="{{$e.Path}}"> [
 											<div class="subEntryName" style="margin-top:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
@@ -241,16 +241,16 @@
 ]
 
 <style> [`
-.entryThumbnailButton {
+.thumbnailButton {
 	opacity: 0;
 }
 
-.entryThumbnailButton:hover {
+.thumbnailButton:hover {
 	opacity: 0.8;
 	background-color: #DDD;
 }
 
-.entryThumbnail.prepareDrop .entryThumbnailButton {
+.entryThumbnail.prepareDrop .thumbnailButton {
 	opacity: 0.8;
 	background-color: #DDD;
 }
@@ -335,22 +335,24 @@ window.onload = function() {
 			event.stopPropagation();
 			event.preventDefault();
 			event.currentTarget.classList.add("prepareDrop");
+			if (event.currentTarget.dataset.hasThumb == "1") {
+				event.currentTarget.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "hidden";
+				event.currentTarget.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "visible";
+			}
 		}
 		thumb.ondragleave = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
 			event.currentTarget.classList.remove("prepareDrop");
+			if (event.currentTarget.dataset.hasThumb == "1") {
+				event.currentTarget.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "hidden";
+				event.currentTarget.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "visible";
+			}
 		}
 		thumb.ondrop = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			let elems = event.currentTarget.getElementsByClassName("entryAddThumbnailInput");
-			if (elems.length == 0) {
-				// A thumbnail has already been uploaded for the subEntry.
-				// TODO: should be able to update in this case as well
-				return;
-			}
-			let thumbInput = elems[0];
+			let thumbInput = event.currentTarget.getElementsByClassName("updateThumbnailInput")[0];
 			thumbInput.files = event.dataTransfer.files;
 			updateThumbnail(thumbInput);
 		}
@@ -358,7 +360,8 @@ window.onload = function() {
 }
 
 function updateThumbnail(thumbInput) {
-	thumbInput.parentElement.submit();
+	let thumbForm = thumbInput.parentElement;
+	thumbForm.submit();
 }
 
 let LastItemAdderOrUpdater;
