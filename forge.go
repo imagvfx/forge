@@ -222,11 +222,30 @@ func (p *Property) validateDate(s string) (string, error) {
 		// unset
 		return s, nil
 	}
-	// turn a value like yyyy-mm-dd to yyyy/mm/dd
-	s = strings.ReplaceAll(s, "-", "/")
+	// Need 8 digits in what ever form.
+	isDigit := map[string]bool{
+		"0": true, "1": true, "2": true, "3": true, "4": true,
+		"5": true, "6": true, "7": true, "8": true, "9": true,
+	}
+	ss := ""
+	for _, r := range s {
+		ch := string(r)
+		if isDigit[ch] {
+			ss += ch
+		}
+	}
+	if len(ss) != 8 {
+		return "", fmt.Errorf("invalid date string: want yyyy/mm/dd, got %v", s)
+	}
+	s = strings.Join(
+		[]string{
+			ss[0:4], ss[4:6], ss[6:8],
+		},
+		"/",
+	)
 	_, err := time.Parse("2006/01/02", s)
 	if err != nil {
-		return "", fmt.Errorf("invalid date string: need yyyy/mm/dd (ex: 2006/01/02)")
+		return "", fmt.Errorf("invalid date string: %v", err)
 	}
 	return s, nil
 }
