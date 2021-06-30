@@ -312,6 +312,10 @@
 
 <script> [`
 window.onload = function() {
+	let allInputs = document.getElementsByTagName("input");
+	for (input of allInputs) {
+		input.autocomplete = "off";
+	}
 	let inputs = document.getElementsByClassName("updaterOrAdderInput");
 	for (input of inputs) {
 		input.onkeydown = function(ev) {
