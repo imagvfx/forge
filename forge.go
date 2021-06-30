@@ -153,19 +153,27 @@ func (p *Property) validateTimecode(s string) (string, error) {
 		// unset
 		return s, nil
 	}
-	toks := strings.Split(s, ":")
-	if len(toks) != 4 {
+	// Need 8 digits in what ever form.
+	isDigit := map[string]bool{
+		"0": true, "1": true, "2": true, "3": true, "4": true,
+		"5": true, "6": true, "7": true, "8": true, "9": true,
+	}
+	ss := ""
+	for _, r := range s {
+		ch := string(r)
+		if isDigit[ch] {
+			ss += ch
+		}
+	}
+	if len(ss) != 8 {
 		return "", fmt.Errorf("invalid timecode string: %v", s)
 	}
-	for _, t := range toks {
-		i, err := strconv.Atoi(t)
-		if err != nil {
-			return "", fmt.Errorf("invalid timecode string: %v", s)
-		}
-		if i < 0 || i > 100 {
-			return "", fmt.Errorf("invalid timecode string: %v", s)
-		}
-	}
+	s = strings.Join(
+		[]string{
+			ss[0:2], ss[2:4], ss[4:6], ss[6:8],
+		},
+		":",
+	)
 	return s, nil
 }
 
