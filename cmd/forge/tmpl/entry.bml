@@ -71,23 +71,23 @@
 					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 						{{range $p := $.Properties}}
 						<div class="property-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
 							<div style="height:0.2rem"> []
-							<div style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
+							<div class="propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
 						]
 						{{end}}
 						{{range $e := $.Environs}}
 						<div class="environ-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
 							<div style="height:0.2rem"> []
-							<div style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
+							<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
 						]
 						{{end}}
 						{{range $a := $.AccessControls}}
 						<div class="access-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
 							<div style="height:0.2rem"> []
-							<div style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
+							<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
 						]
 						{{end}}
 					]
@@ -183,12 +183,12 @@
 									]
 									<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
 										{{range $name := $propFilters}}
-											<div style="width:12rem;"> [
+											<div class="property" style="width:12rem;"> [
 												{{$p := index $props $name}}
-												<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater('{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
+												<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater(this, '{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
 												{{if $p}}
 												<div style="height:0.2rem"> []
-												<div style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Eval}}]
+												<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Eval}}]
 												{{end}}
 											]
 										{{end}}
@@ -215,8 +215,9 @@
 						<input name="name" class="nameInput" type="hidden"> []
 						<input name="type" class="typeInput typeHolder" type="hidden"> []
 						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+						<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
 						<input readonly name="back_to_referer" type="hidden" value="1"> []
-						<button> [Update]
+						<button style="width:5rem"> [Update]
 					]
 				]
 			]
@@ -230,9 +231,10 @@
 						<input name="path" class="entryInput" type="hidden"> []
 						<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
 						<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-						<textarea name="value" class="valueInput updaterOrAdderInput"> []
+						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+						<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
 						<input readonly name="back_to_referer" type="hidden" value="1"> []
-						<button style="box-sizing:border-box;height:1.5rem"> [Add]
+						<button style="width:5rem"> [Add]
 					]
 				]
 			]
@@ -308,26 +310,43 @@
 	border: 1px solid #EEE;
 	overflow: auto;
 }
+
+.updatingMarker {
+	animation-duration: 1s;
+	animation-name: rotating;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+}
+
+@keyframes rotating {
+	from {
+		transform: rotate(0turn);
+	}
+	to {
+		transform: rotate(1turn);
+	}
+}
 `]
 
 <script> [`
 window.onload = function() {
 	let allInputs = document.getElementsByTagName("input");
-	for (input of allInputs) {
+	for (let input of allInputs) {
 		input.autocomplete = "off";
 	}
 	let inputs = document.getElementsByClassName("updaterOrAdderInput");
-	for (input of inputs) {
+	for (let input of inputs) {
 		input.onkeydown = function(ev) {
 			if (ev.ctrlKey && ev.code == "Enter") {
-				ev.stopPropagation();
-				ev.preventDefault();
-				this.parentElement.submit();
+				submitUpdaterOrAdder(ev, input);
 			}
+		}
+		input.parentElement.onsubmit = function(ev) {
+			submitUpdaterOrAdder(ev, input);
 		}
 	}
 	let thumbs = document.getElementsByClassName('entryThumbnail');
-	for (thumb of thumbs) {
+	for (let thumb of thumbs) {
 		thumb.ondragover = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
@@ -359,6 +378,33 @@ window.onload = function() {
 function updateThumbnail(thumbInput) {
 	let thumbForm = thumbInput.parentElement;
 	thumbForm.submit();
+}
+
+function submitUpdaterOrAdder(ev, input) {
+	ev.stopPropagation();
+	ev.preventDefault();
+	let req = new XMLHttpRequest();
+	let form = input.parentElement;
+	let button = form.getElementsByTagName("button")[0];
+	let marker = form.getElementsByClassName("updatingMarker")[0];
+	req.onload = function() {
+		marker.style.visibility = "hidden";
+		if (req.status == 200) {
+			button.innerText = "Success!";
+		} else {
+			button.innerText = "Failed!";
+			console.log(req.status.toString() + " " + req.statusText + ": " + req.responseText);
+		}
+		// UpdatingElement.innerText = "updated!";
+	}
+	req.onerror = function(err) {
+		marker.style.visibility = "hidden";
+		button.innerText = "Failed!";
+		console.log("network error occurred. please check wheter the server is down.");
+	}
+	req.open(form.method, form.action);
+	req.send(new FormData(form));
+	marker.style.visibility = "visible";
 }
 
 let LastItemAdderOrUpdater;
@@ -405,9 +451,16 @@ function showItems(ctg) {
 	}
 }
 
-function showItemUpdater(entry, ctg, name, type, value) {
+// UpdatingElement indicates the "propertyValue" div for a property currently updater is updating.
+let UpdatingElement = null;
+
+function showItemUpdater(elem, entry, ctg, name, type, value) {
+	UpdatingElement = elem.parentElement.getElementsByClassName("propertyValue")[0]; // modify the global variable
 	hideItemAdder();
 	let updater = document.getElementById("itemUpdater");
+	// The marker might visible now, if it already update an info. Let's hide it.
+	let marker = updater.getElementsByClassName("updatingMarker")[0];
+	marker.style.visibility = "hidden";
 	LastItemAdderOrUpdater = updater;
 	updater.dataset.initialized = "1";
 	updater.style.display = "block";
