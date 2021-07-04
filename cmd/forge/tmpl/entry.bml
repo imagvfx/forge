@@ -85,7 +85,7 @@
 						{{end}}
 						{{range $a := $.AccessControls}}
 						<div class="access-items" style="display:none"> [
-							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
+							<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
 							<div style="height:0.2rem"> []
 							<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
 						]
@@ -213,6 +213,7 @@
 					<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
 						<input name="path" class="entryInput" type="hidden"> []
 						<input name="name" class="nameInput" type="hidden"> []
+						<input name="ctg" class="categoryInput" type="hidden"> []
 						<input name="type" class="typeInput typeHolder" type="hidden"> []
 						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
 						<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
@@ -230,6 +231,7 @@
 					<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
 						<input name="path" class="entryInput" type="hidden"> []
 						<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
+						<input name="ctg" class="categoryInput" type="hidden"> []
 						<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
 						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
 						<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
@@ -329,6 +331,8 @@
 `]
 
 <script> [`
+"use strict";
+
 window.onload = function() {
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
@@ -391,11 +395,28 @@ function submitUpdaterOrAdder(ev, input) {
 		marker.style.visibility = "hidden";
 		if (req.status == 200) {
 			button.innerText = "Success!";
+			let get = new XMLHttpRequest();
+			let getForm = new FormData();
+			getForm.append("path", form.path.value);
+			getForm.append("name", form.name.value);
+			get.open("post", "/api/get-" + form.ctg.value);
+			get.onload = function() {
+				if (get.status == 200) {
+					let j = JSON.parse(get.responseText);
+					if (j.Err != null) {
+						console.log(j.Err);
+						return;
+					}
+					if (UpdatingElement != null) {
+						UpdatingElement.innerText = j.Msg.Value;
+					}
+				}
+			}
+			get.send(getForm);
 		} else {
 			button.innerText = "Failed!";
 			console.log(req.status.toString() + " " + req.statusText + ": " + req.responseText);
 		}
-		// UpdatingElement.innerText = "updated!";
 	}
 	req.onerror = function(err) {
 		marker.style.visibility = "hidden";
@@ -455,21 +476,25 @@ function showItems(ctg) {
 let UpdatingElement = null;
 
 function showItemUpdater(elem, entry, ctg, name, type, value) {
+	// TODO: this way, we cannot retrive the latest value, if the prop/env/acl is updated in this page,
+	// should change the function to get data from `elem`
+
 	UpdatingElement = elem.parentElement.getElementsByClassName("propertyValue")[0]; // modify the global variable
 	hideItemAdder();
 	let updater = document.getElementById("itemUpdater");
-	// The marker might visible now, if it already update an info. Let's hide it.
-	let marker = updater.getElementsByClassName("updatingMarker")[0];
-	marker.style.visibility = "hidden";
 	LastItemAdderOrUpdater = updater;
+
 	updater.dataset.initialized = "1";
 	updater.style.display = "block";
 	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
 	updater.getElementsByClassName("entryInput")[0].value = entry;
+	updater.getElementsByClassName("categoryInput")[0].value = ctg;
 	updater.getElementsByClassName("nameLabel")[0].innerText = name;
 	updater.getElementsByClassName("nameInput")[0].value = name;
 	updater.getElementsByClassName("typeInput")[0].value = type;
-	updater.getElementsByClassName("valueForm")[0].action = "/api/set-" + ctg
+	updater.getElementsByClassName("valueForm")[0].action = "/api/set-" + ctg;
+	updater.getElementsByTagName("button")[0].innerText = "Update";
+
 	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;
 	valueInput.value = value;
@@ -485,13 +510,19 @@ let PropertyTypes = {{marshalJS $.PropertyTypes}}
 let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
 function showItemAdder(entry, ctg) {
+	// TODO: Add the item inplace?
+	UpdatingElement = null;
 	hideItemUpdater();
 	let adder = document.getElementById("itemAdder");
 	LastItemAdderOrUpdater = adder;
+
 	adder.dataset.initialized = "1";
 	adder.style.display = "block";
 	adder.getElementsByClassName("entryLabel")[0].innerText = entry;
 	adder.getElementsByClassName("entryInput")[0].value = entry;
+	adder.getElementsByClassName("categoryInput")[0].value = ctg;
+	adder.getElementsByTagName("button")[0].innerText = "Add";
+
 	let nameInput = adder.getElementsByClassName("nameInput")[0]
 	nameInput.value = name;
 	nameInput.placeholder = ctg;
@@ -540,7 +571,7 @@ function toggleCollapse() {
 }
 
 var coll = document.getElementsByClassName("collapsible");
-for (i = 0; i < coll.length; i++) {
+for (let i = 0; i < coll.length; i++) {
 	coll[i].getElementsByClassName("title")[0].addEventListener("click", toggleCollapse);
 }
 `]

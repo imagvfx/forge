@@ -57,6 +57,23 @@ type Property struct {
 	Value     string
 }
 
+func (p *Property) MarshalJSON() ([]byte, error) {
+	m := struct {
+		Path     string
+		Name     string
+		Type     string
+		Value    string
+		RawValue string
+	}{
+		Path:     p.EntryPath,
+		Name:     p.Name,
+		Type:     p.Type,
+		Value:    p.Eval(),
+		RawValue: p.Value,
+	}
+	return json.Marshal(m)
+}
+
 func LessProperty(t, a, b string) bool {
 	switch t {
 	case "int":
@@ -317,6 +334,23 @@ type AccessControl struct {
 	Accessor     string
 	AccessorType AccessorType
 	Mode         AccessMode
+}
+
+func (p *AccessControl) MarshalJSON() ([]byte, error) {
+	m := struct {
+		Path     string
+		Name     string
+		Type     string
+		Value    string
+		RawValue string
+	}{
+		Path:     p.EntryPath,
+		Name:     p.Accessor,
+		Type:     p.AccessorType.String(),
+		Value:    p.Mode.String(),
+		RawValue: p.Mode.String(),
+	}
+	return json.Marshal(m)
 }
 
 type Log struct {

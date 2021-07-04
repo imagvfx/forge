@@ -97,23 +97,33 @@ var pathHandlerFuncs = template.FuncMap{
 	},
 }
 
+func httpStatusFromError(err error) int {
+	if err == nil {
+		return http.StatusOK
+	}
+	var notFound *service.NotFoundError
+	if errors.As(err, &notFound) {
+		return http.StatusNotFound
+	}
+	var unauthorized *service.UnauthorizedError
+	if errors.As(err, &unauthorized) {
+		return http.StatusUnauthorized
+	}
+	return http.StatusBadRequest
+}
+
 func handleError(w http.ResponseWriter, err error) {
 	if err == nil {
 		return
 	}
-	var notFound *service.NotFoundError
-	if errors.As(err, &notFound) {
-		http.Error(w, err.Error(), http.StatusNotFound)
+	status := httpStatusFromError(err)
+	if status == http.StatusNotFound {
+		http.Error(w, err.Error(), status)
 		return
 	}
 	// Log unauthorized and undefined errors.
 	log.Print(err)
-	var unauthorized *service.UnauthorizedError
-	if errors.As(err, &unauthorized) {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-	http.Error(w, err.Error(), http.StatusBadRequest)
+	http.Error(w, err.Error(), status)
 }
 
 func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
@@ -728,6 +738,15 @@ type apiHandler struct {
 	server *forge.Server
 }
 
+func (h *apiHandler) WriteResponse(w http.ResponseWriter, m interface{}, e error) {
+	w.WriteHeader(httpStatusFromError(e))
+	resp, _ := json.Marshal(forge.APIResponse{Msg: m, Err: e})
+	_, err := w.Write(resp)
+	if err != nil {
+		log.Print(err)
+	}
+}
+
 func (h *apiHandler) HandleAddEntryType(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
@@ -1097,6 +1116,27 @@ func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
+func (h *apiHandler) HandleGetProperty(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		path := r.FormValue("path")
+		name := r.FormValue("name")
+		p, err := h.server.GetProperty(ctx, path, name)
+		h.WriteResponse(w, p, err)
+		return nil
+	}()
+	handleError(w, err)
+}
+
 func (h *apiHandler) HandleDeleteProperty(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
@@ -1180,6 +1220,27 @@ func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
+func (h *apiHandler) HandleGetEnviron(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		path := r.FormValue("path")
+		name := r.FormValue("name")
+		env, err := h.server.GetEnviron(ctx, path, name)
+		h.WriteResponse(w, env, err)
+		return nil
+	}()
+	handleError(w, err)
+}
+
 func (h *apiHandler) HandleDeleteEnviron(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
@@ -1258,6 +1319,27 @@ func (h *apiHandler) HandleSetAccess(w http.ResponseWriter, r *http.Request) {
 		if r.FormValue("back_to_referer") != "" {
 			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 		}
+		return nil
+	}()
+	handleError(w, err)
+}
+
+func (h *apiHandler) HandleGetAccess(w http.ResponseWriter, r *http.Request) {
+	err := func() error {
+		if r.Method != "POST" {
+			return fmt.Errorf("need POST, got %v", r.Method)
+		}
+		session, err := getSession(r)
+		if err != nil {
+			clearSession(w)
+			return err
+		}
+		user := session["user"]
+		ctx := service.ContextWithUserName(r.Context(), user)
+		path := r.FormValue("path")
+		name := r.FormValue("name")
+		acl, err := h.server.GetAccessControl(ctx, path, name)
+		h.WriteResponse(w, acl, err)
 		return nil
 	}()
 	handleError(w, err)

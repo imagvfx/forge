@@ -216,6 +216,23 @@ func isAdmin(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
 	return isGroupMember(tx, ctx, "admin", user)
 }
 
+func GetAccessControl(db *sql.DB, ctx context.Context, path, name string) (*service.AccessControl, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	acl, err := getAccessControl(tx, ctx, path, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return acl, nil
+}
+
 func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
 	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
 		EntryPath: &path,

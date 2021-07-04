@@ -146,6 +146,10 @@ func (s Service) EntryAccessControls(ctx context.Context, path string) ([]*servi
 	return EntryAccessControls(s.db, ctx, path)
 }
 
+func (s *Service) GetAccessControl(ctx context.Context, path, name string) (*service.AccessControl, error) {
+	return GetAccessControl(s.db, ctx, path, name)
+}
+
 func (s Service) AddAccessControl(ctx context.Context, a *service.AccessControl) error {
 	return AddAccessControl(s.db, ctx, a)
 }

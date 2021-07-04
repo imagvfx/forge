@@ -375,7 +375,7 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	return props, nil
 }
 
-func (s *Server) getProperty(ctx context.Context, path string, name string) (*Property, error) {
+func (s *Server) GetProperty(ctx context.Context, path string, name string) (*Property, error) {
 	if path == "" {
 		return nil, fmt.Errorf("property path not specified")
 	}
@@ -440,7 +440,7 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 	if path == "" {
 		return fmt.Errorf("property value not specified")
 	}
-	prop, err := s.getProperty(ctx, path, name)
+	prop, err := s.GetProperty(ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -497,7 +497,7 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	return props, nil
 }
 
-func (s *Server) getEnviron(ctx context.Context, path, name string) (*Property, error) {
+func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, error) {
 	if path == "" {
 		return nil, fmt.Errorf("environ path not specified")
 	}
@@ -558,7 +558,7 @@ func (s *Server) SetEnviron(ctx context.Context, path string, name, value string
 	if value == "" {
 		return fmt.Errorf("environ value not specified")
 	}
-	env, err := s.getEnviron(ctx, path, name)
+	env, err := s.GetEnviron(ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -612,6 +612,26 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 		acs = append(acs, ac)
 	}
 	return acs, nil
+}
+
+func (s *Server) GetAccessControl(ctx context.Context, path string, accessor string) (*AccessControl, error) {
+	if path == "" {
+		return nil, fmt.Errorf("access control path not specified")
+	}
+	if accessor == "" {
+		return nil, fmt.Errorf("accessor not specified")
+	}
+	sACL, err := s.svc.GetAccessControl(ctx, path, accessor)
+	if err != nil {
+		return nil, err
+	}
+	acl := &AccessControl{
+		EntryPath:    sACL.EntryPath,
+		Accessor:     sACL.Accessor,
+		AccessorType: AccessorType(sACL.AccessorType),
+		Mode:         AccessMode(sACL.Mode),
+	}
+	return acl, nil
 }
 
 func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, accessor_type, mode string) error {
