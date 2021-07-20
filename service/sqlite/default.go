@@ -193,6 +193,18 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find service.Default
 	return defaults, nil
 }
 
+func getDefaultProperty(tx *sql.Tx, ctx context.Context, entry_type, name string) (*service.Default, error) {
+	find := service.DefaultFinder{
+		EntryType: &entry_type,
+		Name:      &name,
+	}
+	defaults, err := findDefaultProperties(tx, ctx, find)
+	if len(defaults) == 0 {
+		return nil, service.NotFound("default not found")
+	}
+	return defaults[0], err
+}
+
 func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
@@ -492,6 +504,10 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "property", upd.Name)
 	}
+	old, err := getDefaultProperty(tx, ctx, upd.EntryType, upd.Name)
+	if err != nil {
+		return err
+	}
 	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
 	if err != nil {
 		return err
@@ -506,6 +522,43 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 	)
 	if err != nil {
 		return err
+	}
+	// Update existing entries.
+	if old.Type != *upd.Type {
+		_, err := tx.ExecContext(ctx, `
+		UPDATE properties
+		SET typ = ?
+		WHERE
+			id IN (
+				SELECT properties.id FROM properties
+				LEFT JOIN entries ON properties.entry_id = entries.id
+				WHERE entries.type_id=? AND properties.name=?
+			)
+	`,
+			*upd.Type, typeID, upd.Name,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	// For value, we will only update properties having old default value with the new one.
+	if old.Value != *upd.Value {
+		_, err := tx.ExecContext(ctx, `
+		UPDATE properties
+		SET val = ?
+		WHERE
+			val = ? AND
+			id IN (
+				SELECT properties.id FROM properties
+				LEFT JOIN entries ON properties.entry_id = entries.id
+				WHERE entries.type_id=? AND properties.name=?
+			)
+	`,
+			*upd.Value, old.Value, typeID, upd.Name,
+		)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

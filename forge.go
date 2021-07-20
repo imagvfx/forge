@@ -79,6 +79,7 @@ func LessProperty(t, a, b string) bool {
 	case "int":
 		ia, erra := strconv.Atoi(a)
 		ib, errb := strconv.Atoi(b)
+		// show the error value first
 		if erra != nil {
 			return true
 		}
