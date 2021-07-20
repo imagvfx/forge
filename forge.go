@@ -196,6 +196,9 @@ func (p *Property) validateTimecode(s string) (string, error) {
 }
 
 func (p *Property) evalEntryPath(s string) string {
+	if s == "" {
+		return ""
+	}
 	return filepath.Clean(filepath.Join(p.EntryPath, s))
 }
 
@@ -213,6 +216,9 @@ func (p *Property) validateEntryPath(s string) (string, error) {
 }
 
 func (p *Property) evalEntryName(s string) string {
+	if s == "" {
+		return ""
+	}
 	return filepath.Base(filepath.Clean(filepath.Join(p.EntryPath, s)))
 }
 
