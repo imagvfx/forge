@@ -403,9 +403,6 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 	if typ == "" {
 		return fmt.Errorf("property type not specified")
 	}
-	if value == "" {
-		return fmt.Errorf("property value not specified")
-	}
 	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return err
@@ -433,9 +430,6 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 	}
 	if name == "" {
 		return fmt.Errorf("property name not specified")
-	}
-	if path == "" {
-		return fmt.Errorf("property value not specified")
 	}
 	prop, err := s.GetProperty(ctx, path, name)
 	if err != nil {
@@ -525,9 +519,6 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 	if typ == "" {
 		return fmt.Errorf("environ type not specified")
 	}
-	if value == "" {
-		return fmt.Errorf("environ value not specified")
-	}
 	env := &Property{
 		EntryPath: path,
 		Name:      name,
@@ -551,9 +542,6 @@ func (s *Server) SetEnviron(ctx context.Context, path string, name, value string
 	}
 	if name == "" {
 		return fmt.Errorf("environ name not specified")
-	}
-	if value == "" {
-		return fmt.Errorf("environ value not specified")
 	}
 	env, err := s.GetEnviron(ctx, path, name)
 	if err != nil {
