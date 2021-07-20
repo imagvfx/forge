@@ -319,9 +319,6 @@ func (s *Server) SetDefault(ctx context.Context, entType, ctg, name, typ, value 
 	if typ == "" {
 		return fmt.Errorf("default type not specified")
 	}
-	if value == "" {
-		return fmt.Errorf("default value not specified")
-	}
 	upd := service.DefaultUpdater{
 		EntryType: entType,
 		Category:  ctg,
