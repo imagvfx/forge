@@ -254,6 +254,18 @@ func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find service.DefaultFi
 	return defaults, nil
 }
 
+func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string) (*service.Default, error) {
+	find := service.DefaultFinder{
+		EntryType: &entry_type,
+		Name:      &name,
+	}
+	defaults, err := findDefaultEnvirons(tx, ctx, find)
+	if len(defaults) == 0 {
+		return nil, service.NotFound("default not found")
+	}
+	return defaults[0], err
+}
+
 func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -577,6 +589,10 @@ func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd service.DefaultUp
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "environ", upd.Name)
 	}
+	old, err := getDefaultEnviron(tx, ctx, upd.EntryType, upd.Name)
+	if err != nil {
+		return err
+	}
 	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
 	if err != nil {
 		return err
@@ -591,6 +607,43 @@ func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd service.DefaultUp
 	)
 	if err != nil {
 		return err
+	}
+	// Update existing entries.
+	if old.Type != *upd.Type {
+		_, err := tx.ExecContext(ctx, `
+		UPDATE environs
+		SET typ = ?
+		WHERE
+			id IN (
+				SELECT environs.id FROM environs
+				LEFT JOIN entries ON environs.entry_id = entries.id
+				WHERE entries.type_id=? AND environs.name=?
+			)
+	`,
+			*upd.Type, typeID, upd.Name,
+		)
+		if err != nil {
+			return err
+		}
+	}
+	// For value, we will only update environs having old default value with the new one.
+	if old.Value != *upd.Value {
+		_, err := tx.ExecContext(ctx, `
+		UPDATE environs
+		SET val = ?
+		WHERE
+			val = ? AND
+			id IN (
+				SELECT environs.id FROM environs
+				LEFT JOIN entries ON environs.entry_id = entries.id
+				WHERE entries.type_id=? AND environs.name=?
+			)
+	`,
+			*upd.Value, old.Value, typeID, upd.Name,
+		)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
