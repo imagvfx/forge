@@ -499,6 +499,8 @@ func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 	if err != nil {
 		return err
 	}
+	// Will not update sub-entries of the entries unlike properties or environs.
+	// As sub-entries are more complicated then others and hard to update correctly.
 	return nil
 }
 
