@@ -928,7 +928,7 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 	if group == "" {
 		return nil, fmt.Errorf("group not specified")
 	}
-	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{Group: &group})
+	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{Group: group})
 	if err != nil {
 		return nil, err
 	}

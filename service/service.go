@@ -286,6 +286,6 @@ type Member struct {
 }
 
 type MemberFinder struct {
-	Group  *string
+	Group  string
 	Member *string
 }

@@ -47,10 +47,8 @@ func FindGroupMembers(db *sql.DB, ctx context.Context, find service.MemberFinder
 func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if find.Group != nil {
-		keys = append(keys, "groups.name=?")
-		vals = append(vals, *find.Group)
-	}
+	keys = append(keys, "groups.name=?")
+	vals = append(vals, find.Group)
 	if find.Member != nil {
 		keys = append(keys, "members.name=?")
 		vals = append(vals, *find.Member)
@@ -96,7 +94,7 @@ func isGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (bool,
 		}
 		return true, nil
 	}
-	mems, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group, Member: &member})
+	mems, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: group, Member: &member})
 	if err != nil {
 		return false, err
 	}
@@ -189,7 +187,7 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) er
 		return fmt.Errorf("everyone group doesn't have any explicit member")
 	}
 	if group == "admin" {
-		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group})
+		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: group})
 		if err != nil {
 			return err
 		}
