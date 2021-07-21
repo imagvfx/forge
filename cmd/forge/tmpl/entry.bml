@@ -61,6 +61,12 @@
 							<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
 						]
 						<div style="flex:1"> []
+						<form action="/api/rename-entry" method="post"> [
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input id="renameInput" name="new-name" type="text" style="display:none"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
+						<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
 						<form action="/api/delete-entry" method="post"> [
 							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<button id="delete-entry-button" style="display:none"> []
@@ -376,6 +382,16 @@ window.onload = function() {
 			thumbInput.files = event.dataTransfer.files;
 			updateThumbnail(thumbInput);
 		}
+	}
+}
+
+function toggleRenameInput() {
+	let input = document.getElementById("renameInput");
+	if (input.style.display == "none") {
+		input.style.display = "block";
+		input.focus();
+	} else {
+		input.style.display = "none";
 	}
 }
 
