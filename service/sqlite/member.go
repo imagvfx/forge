@@ -89,6 +89,13 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 }
 
 func isGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (bool, error) {
+	if group == "everyone" {
+		_, err := getUser(tx, ctx, member)
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	}
 	mems, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group, Member: &member})
 	if err != nil {
 		return false, err
@@ -125,6 +132,9 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 }
 
 func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
+	if m.Group == "everyone" {
+		return fmt.Errorf("everyone group doesn't take any explicit member")
+	}
 	g, err := getGroup(tx, ctx, m.Group)
 	if err != nil {
 		return err
@@ -175,6 +185,9 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) er
 }
 
 func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) error {
+	if group == "everyone" {
+		return fmt.Errorf("everyone group doesn't have any explicit member")
+	}
 	if group == "admin" {
 		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: &group})
 		if err != nil {

@@ -11,7 +11,27 @@ import (
 
 // see createAccessorTable for table creation.
 
-// addAdminGroup adds 'admin' group to groups table.
+// addEveryoneGroup adds 'everyone' group to accessors table.
+// everyone group includes every user as the name says.
+// One unique thing for everyone group is that it won't hold members.
+// Membership checking for any user to everyone will return true.
+// The group isn't allowed to be renamed or deleted.
+func addEveryoneGroup(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		INSERT OR IGNORE INTO accessors
+			(is_group, name)
+		VALUES
+			(?, ?)
+	`,
+		true, "everyone",
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// addAdminGroup adds 'admin' group to accessors table.
 // admin group is created while initializing db, so it's the first created accessor.
 // Members of admin group are able to see/modify any entry.
 // The group isn't allowed to be renamed or deleted.
