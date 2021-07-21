@@ -145,7 +145,15 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 }
 
 func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
-	result, err := tx.ExecContext(ctx, `
+	users, err := findUsers(tx, ctx, service.UserFinder{})
+	if err != nil {
+		return err
+	}
+	firstUser := false
+	if len(users) == 0 {
+		firstUser = true
+	}
+	_, err = tx.ExecContext(ctx, `
 		INSERT INTO accessors (
 			is_group,
 			name
@@ -158,12 +166,7 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	if err != nil {
 		return err
 	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	u.ID = int(id)
-	if u.ID == 2 {
+	if firstUser {
 		// first user created, make the user admin
 		ctx = service.ContextWithUserName(ctx, "system")
 		err = addGroupMember(tx, ctx, &service.Member{
