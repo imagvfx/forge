@@ -388,6 +388,22 @@ window.onload = function() {
 	}
 }
 
+window.onpageshow = function() {
+	let allImgs = document.getElementsByTagName("img");
+	for (let img of allImgs) {
+		if (!img.id.startsWith("thumbnailImg")) {
+			continue;
+		}
+		if ((window.getComputedStyle(img).visibility == "visible") && (img.naturalWidth == 0)) {
+			// This means we uploaded the thumbnail, but doesn't show properly
+			// as we arrive this page with browser's previous button.
+			// Interestingly the "?t=curent-time" part are gone (at least) in firefox.
+			// It makes the browser uses the old 'not found' cache.
+			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
+		}
+	}
+}
+
 function toggleRenameInput() {
 	let input = document.getElementById("renameInput");
 	if (input.style.display == "none") {
