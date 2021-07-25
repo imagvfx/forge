@@ -10,9 +10,9 @@
 			<div class="entry" style="padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 					<div style="margin-right:1rem;display:flex;align-items:start"> [
-						<div class="entryThumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
+						<div id="thumbnail" class="thumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
 							<div style="display:flex;border:1px solid #CCCCCC"> [
-								<img id="thumbnail" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}"> []
+								<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}"> []
 							]
 							<form class="updateThumbnail" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -162,9 +162,9 @@
 								{{end}}
 								<div class="subEntry" style="flex:1;display:flex;color:black"> [
 									<div class="subEntryLink" style="padding:{{$pad}};width:96px"> [
-										<a class="entryThumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
+										<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
 											<div style="display:flex;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;"> [
-												<img id="thumbnail-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}}"> []
+												<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}}"> []
 											]
 											<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 												<input name="path" type="hidden" value="{{$e.Path}}"> []
@@ -256,7 +256,7 @@
 	background-color: #DDD;
 }
 
-.entryThumbnail.prepareDrop .thumbnailButton {
+.thumbnail.prepareDrop .thumbnailButton {
 	opacity: 0.8;
 	background-color: #DDD;
 }
@@ -351,7 +351,7 @@ window.onload = function() {
 			submitUpdaterOrAdder(ev, input);
 		}
 	}
-	let thumbs = document.getElementsByClassName('entryThumbnail');
+	let thumbs = document.getElementsByClassName('thumbnail');
 	for (let thumb of thumbs) {
 		thumb.ondragover = function(event) {
 			event.stopPropagation();
@@ -395,21 +395,22 @@ function toggleRenameInput() {
 function updateThumbnail(thumbInput) {
 	let thumbID = thumbInput.id.replace("thumbnailInput", "thumbnail");
 	let thumb = document.getElementById(thumbID);
+	let imgID = thumbInput.id.replace("thumbnailInput", "thumbnailImg");
+	let img = document.getElementById(imgID);
 	let req = new XMLHttpRequest();
 	let form = thumbInput.parentElement;
 	req.open(form.method, form.action);
 	req.send(new FormData(form));
 	req.onload = function() {
 		if (req.status == 200) {
-			thumb.src = thumb.src.split("?")[0] + "?t=" + new Date().getTime();
-			thumb.style.visibility = "visible";
+			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
+			img.style.visibility = "visible";
 			form.action = form.action.replace("/api/add", "/api/set");
-			let entryThumb = form.parentElement;
-			entryThumb.dataset.hasThumb = "1";
-			entryThumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "hidden";
-			entryThumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "visible";
+			thumb.dataset.hasThumb = "1";
+			thumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "hidden";
+			thumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "visible";
 		} else {
-			thumb.parentElement.style.backgroundColor = "red";
+			img.parentElement.style.backgroundColor = "red";
 			console.log(req.status.toString() + " " + req.statusText + ": " + req.responseText);
 		}
 	}
