@@ -417,6 +417,17 @@ function toggleRenameInput() {
 function updateThumbnail(thumbInput) {
 	let thumbID = thumbInput.id.replace("thumbnailInput", "thumbnail");
 	let thumb = document.getElementById(thumbID);
+	let now = new Date().getTime();
+	if (thumb.dataset.lastUpload) {
+		// Prevent Safari from firing this event twice.
+		// TODO: resolve the base problem
+		let last = Number(thumb.dataset.lastUpload);
+		let d = now - last;
+		if (d < 1000) {
+			return;
+		}
+	}
+	thumb.dataset.lastUpload = String(now);
 	let imgID = thumbInput.id.replace("thumbnailInput", "thumbnailImg");
 	let img = document.getElementById(imgID);
 	let req = new XMLHttpRequest();
