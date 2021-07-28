@@ -5,9 +5,24 @@
 	]
 	<body> [
 		<div class="main"> [
-			<div class="one"> [
-				<a href="https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={{$.OIDC.ClientID}}&scope=openid%20email&redirect_uri={{$.OIDC.RedirectURI}}&state={{$.OIDCState}}&nonce={{$.OIDCNonce}}&hd={{$.OIDC.HostDomain}}&prompt=consent"> [login from google]
+			<div class="one" style="display:flex;align-items:center;justify-content:center;"> [
+				<a id="googleSignInButton" href="https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id={{$.OIDC.ClientID}}&scope=openid%20email&redirect_uri={{$.OIDC.RedirectURI}}&state={{$.OIDCState}}&nonce={{$.OIDCNonce}}&hd={{$.OIDC.HostDomain}}&prompt=consent"> []
 			]
 		]
 	]
 ]
+
+<style> [`
+#googleSignInButton {
+	width: 191px;
+	height: 46px;
+	background: url("/asset/btn_google_signin_normal.png");
+	background-size: cover;
+	display: inline-block;
+}
+
+#googleSignInButton:active {
+	background: url("/asset/btn_google_signin_pressed.png");
+	background-size: cover;
+}
+`]
