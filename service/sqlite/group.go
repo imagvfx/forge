@@ -164,7 +164,9 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 }
 
 func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
-	// TODO: check the user is a member of admin group.
+	if strings.Split(g.Name, "@")[0] == "everyone" {
+		return fmt.Errorf("'everyone[@host]' group will be created automatically and cannot be created by a user")
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO accessors (
 			is_group,
