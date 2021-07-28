@@ -1396,7 +1396,7 @@ func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
-func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) HandleRenameGroup(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if r.Method != "POST" {
 			return fmt.Errorf("need POST, got %v", r.Method)
@@ -1408,9 +1408,9 @@ func (h *apiHandler) HandleSetGroup(w http.ResponseWriter, r *http.Request) {
 		}
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
-		id := r.FormValue("id")
 		group := r.FormValue("group")
-		err = h.server.SetGroup(ctx, id, group)
+		newName := r.FormValue("new-name")
+		err = h.server.RenameGroup(ctx, group, newName)
 		if err != nil {
 			return err
 		}

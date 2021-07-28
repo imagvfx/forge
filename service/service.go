@@ -276,8 +276,8 @@ type GroupFinder struct {
 }
 
 type GroupUpdater struct {
-	ID   int
-	Name *string
+	Name    string
+	NewName *string
 }
 
 type Member struct {

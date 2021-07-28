@@ -7,7 +7,6 @@ import (
 	"image"
 	"image/png"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -905,19 +904,15 @@ func (s *Server) AddGroup(ctx context.Context, group string) error {
 	return nil
 }
 
-func (s *Server) SetGroup(ctx context.Context, groupID string, group string) error {
-	if groupID == "" {
-		return fmt.Errorf("group id not specified")
+func (s *Server) RenameGroup(ctx context.Context, name string, newName string) error {
+	if name == "" {
+		return fmt.Errorf("name of group not specified")
 	}
-	if group == "" {
-		return fmt.Errorf("group not specified")
+	if newName == "" {
+		return fmt.Errorf("new name of group not specified")
 	}
-	id, err := strconv.Atoi(groupID)
-	if err != nil {
-		return fmt.Errorf("invalid group id: %v", groupID)
-	}
-	g := service.GroupUpdater{ID: id, Name: &group}
-	err = s.svc.UpdateGroup(ctx, g)
+	g := service.GroupUpdater{Name: name, NewName: &newName}
+	err := s.svc.UpdateGroup(ctx, g)
 	if err != nil {
 		return err
 	}

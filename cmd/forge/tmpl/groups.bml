@@ -21,10 +21,10 @@
 				]
 				<div> [
 				{{range $g := $.Groups}}
-					<form action="/api/set-group" method="post"> [
+					<form action="/api/rename-group" method="post"> [
 						<div> [
-							<input readonly name="id" type="hidden" value="{{$g.ID}}"> []
-							<input name="group" type="text" value="{{$g.Name}}" placeholder="group"> []
+							<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
+							<input name="new-name" type="text" value="{{$g.Name}}" placeholder="group"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Set]
 						]

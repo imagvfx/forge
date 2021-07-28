@@ -232,7 +232,7 @@ func main() {
 	mux.HandleFunc("/api/get-access", api.HandleGetAccess)
 	mux.HandleFunc("/api/delete-access", api.HandleDeleteAccess)
 	mux.HandleFunc("/api/add-group", api.HandleAddGroup)
-	mux.HandleFunc("/api/set-group", api.HandleSetGroup)
+	mux.HandleFunc("/api/rename-group", api.HandleRenameGroup)
 	mux.HandleFunc("/api/add-group-member", api.HandleAddGroupMember)
 	mux.HandleFunc("/api/delete-group-member", api.HandleDeleteGroupMember)
 	mux.HandleFunc("/api/set-user-setting", api.HandleSetUserSetting)

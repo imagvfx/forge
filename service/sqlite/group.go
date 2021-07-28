@@ -212,21 +212,20 @@ func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) erro
 }
 
 func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) error {
-	// TODO: check the user is a member of admin group.
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if upd.Name != nil {
+	if upd.NewName != nil {
 		keys = append(keys, "name=?")
-		vals = append(vals, *upd.Name)
+		vals = append(vals, upd.NewName)
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update group: %v", upd.ID)
+		return fmt.Errorf("need at least one field to update group: %v", upd.Name)
 	}
-	vals = append(vals, upd.ID) // for where clause
+	vals = append(vals, upd.Name) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE accessors
 		SET `+strings.Join(keys, ", ")+`
-		WHERE id=?
+		WHERE is_group=1 AND name=?
 	`,
 		vals...,
 	)
