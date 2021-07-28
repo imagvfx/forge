@@ -215,6 +215,9 @@ func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) erro
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.NewName != nil {
+		if upd.Name == "admin" || strings.Split(upd.Name, "@")[0] == "everyone" {
+			return fmt.Errorf("rename 'admin' or 'everyone[@host]' group is not supported: %v", upd.Name)
+		}
 		keys = append(keys, "name=?")
 		vals = append(vals, upd.NewName)
 	}
