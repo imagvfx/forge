@@ -52,7 +52,7 @@ properties = [
 	"note text",
 	"tc_in timecode",
 	"tc_out timecode",
-	"difficulty text",
+	"difficulty int",
 	"priority int",
 	"due date",
 ]
@@ -87,7 +87,7 @@ properties = [
 	"cg text",
 	"direction text",
 	"note text",
-	"difficulty text",
+	"difficulty int",
 	"priority int",
 	"due date",
 ]
