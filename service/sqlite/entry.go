@@ -148,8 +148,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 	vals := make([]interface{}, 0)
 	keys = append(keys, "entries.path LIKE ?")
 	vals = append(vals, search.SearchRoot+`/%`)
-	keys = append(keys, "entry_types.name=?")
-	vals = append(vals, search.EntryType)
+	if search.EntryType != "" {
+		keys = append(keys, "entry_types.name=?")
+		vals = append(vals, search.EntryType)
+	}
 	for _, p := range search.Keywords {
 		p = strings.TrimSpace(p)
 		if p == "" {

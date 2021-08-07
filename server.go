@@ -72,22 +72,25 @@ func (s *Server) SearchEntries(ctx context.Context, path, entryType, query strin
 		// but it is not allowed intensionally.
 		return nil, fmt.Errorf("entry path not specified")
 	}
-	if entryType == "" {
-		return nil, fmt.Errorf("search entry type not specified")
+	if entryType == "" && query == "" {
+		// Even though it's possible technically, it will show too many.
+		return nil, fmt.Errorf("both entry type and query message not specified. need one at least.")
 	}
-	found := false
-	entTypes, err := s.svc.EntryTypes(ctx)
-	if err != nil {
-		return nil, err
-	}
-	for _, t := range entTypes {
-		if t == entryType {
-			found = true
-			break
+	if entryType != "" {
+		found := false
+		entTypes, err := s.svc.EntryTypes(ctx)
+		if err != nil {
+			return nil, err
 		}
-	}
-	if !found {
-		return nil, fmt.Errorf("unknown entry type: %v", entryType)
+		for _, t := range entTypes {
+			if t == entryType {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("unknown entry type: %v", entryType)
+		}
 	}
 	es, err := s.svc.SearchEntries(ctx, service.EntrySearcher{
 		SearchRoot: path,

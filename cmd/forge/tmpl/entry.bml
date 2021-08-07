@@ -33,9 +33,13 @@
 					<!-- Search Box -->
 					{{if ne $.Entry.Path "/"}}
 					<form style="display:flex;flex:1"> [
+						<input hidden name="search" value="1"> []
 						<select name="search_entry_type" class="search-box-left"> [
+							<option value=""> [(any)]
 						{{range $t := $.AllEntryTypes}}
+							{{if ne $t "root"}}
 							<option value="{{$t}}" {{if eq $t $.UserSetting.EntryPageSearchEntryType}}selected{{end}}> [{{$t}}]
+							{{end}}
 						{{end}}
 						]
 						<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
