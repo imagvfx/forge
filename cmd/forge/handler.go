@@ -151,20 +151,24 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		var subEnts []*forge.Entry
 		search := r.FormValue("search")
 		searchEntryType := r.FormValue("search_entry_type")
-		searchQuery := r.FormValue("search_query")
-		if search != "" {
-			resultsFromSearch = true
-			if searchEntryType != setting.EntryPageSearchEntryType {
-				err := h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
-					User:                     user,
-					EntryPageSearchEntryType: &searchEntryType,
-				})
-				if err != nil {
-					return err
-				}
-				// the update doesn't affect current page
-				setting.EntryPageSearchEntryType = searchEntryType
+		if searchEntryType != "" && searchEntryType != setting.EntryPageSearchEntryType {
+			// Whether perform search or not, it will remeber the search entry type.
+			err := h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
+				User:                     user,
+				EntryPageSearchEntryType: &searchEntryType,
+			})
+			if err != nil {
+				return err
 			}
+			// the update doesn't affect current page
+			setting.EntryPageSearchEntryType = searchEntryType
+		}
+		searchQuery := r.FormValue("search_query")
+		if search != "" && (searchEntryType != "" || searchQuery != "") {
+			// User pressed search button, but it will search only if at least one of following fields specified.
+			// 1. search entry type
+			// 2. search query
+			resultsFromSearch = true
 			subEnts, err = h.server.SearchEntries(ctx, path, searchEntryType, searchQuery)
 			if err != nil {
 				return err
