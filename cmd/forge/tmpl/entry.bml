@@ -32,18 +32,31 @@
 					]
 					<!-- Search Box -->
 					{{if ne $.Entry.Path "/"}}
-					<form style="display:flex;flex:1"> [
-						<input hidden name="search" value="1"> []
-						<select name="search_entry_type" class="search-box-left"> [
-							<option value=""> [(any)]
-						{{range $t := $.AllEntryTypes}}
-							{{if ne $t "root"}}
-							<option value="{{$t}}" {{if eq $t $.UserSetting.EntryPageSearchEntryType}}selected{{end}}> [{{$t}}]
+					<div style="flex:1;"> [
+						<form style="display:flex;margin-bottom:0.5rem;"> [
+							<input hidden name="search" value="1"> []
+							<select name="search_entry_type" class="search-box-left"> [
+								<option value=""> [(any)]
+							{{range $t := $.AllEntryTypes}}
+								{{if ne $t "root"}}
+								<option value="{{$t}}" {{if eq $t $.SearchEntryType}}selected{{end}}> [{{$t}}]
+								{{end}}
 							{{end}}
-						{{end}}
+							]
+							<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
+							<button class="search-box-right" style="background-color:inherit"> [Go]
 						]
-						<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
-						<button class="search-box-right" style="background-color:inherit"> [Go]
+						{{if $.ResultsFromSearch}}
+						<form action="/api/set-user-setting" style="display:flex;justify-content:end;color:#AAA;" method="post"> [
+							<a style="font-size:0.7rem;" onclick="showQuickSearchNamer()"> [add quick search]
+							<div style="width:0.3rem;"> []
+							<input name="user" type="hidden" value="{{$.User}}"> []
+							<input id="quickSearchNamer" name="search_name" type="hidden" style="font-size:0.6rem;padding:0 0.1rem;width:4rem;border:1px solid #CCC;border-radius:2px;background-color:inherit" value=""> []
+							<input name="search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
+							<button hidden> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
+						{{end}}
 					]
 					{{end}}
 				]
@@ -406,6 +419,12 @@ window.onpageshow = function() {
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
 		}
 	}
+}
+
+function showQuickSearchNamer() {
+	let namer = document.getElementById("quickSearchNamer");
+	namer.type = "text";
+	namer.focus();
 }
 
 function toggleRenameInput() {

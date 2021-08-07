@@ -305,6 +305,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User                     string
 			UserSetting              *forge.UserSetting
 			Entry                    *forge.Entry
+			SearchEntryType          string
 			SearchQuery              string
 			ResultsFromSearch        bool
 			SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
@@ -322,6 +323,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User:                     user,
 			UserSetting:              setting,
 			Entry:                    ent,
+			SearchEntryType:          searchEntryType,
 			SearchQuery:              searchQuery,
 			ResultsFromSearch:        resultsFromSearch,
 			SubEntriesByTypeByParent: subEntsByTypeByParent,
