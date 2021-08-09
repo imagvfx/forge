@@ -7,6 +7,14 @@
 	<body> [
 		{{template "nav" $}}
 		<div class="main"> [
+			<div style="padding:0.5rem 1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
+				{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
+				<div style="display:inline-block;padding:0.2rem;"> [
+					<a style="color:#333" href="{{$.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
+				]
+				<div style="display:inline-block;width:0.3rem;"> []
+				{{- end}}
+			]
 			<div class="entry" style="padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 					<div style="margin-right:1rem;display:flex;align-items:start"> [
@@ -51,9 +59,9 @@
 							<a style="font-size:0.7rem;" onclick="showQuickSearchNamer()"> [add quick search]
 							<div style="width:0.3rem;"> []
 							<input name="user" type="hidden" value="{{$.User}}"> []
-							<input id="quickSearchNamer" name="search_name" type="hidden" style="font-size:0.6rem;padding:0 0.1rem;width:4rem;border:1px solid #CCC;border-radius:2px;background-color:inherit" value=""> []
-							<input name="search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
-							<button hidden> []
+							<input id="quickSearchNamer" name="quick_search_name" type="hidden" style="font-size:0.6rem;padding:0 0.1rem;width:4rem;border:1px solid #CCC;border-radius:2px;background-color:inherit" value=""> []
+							<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
+							<button name="update_quick_search" value="1" hidden> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 						{{end}}

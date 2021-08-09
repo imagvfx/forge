@@ -406,6 +406,7 @@ type UserSetting struct {
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
+	EntryPageQuickSearch     map[string]string
 }
 
 type Group struct {

@@ -251,6 +251,7 @@ type UserSetting struct {
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
+	EntryPageQuickSearch     map[string]string
 }
 
 type UserSettingFinder struct {
@@ -262,6 +263,7 @@ type UserSettingUpdater struct {
 	EntryPageSearchEntryType *string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
+	EntryPageQuickSearch     map[string]string
 }
 
 type Group struct {

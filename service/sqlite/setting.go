@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -17,6 +18,7 @@ func createUserSettingsTable(tx *sql.Tx) error {
 			entry_page_search_entry_type STRING,
 			entry_page_property_filter STRING,
 			entry_page_sort_property STRING,
+			entry_page_quick_search STRING,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)
@@ -61,7 +63,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			accessors.name,
 			user_settings.entry_page_search_entry_type,
 			user_settings.entry_page_property_filter,
-			user_settings.entry_page_sort_property
+			user_settings.entry_page_sort_property,
+			user_settings.entry_page_quick_search
 		FROM user_settings
 		LEFT JOIN accessors ON user_settings.user_id = accessors.id
 		`+where,
@@ -76,12 +79,14 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		s := &service.UserSetting{}
 		var filter []byte
 		var sortProp []byte
+		var quickSearch []byte
 		err := rows.Scan(
 			&s.ID,
 			&s.User,
 			&s.EntryPageSearchEntryType,
 			&filter,
 			&sortProp,
+			&quickSearch,
 		)
 		if err != nil {
 			return nil, err
@@ -91,6 +96,10 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			return nil, err
 		}
 		err = json.Unmarshal(sortProp, &s.EntryPageSortProperty)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(quickSearch, &s.EntryPageQuickSearch)
 		if err != nil {
 			return nil, err
 		}
@@ -145,19 +154,25 @@ func addDefaultUserSetting(tx *sql.Tx, ctx context.Context, user string) error {
 	if err != nil {
 		return err
 	}
+	quickSearch, err := json.Marshal(map[string]string{})
+	if err != nil {
+		return err
+	}
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO user_settings (
 			user_id,
 			entry_page_search_entry_type,
 			entry_page_property_filter,
-			entry_page_sort_property
+			entry_page_sort_property,
+			entry_page_quick_search
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`,
 		userID,
 		"",
 		filter,
 		sortProp,
+		quickSearch,
 	)
 	if err != nil {
 		return err
@@ -230,6 +245,31 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		}
 		keys = append(keys, "entry_page_sort_property=?")
 		vals = append(vals, sortPropBytes)
+	}
+	var quickSearchBytes []byte
+	if upd.EntryPageQuickSearch != nil {
+		quickSearch := setting.EntryPageQuickSearch
+		if quickSearch == nil {
+			quickSearch = make(map[string]string)
+		}
+		for name, query := range upd.EntryPageQuickSearch {
+			if name == "" {
+				// TODO: check this for other map[string]string settings as well
+				return fmt.Errorf("quick search name is empty")
+			}
+			if query == "" {
+				// remove the quick search instead of add
+				delete(quickSearch, name)
+			} else {
+				quickSearch[name] = query
+			}
+		}
+		quickSearchBytes, err = json.Marshal(quickSearch)
+		if err != nil {
+			return err
+		}
+		keys = append(keys, "entry_page_quick_search=?")
+		vals = append(vals, quickSearchBytes)
 	}
 	vals = append(vals, userID) // for where clause
 	_, err = tx.ExecContext(ctx, `

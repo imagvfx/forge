@@ -95,6 +95,9 @@ var pathHandlerFuncs = template.FuncMap{
 		}
 		return template.HTML(t)
 	},
+	"toURL": func(s string) template.URL {
+		return template.URL(s)
+	},
 }
 
 func httpStatusFromError(err error) int {
@@ -1590,6 +1593,7 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 		ctx := service.ContextWithUserName(r.Context(), user)
 		entryType := r.FormValue("entry_page_entry_type")
 		filter := r.FormValue("entry_page_property_filter")
+		// NOTE: don't use make, maps not for the update should be nil
 		var propertyFilter map[string]string
 		if r.FormValue("update_filter") != "" {
 			propertyFilter = map[string]string{
@@ -1607,10 +1611,19 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 				entryType: sortPrefix + sortProp,
 			}
 		}
+		var quickSearch map[string]string
+		if r.FormValue("update_quick_search") != "" {
+			name := r.FormValue("quick_search_name")
+			val := r.FormValue("quick_search_value")
+			quickSearch = map[string]string{
+				name: val,
+			}
+		}
 		err = h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
 			User:                    user,
 			EntryPagePropertyFilter: propertyFilter,
 			EntryPageSortProperty:   sortProperty,
+			EntryPageQuickSearch:    quickSearch,
 		})
 		if err != nil {
 			return err
