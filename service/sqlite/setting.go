@@ -134,21 +134,21 @@ func getUserSetting(tx *sql.Tx, ctx context.Context, user string) (*service.User
 	return settings[0], nil
 }
 
-// addUserSetting is not exposed but called by AddUser.
-func addUserSetting(tx *sql.Tx, ctx context.Context, s *service.UserSetting) error {
-	userID, err := getUserID(tx, ctx, s.User)
+// addDefaultUserSetting is not exposed to server but called by AddUser.
+func addDefaultUserSetting(tx *sql.Tx, ctx context.Context, user string) error {
+	userID, err := getUserID(tx, ctx, user)
 	if err != nil {
 		return err
 	}
-	filter, err := json.Marshal(s.EntryPagePropertyFilter)
+	filter, err := json.Marshal(map[string]string{})
 	if err != nil {
 		return err
 	}
-	sortProp, err := json.Marshal(s.EntryPageSortProperty)
+	sortProp, err := json.Marshal(map[string]string{})
 	if err != nil {
 		return err
 	}
-	result, err := tx.ExecContext(ctx, `
+	_, err = tx.ExecContext(ctx, `
 		INSERT INTO user_settings (
 			user_id,
 			entry_page_tab,
@@ -159,19 +159,14 @@ func addUserSetting(tx *sql.Tx, ctx context.Context, s *service.UserSetting) err
 		VALUES (?, ?, ?, ?, ?)
 	`,
 		userID,
-		s.EntryPageTab,
-		s.EntryPageSearchEntryType,
+		"",
+		"",
 		filter,
 		sortProp,
 	)
 	if err != nil {
 		return err
 	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	s.ID = int(id)
 	return nil
 }
 

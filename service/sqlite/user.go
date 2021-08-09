@@ -130,10 +130,7 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 	if err != nil {
 		return err
 	}
-	err = addUserSetting(tx, ctx, &service.UserSetting{
-		User:         u.Name,
-		EntryPageTab: "view",
-	})
+	err = addDefaultUserSetting(tx, ctx, u.Name)
 	if err != nil {
 		return err
 	}
