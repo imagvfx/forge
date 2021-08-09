@@ -820,7 +820,6 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 	us := &UserSetting{
 		ID:                       ss.ID,
 		User:                     ss.User,
-		EntryPageTab:             ss.EntryPageTab,
 		EntryPagePropertyFilter:  ss.EntryPagePropertyFilter,
 		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
 		EntryPageSortProperty:    ss.EntryPageSortProperty,
@@ -831,15 +830,6 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 func (s *Server) UpdateUserSetting(ctx context.Context, upd service.UserSettingUpdater) error {
 	if upd.User == "" {
 		return fmt.Errorf("user not specified")
-	}
-	if upd.EntryPageTab != nil {
-		switch *upd.EntryPageTab {
-		case "view":
-		case "edit":
-		case "delete":
-		default:
-			return fmt.Errorf("invalid entry page tab: %v", upd.EntryPageTab)
-		}
 	}
 	if upd.EntryPageSortProperty != nil {
 		for _, p := range upd.EntryPageSortProperty {

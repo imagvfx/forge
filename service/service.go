@@ -248,7 +248,6 @@ type UserUpdater struct {
 type UserSetting struct {
 	ID                       int
 	User                     string
-	EntryPageTab             string
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
@@ -260,7 +259,6 @@ type UserSettingFinder struct {
 
 type UserSettingUpdater struct {
 	User                     string
-	EntryPageTab             *string
 	EntryPageSearchEntryType *string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string

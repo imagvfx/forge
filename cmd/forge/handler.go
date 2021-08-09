@@ -1588,11 +1588,6 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 		}
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
-		tab := r.FormValue("entry_page_tab")
-		var pTab *string
-		if tab != "" {
-			pTab = &tab
-		}
 		entryType := r.FormValue("entry_page_entry_type")
 		filter := r.FormValue("entry_page_property_filter")
 		var propertyFilter map[string]string
@@ -1614,7 +1609,6 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 		}
 		err = h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
 			User:                    user,
-			EntryPageTab:            pTab,
 			EntryPagePropertyFilter: propertyFilter,
 			EntryPageSortProperty:   sortProperty,
 		})

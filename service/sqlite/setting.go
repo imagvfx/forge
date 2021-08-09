@@ -14,7 +14,6 @@ func createUserSettingsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS user_settings (
 			id INTEGER PRIMARY KEY,
 			user_id INTERGER NOT NULL,
-			entry_page_tab STRING,
 			entry_page_search_entry_type STRING,
 			entry_page_property_filter STRING,
 			entry_page_sort_property STRING,
@@ -60,7 +59,6 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		SELECT
 			user_settings.id,
 			accessors.name,
-			user_settings.entry_page_tab,
 			user_settings.entry_page_search_entry_type,
 			user_settings.entry_page_property_filter,
 			user_settings.entry_page_sort_property
@@ -81,7 +79,6 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		err := rows.Scan(
 			&s.ID,
 			&s.User,
-			&s.EntryPageTab,
 			&s.EntryPageSearchEntryType,
 			&filter,
 			&sortProp,
@@ -151,15 +148,13 @@ func addDefaultUserSetting(tx *sql.Tx, ctx context.Context, user string) error {
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO user_settings (
 			user_id,
-			entry_page_tab,
 			entry_page_search_entry_type,
 			entry_page_property_filter,
 			entry_page_sort_property
 		)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		userID,
-		"",
 		"",
 		filter,
 		sortProp,
@@ -198,10 +193,6 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if upd.EntryPageTab != nil {
-		keys = append(keys, "entry_page_tab=?")
-		vals = append(vals, *upd.EntryPageTab)
-	}
 	if upd.EntryPageSearchEntryType != nil {
 		keys = append(keys, "entry_page_search_entry_type=?")
 		vals = append(vals, *upd.EntryPageSearchEntryType)
