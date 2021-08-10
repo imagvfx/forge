@@ -18,7 +18,7 @@
 					<div style="display:flex;font-size:1rem;"> [
 					{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
 					<div style="display:inline-block;"> [
-						<a style="color:#333" href="{{$.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
+						<a style="color:#333" href="{{topPath $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
 					]
 					<div style="display:inline-block;width:0.8rem;"> []
 					{{- end}}
@@ -26,7 +26,7 @@
 				]
 				<!-- Search Box -->
 				<div style="flex:1;"> [
-					<form style="display:flex;"> [
+					<form action="{{topPath $.Entry.Path}}" style="display:flex;"> [
 						<input hidden name="search" value="1"> []
 						<select name="search_entry_type" class="search-box-left"> [
 							<option value=""> [(any)]

@@ -98,6 +98,12 @@ var pathHandlerFuncs = template.FuncMap{
 	"toURL": func(s string) template.URL {
 		return template.URL(s)
 	},
+	// topPath is the path directly under the root path.
+	// Which indicates a show path.
+	"topPath": func(s string) string {
+		// It will return "/" from input "/". But that's not it's fault.
+		return strings.Join(strings.Split(s, "/")[:2], "/")
+	},
 }
 
 func httpStatusFromError(err error) int {
