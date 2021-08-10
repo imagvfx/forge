@@ -9,7 +9,7 @@
 		<div class="main"> [
 			{{if ne $.Entry.Path "/"}}
 			<!-- Search Related -->
-			<div style="display:flex;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
+			<div style="display:flex;flex-wrap:wrap;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
 				<!-- Quick Search -->
 				<div style="flex:3;"> [
 					<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
@@ -54,7 +54,7 @@
 			{{end}}
 			<div class="entry" style="padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
-					<div style="margin-right:1rem;display:flex;align-items:start"> [
+					<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
 						<div id="thumbnail" class="thumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
 							<div style="display:flex;border:1px solid #CCCCCC"> [
 								<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}"> []
@@ -77,33 +77,38 @@
 					]
 				]
 				<div id="entry-items"> [
-					<div style="display:flex;gap:1.2rem;margin-bottom:1.5rem;font-size:0.75rem;color:#555"> [
-						<div id="property-box" class="item-box" style="display:flex"> [
-							<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
-							<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
+					<!-- Property Expand Toggle & Entry Rename, Delete Button -->
+					<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1.2rem;margin-bottom:1.5rem;font-size:0.75rem;color:#555"> [
+						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;"> [
+							<div id="property-box" class="item-box" style="display:flex"> [
+								<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
+								<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
+							]
+							<div id="environ-box" class="item-box" style="display:flex"> [
+								<div id="environ-category" class="item-category" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
+								<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'environ')"> [+]
+							]
+							<div id="access-box" class="item-box" style="display:flex"> [
+								<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
+								<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
+							]
 						]
-						<div id="environ-box" class="item-box" style="display:flex"> [
-							<div id="environ-category" class="item-category" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
-							<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'environ')"> [+]
-						]
-						<div id="access-box" class="item-box" style="display:flex"> [
-							<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
-							<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
-						]
-						<div style="flex:1"> []
-						<form action="/api/rename-entry" method="post"> [
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input id="renameInput" name="new-name" type="text" style="display:none"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-						]
-						<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
-						<form action="/api/delete-entry" method="post"> [
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<button id="delete-entry-button" style="display:none"> []
-							<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;"> [
+							<form action="/api/rename-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<input id="renameInput" name="new-name" type="text" style="display:none"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
+							<form action="/api/delete-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<button id="delete-entry-button" style="display:none"> []
+								<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
 						]
 					]
+					<!-- Property / Environ / Access Items -->
 					<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 						{{range $p := $.Properties}}
 						<div class="property-items" style="display:none"> [
