@@ -7,7 +7,10 @@
 	<body> [
 		{{template "nav" $}}
 		<div class="main"> [
+			{{if ne $.Entry.Path "/"}}
+			<!-- Search Related -->
 			<div style="display:flex;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
+				<!-- Quick Search -->
 				<div style="flex:3;"> [
 					<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
 						<div> [quick search]
@@ -22,7 +25,6 @@
 					]
 				]
 				<!-- Search Box -->
-				{{if ne $.Entry.Path "/"}}
 				<div style="flex:1;"> [
 					<form style="display:flex;"> [
 						<input hidden name="search" value="1"> []
@@ -48,8 +50,8 @@
 					]
 					{{end}}
 				]
-				{{end}}
 			]
+			{{end}}
 			<div class="entry" style="padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 					<div style="margin-right:1rem;display:flex;align-items:start"> [
