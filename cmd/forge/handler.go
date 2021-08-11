@@ -98,11 +98,10 @@ var pathHandlerFuncs = template.FuncMap{
 	"toURL": func(s string) template.URL {
 		return template.URL(s)
 	},
-	// topPath is the path directly under the root path.
-	// Which indicates a show path.
-	"topPath": func(s string) string {
-		// It will return "/" from input "/". But that's not it's fault.
-		return strings.Join(strings.Split(s, "/")[:2], "/")
+	// topName is name of the entry directly under the root for given path.
+	// Which indicates a show name.
+	"topName": func(s string) string {
+		return strings.Split(s, "/")[1]
 	},
 }
 

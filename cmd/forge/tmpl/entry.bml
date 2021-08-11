@@ -20,7 +20,7 @@
 					{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
 					<div style="display:flex;"> [
 						<!-- Either quickSearchLinks or quickSearchRemoveButton can be shown at a time -->
-						<a class="quickSearchLink" style="color:#333" href="{{topPath $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
+						<a class="quickSearchLink" style="color:#333" href="/{{topName $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
 						<form action="/api/set-user-setting" method="POST"> [
 							<input name="quick_search_name" type="hidden" value="{{$searchName}}">
 							<input name="quick_search_value" type="hidden" value=""> []
@@ -32,9 +32,10 @@
 					{{- end}}
 					]
 				]
+				]
 				<!-- Search Box -->
 				<div style="flex:1;"> [
-					<form action="{{topPath $.Entry.Path}}" style="display:flex;"> [
+					<form action="/{{topName $.Entry.Path}}" style="display:flex;"> [
 						<input hidden name="search" value="1"> []
 						<select name="search_entry_type" class="search-box-left"> [
 							<option value=""> [(any)]
