@@ -65,6 +65,7 @@
 				]
 			]
 			{{end}}
+			{{if not $.ResultsFromSearch}}
 			<div class="entry" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 					<div style="flex:3;font-size:1.2rem"> [
@@ -149,6 +150,7 @@
 					]
 				]
 			]
+			{{end}}
 			<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem"> [
 			{{if $.ResultsFromSearch}}
 				{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
