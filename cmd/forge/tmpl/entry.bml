@@ -11,14 +11,22 @@
 			<!-- Search Related -->
 			<div style="display:flex;flex-wrap:wrap;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
 				<!-- Quick Search -->
-				<div style="flex:3;"> [
+				<div id="quickSearch" style="flex:3;"> [
 					<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
 						<div> [quick search]
+						<div id="quickSearchEditButton" style="margin-left:0.4rem" onclick="toggleQuickSearchEditMode()"> [(edit)]
 					]
 					<div style="display:flex;font-size:1rem;"> [
 					{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
-					<div style="display:inline-block;"> [
-						<a style="color:#333" href="{{topPath $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
+					<div style="display:flex;"> [
+						<!-- Either quickSearchLinks or quickSearchRemoveButton can be shown at a time -->
+						<a class="quickSearchLink" style="color:#333" href="{{topPath $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
+						<form action="/api/set-user-setting" method="POST"> [
+							<input name="quick_search_name" type="hidden" value="{{$searchName}}">
+							<input name="quick_search_value" type="hidden" value=""> []
+							<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$searchName}}]
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
 					]
 					<div style="display:inline-block;width:0.8rem;"> []
 					{{- end}}
@@ -283,6 +291,34 @@
 ]
 
 <style> [`
+#quickSearchEditButton {
+	color: #CCC;
+}
+
+#quickSearchEditButton:hover {
+	color: #AAA;
+}
+
+.quickSearchLink {
+	display:inline-block;
+}
+
+#quickSearch.editMode .quickSearchLink {
+	display:none;
+}
+
+.quickSearchRemoveButton {
+	display:none;
+}
+
+#quickSearch.editMode .quickSearchRemoveButton {
+	display:inline-block;
+}
+
+#quickSearch.editMode .quickSearchRemoveButton:hover {
+	text-decoration: line-through;
+}
+
 .thumbnailButton {
 	opacity: 0;
 }
@@ -440,6 +476,15 @@ window.onpageshow = function() {
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
 		}
 	}
+}
+
+function toggleQuickSearchEditMode() {
+	let el = document.getElementById("quickSearch");
+	if (el.classList.contains("editMode")) {
+		el.classList.remove("editMode");
+		return;
+	}
+	el.classList.add("editMode");
 }
 
 function toggleRenameInput() {
