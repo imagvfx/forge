@@ -18,24 +18,25 @@ properties = [
 ]
 
 sub_entry_types = [
-	"shotgrp",
-	"assetgrp",
+	"group",
 ]
 
 sub_entries = [
-	"shot shotgrp",
-	"asset assetgrp",
+	"shot group",
+	"asset group",
 ]
 
 
-[shotgrp]
+[group]
 
 environs = [
 	"GROUP entry_name=."
 ]
 
 sub_entry_types = [
+	"group",
 	"shot",
+	"asset",
 ]
 
 
@@ -65,16 +66,6 @@ sub_entries = [
 	"comp part",
 ]
 
-
-[assetgrp]
-
-environs = [
-	"GROUP entry_name=."
-]
-
-sub_entry_types = [
-	"asset",
-]
 
 [asset]
 
