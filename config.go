@@ -187,15 +187,15 @@ func LoadConfig(configDir string) (*Config, error) {
 		return nil, fmt.Errorf("%v: cannot convert userdata_root value as string", forgeToml)
 	}
 	c.UserdataRoot = userdataRoot
-	structToml := filepath.Join(configDir, "struct.toml")
-	structConfig, err := toml.LoadFile(structToml)
+	entryToml := filepath.Join(configDir, "entry.toml")
+	entryConfig, err := toml.LoadFile(entryToml)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
+		return nil, fmt.Errorf("failed to load %v: %v", entryToml, err)
 	}
-	for _, k := range orderedKeys(structConfig) {
-		s, err := getEntryStruct(structConfig, k)
+	for _, k := range orderedKeys(entryConfig) {
+		s, err := getEntryStruct(entryConfig, k)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load %v: %v", structToml, err)
+			return nil, fmt.Errorf("failed to load %v: %v", entryToml, err)
 		}
 		c.Structs = append(c.Structs, s)
 	}
