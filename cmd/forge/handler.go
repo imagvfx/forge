@@ -155,6 +155,18 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		props, err := h.server.EntryProperties(ctx, path)
+		if err != nil {
+			return err
+		}
+		envs, err := h.server.EntryEnvirons(ctx, path)
+		if err != nil {
+			return err
+		}
+		acs, err := h.server.EntryAccessControls(ctx, path)
+		if err != nil {
+			return err
+		}
 		resultsFromSearch := false
 		var subEnts []*forge.Entry
 		search := r.FormValue("search")
@@ -189,9 +201,25 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		}
 		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
 		if !resultsFromSearch {
-			subtyps, err := h.server.SubEntryTypes(ctx, ent.Type)
-			if err != nil {
-				return err
+			var subtyps []string
+			// If the entry have .sub_entry_types property,
+			// default sub entry types are overrided with the property.
+			found := false
+			for _, p := range props {
+				if p.Name == ".sub_entry_types" {
+					found = true
+					subtyps = strings.Split(p.Value, ",")
+					for i := range subtyps {
+						subtyps[i] = strings.TrimSpace(subtyps[i])
+					}
+					break
+				}
+			}
+			if !found {
+				subtyps, err = h.server.SubEntryTypes(ctx, ent.Type)
+				if err != nil {
+					return err
+				}
 			}
 			for _, t := range subtyps {
 				subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
@@ -292,18 +320,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			} else {
 				propFilters[typ] = defaultProps[typ]
 			}
-		}
-		props, err := h.server.EntryProperties(ctx, path)
-		if err != nil {
-			return err
-		}
-		envs, err := h.server.EntryEnvirons(ctx, path)
-		if err != nil {
-			return err
-		}
-		acs, err := h.server.EntryAccessControls(ctx, path)
-		if err != nil {
-			return err
 		}
 		alltyps, err := h.server.EntryTypes(ctx)
 		if err != nil {
