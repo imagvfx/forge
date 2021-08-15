@@ -17,7 +17,7 @@ func createDefaultSubEntriesTable(tx *sql.Tx) error {
 			name STRING NOT NULL,
 			sub_entry_type_id INTEGER NOT NULL,
 			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
-			FOREIGN KEY (sub_entry_type_id) REFERENCES sub_entry_types (id),
+			FOREIGN KEY (sub_entry_type_id) REFERENCES entry_types (id),
 			UNIQUE (entry_type_id, name)
 		)
 	`)
@@ -114,11 +114,10 @@ func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.Default
 		SELECT
 			entry_types.name,
 			default_sub_entries.name,
-			sub_types.name
+			sub_entry_types.name
 		FROM default_sub_entries
 		LEFT JOIN entry_types ON default_sub_entries.entry_type_id = entry_types.id
-		LEFT JOIN sub_entry_types ON default_sub_entries.sub_entry_type_id = sub_entry_types.id
-		LEFT JOIN entry_types AS sub_types ON sub_entry_types.sub_id = sub_types.id
+		LEFT JOIN entry_types AS sub_entry_types ON default_sub_entries.sub_entry_type_id = sub_entry_types.id
 		`+where,
 		vals...,
 	)
@@ -311,7 +310,7 @@ func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) err
 	if err != nil {
 		return err
 	}
-	subTypeID, err := getSubEntryTypeID(tx, ctx, d.EntryType, d.Type)
+	subTypeID, err := getEntryTypeID(tx, ctx, d.Type)
 	if err != nil {
 		return err
 	}

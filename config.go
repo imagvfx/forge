@@ -22,11 +22,10 @@ func NewConfig() *Config {
 }
 
 type EntryStruct struct {
-	Type          string
-	SubEntryTypes []string
-	SubEntries    []KeyTypeValue
-	Properties    []KeyTypeValue
-	Environs      []KeyTypeValue
+	Type       string
+	SubEntries []KeyTypeValue
+	Properties []KeyTypeValue
+	Environs   []KeyTypeValue
 }
 
 type KeyTypeValue struct {
@@ -47,23 +46,9 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 	}
 	s := &EntryStruct{}
 	s.Type = typ
-	s.SubEntryTypes = make([]string, 0)
 	s.SubEntries = make([]KeyTypeValue, 0)
 	s.Properties = make([]KeyTypeValue, 0)
 	s.Environs = make([]KeyTypeValue, 0)
-	subtypsTree := typTree.(*toml.Tree).GetArray("sub_entry_types")
-	if subtypsTree != nil {
-		subtyps, ok := subtypsTree.([]string)
-		if !ok {
-			return nil, fmt.Errorf("cannot convert [%v].sub_entry_types as []string", s.Type)
-		}
-		for _, t := range subtyps {
-			if t == "root" {
-				return nil, fmt.Errorf("root type cannot be refered in sub_entry_types: %v", s.Type)
-			}
-		}
-		s.SubEntryTypes = subtyps
-	}
 	subEntsTree := typTree.(*toml.Tree).GetArray("sub_entries")
 	if subEntsTree != nil {
 		subEnts, ok := subEntsTree.([]string)

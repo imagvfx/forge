@@ -201,24 +201,18 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		}
 		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
 		if !resultsFromSearch {
-			var subtyps []string
 			// If the entry have .sub_entry_types property,
 			// default sub entry types are overrided with the property.
-			found := false
+			subtyps := make([]string, 0)
 			for _, p := range props {
 				if p.Name == ".sub_entry_types" {
-					found = true
-					subtyps = strings.Split(p.Value, ",")
-					for i := range subtyps {
-						subtyps[i] = strings.TrimSpace(subtyps[i])
+					for _, subtyp := range strings.Split(p.Value, ",") {
+						if subtyp == "" {
+							continue
+						}
+						subtyps = append(subtyps, strings.TrimSpace(subtyp))
 					}
 					break
-				}
-			}
-			if !found {
-				subtyps, err = h.server.SubEntryTypes(ctx, ent.Type)
-				if err != nil {
-					return err
 				}
 			}
 			for _, t := range subtyps {
@@ -339,7 +333,6 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			PropertyFilters          map[string][]string
 			Properties               []*forge.Property
 			Environs                 []*forge.Property
-			SubEntryTypes            []string
 			AccessorTypes            []string
 			AccessControls           []*forge.AccessControl
 			AllEntryTypes            []string
@@ -590,14 +583,8 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		subEntryTypes := make(map[string][]string)
 		entDefaults := make(map[string][]*forge.Default)
 		for _, t := range entTypes {
-			subTypes, err := h.server.SubEntryTypes(ctx, t)
-			if err != nil {
-				return err
-			}
-			subEntryTypes[t] = subTypes
 			items, err := h.server.Defaults(ctx, t)
 			if err != nil {
 				return err
@@ -605,15 +592,13 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			entDefaults[t] = items
 		}
 		recipe := struct {
-			User          string
-			EntryTypes    []string
-			SubEntryTypes map[string][]string
-			Defaults      map[string][]*forge.Default
+			User       string
+			EntryTypes []string
+			Defaults   map[string][]*forge.Default
 		}{
-			User:          user,
-			EntryTypes:    entTypes,
-			SubEntryTypes: subEntryTypes,
-			Defaults:      entDefaults,
+			User:       user,
+			EntryTypes: entTypes,
+			Defaults:   entDefaults,
 		}
 		err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
 		if err != nil {
@@ -844,58 +829,6 @@ func (h *apiHandler) HandleDeleteEntryType(w http.ResponseWriter, r *http.Reques
 		// parent, if suggested, will be used as prefix of the path.
 		name := r.FormValue("name")
 		err = h.server.DeleteEntryType(ctx, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
-}
-
-func (h *apiHandler) HandleAddSubEntryType(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		parentType := r.FormValue("parent_type")
-		subType := r.FormValue("sub_type")
-		err = h.server.AddSubEntryType(ctx, parentType, subType)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
-}
-
-func (h *apiHandler) HandleDeleteSubEntryType(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		parentType := r.FormValue("parent_type")
-		subType := r.FormValue("sub_type")
-		err = h.server.DeleteSubEntryType(ctx, parentType, subType)
 		if err != nil {
 			return err
 		}

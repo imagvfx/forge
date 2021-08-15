@@ -143,12 +143,6 @@ func main() {
 			}
 		}
 		for _, s := range cfg.Structs {
-			for _, subtype := range s.SubEntryTypes {
-				err := server.AddSubEntryType(ctx, s.Type, subtype)
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
 			for _, p := range s.SubEntries {
 				err := server.AddDefault(ctx, s.Type, "sub_entry", p.Key, p.Type, p.Value)
 				if err != nil {
@@ -208,8 +202,6 @@ func main() {
 	mux.HandleFunc("/api/add-entry-type", api.HandleAddEntryType)
 	mux.HandleFunc("/api/rename-entry-type", api.HandleRenameEntryType)
 	mux.HandleFunc("/api/delete-entry-type", api.HandleDeleteEntryType)
-	mux.HandleFunc("/api/add-sub-entry-type", api.HandleAddSubEntryType)
-	mux.HandleFunc("/api/delete-sub-entry-type", api.HandleDeleteSubEntryType)
 	mux.HandleFunc("/api/add-default", api.HandleAddDefault)
 	mux.HandleFunc("/api/set-default", api.HandleSetDefault)
 	mux.HandleFunc("/api/delete-default", api.HandleDeleteDefault)

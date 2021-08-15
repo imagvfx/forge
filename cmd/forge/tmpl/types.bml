@@ -38,29 +38,6 @@
 					<h4> [
 						{{$t}}
 					]
-					<div style="margin-bottom:1rem"> [
-						<div style="font-size:0.8rem"> [
-							Sub Entry Types
-						]
-						<form action="api/add-sub-entry-type" method="post"> [
-							<input readonly name="parent_type" type="hidden" value="{{$t}}"> []
-							<input name="sub_type" type="text" value=""> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button type="submit"> [Add]
-						]
-						<div style="height:0.5rem"> []
-						{{$subs := index $.SubEntryTypes $t}}
-						{{range $s := $subs}}
-						<div> [
-							<form style="display:inline-block" action="/api/delete-sub-entry-type" method="post"> [
-								<button style="padding:0;color:red" type="submit"> [-]
-								<input readonly name="parent_type" type="hidden" value="{{$t}}"> []
-								<input readonly name="sub_type" type="text" value="{{$s}}"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-							]
-						]
-						{{end}}
-					]
 					<div> [
 						<div style="font-size:0.8rem"> [
 							Defaults

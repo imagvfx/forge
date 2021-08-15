@@ -122,23 +122,9 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	}
 	path = filepath.ToSlash(path)
 	parent := filepath.Dir(path)
-	p, err := s.svc.GetEntry(ctx, parent)
+	_, err := s.svc.GetEntry(ctx, parent)
 	if err != nil {
 		return fmt.Errorf("error on parent check: %v", err)
-	}
-	allow := false
-	subtyps, err := s.SubEntryTypes(ctx, p.Type)
-	if err != nil {
-		return err
-	}
-	for _, subtyp := range subtyps {
-		if subtyp == typ {
-			allow = true
-			break
-		}
-	}
-	if !allow {
-		return fmt.Errorf("cannot create a child of type %q from %q", typ, p.Type)
 	}
 	e := &service.Entry{
 		Path: path,
@@ -214,45 +200,6 @@ func (s *Server) DeleteEntryType(ctx context.Context, name string) error {
 		return fmt.Errorf("entry type name not specified")
 	}
 	err := s.svc.DeleteEntryType(ctx, name)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *Server) SubEntryTypes(ctx context.Context, parentType string) ([]string, error) {
-	if parentType == "" {
-		return nil, fmt.Errorf("parent entry type not specified")
-	}
-	subs, err := s.svc.SubEntryTypes(ctx, parentType)
-	if err != nil {
-		return nil, err
-	}
-	return subs, nil
-}
-
-func (s *Server) AddSubEntryType(ctx context.Context, parentType, subType string) error {
-	if parentType == "" {
-		return fmt.Errorf("parent entry type not specified")
-	}
-	if subType == "" {
-		return fmt.Errorf("sub entry type not specified")
-	}
-	err := s.svc.AddSubEntryType(ctx, parentType, subType)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *Server) DeleteSubEntryType(ctx context.Context, parentType, subType string) error {
-	if parentType == "" {
-		return fmt.Errorf("parent entry type not specified")
-	}
-	if subType == "" {
-		return fmt.Errorf("sub entry type not specified")
-	}
-	err := s.svc.DeleteSubEntryType(ctx, parentType, subType)
 	if err != nil {
 		return err
 	}

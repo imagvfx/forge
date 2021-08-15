@@ -34,18 +34,6 @@ func (s *Service) DeleteEntryType(ctx context.Context, name string) error {
 	return DeleteEntryType(s.db, ctx, name)
 }
 
-func (s *Service) SubEntryTypes(ctx context.Context, parentType string) ([]string, error) {
-	return SubEntryTypes(s.db, ctx, parentType)
-}
-
-func (s *Service) AddSubEntryType(ctx context.Context, parentType, subType string) error {
-	return AddSubEntryType(s.db, ctx, parentType, subType)
-}
-
-func (s *Service) DeleteSubEntryType(ctx context.Context, parentType, subType string) error {
-	return DeleteSubEntryType(s.db, ctx, parentType, subType)
-}
-
 func (s *Service) FindDefaults(ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
 	return FindDefaults(s.db, ctx, find)
 }

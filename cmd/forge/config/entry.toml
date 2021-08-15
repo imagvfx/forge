@@ -1,7 +1,7 @@
 [root] # reserved
 
-sub_entry_types = [
-	"show",
+properties = [
+	".sub_entry_types text=show",
 ]
 
 
@@ -12,13 +12,10 @@ environs = [
 ]
 
 properties = [
+	".sub_entry_types text=category",
 	"sup user",
 	"pd user",
 	"pm user",
-]
-
-sub_entry_types = [
-	"category",
 ]
 
 sub_entries = [
@@ -26,10 +23,11 @@ sub_entries = [
 	"asset category",
 ]
 
+
 [category]
 
-sub_entry_types = [
-	"group",
+properties = [
+	".sub_entry_types text=group",
 ]
 
 
@@ -39,9 +37,8 @@ environs = [
 	"GROUP entry_name=."
 ]
 
-sub_entry_types = [
-	"shot",
-	"asset",
+properties = [
+	".sub_entry_types text"
 ]
 
 
@@ -52,6 +49,7 @@ environs = [
 ]
 
 properties = [
+	".sub_entry_types text=part",
 	"status text",
 	"cg text",
 	"direction text",
@@ -61,10 +59,6 @@ properties = [
 	"difficulty int",
 	"priority int",
 	"due date",
-]
-
-sub_entry_types = [
-	"part",
 ]
 
 sub_entries = [
@@ -78,6 +72,7 @@ environs = [
 ]
 
 properties = [
+	".sub_entry_types text=part",
 	"status text",
 	"cg text",
 	"direction text",
@@ -85,10 +80,6 @@ properties = [
 	"difficulty int",
 	"priority int",
 	"due date",
-]
-
-sub_entry_types = [
-	"part",
 ]
 
 sub_entries = [
@@ -103,10 +94,7 @@ environs = [
 ]
 
 properties = [
-]
-
-sub_entry_types = [
-	"elem",
+	".sub_entry_types text=elem",
 ]
 
 sub_entries = [
@@ -121,11 +109,8 @@ environs = [
 ]
 
 properties = [
+	".sub_entry_types text=ver",
 	"note text",
-]
-
-sub_entry_types = [
-	"ver",
 ]
 
 sub_entries = [
