@@ -69,7 +69,6 @@ sub_entry_types = [
 ]
 
 sub_entries = [
-	"comp part",
 ]
 
 
