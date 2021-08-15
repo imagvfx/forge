@@ -40,7 +40,6 @@ environs = [
 ]
 
 sub_entry_types = [
-	"group",
 	"shot",
 	"asset",
 ]
