@@ -18,12 +18,18 @@ properties = [
 ]
 
 sub_entry_types = [
-	"group",
+	"category",
 ]
 
 sub_entries = [
-	"shot group",
-	"asset group",
+	"shot category",
+	"asset category",
+]
+
+[category]
+
+sub_entry_types = [
+	"group",
 ]
 
 
