@@ -19,6 +19,7 @@ func createUserSettingsTable(tx *sql.Tx) error {
 			entry_page_property_filter STRING,
 			entry_page_sort_property STRING,
 			entry_page_quick_search STRING,
+			pinned_paths STRING,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)
@@ -64,7 +65,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			user_settings.entry_page_search_entry_type,
 			user_settings.entry_page_property_filter,
 			user_settings.entry_page_sort_property,
-			user_settings.entry_page_quick_search
+			user_settings.entry_page_quick_search,
+			user_settings.pinned_paths
 		FROM user_settings
 		LEFT JOIN accessors ON user_settings.user_id = accessors.id
 		`+where,
@@ -80,6 +82,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		var filter []byte
 		var sortProp []byte
 		var quickSearch []byte
+		var pinnedPaths []byte
 		err := rows.Scan(
 			&s.ID,
 			&s.User,
@@ -87,6 +90,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			&filter,
 			&sortProp,
 			&quickSearch,
+			&pinnedPaths,
 		)
 		if err != nil {
 			return nil, err
@@ -100,6 +104,10 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			return nil, err
 		}
 		err = json.Unmarshal(quickSearch, &s.EntryPageQuickSearch)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(pinnedPaths, &s.PinnedPaths)
 		if err != nil {
 			return nil, err
 		}
@@ -158,21 +166,27 @@ func addDefaultUserSetting(tx *sql.Tx, ctx context.Context, user string) error {
 	if err != nil {
 		return err
 	}
+	pinnedPaths, err := json.Marshal([]string{})
+	if err != nil {
+		return err
+	}
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO user_settings (
 			user_id,
 			entry_page_search_entry_type,
 			entry_page_property_filter,
 			entry_page_sort_property,
-			entry_page_quick_search
+			entry_page_quick_search,
+			pinned_paths
 		)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`,
 		userID,
 		"",
 		filter,
 		sortProp,
 		quickSearch,
+		pinnedPaths,
 	)
 	if err != nil {
 		return err
@@ -245,6 +259,49 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		}
 		keys = append(keys, "entry_page_sort_property=?")
 		vals = append(vals, sortPropBytes)
+	}
+	var pinnedBytes []byte
+	if upd.PinnedPath != nil {
+		path := upd.PinnedPath.Path
+		n := upd.PinnedPath.Index
+		// Insert/Remove pinned paths by specifiying the index n.
+		// n < 0 means remove the path,
+		// n >= len(oldPinned) means append it to the last.
+		//
+		// ex) when pinned is initialized as []string{"a", "b", "c"}
+		//
+		//     pinned = []string{"b", "c"}       where path = "a" and n = -1
+		//     pinned = []string{"a", "b", "c"}  where path = "a" and n = 0
+		//     pinned = []string{"b", "a", "c"}  where path = "a" and n = 1
+		//     pinned = []string{"b", "c", "a"}  where path = "a" and n = 2
+		//
+		oldPinned := setting.PinnedPaths
+		if oldPinned == nil {
+			oldPinned = make([]string, 0)
+		}
+		pinned := make([]string, 0, len(oldPinned)+1)
+		for _, p := range oldPinned {
+			// Remove the path from currently pinned, if exists.
+			if p != path {
+				pinned = append(pinned, p)
+			}
+		}
+		if n < 0 {
+			// remove: already done
+		} else if n < len(oldPinned) {
+			// insert el at n
+			pinned = append(pinned, "")
+			copy(pinned[n+1:], pinned[n:])
+			pinned[n] = path
+		} else {
+			pinned = append(pinned, path)
+		}
+		pinnedBytes, err = json.Marshal(pinned)
+		if err != nil {
+			return err
+		}
+		keys = append(keys, "pinned_paths=?")
+		vals = append(vals, pinnedBytes)
 	}
 	var quickSearchBytes []byte
 	if upd.EntryPageQuickSearch != nil {

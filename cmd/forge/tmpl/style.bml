@@ -22,14 +22,14 @@
 	.main {
 		flex: 1;
 		display: flex;
-		flex-direction: column;
 	}
 	// left and right is a pair used in main class.
 	.left {
 	}
 	.right {
-		width: 600px;
-		padding: 1rem;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
 	}
 	// one is used alone in main class.
 	.one {

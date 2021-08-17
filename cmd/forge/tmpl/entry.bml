@@ -7,291 +7,308 @@
 	<body> [
 		{{template "nav" $}}
 		<div class="main"> [
-			{{if ne $.Entry.Path "/"}}
-			<!-- Search Related -->
-			<div style="display:flex;flex-wrap:wrap;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
-				<div style="flex:3;"> [
-				<div style="font-size:2rem"> [
-					<a href="/{{topName $.Entry.Path}}"> [<b> [{{topName $.Entry.Path}}]]
-				]
-				<!-- Quick Search -->
-				<div id="quickSearch"> [
-					<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
-						<div> [quick search]
-						<div id="quickSearchEditButton" style="margin-left:0.4rem" onclick="toggleQuickSearchEditMode()"> [(edit)]
-					]
-					<div style="display:flex;font-size:1rem;"> [
-					{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
-					<div style="display:flex;"> [
-						<!-- Either quickSearchLinks or quickSearchRemoveButton can be shown at a time -->
-						<a class="quickSearchLink" style="color:#333" href="/{{topName $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
-						<form action="/api/set-user-setting" method="POST"> [
-							<input name="quick_search_name" type="hidden" value="{{$searchName}}">
-							<input name="quick_search_value" type="hidden" value=""> []
-							<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$searchName}}]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-						]
-					]
-					<div style="display:inline-block;width:0.8rem;"> []
-					{{- end}}
-					]
-				]
-				]
-				<!-- Search Box -->
-				<div style="flex:1;"> [
-					<form action="/{{topName $.Entry.Path}}" style="display:flex;"> [
-						<input hidden name="search" value="1"> []
-						<select name="search_entry_type" class="search-box-left"> [
-							<option value=""> [(any)]
-						{{range $t := $.AllEntryTypes}}
-							{{if ne $t "root"}}
-							<option value="{{$t}}" {{if eq $t $.SearchEntryType}}selected{{end}}> [{{$t}}]
-							{{end}}
-						{{end}}
-						]
-						<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
-						<button class="search-box-right" style="background-color:inherit"> [Go]
-					]
-					{{if $.ResultsFromSearch}}
-					<div style="height:0.2rem"> []
-					<form action="/api/set-user-setting" style="display:flex;justify-content:end;color:#AAA;" method="post"> [
-						<input name="user" type="hidden" value="{{$.User}}"> []
-						<input name="quick_search_name" style="width:7rem;border-radius:2px;background-color:inherit;font-size:0.7rem;border: 1px solid rgba(1, 1, 1, 0);" placeholder="add to quick search" value=""> []
-						<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
-						<button name="update_quick_search" value="1" hidden> []
-						<input readonly name="back_to_referer" type="hidden" value="1"> []
-					]
+			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
+				<div style="padding:1.5rem;font-size:1rem;color:#555"> [Pinned]
+				<div style="padding:0 1.5rem;font-size:0.9rem;"> [
+					{{range $p := $.UserSetting.PinnedPaths}}
+					<div style="margin:0.2rem 0;"> [<a style="color:#22A;" href="{{$p}}"> [{{$p}}]]
 					{{end}}
 				]
 			]
-			{{end}}
-			{{if not $.ResultsFromSearch}}
-			<div class="entry" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
-				<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
-					<div style="flex:3;font-size:1.2rem"> [
-						<b> [{{pathLinks $.Entry.Path}}]
+			<div class="right"> [
+				{{if ne $.Entry.Path "/"}}
+				<!-- Search Related -->
+				<div style="display:flex;flex-wrap:wrap;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
+					<div style="flex:3;"> [
+					<div style="font-size:2rem"> [
+						<a href="/{{topName $.Entry.Path}}"> [<b> [{{topName $.Entry.Path}}]]
 					]
-					<div style="display:flex;flex-wrap:wrap;gap:1.2rem;font-size:0.75rem;"> [
-						<form action="/api/rename-entry" method="post"> [
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<input id="renameInput" name="new-name" type="text" style="display:none"> []
+					<!-- Quick Search -->
+					<div id="quickSearch"> [
+						<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
+							<div> [quick search]
+							<div id="quickSearchEditButton" style="margin-left:0.4rem" onclick="toggleQuickSearchEditMode()"> [(edit)]
+						]
+						<div style="display:flex;font-size:1rem;"> [
+						{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
+						<div style="display:flex;"> [
+							<!-- Either quickSearchLinks or quickSearchRemoveButton can be shown at a time -->
+							<a class="quickSearchLink" style="color:#333" href="/{{topName $.Entry.Path}}?search=1&{{toURL $searchValue}}"> [{{$searchName}}]
+							<form action="/api/set-user-setting" method="POST"> [
+								<input name="quick_search_name" type="hidden" value="{{$searchName}}">
+								<input name="quick_search_value" type="hidden" value=""> []
+								<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$searchName}}]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+						]
+						<div style="display:inline-block;width:0.8rem;"> []
+						{{- end}}
+						]
+					]
+					]
+					<!-- Search Box -->
+					<div style="flex:1;"> [
+						<form action="/{{topName $.Entry.Path}}" style="display:flex;"> [
+							<input hidden name="search" value="1"> []
+							<select name="search_entry_type" class="search-box-left"> [
+								<option value=""> [(any)]
+							{{range $t := $.AllEntryTypes}}
+								{{if ne $t "root"}}
+								<option value="{{$t}}" {{if eq $t $.SearchEntryType}}selected{{end}}> [{{$t}}]
+								{{end}}
+							{{end}}
+							]
+							<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
+							<button class="search-box-right" style="background-color:inherit"> [Go]
+						]
+						{{if $.ResultsFromSearch}}
+						<div style="height:0.2rem"> []
+						<form action="/api/set-user-setting" style="display:flex;justify-content:end;color:#AAA;" method="post"> [
+							<input name="user" type="hidden" value="{{$.User}}"> []
+							<input name="quick_search_name" style="width:7rem;border-radius:2px;background-color:inherit;font-size:0.7rem;border: 1px solid rgba(1, 1, 1, 0);" placeholder="add to quick search" value=""> []
+							<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
+							<button name="update_quick_search" value="1" hidden> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
-						<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
-						<form action="/api/delete-entry" method="post"> [
-							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-							<button id="delete-entry-button" style="display:none"> []
-							<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-						]
+						{{end}}
 					]
 				]
-				<div style="display:flex;"> [
+				{{end}}
+				{{if not $.ResultsFromSearch}}
+				<div class="entry" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
-						<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
-							<div id="thumbnail" class="thumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
-								<div style="display:flex;border:1px solid #CCCCCC"> [
-									<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}"> []
-								]
-								<form class="updateThumbnail" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<input id="thumbnailInput" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
-									<label for="thumbnailInput" class="updateThumbnailButton thumbnailButton" style="{{if $.Entry.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer"> [+]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-								<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<label id="deleteThumbnailButton" class="deleteThumbnailButton thumbnailButton" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
+						<div style="flex:3;font-size:1.2rem"> [
+							<b> [{{pathLinks $.Entry.Path}}]
+						]
+						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;font-size:0.75rem;"> [
+							<form action="/api/set-user-setting" method="POST"> [
+								<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
+								<input name="pinned_path_at" type="hidden" value="{{if $.EntryPinned}}-1{{else}}{{len $.UserSetting.PinnedPaths}}{{end}}"> []
+								<button id="updatePinnedPathButton" name="update_pinned_path" value="1" hidden> []
+								<label for="updatePinnedPathButton" style="cursor:pointer;"> [{{if $.EntryPinned}}Unpin{{else}}Pin{{end}}]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<form action="/api/rename-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<input id="renameInput" name="new-name" type="text" style="display:none"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
+							<form action="/api/delete-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<button id="delete-entry-button" style="display:none"> []
+								<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 						]
 					]
-					<div id="entry-items" style="flex:1;display:flex;"> [
-						<!-- Property Expand Toggle -->
-						<div style="margin-bottom:1.5rem;font-size:0.75rem;color:#555;min-width:8rem;"> [
-							<div id="property-box" class="item-box" style="display:flex"> [
-								<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
-								<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
-							]
-							<div id="environ-box" class="item-box" style="display:flex"> [
-								<div id="environ-category" class="item-category" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
-								<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'environ')"> [+]
-							]
-							<div id="access-box" class="item-box" style="display:flex"> [
-								<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
-								<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
+					<div style="display:flex;"> [
+						<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
+							<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
+								<div id="thumbnail" class="thumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
+									<div style="display:flex;border:1px solid #CCCCCC"> [
+										<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}"> []
+									]
+									<form class="updateThumbnail" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
+										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+										<input id="thumbnailInput" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
+										<label for="thumbnailInput" class="updateThumbnailButton thumbnailButton" style="{{if $.Entry.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer"> [+]
+										<input readonly name="back_to_referer" type="hidden" value="1"> []
+									]
+									<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
+										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+										<label id="deleteThumbnailButton" class="deleteThumbnailButton thumbnailButton" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+										<input readonly name="back_to_referer" type="hidden" value="1"> []
+									]
+								]
 							]
 						]
-						<!-- Property / Environ / Access Items -->
-						<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
-							{{range $p := $.Properties}}
-							<div class="property-items" style="display:none"> [
-								<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
-								<div style="height:0.2rem"> []
-								<div class="propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
+						<div id="entry-items" style="flex:1;display:flex;"> [
+							<!-- Property Expand Toggle -->
+							<div style="margin-bottom:1.5rem;font-size:0.75rem;color:#555;min-width:8rem;"> [
+								<div id="property-box" class="item-box" style="display:flex"> [
+									<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
+									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
+								]
+								<div id="environ-box" class="item-box" style="display:flex"> [
+									<div id="environ-category" class="item-category" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
+									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'environ')"> [+]
+								]
+								<div id="access-box" class="item-box" style="display:flex"> [
+									<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
+									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
+								]
 							]
-							{{end}}
-							{{range $e := $.Environs}}
-							<div class="environ-items" style="display:none"> [
-								<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
-								<div style="height:0.2rem"> []
-								<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
+							<!-- Property / Environ / Access Items -->
+							<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
+								{{range $p := $.Properties}}
+								<div class="property-items" style="display:none"> [
+									<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
+									<div style="height:0.2rem"> []
+									<div class="propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
+								]
+								{{end}}
+								{{range $e := $.Environs}}
+								<div class="environ-items" style="display:none"> [
+									<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
+									<div style="height:0.2rem"> []
+									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
+								]
+								{{end}}
+								{{range $a := $.AccessControls}}
+								<div class="access-items" style="display:none"> [
+									<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
+									<div style="height:0.2rem"> []
+									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
+								]
+								{{end}}
 							]
-							{{end}}
-							{{range $a := $.AccessControls}}
-							<div class="access-items" style="display:none"> [
-								<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
-								<div style="height:0.2rem"> []
-								<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
-							]
-							{{end}}
 						]
 					]
 				]
-			]
-			{{end}}
-			<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem"> [
-			{{if $.ResultsFromSearch}}
-				{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
-			{{end}}
-			{{$i := 0}}
-			{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
-				<div> [
-					{{if $i}}
-					<div style="margin-top:3rem;margin-bottom:3rem;border-top:1px solid #DDD"> []
-					{{end}}
-					{{if not $.ResultsFromSearch}}
-					<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2rem;margin-top:1rem;margin-bottom:1rem;"> [
-						<div style="font-size:1.2rem"> [<b> [{{$t}}]]
-						<!-- Add SubEntry -->
-						<form action="/api/add-entry" style="display:flex" method="POST"> [
-							<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-							<input name="type" type="hidden" value="{{$t}}"> []
-							<input name="name" style="border:1px solid #DDD;border-right:0;border-radius:2px 0 0 2px" placeholder="name"> []
-							<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [+]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-						]
-						<!-- Property Filter -->
-						<form action="/api/set-user-setting" style="flex:1;display:flex" method="POST"> [
-							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
-							<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}" placeholder="filter"> []
-							<button style="display:none" name="update_filter" value="1"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-						]
-						<!-- Sort -->
-						<form action="/api/set-user-setting" style="display:flex;align-items:center" method="POST"> [
-							<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
-							{{$sortProp := index $.UserSetting.EntryPageSortProperty $t}}
-							{{$prop := sortProperty $sortProp}}
-							{{$desc := sortDesc $sortProp}}
-							<select name="entry_page_sort_property" style="appearance:none;margin-right:0.5rem;min-width:6rem;border:1px solid #DDD;border-radius:2px;"> [
-								<option value=""> [(name)]
-							{{range $p := index $.DefaultProperties $t}}
-								<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
-							{{end}}
-							]
-							<input id="sort_desc_cb" name="entry_page_sort_desc" style="margin:0;width:1.2rem;border-radius:2px 0 0 2px;background-color:#F3F3F3;height:20px" type="checkbox" {{if $desc}}checked{{end}}> []
-							<button name="update_sort" style="appearance:none;border:1px solid #DDD;border-left:0;border-radius:0 2px 2px 0;background-color:#F3F3F3" value="1"> [Sort]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-						]
-					]
-					{{end}}
-					{{$j := 0}}
-					{{range $parent, $entries := $entsByParent}}
-						{{if $entries}}
-							{{if $j}}
-							<div style="height:1rem"> []
-							{{end}}
-							{{if $.ResultsFromSearch}}
-								<h5> [From <a href="{{$parent}}"> [{{$parent}}]]
-							{{end}}
-							<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
-								{{$propFilters := index $.PropertyFilters $t}}
-								{{range $k, $e := $entries}}
-								{{$props := index $.SubEntryProperties $e.Path}}
-								{{$pad := "0.3rem"}}
-								{{if $k}}
-								<div style="border-top:1px solid #DDD"> []
-								{{end}}
-								<div class="subEntry" style="flex:1;display:flex;color:black"> [
-									<div class="subEntryLink" style="padding:{{$pad}};width:96px"> [
-										<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
-											<div style="display:flex;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;"> [
-												<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}}"> []
-											]
-											<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
-												<input name="path" type="hidden" value="{{$e.Path}}"> []
-												<input id="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
-												<label for="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailButton thumbnailButton" style="{{if $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
-												<input readonly name="back_to_referer" type="hidden" value="1"> []
-											]
-											<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
-												<input name="path" type="hidden" value="{{$e.Path}}"> []
-												<label id="deleteThumbnailButton-{{$i}}-{{$j}}-{{$k}}" class="deleteThumbnailButton thumbnailButton" style="{{if not $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
-												<input readonly name="back_to_referer" type="hidden" value="1"> []
-											]
-										]
-										<a style="color:black" href="{{$e.Path}}"> [
-											<div class="subEntryName" style="margin-top:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
-										]
-									]
-									<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
-										{{range $name := $propFilters}}
-											<div class="property" style="width:12rem;"> [
-												{{$p := index $props $name}}
-												<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater(this, '{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
-												{{if $p}}
-												<div style="height:0.2rem"> []
-												<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Eval}}]
-												{{end}}
-											]
-										{{end}}
-									]
-								]
-								{{end}}
-							]
-						{{$j = inc $j}}
+				{{end}}
+				<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem"> [
+				{{if $.ResultsFromSearch}}
+					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
+				{{end}}
+				{{$i := 0}}
+				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
+					<div> [
+						{{if $i}}
+						<div style="margin-top:3rem;margin-bottom:3rem;border-top:1px solid #DDD"> []
 						{{end}}
-					{{end}}
+						{{if not $.ResultsFromSearch}}
+						<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2rem;margin-top:1rem;margin-bottom:1rem;"> [
+							<div style="font-size:1.2rem"> [<b> [{{$t}}]]
+							<!-- Add SubEntry -->
+							<form action="/api/add-entry" style="display:flex" method="POST"> [
+								<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
+								<input name="type" type="hidden" value="{{$t}}"> []
+								<input name="name" style="border:1px solid #DDD;border-right:0;border-radius:2px 0 0 2px" placeholder="name"> []
+								<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [+]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<!-- Property Filter -->
+							<form action="/api/set-user-setting" style="flex:1;display:flex" method="POST"> [
+								<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
+								<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}" placeholder="filter"> []
+								<button style="display:none" name="update_filter" value="1"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<!-- Sort -->
+							<form action="/api/set-user-setting" style="display:flex;align-items:center" method="POST"> [
+								<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
+								{{$sortProp := index $.UserSetting.EntryPageSortProperty $t}}
+								{{$prop := sortProperty $sortProp}}
+								{{$desc := sortDesc $sortProp}}
+								<select name="entry_page_sort_property" style="appearance:none;margin-right:0.5rem;min-width:6rem;border:1px solid #DDD;border-radius:2px;"> [
+									<option value=""> [(name)]
+								{{range $p := index $.DefaultProperties $t}}
+									<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
+								{{end}}
+								]
+								<input id="sort_desc_cb" name="entry_page_sort_desc" style="margin:0;width:1.2rem;border-radius:2px 0 0 2px;background-color:#F3F3F3;height:20px" type="checkbox" {{if $desc}}checked{{end}}> []
+								<button name="update_sort" style="appearance:none;border:1px solid #DDD;border-left:0;border-radius:0 2px 2px 0;background-color:#F3F3F3" value="1"> [Sort]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+						]
+						{{end}}
+						{{$j := 0}}
+						{{range $parent, $entries := $entsByParent}}
+							{{if $entries}}
+								{{if $j}}
+								<div style="height:1rem"> []
+								{{end}}
+								{{if $.ResultsFromSearch}}
+									<h5> [From <a href="{{$parent}}"> [{{$parent}}]]
+								{{end}}
+								<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
+									{{$propFilters := index $.PropertyFilters $t}}
+									{{range $k, $e := $entries}}
+									{{$props := index $.SubEntryProperties $e.Path}}
+									{{$pad := "0.3rem"}}
+									{{if $k}}
+									<div style="border-top:1px solid #DDD"> []
+									{{end}}
+									<div class="subEntry" style="flex:1;display:flex;color:black"> [
+										<div class="subEntryLink" style="padding:{{$pad}};width:96px"> [
+											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
+												<div style="display:flex;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;"> [
+													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}}"> []
+												]
+												<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
+													<input name="path" type="hidden" value="{{$e.Path}}"> []
+													<input id="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
+													<label for="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailButton thumbnailButton" style="{{if $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
+													<input readonly name="back_to_referer" type="hidden" value="1"> []
+												]
+												<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
+													<input name="path" type="hidden" value="{{$e.Path}}"> []
+													<label id="deleteThumbnailButton-{{$i}}-{{$j}}-{{$k}}" class="deleteThumbnailButton thumbnailButton" style="{{if not $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+													<input readonly name="back_to_referer" type="hidden" value="1"> []
+												]
+											]
+											<a style="color:black" href="{{$e.Path}}"> [
+												<div class="subEntryName" style="margin-top:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
+											]
+										]
+										<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
+											{{range $name := $propFilters}}
+												<div class="property" style="width:12rem;"> [
+													{{$p := index $props $name}}
+													<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater(this, '{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
+													{{if $p}}
+													<div style="height:0.2rem"> []
+													<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Eval}}]
+													{{end}}
+												]
+											{{end}}
+										]
+									]
+									{{end}}
+								]
+							{{$j = inc $j}}
+							{{end}}
+						{{end}}
+					]
+				{{$i = inc $i}}
+				{{end}}
 				]
-			{{$i = inc $i}}
-			{{end}}
-			]
-			<div id="itemUpdater" data-initialized="0" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
-				<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#E0EEEE"> [
-					<div class="entryLabel" style=""> []
-					<div style="border-radius:3px;background-color:#BDD;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideItemUpdater()"> [&#x2715]
-				]
-				<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
-					<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
-					<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-						<input name="path" class="entryInput" type="hidden"> []
-						<input name="name" class="nameInput" type="hidden"> []
-						<input name="ctg" class="categoryInput" type="hidden"> []
-						<input name="type" class="typeInput typeHolder" type="hidden"> []
-						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
-						<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-						<input readonly name="back_to_referer" type="hidden" value="1"> []
-						<button style="width:5rem"> [Update]
+				<div id="itemUpdater" data-initialized="0" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
+					<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#E0EEEE"> [
+						<div class="entryLabel" style=""> []
+						<div style="border-radius:3px;background-color:#BDD;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideItemUpdater()"> [&#x2715]
+					]
+					<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
+						<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
+						<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+							<input name="path" class="entryInput" type="hidden"> []
+							<input name="name" class="nameInput" type="hidden"> []
+							<input name="ctg" class="categoryInput" type="hidden"> []
+							<input name="type" class="typeInput typeHolder" type="hidden"> []
+							<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+							<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button style="width:5rem"> [Update]
+						]
 					]
 				]
-			]
-			<div id="itemAdder" data-initialized="0" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
-				<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#F5E0E0"> [
-					<div class="entryLabel" style=""> []
-					<div style="border-radius:3px;background-color:#ECC;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideItemAdder()"> [&#x2715]
-				]
-				<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
-					<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-						<input name="path" class="entryInput" type="hidden"> []
-						<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
-						<input name="ctg" class="categoryInput" type="hidden"> []
-						<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-						<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
-						<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-						<input readonly name="back_to_referer" type="hidden" value="1"> []
-						<button style="width:5rem"> [Add]
+				<div id="itemAdder" data-initialized="0" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
+					<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#F5E0E0"> [
+						<div class="entryLabel" style=""> []
+						<div style="border-radius:3px;background-color:#ECC;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideItemAdder()"> [&#x2715]
+					]
+					<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
+						<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+							<input name="path" class="entryInput" type="hidden"> []
+							<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
+							<input name="ctg" class="categoryInput" type="hidden"> []
+							<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
+							<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+							<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button style="width:5rem"> [Add]
+						]
 					]
 				]
 			]

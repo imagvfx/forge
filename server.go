@@ -771,6 +771,7 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
 		EntryPageSortProperty:    ss.EntryPageSortProperty,
 		EntryPageQuickSearch:     ss.EntryPageQuickSearch,
+		PinnedPaths:              ss.PinnedPaths,
 	}
 	return us, nil
 }

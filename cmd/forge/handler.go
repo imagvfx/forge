@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/imagvfx/forge"
@@ -166,6 +167,13 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		acs, err := h.server.EntryAccessControls(ctx, path)
 		if err != nil {
 			return err
+		}
+		pinned := false
+		for _, p := range setting.PinnedPaths {
+			if p == path {
+				pinned = true
+				break
+			}
 		}
 		resultsFromSearch := false
 		var subEnts []*forge.Entry
@@ -323,6 +331,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User                     string
 			UserSetting              *forge.UserSetting
 			Entry                    *forge.Entry
+			EntryPinned              bool
 			SearchEntryType          string
 			SearchQuery              string
 			ResultsFromSearch        bool
@@ -340,6 +349,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			User:                     user,
 			UserSetting:              setting,
 			Entry:                    ent,
+			EntryPinned:              pinned,
 			SearchEntryType:          searchEntryType,
 			SearchQuery:              searchQuery,
 			ResultsFromSearch:        resultsFromSearch,
@@ -1573,11 +1583,28 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 				name: val,
 			}
 		}
+		var pinnedPath *service.PinnedPathArranger
+		if r.FormValue("update_pinned_path") != "" {
+			path := strings.TrimSpace(r.FormValue("pinned_path"))
+			if path == "" {
+				return fmt.Errorf("pinned_path not provided")
+			}
+			at := r.FormValue("pinned_path_at")
+			n, err := strconv.Atoi(at)
+			if err != nil {
+				return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
+			}
+			pinnedPath = &service.PinnedPathArranger{
+				Path:  path,
+				Index: n,
+			}
+		}
 		err = h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
 			User:                    user,
 			EntryPagePropertyFilter: propertyFilter,
 			EntryPageSortProperty:   sortProperty,
 			EntryPageQuickSearch:    quickSearch,
+			PinnedPath:              pinnedPath,
 		})
 		if err != nil {
 			return err
