@@ -385,7 +385,7 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.URL.Path
+		path := r.FormValue("path")
 		ent, err := h.server.GetEntry(ctx, path)
 		if err != nil {
 			return err

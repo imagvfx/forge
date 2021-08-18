@@ -192,6 +192,7 @@ func main() {
 	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", path.Handle)
+	mux.HandleFunc("/logs", path.HandleEntryLogs)
 	mux.HandleFunc("/thumbnail/", path.HandleThumbnail)
 	mux.HandleFunc("/login", login.Handle)
 	mux.HandleFunc("/login/callback/google", login.HandleCallback)

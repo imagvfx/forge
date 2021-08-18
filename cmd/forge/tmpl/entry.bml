@@ -143,21 +143,30 @@
 							<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 								{{range $p := $.Properties}}
 								<div class="property-items" style="display:none"> [
-									<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
+									<div style="display:flex;"> [
+										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer;" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
+										<a href="/logs?path={{$.Entry.Path}}&category=property&name={{$p.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
+									]
 									<div style="height:0.2rem"> []
 									<div class="propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
 								]
 								{{end}}
 								{{range $e := $.Environs}}
 								<div class="environ-items" style="display:none"> [
-									<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
+									<div style="display:flex;"> [
+										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
+										<a href="/logs?path={{$.Entry.Path}}&category=environ&name={{$e.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
+									]
 									<div style="height:0.2rem"> []
 									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
 								<div class="access-items" style="display:none"> [
-									<div style="font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
+									<div style="display:flex;"> [
+										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
+										<a href="/logs?path={{$.Entry.Path}}&category=access&name={{$a.Accessor}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
+									]
 									<div style="height:0.2rem"> []
 									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
 								]
