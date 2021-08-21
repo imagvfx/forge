@@ -1,66 +1,66 @@
 [root] # reserved
 
 properties = [
-	".sub_entry_types text=show",
+	".sub_entry_types text = show",
 ]
 
 
 [show]
 
 environs = [
-	"SHOW entry_name=.",
+	"SHOW entry_name = .",
 ]
 
 properties = [
-	".sub_entry_types text=category",
+	".sub_entry_types text = category",
 	"sup user",
 	"pd user",
 	"pm user",
 ]
 
 sub_entries = [
-	'shot category={"properties": {".sub_entry_types":"shot_group"}}',
-	'asset category={"properties": {".sub_entry_types":"asset_group"}}',
+	'shot category = {"properties": {".sub_entry_types":"shot_group"}}',
+	'asset category = {"properties": {".sub_entry_types":"asset_group"}}',
 ]
 
 
 [category]
 
 properties = [
-	".sub_entry_types text=group",
+	".sub_entry_types text = group",
 ]
 
 
 [shot_group]
 
 environs = [
-	"GROUP entry_name=."
+	"GROUP entry_name = ."
 ]
 
 properties = [
-	".sub_entry_types text=shot"
+	".sub_entry_types text = shot"
 ]
 
 
 [asset_group]
 
 environs = [
-	"GROUP entry_name=."
+	"GROUP entry_name = ."
 ]
 
 properties = [
-	".sub_entry_types text=asset"
+	".sub_entry_types text = asset"
 ]
 
 
 [shot]
 
 environs = [
-	"UNIT entry_name=.",
+	"UNIT entry_name = .",
 ]
 
 properties = [
-	".sub_entry_types text=part",
+	".sub_entry_types text = part",
 	"status text",
 	"cg text",
 	"direction text",
@@ -79,11 +79,11 @@ sub_entries = [
 [asset]
 
 environs = [
-	"UNIT entry_name=.",
+	"UNIT entry_name = .",
 ]
 
 properties = [
-	".sub_entry_types text=part",
+	".sub_entry_types text = part",
 	"status text",
 	"cg text",
 	"direction text",
@@ -101,11 +101,11 @@ sub_entries = [
 [part]
 
 environs = [
-	"PART entry_name=.",
+	"PART entry_name = .",
 ]
 
 properties = [
-	".sub_entry_types text=elem",
+	".sub_entry_types text = elem",
 ]
 
 sub_entries = [
@@ -116,11 +116,11 @@ sub_entries = [
 [elem]
 
 environs = [
-	"ELEM entry_name=.",
+	"ELEM entry_name = .",
 ]
 
 properties = [
-	".sub_entry_types text=ver",
+	".sub_entry_types text = ver",
 	"note text",
 ]
 
@@ -132,7 +132,7 @@ sub_entries = [
 [ver]
 
 environs = [
-	"VER entry_name=.",
+	"VER entry_name = .",
 ]
 
 properties = [
