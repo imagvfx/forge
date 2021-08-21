@@ -44,81 +44,46 @@ func getEntryStruct(t *toml.Tree, typ string) (*EntryStruct, error) {
 	if typTree == nil {
 		return nil, fmt.Errorf("unknown type: %v", typ)
 	}
+	defaultMap := map[string][]KeyTypeValue{
+		"sub_entries": make([]KeyTypeValue, 0),
+		"properties":  make([]KeyTypeValue, 0),
+		"environs":    make([]KeyTypeValue, 0),
+	}
+	for def, ktvs := range defaultMap {
+		defTree := typTree.(*toml.Tree).GetArray(def)
+		if defTree == nil {
+			continue
+		}
+		raws, ok := defTree.([]string)
+		if !ok {
+			return nil, fmt.Errorf("cannot convert [%v].%v as []string", typ, def)
+		}
+		for _, r := range raws {
+			var k, t, v string
+			kt_v := strings.SplitN(r, "=", 2)
+			if len(kt_v) == 2 {
+				v = strings.TrimSpace(kt_v[1])
+			}
+			k_t := strings.Fields(kt_v[0])
+			if len(k_t) != 2 {
+				return nil, fmt.Errorf("invalid key, type, value definition: %v", r)
+			}
+			k = k_t[0]
+			t = k_t[1]
+			ktv := KeyTypeValue{
+				Key:   k,
+				Type:  t,
+				Value: v,
+			}
+			ktvs = append(ktvs, ktv)
+		}
+		defaultMap[def] = ktvs
+	}
 	s := &EntryStruct{}
 	s.Type = typ
-	s.SubEntries = make([]KeyTypeValue, 0)
-	s.Properties = make([]KeyTypeValue, 0)
-	s.Environs = make([]KeyTypeValue, 0)
-	subEntsTree := typTree.(*toml.Tree).GetArray("sub_entries")
-	if subEntsTree != nil {
-		subEnts, ok := subEntsTree.([]string)
-		if !ok {
-			return nil, fmt.Errorf("cannot convert [%v].sub_entries as []string", s.Type)
-		}
-		for _, ent := range subEnts {
-			k_t := strings.SplitN(ent, " ", 2)
-			if len(k_t) != 2 {
-				return nil, fmt.Errorf("sub_entries should have entry in a 'entry_name entry_type' form")
-			}
-			k := k_t[0]
-			t := k_t[1]
-			ktv := KeyTypeValue{
-				Key:  k,
-				Type: t,
-			}
-			s.SubEntries = append(s.SubEntries, ktv)
-		}
-	}
-	propsTree := typTree.(*toml.Tree).GetArray("properties")
-	if propsTree != nil {
-		props, ok := propsTree.([]string)
-		if !ok {
-			return nil, fmt.Errorf("cannot convert [%v].properties as []string", s.Type)
-		}
-		for _, p := range props {
-			var k, t, v string
-			kt_v := strings.SplitN(p, "=", 2)
-			if len(kt_v) == 2 {
-				v = kt_v[1]
-			}
-			k_t := strings.SplitN(kt_v[0], " ", 2)
-			k = k_t[0]
-			if len(k_t) == 2 {
-				t = k_t[1]
-			}
-			ktv := KeyTypeValue{
-				Key:   k,
-				Type:  t,
-				Value: v,
-			}
-			s.Properties = append(s.Properties, ktv)
-		}
-	}
-	envsTree := typTree.(*toml.Tree).GetArray("environs")
-	if envsTree != nil {
-		envs, ok := envsTree.([]string)
-		if !ok {
-			return nil, fmt.Errorf("cannot convert [%v].environs as []string", s.Type)
-		}
-		for _, e := range envs {
-			var k, t, v string
-			kt_v := strings.SplitN(e, "=", 2)
-			if len(kt_v) == 2 {
-				v = kt_v[1]
-			}
-			k_t := strings.SplitN(kt_v[0], " ", 2)
-			k = k_t[0]
-			if len(k_t) == 2 {
-				t = k_t[1]
-			}
-			ktv := KeyTypeValue{
-				Key:   k,
-				Type:  t,
-				Value: v,
-			}
-			s.Environs = append(s.Environs, ktv)
-		}
-	}
+	s.SubEntries = defaultMap["sub_entries"]
+	s.Properties = defaultMap["properties"]
+	s.Environs = defaultMap["environs"]
 	return s, nil
 }
 
