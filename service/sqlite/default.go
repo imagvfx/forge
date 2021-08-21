@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -16,6 +17,7 @@ func createDefaultSubEntriesTable(tx *sql.Tx) error {
 			entry_type_id INTEGER NOT NULL,
 			name STRING NOT NULL,
 			sub_entry_type_id INTEGER NOT NULL,
+			value STRING NOT NULL,
 			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
 			FOREIGN KEY (sub_entry_type_id) REFERENCES entry_types (id),
 			UNIQUE (entry_type_id, name)
@@ -114,7 +116,8 @@ func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.Default
 		SELECT
 			entry_types.name,
 			default_sub_entries.name,
-			sub_entry_types.name
+			sub_entry_types.name,
+			default_sub_entries.value
 		FROM default_sub_entries
 		LEFT JOIN entry_types ON default_sub_entries.entry_type_id = entry_types.id
 		LEFT JOIN entry_types AS sub_entry_types ON default_sub_entries.sub_entry_type_id = sub_entry_types.id
@@ -134,6 +137,7 @@ func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.Default
 			&d.EntryType,
 			&d.Name,
 			&d.Type,
+			&d.Value,
 		)
 		if err != nil {
 			return nil, err
@@ -318,13 +322,15 @@ func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) err
 		INSERT INTO default_sub_entries (
 			entry_type_id,
 			name,
-			sub_entry_type_id
+			sub_entry_type_id,
+			value
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		typeID,
 		d.Name,
 		subTypeID,
+		d.Value,
 	)
 	if err != nil {
 		return err
@@ -478,7 +484,13 @@ func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 		vals = append(vals, subTypeID)
 	}
 	if upd.Value != nil {
-		return fmt.Errorf("default sub-entry updater shouldn't have value")
+		v := *upd.Value // v overrides default values for the sub entry.
+		ok := json.Valid([]byte(v))
+		if !ok {
+			return fmt.Errorf("value is not a valid json: %v", v)
+		}
+		keys = append(keys, "value=?")
+		vals = append(vals, v)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "sub_entry", upd.Name)
