@@ -115,6 +115,11 @@ type EntryFinder struct {
 	Path       *string
 }
 
+type EntryOverrides struct {
+	Properties map[string]string `json:properties`
+	Environs   map[string]string `json:environs`
+}
+
 type EntrySearcher struct {
 	SearchRoot string
 	EntryType  string

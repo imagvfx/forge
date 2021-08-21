@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -293,7 +294,7 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	defer tx.Rollback()
-	addEntryR(tx, ctx, e)
+	addEntryR(tx, ctx, e, nil)
 	err = tx.Commit()
 	if err != nil {
 		return err
@@ -301,7 +302,7 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 	return nil
 }
 
-func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
+func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry, overrides *service.EntryOverrides) error {
 	err := addEntry(tx, ctx, e)
 	if err != nil {
 		return err
@@ -311,11 +312,16 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	for _, d := range defSubs {
+		var over *service.EntryOverrides
+		err := json.Unmarshal([]byte(d.Value), &over)
+		if err != nil {
+			return err
+		}
 		de := &service.Entry{
 			Path: filepath.Join(e.Path, d.Name),
 			Type: d.Type,
 		}
-		err := addEntryR(tx, ctx, de)
+		err = addEntryR(tx, ctx, de, over)
 		if err != nil {
 			return err
 		}
@@ -351,6 +357,34 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 		if err != nil {
 			return err
 		}
+	}
+	// TODO: implement entry default access
+
+	if overrides != nil {
+		// override default values
+		for name, val := range overrides.Properties {
+			upd := service.PropertyUpdater{
+				EntryPath: e.Path,
+				Name:      name,
+				Value:     &val,
+			}
+			err := updateProperty(tx, ctx, upd)
+			if err != nil {
+				return err
+			}
+		}
+		for name, val := range overrides.Environs {
+			upd := service.PropertyUpdater{
+				EntryPath: e.Path,
+				Name:      name,
+				Value:     &val,
+			}
+			err := updateEnviron(tx, ctx, upd)
+			if err != nil {
+				return err
+			}
+		}
+		// TODO: override access after default access implemented
 	}
 	return nil
 }
