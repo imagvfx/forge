@@ -19,8 +19,8 @@ properties = [
 ]
 
 sub_entries = [
-	"shot category",
-	"asset category",
+	'shot category={"properties": {".sub_entry_types":"shot_group"}}',
+	'asset category={"properties": {".sub_entry_types":"asset_group"}}',
 ]
 
 
@@ -31,14 +31,25 @@ properties = [
 ]
 
 
-[group]
+[shot_group]
 
 environs = [
 	"GROUP entry_name=."
 ]
 
 properties = [
-	".sub_entry_types text"
+	".sub_entry_types text=shot"
+]
+
+
+[asset_group]
+
+environs = [
+	"GROUP entry_name=."
+]
+
+properties = [
+	".sub_entry_types text=asset"
 ]
 
 
