@@ -211,8 +211,9 @@ type AccessControlUpdater struct {
 // Accessor is either a user or a group, that can be specified in entry access control list.
 type Accessor struct {
 	ID      int
-	Name    string
 	IsGroup bool
+	Name    string
+	Called  string
 }
 
 type Log struct {
@@ -234,17 +235,20 @@ type LogFinder struct {
 }
 
 type User struct {
-	ID   int
-	Name string
+	ID     int
+	Name   string
+	Called string
 }
 
 type UserFinder struct {
-	Name *string
+	Name   *string
+	Called *string
 }
 
 type UserUpdater struct {
-	ID   int
-	Name *string
+	ID     int
+	Name   *string
+	Called *string
 }
 
 type UserSetting struct {
@@ -285,17 +289,20 @@ type PinnedPathArranger struct {
 }
 
 type Group struct {
-	ID   int
-	Name string
+	ID     int
+	Name   string
+	Called string
 }
 
 type GroupFinder struct {
-	Name *string
+	Name   *string
+	Called *string
 }
 
 type GroupUpdater struct {
 	Name    string
 	NewName *string
+	Called  *string
 }
 
 type Member struct {

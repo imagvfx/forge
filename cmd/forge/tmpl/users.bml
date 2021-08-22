@@ -12,7 +12,7 @@
 				]
 				{{range $u := $.Users}}
 					<div style="display:flex"> [
-						<div> [{{$u.Name}}]
+						<div> [{{$u.Name}} - {{$u.Called}}]
 					]
 				{{end}}
 			]

@@ -43,7 +43,8 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
-			name
+			name,
+			called
 		FROM accessors
 		`+where+`
 		ORDER BY id ASC
@@ -60,6 +61,7 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 		err := rows.Scan(
 			&u.ID,
 			&u.Name,
+			&u.Called,
 		)
 		if err != nil {
 			return nil, err
@@ -153,12 +155,14 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO accessors (
 			is_group,
-			name
+			name,
+			called
 		)
-		VALUES (?, ?)
+		VALUES (?, ?, ?)
 	`,
 		false,
 		u.Name,
+		u.Called,
 	)
 	if err != nil {
 		return err

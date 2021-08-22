@@ -396,8 +396,9 @@ func (l *Log) AccessControlString() string {
 }
 
 type User struct {
-	ID   int
-	Name string
+	ID     int
+	Name   string
+	Called string
 }
 
 type UserSetting struct {
@@ -411,8 +412,9 @@ type UserSetting struct {
 }
 
 type Group struct {
-	ID   int
-	Name string
+	ID     int
+	Name   string
+	Called string
 }
 
 type Member struct {

@@ -721,8 +721,9 @@ func (s *Server) Users(ctx context.Context) ([]*User, error) {
 	users := make([]*User, 0)
 	for _, su := range svcUsers {
 		u := &User{
-			ID:   su.ID,
-			Name: su.Name,
+			ID:     su.ID,
+			Name:   su.Name,
+			Called: su.Called,
 		}
 		users = append(users, u)
 	}
@@ -738,18 +739,25 @@ func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
 		return nil, err
 	}
 	u := &User{
-		ID:   su.ID,
-		Name: su.Name,
+		ID:     su.ID,
+		Name:   su.Name,
+		Called: su.Called,
 	}
 	return u, nil
 }
 
-func (s *Server) AddUser(ctx context.Context, user string) error {
-	if user == "" {
+func (s *Server) AddUser(ctx context.Context, u *User) error {
+	if u == nil {
+		return fmt.Errorf("nil user")
+	}
+	if u.Name == "" {
 		return fmt.Errorf("user not specified")
 	}
-	u := &service.User{Name: user}
-	err := s.svc.AddUser(ctx, u)
+	su := &service.User{
+		Name:   u.Name,
+		Called: u.Called,
+	}
+	err := s.svc.AddUser(ctx, su)
 	if err != nil {
 		return err
 	}
@@ -834,12 +842,18 @@ func (s *Server) GetGroup(ctx context.Context, group string) (*Group, error) {
 	return g, nil
 }
 
-func (s *Server) AddGroup(ctx context.Context, group string) error {
-	if group == "" {
+func (s *Server) AddGroup(ctx context.Context, g *Group) error {
+	if g == nil {
+		return fmt.Errorf("nil group")
+	}
+	if g.Name == "" {
 		return fmt.Errorf("group not specified")
 	}
-	g := &service.Group{Name: group}
-	err := s.svc.AddGroup(ctx, g)
+	sg := &service.Group{
+		Name:   g.Name,
+		Called: g.Called,
+	}
+	err := s.svc.AddGroup(ctx, sg)
 	if err != nil {
 		return err
 	}

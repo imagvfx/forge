@@ -731,6 +731,7 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		user := op.Email
+		called := op.Name
 		ctx := service.ContextWithUserName(r.Context(), user)
 		_, err = h.server.GetUser(ctx, user)
 		if err != nil {
@@ -738,7 +739,11 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			if !errors.As(err, &e) {
 				return err
 			}
-			err := h.server.AddUser(ctx, user)
+			u := &forge.User{
+				Name:   user,
+				Called: called,
+			}
+			err := h.server.AddUser(ctx, u)
 			if err != nil {
 				return err
 			}
@@ -772,6 +777,7 @@ type OIDCResponse struct {
 
 type OIDCPayload struct {
 	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
 type apiHandler struct {
@@ -1372,7 +1378,10 @@ func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
 		group := r.FormValue("group")
-		err = h.server.AddGroup(ctx, group)
+		g := &forge.Group{
+			Name: group,
+		}
+		err = h.server.AddGroup(ctx, g)
 		if err != nil {
 			return err
 		}

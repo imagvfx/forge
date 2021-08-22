@@ -19,11 +19,11 @@ import (
 func addEveryoneGroup(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO accessors
-			(is_group, name)
+			(is_group, name, called)
 		VALUES
-			(?, ?)
+			(?, ?, ?)
 	`,
-		true, "everyone",
+		true, "everyone", "Everyone",
 	)
 	if err != nil {
 		return err
@@ -38,11 +38,11 @@ func addEveryoneGroup(tx *sql.Tx) error {
 func addAdminGroup(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO accessors
-			(is_group, name)
+			(is_group, name, called)
 		VALUES
-			(?, ?)
+			(?, ?, ?)
 	`,
-		true, "admin",
+		true, "admin", "Admin",
 	)
 	if err != nil {
 		return err
@@ -76,6 +76,10 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 		keys = append(keys, "name=?")
 		vals = append(vals, *find.Name)
 	}
+	if find.Called != nil {
+		keys = append(keys, "called=?")
+		vals = append(vals, *find.Called)
+	}
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
@@ -83,7 +87,8 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			id,
-			name
+			name,
+			called
 		FROM accessors
 		`+where+`
 		ORDER BY id ASC
@@ -100,6 +105,7 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 		err := rows.Scan(
 			&u.ID,
 			&u.Name,
+			&u.Called,
 		)
 		if err != nil {
 			return nil, err
@@ -170,12 +176,14 @@ func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO accessors (
 			is_group,
-			name
+			name,
+			called
 		)
-		VALUES (?, ?)
+		VALUES (?, ?, ?)
 	`,
 		true,
 		g.Name,
+		g.Called,
 	)
 	if err != nil {
 		return err
@@ -222,6 +230,10 @@ func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) erro
 		}
 		keys = append(keys, "name=?")
 		vals = append(vals, upd.NewName)
+	}
+	if upd.Called != nil {
+		keys = append(keys, "called=?")
+		vals = append(vals, upd.Called)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update group: %v", upd.Name)

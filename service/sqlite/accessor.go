@@ -13,7 +13,8 @@ func createAccessorsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS accessors (
 			id INTEGER PRIMARY KEY,
 			is_group BOOL NOT NULL,
-			name STRING NOT NULL UNIQUE
+			name STRING NOT NULL UNIQUE,
+			called STRING NOT NULL
 		)
 	`)
 	if err != nil {
@@ -36,7 +37,8 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*service.Accesso
 		SELECT
 			id,
 			is_group,
-			name
+			name,
+			called
 		FROM accessors
 		`+where+`
 	`,
@@ -54,6 +56,7 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*service.Accesso
 		&a.ID,
 		&a.IsGroup,
 		&a.Name,
+		&a.Called,
 	)
 	if err != nil {
 		return nil, err
