@@ -88,7 +88,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		}
 		switch key {
 		case "entry_page_search_entry_type":
-			err = json.Unmarshal([]byte(value), s.EntryPageSearchEntryType)
+			err = json.Unmarshal([]byte(value), &s.EntryPageSearchEntryType)
 		case "entry_page_property_filter":
 			err = json.Unmarshal([]byte(value), &s.EntryPagePropertyFilter)
 		case "entry_page_sort_property":
