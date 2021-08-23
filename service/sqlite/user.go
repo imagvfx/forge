@@ -132,10 +132,6 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 	if err != nil {
 		return err
 	}
-	err = addDefaultUserSetting(tx, ctx, u.Name)
-	if err != nil {
-		return err
-	}
 	err = tx.Commit()
 	if err != nil {
 		return err

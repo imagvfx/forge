@@ -191,10 +191,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		searchEntryType := r.FormValue("search_entry_type")
 		if searchEntryType != "" && searchEntryType != setting.EntryPageSearchEntryType {
 			// Whether perform search or not, it will remeber the search entry type.
-			err := h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
-				User:                     user,
-				EntryPageSearchEntryType: &searchEntryType,
-			})
+			err := h.server.UpdateUserSetting(ctx, user, "entry_page_search_entry_type", searchEntryType)
 			if err != nil {
 				return err
 			}
@@ -1578,35 +1575,44 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 		}
 		user := session["user"]
 		ctx := service.ContextWithUserName(r.Context(), user)
-		entryType := r.FormValue("entry_page_entry_type")
-		filter := r.FormValue("entry_page_property_filter")
 		// NOTE: don't use make, maps not for the update should be nil
-		var propertyFilter map[string]string
 		if r.FormValue("update_filter") != "" {
-			propertyFilter = map[string]string{
+			entryType := r.FormValue("entry_page_entry_type")
+			filter := r.FormValue("entry_page_property_filter")
+			propertyFilter := map[string]string{
 				entryType: filter,
 			}
+			err := h.server.UpdateUserSetting(ctx, user, "entry_page_property_filter", propertyFilter)
+			if err != nil {
+				return err
+			}
 		}
-		var sortProperty map[string]string
 		if r.FormValue("update_sort") != "" {
+			entryType := r.FormValue("entry_page_entry_type")
 			sortProp := r.FormValue("entry_page_sort_property") // sort by entry name if empty
 			sortPrefix := "+"
 			if r.FormValue("entry_page_sort_desc") != "" {
 				sortPrefix = "-"
 			}
-			sortProperty = map[string]string{
+			sortProperty := map[string]string{
 				entryType: sortPrefix + sortProp,
 			}
+			err := h.server.UpdateUserSetting(ctx, user, "entry_page_sort_property", sortProperty)
+			if err != nil {
+				return err
+			}
 		}
-		var quickSearch map[string]string
 		if r.FormValue("update_quick_search") != "" {
 			name := r.FormValue("quick_search_name")
 			val := r.FormValue("quick_search_value")
-			quickSearch = map[string]string{
+			quickSearch := map[string]string{
 				name: val,
 			}
+			err := h.server.UpdateUserSetting(ctx, user, "entry_page_quick_search", quickSearch)
+			if err != nil {
+				return err
+			}
 		}
-		var pinnedPath *service.PinnedPathArranger
 		if r.FormValue("update_pinned_path") != "" {
 			path := strings.TrimSpace(r.FormValue("pinned_path"))
 			if path == "" {
@@ -1617,20 +1623,14 @@ func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request
 			if err != nil {
 				return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
 			}
-			pinnedPath = &service.PinnedPathArranger{
+			pinnedPath := service.PinnedPathArranger{
 				Path:  path,
 				Index: n,
 			}
-		}
-		err = h.server.UpdateUserSetting(ctx, service.UserSettingUpdater{
-			User:                    user,
-			EntryPagePropertyFilter: propertyFilter,
-			EntryPageSortProperty:   sortProperty,
-			EntryPageQuickSearch:    quickSearch,
-			PinnedPath:              pinnedPath,
-		})
-		if err != nil {
-			return err
+			err = h.server.UpdateUserSetting(ctx, user, "pinned_paths", pinnedPath)
+			if err != nil {
+				return err
+			}
 		}
 		if r.FormValue("back_to_referer") != "" {
 			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)

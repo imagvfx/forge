@@ -252,7 +252,6 @@ type UserUpdater struct {
 }
 
 type UserSetting struct {
-	ID                       int
 	User                     string
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
@@ -266,12 +265,9 @@ type UserSettingFinder struct {
 }
 
 type UserSettingUpdater struct {
-	User                     string
-	EntryPageSearchEntryType *string
-	EntryPagePropertyFilter  map[string]string
-	EntryPageSortProperty    map[string]string
-	EntryPageQuickSearch     map[string]string
-	PinnedPath               *PinnedPathArranger
+	User  string
+	Key   string
+	Value interface{}
 }
 
 // PinnedPathArranger add/move/remove the path from UserSetting.PinnedPaths.

@@ -773,7 +773,6 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 		return nil, err
 	}
 	us := &UserSetting{
-		ID:                       ss.ID,
 		User:                     ss.User,
 		EntryPagePropertyFilter:  ss.EntryPagePropertyFilter,
 		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
@@ -784,21 +783,11 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 	return us, nil
 }
 
-func (s *Server) UpdateUserSetting(ctx context.Context, upd service.UserSettingUpdater) error {
-	if upd.User == "" {
-		return fmt.Errorf("user not specified")
-	}
-	if upd.EntryPageSortProperty != nil {
-		for _, p := range upd.EntryPageSortProperty {
-			if len(p) == 0 {
-				return fmt.Errorf("sort order and property not defined")
-			}
-			order := p[:1]
-			if order != "+" && order != "-" {
-				// "+" means ascending, "-" means descending
-				return fmt.Errorf("invalid sort order: want + or -, got %v", order)
-			}
-		}
+func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value interface{}) error {
+	upd := service.UserSettingUpdater{
+		User:  user,
+		Key:   key,
+		Value: value,
 	}
 	err := s.svc.UpdateUserSetting(ctx, upd)
 	if err != nil {

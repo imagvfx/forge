@@ -15,18 +15,15 @@ func createUserSettingsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS user_settings (
 			id INTEGER PRIMARY KEY,
 			user_id INTERGER NOT NULL,
-			entry_page_search_entry_type STRING,
-			entry_page_property_filter STRING,
-			entry_page_sort_property STRING,
-			entry_page_quick_search STRING,
-			pinned_paths STRING,
+			key STRING NOT NULL,
+			value STRING NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_user_settings_user_id ON user_settings (user_id)`)
+	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_user_settings_user_id ON user_settings (user_id, key)`)
 	return err
 }
 
@@ -60,13 +57,9 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
-			user_settings.id,
 			accessors.name,
-			user_settings.entry_page_search_entry_type,
-			user_settings.entry_page_property_filter,
-			user_settings.entry_page_sort_property,
-			user_settings.entry_page_quick_search,
-			user_settings.pinned_paths
+			user_settings.key,
+			user_settings.value
 		FROM user_settings
 		LEFT JOIN accessors ON user_settings.user_id = accessors.id
 		`+where,
@@ -76,41 +69,45 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		return nil, err
 	}
 	defer rows.Close()
-	settings := make([]*service.UserSetting, 0)
+	setting := make(map[string]*service.UserSetting)
 	for rows.Next() {
-		s := &service.UserSetting{}
-		var filter []byte
-		var sortProp []byte
-		var quickSearch []byte
-		var pinnedPaths []byte
+		var user, key, value string
 		err := rows.Scan(
-			&s.ID,
-			&s.User,
-			&s.EntryPageSearchEntryType,
-			&filter,
-			&sortProp,
-			&quickSearch,
-			&pinnedPaths,
+			&user,
+			&key,
+			&value,
 		)
 		if err != nil {
 			return nil, err
 		}
-		err = json.Unmarshal(filter, &s.EntryPagePropertyFilter)
-		if err != nil {
-			return nil, err
+		s := setting[user]
+		if s == nil {
+			s = &service.UserSetting{
+				User: user,
+			}
 		}
-		err = json.Unmarshal(sortProp, &s.EntryPageSortProperty)
-		if err != nil {
-			return nil, err
+		switch key {
+		case "entry_page_search_entry_type":
+			err = json.Unmarshal([]byte(value), s.EntryPageSearchEntryType)
+		case "entry_page_property_filter":
+			err = json.Unmarshal([]byte(value), &s.EntryPagePropertyFilter)
+		case "entry_page_sort_property":
+			err = json.Unmarshal([]byte(value), &s.EntryPageSortProperty)
+		case "entry_page_quick_search":
+			err = json.Unmarshal([]byte(value), &s.EntryPageQuickSearch)
+		case "pinned_paths":
+			err = json.Unmarshal([]byte(value), &s.PinnedPaths)
+		default:
+			// It may have legacy settings, nothing to do with them.
+			continue
 		}
-		err = json.Unmarshal(quickSearch, &s.EntryPageQuickSearch)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("invalid value for user setting key: %v", key)
 		}
-		err = json.Unmarshal(pinnedPaths, &s.PinnedPaths)
-		if err != nil {
-			return nil, err
-		}
+		setting[user] = s
+	}
+	settings := make([]*service.UserSetting, 0, len(setting))
+	for _, s := range setting {
 		settings = append(settings, s)
 	}
 	return settings, nil
@@ -143,55 +140,9 @@ func getUserSetting(tx *sql.Tx, ctx context.Context, user string) (*service.User
 		return nil, err
 	}
 	if len(settings) == 0 {
-		return nil, service.NotFound("user setting not found")
+		return &service.UserSetting{User: user}, nil
 	}
 	return settings[0], nil
-}
-
-// addDefaultUserSetting is not exposed to server but called by AddUser.
-func addDefaultUserSetting(tx *sql.Tx, ctx context.Context, user string) error {
-	userID, err := getUserID(tx, ctx, user)
-	if err != nil {
-		return err
-	}
-	filter, err := json.Marshal(map[string]string{})
-	if err != nil {
-		return err
-	}
-	sortProp, err := json.Marshal(map[string]string{})
-	if err != nil {
-		return err
-	}
-	quickSearch, err := json.Marshal(map[string]string{})
-	if err != nil {
-		return err
-	}
-	pinnedPaths, err := json.Marshal([]string{})
-	if err != nil {
-		return err
-	}
-	_, err = tx.ExecContext(ctx, `
-		INSERT INTO user_settings (
-			user_id,
-			entry_page_search_entry_type,
-			entry_page_property_filter,
-			entry_page_sort_property,
-			entry_page_quick_search,
-			pinned_paths
-		)
-		VALUES (?, ?, ?, ?, ?, ?)
-	`,
-		userID,
-		"",
-		filter,
-		sortProp,
-		quickSearch,
-		pinnedPaths,
-	)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func UpdateUserSetting(db *sql.DB, ctx context.Context, upd service.UserSettingUpdater) error {
@@ -220,50 +171,89 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 	if err != nil {
 		return err
 	}
-	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
-	if upd.EntryPageSearchEntryType != nil {
-		keys = append(keys, "entry_page_search_entry_type=?")
-		vals = append(vals, *upd.EntryPageSearchEntryType)
-	}
-	var filterBytes []byte
-	if upd.EntryPagePropertyFilter != nil {
-		filter := setting.EntryPagePropertyFilter
-		if filter == nil {
-			filter = make(map[string]string)
+	var value []byte
+	switch upd.Key {
+	case "entry_page_search_entry_type":
+		updateSearchEntryType, ok := upd.Value.(string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
-		for entryType, f := range upd.EntryPagePropertyFilter {
-			// update
-			filter[entryType] = f
-		}
-		filterBytes, err = json.Marshal(filter)
+		value, err = json.Marshal(updateSearchEntryType)
 		if err != nil {
 			return err
 		}
-		keys = append(keys, "entry_page_property_filter=?")
-		vals = append(vals, filterBytes)
-	}
-	var sortPropBytes []byte
-	if upd.EntryPageSortProperty != nil {
+	case "entry_page_property_filter":
+		propFilter := setting.EntryPagePropertyFilter
+		if propFilter == nil {
+			propFilter = make(map[string]string)
+		}
+		updatePropFilter, ok := upd.Value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		for entryType, f := range updatePropFilter {
+			propFilter[entryType] = f
+		}
+		value, err = json.Marshal(propFilter)
+		if err != nil {
+			return err
+		}
+	case "entry_page_sort_property":
 		sortProp := setting.EntryPageSortProperty
 		if sortProp == nil {
 			sortProp = make(map[string]string)
 		}
-		for entryType, prop := range upd.EntryPageSortProperty {
-			// update
-			sortProp[entryType] = prop
+		updateSortProperty, ok := upd.Value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
-		sortPropBytes, err = json.Marshal(sortProp)
+		for entryType, p := range updateSortProperty {
+			if len(p) == 0 {
+				return fmt.Errorf("sort order and property not defined")
+			}
+			order := p[:1]
+			if order != "+" && order != "-" {
+				// "+" means ascending, "-" means descending
+				return fmt.Errorf("invalid sort order: want + or -, got %v", order)
+			}
+			sortProp[entryType] = p
+		}
+		value, err = json.Marshal(sortProp)
 		if err != nil {
 			return err
 		}
-		keys = append(keys, "entry_page_sort_property=?")
-		vals = append(vals, sortPropBytes)
-	}
-	var pinnedBytes []byte
-	if upd.PinnedPath != nil {
-		path := upd.PinnedPath.Path
-		n := upd.PinnedPath.Index
+	case "entry_page_quick_search":
+		quickSearch := setting.EntryPageQuickSearch
+		if quickSearch == nil {
+			quickSearch = make(map[string]string)
+		}
+		updateQuickSearch, ok := upd.Value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		for name, query := range updateQuickSearch {
+			if name == "" {
+				// TODO: check this for other map[string]string settings as well
+				return fmt.Errorf("quick search name is empty")
+			}
+			if query == "" {
+				// remove the quick search instead of add
+				delete(quickSearch, name)
+			} else {
+				quickSearch[name] = query
+			}
+		}
+		value, err = json.Marshal(quickSearch)
+		if err != nil {
+			return err
+		}
+	case "pinned_paths":
+		updatePinnedPath, ok := upd.Value.(service.PinnedPathArranger)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		path := updatePinnedPath.Path
+		n := updatePinnedPath.Index
 		// Insert/Remove pinned paths by specifiying the index n.
 		// n < 0 means remove the path,
 		// n >= len(oldPinned) means append it to the last.
@@ -296,44 +286,21 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		} else {
 			pinned = append(pinned, path)
 		}
-		pinnedBytes, err = json.Marshal(pinned)
+		value, err = json.Marshal(pinned)
 		if err != nil {
 			return err
 		}
-		keys = append(keys, "pinned_paths=?")
-		vals = append(vals, pinnedBytes)
+	default:
+		return fmt.Errorf("unknown user setting key: %v", upd.Key)
 	}
-	var quickSearchBytes []byte
-	if upd.EntryPageQuickSearch != nil {
-		quickSearch := setting.EntryPageQuickSearch
-		if quickSearch == nil {
-			quickSearch = make(map[string]string)
-		}
-		for name, query := range upd.EntryPageQuickSearch {
-			if name == "" {
-				// TODO: check this for other map[string]string settings as well
-				return fmt.Errorf("quick search name is empty")
-			}
-			if query == "" {
-				// remove the quick search instead of add
-				delete(quickSearch, name)
-			} else {
-				quickSearch[name] = query
-			}
-		}
-		quickSearchBytes, err = json.Marshal(quickSearch)
-		if err != nil {
-			return err
-		}
-		keys = append(keys, "entry_page_quick_search=?")
-		vals = append(vals, quickSearchBytes)
-	}
-	vals = append(vals, userID) // for where clause
 	_, err = tx.ExecContext(ctx, `
-		UPDATE user_settings
-		SET `+strings.Join(keys, ", ")+`
-		WHERE user_id=?`,
-		vals...,
+		REPLACE INTO user_settings (
+			user_id,
+			key,
+			value
+		)
+		VALUES (?, ?, ?)`,
+		userID, upd.Key, value,
 	)
 	if err != nil {
 		return err
