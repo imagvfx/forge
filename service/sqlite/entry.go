@@ -316,9 +316,11 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry, overrides *ser
 	}
 	for _, d := range defSubs {
 		var over *service.EntryOverrides
-		err := json.Unmarshal([]byte(d.Value), &over)
-		if err != nil {
-			return err
+		if d.Value != "" {
+			err := json.Unmarshal([]byte(d.Value), &over)
+			if err != nil {
+				return err
+			}
 		}
 		de := &service.Entry{
 			Path: filepath.Join(e.Path, d.Name),
