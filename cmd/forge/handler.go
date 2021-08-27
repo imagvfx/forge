@@ -189,30 +189,34 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		var subEnts []*forge.Entry
 		search := r.FormValue("search")
 		searchEntryType := r.FormValue("search_entry_type")
-		if searchEntryType != "" && searchEntryType != setting.EntryPageSearchEntryType {
-			// Whether perform search or not, it will remeber the search entry type.
-			err := h.server.UpdateUserSetting(ctx, user, "entry_page_search_entry_type", searchEntryType)
-			if err != nil {
-				return err
-			}
-			// the update doesn't affect current page
-			setting.EntryPageSearchEntryType = searchEntryType
-		}
 		searchQuery := r.FormValue("search_query")
-		if search != "" && (searchEntryType != "" || searchQuery != "") {
-			// User pressed search button, but it will search only if at least one of following fields specified.
-			// 1. search entry type
-			// 2. search query
-			resultsFromSearch = true
-			subEnts, err = h.server.SearchEntries(ctx, path, searchEntryType, searchQuery)
-			if err != nil {
-				return err
+		if search != "" {
+			// User pressed search button,
+			// Note that it rather clear the search if every search field is emtpy.
+			if searchEntryType != setting.EntryPageSearchEntryType {
+				// Whether perform search or not, it will remeber the search entry type.
+				err := h.server.UpdateUserSetting(ctx, user, "entry_page_search_entry_type", searchEntryType)
+				if err != nil {
+					return err
+				}
+				// the update doesn't affect current page
+				setting.EntryPageSearchEntryType = searchEntryType
 			}
-		} else {
+			if searchEntryType != "" || searchQuery != "" {
+				resultsFromSearch = true
+				subEnts, err = h.server.SearchEntries(ctx, path, searchEntryType, searchQuery)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		if !resultsFromSearch {
+			// Normal entry page
 			subEnts, err = h.server.SubEntries(ctx, path)
 			if err != nil {
 				return err
 			}
+			searchEntryType = setting.EntryPageSearchEntryType
 		}
 		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
 		if !resultsFromSearch {
