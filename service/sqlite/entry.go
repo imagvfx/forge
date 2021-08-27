@@ -294,7 +294,10 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	defer tx.Rollback()
-	addEntryR(tx, ctx, e, nil)
+	err = addEntryR(tx, ctx, e, nil)
+	if err != nil {
+		return err
+	}
 	err = tx.Commit()
 	if err != nil {
 		return err
