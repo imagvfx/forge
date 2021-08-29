@@ -356,17 +356,13 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 	if err != nil {
 		return err
 	}
-	env := &Property{
+	prop := &Property{
 		EntryPath: ent.Path,
 		Name:      name,
 		Type:      typ,
 		Value:     value,
 	}
-	err = env.Validate()
-	if err != nil {
-		return err
-	}
-	err = s.svc.AddProperty(ctx, env.ServiceProperty())
+	err = s.svc.AddProperty(ctx, prop.ServiceProperty())
 	if err != nil {
 		return err
 	}
@@ -380,17 +376,7 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 	if name == "" {
 		return fmt.Errorf("property name not specified")
 	}
-	prop, err := s.GetProperty(ctx, path, name)
-	if err != nil {
-		return err
-	}
-	prop.Value = value // validate the given value
-	err = prop.Validate()
-	if err != nil {
-		return err
-	}
-	value = prop.Value // corrected
-	err = s.svc.UpdateProperty(ctx, service.PropertyUpdater{
+	err := s.svc.UpdateProperty(ctx, service.PropertyUpdater{
 		EntryPath: path,
 		Name:      name,
 		Value:     &value,
@@ -474,11 +460,7 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 		Type:      typ,
 		Value:     value,
 	}
-	err := env.Validate()
-	if err != nil {
-		return err
-	}
-	err = s.svc.AddEnviron(ctx, env.ServiceProperty())
+	err := s.svc.AddEnviron(ctx, env.ServiceProperty())
 	if err != nil {
 		return err
 	}
@@ -492,16 +474,7 @@ func (s *Server) SetEnviron(ctx context.Context, path string, name, value string
 	if name == "" {
 		return fmt.Errorf("environ name not specified")
 	}
-	env, err := s.GetEnviron(ctx, path, name)
-	if err != nil {
-		return err
-	}
-	env.Value = value // validate the given value
-	err = env.Validate()
-	if err != nil {
-		return err
-	}
-	err = s.svc.UpdateEnviron(ctx, service.PropertyUpdater{
+	err := s.svc.UpdateEnviron(ctx, service.PropertyUpdater{
 		EntryPath: path,
 		Name:      name,
 		Value:     &value,

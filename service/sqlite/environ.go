@@ -163,6 +163,10 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
 	if err != nil {
 		return err
 	}
+	e.Value, err = validateProperty(tx, ctx, e.EntryPath, e.Type, e.Value)
+	if err != nil {
+		return err
+	}
 	entryID, err := getEntryID(tx, ctx, e.EntryPath)
 	if err != nil {
 		return err
@@ -234,6 +238,10 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {
+		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, e.Type, *upd.Value)
+		if err != nil {
+			return err
+		}
 		keys = append(keys, "val=?")
 		vals = append(vals, *upd.Value)
 		e.Value = *upd.Value // for logging

@@ -146,6 +146,10 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 	if err != nil {
 		return err
 	}
+	p.Value, err = validateProperty(tx, ctx, p.EntryPath, p.Type, p.Value)
+	if err != nil {
+		return err
+	}
 	entryID, err := getEntryID(tx, ctx, p.EntryPath)
 	if err != nil {
 		return err
@@ -217,6 +221,10 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {
+		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, p.Type, *upd.Value)
+		if err != nil {
+			return err
+		}
 		keys = append(keys, "val=?")
 		vals = append(vals, *upd.Value)
 		p.Value = *upd.Value // for logging
