@@ -315,6 +315,7 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 			Name:      p.Name,
 			Type:      p.Type,
 			Value:     p.Value,
+			RawValue:  p.RawValue,
 		}
 		props = append(props, prop)
 	}
@@ -338,6 +339,7 @@ func (s *Server) GetProperty(ctx context.Context, path string, name string) (*Pr
 		Name:      p.Name,
 		Type:      p.Type,
 		Value:     p.Value,
+		RawValue:  p.RawValue,
 	}
 	return prop, nil
 }
@@ -417,6 +419,7 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 			Name:      p.Name,
 			Type:      p.Type,
 			Value:     p.Value,
+			RawValue:  p.RawValue,
 		}
 		props = append(props, prop)
 	}
@@ -440,6 +443,7 @@ func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, 
 		Name:      e.Name,
 		Type:      e.Type,
 		Value:     e.Value,
+		RawValue:  e.RawValue,
 	}
 	return env, nil
 }

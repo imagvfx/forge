@@ -54,6 +54,7 @@ type Property struct {
 	Name      string
 	Type      string
 	Value     string
+	RawValue  string
 }
 
 func (p *Property) MarshalJSON() ([]byte, error) {
@@ -67,8 +68,8 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 		Path:     p.EntryPath,
 		Name:     p.Name,
 		Type:     p.Type,
-		Value:    p.Eval(),
-		RawValue: p.Value,
+		Value:    p.Value,
+		RawValue: p.RawValue,
 	}
 	return json.Marshal(m)
 }
@@ -103,63 +104,13 @@ func PropertyTypes() []string {
 	}
 }
 
-func (p *Property) Eval() string {
-	eval := map[string]func(string) string{
-		"timecode":   p.evalTimecode,
-		"text":       p.evalText,
-		"user":       p.evalUser,
-		"entry_path": p.evalEntryPath,
-		"entry_name": p.evalEntryName,
-		"date":       p.evalDate,
-		"int":        p.evalInt,
-	}
-	fn := eval[p.Type]
-	if fn == nil {
-		return ""
-	}
-	return fn(p.Value)
-}
-
-func (p *Property) evalText(s string) string {
-	return s
-}
-
-func (p *Property) evalUser(s string) string {
-	return s
-}
-
-func (p *Property) evalTimecode(s string) string {
-	return s
-}
-
-func (p *Property) evalEntryPath(s string) string {
-	if s == "" {
-		return ""
-	}
-	return filepath.Clean(filepath.Join(p.EntryPath, s))
-}
-
-func (p *Property) evalEntryName(s string) string {
-	if s == "" {
-		return ""
-	}
-	return filepath.Base(filepath.Clean(filepath.Join(p.EntryPath, s)))
-}
-
-func (p *Property) evalDate(s string) string {
-	return s
-}
-
-func (p *Property) evalInt(s string) string {
-	return s
-}
-
 func (p *Property) ServiceProperty() *service.Property {
 	sp := &service.Property{
 		EntryPath: p.EntryPath,
 		Name:      p.Name,
 		Type:      p.Type,
 		Value:     p.Value,
+		RawValue:  p.RawValue,
 	}
 	return sp
 }

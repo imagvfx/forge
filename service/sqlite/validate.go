@@ -37,7 +37,6 @@ func validateText(tx *sql.Tx, ctx context.Context, path, val string) (string, er
 
 func validateUser(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
 	// TODO: validate when User is implemented
-	return val, nil
 }
 
 func validateTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {

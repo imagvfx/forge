@@ -291,8 +291,8 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 					}
 					ip := subEntProps[ents[i].Path][prop]
 					jp := subEntProps[ents[j].Path][prop]
-					iv := ip.Eval()
-					jv := jp.Eval()
+					iv := ip.Value
+					jv := jp.Value
 					var less bool
 					if ip.Type != jp.Type {
 						less = ip.Type < jp.Type

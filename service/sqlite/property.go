@@ -84,9 +84,13 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 			&p.ID,
 			&p.Name,
 			&p.Type,
-			&p.Value,
+			&p.RawValue,
 			&p.EntryPath,
 		)
+		if err != nil {
+			return nil, err
+		}
+		p.Value, err = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
 		if err != nil {
 			return nil, err
 		}

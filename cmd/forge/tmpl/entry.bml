@@ -148,7 +148,7 @@
 										<a href="/logs?path={{$.Entry.Path}}&category=property&name={{$p.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Eval}}]
+									<div class="propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Value}}]
 								]
 								{{end}}
 								{{range $e := $.Environs}}
@@ -158,7 +158,7 @@
 										<a href="/logs?path={{$.Entry.Path}}&category=environ&name={{$e.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Eval}}]
+									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Value}}]
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
@@ -268,7 +268,7 @@
 													<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater(this, '{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
 													{{if $p}}
 													<div style="height:0.2rem"> []
-													<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Eval}}]
+													<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Value}}]
 													{{end}}
 												]
 											{{end}}

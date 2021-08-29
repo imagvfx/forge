@@ -175,6 +175,7 @@ type Property struct {
 	Name      string
 	Type      string
 	Value     string
+	RawValue  string
 }
 
 type PropertyFinder struct {
