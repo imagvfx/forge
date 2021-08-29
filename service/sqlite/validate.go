@@ -36,7 +36,15 @@ func validateText(tx *sql.Tx, ctx context.Context, path, val string) (string, er
 }
 
 func validateUser(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
-	// TODO: validate when User is implemented
+	if val == "" {
+		return "", nil
+	}
+	id, err := getUserID(tx, ctx, val)
+	if err != nil {
+		return "", err
+	}
+	val = strconv.Itoa(id)
+	return val, nil
 }
 
 func validateTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {

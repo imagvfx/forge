@@ -242,6 +242,7 @@ type User struct {
 }
 
 type UserFinder struct {
+	ID     *int
 	Name   *string
 	Called *string
 }

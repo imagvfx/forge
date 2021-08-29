@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
+	"strconv"
 )
 
 func evalProperty(tx *sql.Tx, ctx context.Context, path, typ, val string) (string, error) {
@@ -21,6 +22,10 @@ func evalProperty(tx *sql.Tx, ctx context.Context, path, typ, val string) (strin
 	if eval == nil {
 		return "", fmt.Errorf("unknown type of property: %v", typ)
 	}
+	if val == "" {
+		// empty string is always accepted
+		return "", nil
+	}
 	return eval(tx, ctx, path, val)
 }
 
@@ -29,7 +34,15 @@ func evalText(tx *sql.Tx, ctx context.Context, path, val string) (string, error)
 }
 
 func evalUser(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
-	return val, nil
+	id, err := strconv.Atoi(val)
+	if err != nil {
+		return "", err
+	}
+	u, err := getUserByID(tx, ctx, id)
+	if err != nil {
+		return "", err
+	}
+	return u.Name, nil
 }
 
 func evalTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
@@ -37,16 +50,10 @@ func evalTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string, er
 }
 
 func evalEntryPath(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
-	if val == "" {
-		return "", nil
-	}
 	return filepath.Clean(filepath.Join(path, val)), nil
 }
 
 func evalEntryName(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
-	if val == "" {
-		return "", nil
-	}
 	return filepath.Base(filepath.Clean(filepath.Join(path, val))), nil
 }
 
