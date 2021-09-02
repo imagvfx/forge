@@ -111,6 +111,7 @@ type Entry struct {
 }
 
 type EntryFinder struct {
+	ID         *int
 	ParentPath *string
 	Path       *string
 }

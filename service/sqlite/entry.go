@@ -65,6 +65,10 @@ func FindEntries(db *sql.DB, ctx context.Context, find service.EntryFinder) ([]*
 func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
+	if find.ID != nil {
+		keys = append(keys, "entries.id=?")
+		vals = append(vals, *find.ID)
+	}
 	if find.Path != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.Path)
@@ -262,6 +266,17 @@ func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, err
 
 func getEntry(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, error) {
 	ents, err := findEntries(tx, ctx, service.EntryFinder{Path: &path})
+	if err != nil {
+		return nil, err
+	}
+	if len(ents) == 0 {
+		return nil, service.NotFound("entry not found")
+	}
+	return ents[0], nil
+}
+
+func getEntryByID(tx *sql.Tx, ctx context.Context, id int) (*service.Entry, error) {
+	ents, err := findEntries(tx, ctx, service.EntryFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}

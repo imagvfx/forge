@@ -50,11 +50,27 @@ func evalTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (string, e
 }
 
 func evalEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
-	return path.Clean(path.Join(entry, val)), nil
+	id, err := strconv.Atoi(val)
+	if err != nil {
+		return "", err
+	}
+	ent, err := getEntryByID(tx, ctx, id)
+	if err != nil {
+		return "", err
+	}
+	return ent.Path, nil
 }
 
 func evalEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
-	return path.Base(path.Clean(path.Join(entry, val))), nil
+	id, err := strconv.Atoi(val)
+	if err != nil {
+		return "", err
+	}
+	ent, err := getEntryByID(tx, ctx, id)
+	if err != nil {
+		return "", err
+	}
+	return path.Base(ent.Path), nil
 }
 
 func evalDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {

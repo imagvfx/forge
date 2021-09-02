@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -78,31 +79,28 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (strin
 }
 
 func validateEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+	// It will save 'val' entry as it's id.
 	if val == "" {
 		// unset
 		return "", nil
 	}
-	if val == "." {
-		// currently only . is a valid entry path.
-		// other values should resolve entry renaming issue.
-		return val, nil
+	if !path.IsAbs(val) {
+		// make abs path
+		val = path.Join(entry, val)
 	}
-	return "", fmt.Errorf("path except . isn't valid yet")
+	id, err := getEntryID(tx, ctx, val)
+	if err != nil {
+		return "", err
+	}
+	return strconv.Itoa(id), nil
 }
 
 // Entry name property accepts path of an entry and returns it's name.
-// So the verification is same as validateEntryPath.
 func validateEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
-	if val == "" {
-		// unset
-		return "", nil
-	}
-	if val == "." {
-		// currently only . is a valid entry path.
-		// other values should resolve entry renaming issue.
-		return val, nil
-	}
-	return "", fmt.Errorf("path except . isn't valid yet")
+	// It will save 'val' entry as it's id.
+	// So validation process is same with 'validateEntryPath'.
+	// Difference comes from evaluation.
+	return validateEntryPath(tx, ctx, entry, val)
 }
 
 func validateDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
