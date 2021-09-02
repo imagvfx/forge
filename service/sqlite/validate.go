@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func validateProperty(tx *sql.Tx, ctx context.Context, path, typ, val string) (string, error) {
+func validateProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (string, error) {
 	validateFn := map[string]func(*sql.Tx, context.Context, string, string) (string, error){
 		"timecode":   validateTimecode,
 		"text":       validateText,
@@ -24,18 +24,18 @@ func validateProperty(tx *sql.Tx, ctx context.Context, path, typ, val string) (s
 		return "", fmt.Errorf("unknown type of property: %v", typ)
 	}
 	var err error
-	val, err = validate(tx, ctx, path, val)
+	val, err = validate(tx, ctx, entry, val)
 	if err != nil {
 		return "", err
 	}
 	return val, nil
 }
 
-func validateText(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateText(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	return val, nil
 }
 
-func validateUser(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateUser(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	if val == "" {
 		return "", nil
 	}
@@ -47,7 +47,7 @@ func validateUser(tx *sql.Tx, ctx context.Context, path, val string) (string, er
 	return val, nil
 }
 
-func validateTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	// 00:00:00:00
 	if val == "" {
 		// unset
@@ -77,7 +77,7 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string
 	return val, nil
 }
 
-func validateEntryPath(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	if val == "" {
 		// unset
 		return "", nil
@@ -92,7 +92,7 @@ func validateEntryPath(tx *sql.Tx, ctx context.Context, path, val string) (strin
 
 // Entry name property accepts path of an entry and returns it's name.
 // So the verification is same as validateEntryPath.
-func validateEntryName(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	if val == "" {
 		// unset
 		return "", nil
@@ -105,7 +105,7 @@ func validateEntryName(tx *sql.Tx, ctx context.Context, path, val string) (strin
 	return "", fmt.Errorf("path except . isn't valid yet")
 }
 
-func validateDate(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	if val == "" {
 		// unset
 		return "", nil
@@ -138,7 +138,7 @@ func validateDate(tx *sql.Tx, ctx context.Context, path, val string) (string, er
 	return val, nil
 }
 
-func validateInt(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func validateInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	if val == "" {
 		// unset
 		return "", nil

@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"path/filepath"
+	"path"
 	"strconv"
 )
 
-func evalProperty(tx *sql.Tx, ctx context.Context, path, typ, val string) (string, error) {
-	evalFn := map[string]func(tx *sql.Tx, ctx context.Context, path, val string) (string, error){
+func evalProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (string, error) {
+	evalFn := map[string]func(tx *sql.Tx, ctx context.Context, entry, val string) (string, error){
 		"timecode":   evalTimecode,
 		"text":       evalText,
 		"user":       evalUser,
@@ -26,14 +26,14 @@ func evalProperty(tx *sql.Tx, ctx context.Context, path, typ, val string) (strin
 		// empty string is always accepted
 		return "", nil
 	}
-	return eval(tx, ctx, path, val)
+	return eval(tx, ctx, entry, val)
 }
 
-func evalText(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func evalText(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	return val, nil
 }
 
-func evalUser(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func evalUser(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	id, err := strconv.Atoi(val)
 	if err != nil {
 		return "", err
@@ -45,22 +45,22 @@ func evalUser(tx *sql.Tx, ctx context.Context, path, val string) (string, error)
 	return u.Name, nil
 }
 
-func evalTimecode(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func evalTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	return val, nil
 }
 
-func evalEntryPath(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
-	return filepath.Clean(filepath.Join(path, val)), nil
+func evalEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+	return path.Clean(path.Join(entry, val)), nil
 }
 
-func evalEntryName(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
-	return filepath.Base(filepath.Clean(filepath.Join(path, val))), nil
+func evalEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+	return path.Base(path.Clean(path.Join(entry, val))), nil
 }
 
-func evalDate(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func evalDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	return val, nil
 }
 
-func evalInt(tx *sql.Tx, ctx context.Context, path, val string) (string, error) {
+func evalInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	return val, nil
 }
