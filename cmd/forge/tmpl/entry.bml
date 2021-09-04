@@ -283,42 +283,45 @@
 				{{$i = inc $i}}
 				{{end}}
 				]
-				<div id="itemUpdater" data-initialized="0" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
-					<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#E0EEEE"> [
-						<div class="entryLabel" style=""> []
-						<div style="border-radius:3px;background-color:#BDD;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideItemUpdater()"> [&#x2715]
-					]
-					<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
-						<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
-						<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-							<input name="path" class="entryInput" type="hidden"> []
-							<input name="name" class="nameInput" type="hidden"> []
-							<input name="ctg" class="categoryInput" type="hidden"> []
-							<input name="type" class="typeInput typeHolder" type="hidden"> []
-							<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
-							<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button style="width:5rem"> [Update]
+				<div id="footer" style="display:none;position:fixed;left:0;bottom:0;width:100%;"> [
+					<div id="itemUpdater" style="display:none;background-color:#F9F9F9;border-top:1px solid #BBB;"> [
+						<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#E0EEEE"> [
+							<div class="entryLabel" style=""> []
+							<div style="border-radius:3px;background-color:#BDD;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideFooter()"> [&#x2715]
+						]
+						<div style="display:flex;gap:0.5rem;padding:0.7rem;"> [
+							<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
+							<form class="valueForm" action="/api/set-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+								<input name="path" class="entryInput" type="hidden"> []
+								<input name="name" class="nameInput" type="hidden"> []
+								<input name="ctg" class="categoryInput" type="hidden"> []
+								<input name="type" class="typeInput typeHolder" type="hidden"> []
+								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+								<button style="width:5rem"> [Update]
+							]
 						]
 					]
-				]
-				<div id="itemAdder" data-initialized="0" style="display:none;position:fixed;left:0;bottom:0;width:100%;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB"> [
-					<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#F5E0E0"> [
-						<div class="entryLabel" style=""> []
-						<div style="border-radius:3px;background-color:#ECC;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideItemAdder()"> [&#x2715]
-					]
-					<div style="display:flex;gap:0.5rem;margin:0.5rem;padding:0.2rem;"> [
-						<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-							<input name="path" class="entryInput" type="hidden"> []
-							<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
-							<input name="ctg" class="categoryInput" type="hidden"> []
-							<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-							<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
-							<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button style="width:5rem"> [Add]
+					<div id="itemAdder" style="display:none;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB;"> [
+						<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#F5E0E0;"> [
+							<div class="entryLabel" style=""> []
+							<div style="border-radius:3px;background-color:#ECC;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideFooter()"> [&#x2715]
+						]
+						<div style="display:flex;gap:0.5rem;padding:0.7rem;background-color:inherit;"> [
+							<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+								<input name="path" class="entryInput" type="hidden"> []
+								<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
+								<input name="ctg" class="categoryInput" type="hidden"> []
+								<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
+								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+								<button style="width:5rem"> [Add]
+							]
 						]
 					]
+					<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
 				]
 			]
 		]
@@ -539,6 +542,8 @@ function toggleRenameInput() {
 function updateThumbnail(thumbInput) {
 	let thumbID = thumbInput.id.replace("thumbnailInput", "thumbnail");
 	let thumb = document.getElementById(thumbID);
+	let statusBar = document.getElementById("statusBar");
+	showStatusBarOnly();
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
 		// Prevent Safari from firing this event twice.
@@ -568,14 +573,16 @@ function updateThumbnail(thumbInput) {
 			thumb.dataset.hasThumb = "1";
 			thumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "hidden";
 			thumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "visible";
+			statusBar.innerHTML = "done";
 		} else {
 			img.parentElement.style.border = "1px solid #D72";
-			console.log(req.status.toString() + " " + req.statusText + ": " + req.responseText);
+			statusBar.innerHTML = req.status.toString() + " " + req.statusText + ": " + req.responseText;
 		}
 	}
 	req.onerror = function(err) {
 		img.parentElement.style.border = "1px solid #D72";
-		console.log("network error occurred. please check whether the server is down.");
+		showStatusBarOnly();
+		statusBar.innerHTML = "network error occurred. please check whether the server is down.";
 	}
 }
 
@@ -583,6 +590,8 @@ function deleteThumbnail(delButton) {
 	let thumbID = delButton.id.replace("deleteThumbnailButton", "thumbnail");
 	let thumb = document.getElementById(thumbID);
 	let imgID = delButton.id.replace("deleteThumbnailButton", "thumbnailImg");
+	let statusBar = document.getElementById("statusBar");
+	showStatusBarOnly();
 	let img = document.getElementById(imgID);
 	let req = new XMLHttpRequest();
 	let form = delButton.parentElement;
@@ -597,14 +606,15 @@ function deleteThumbnail(delButton) {
 			thumb.dataset.hasThumb = "";
 			thumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "hidden";
 			thumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "visible";
+			statusBar.innerHTML = "done";
 		} else {
 			img.parentElement.style.border = "1px solid #D72";
-			console.log(req.status.toString() + " " + req.statusText + ": " + req.responseText);
+			statusBar.innerHTML = req.status.toString() + " " + req.statusText + ": " + req.responseText;
 		}
 	}
 	req.onerror = function(err) {
 		img.parentElement.style.border = "1px solid #D72";
-		console.log("network error occurred. please check whether the server is down.");
+		statusBar.innerHTML = "network error occurred. please check whether the server is down.";
 	}
 }
 
@@ -615,6 +625,7 @@ function submitUpdaterOrAdder(ev, input) {
 	let form = input.parentElement;
 	let button = form.getElementsByTagName("button")[0];
 	let marker = form.getElementsByClassName("updatingMarker")[0];
+	let statusBar = document.getElementById("statusBar");
 	req.onload = function() {
 		marker.style.visibility = "hidden";
 		if (req.status == 200) {
@@ -628,7 +639,7 @@ function submitUpdaterOrAdder(ev, input) {
 				if (get.status == 200) {
 					let j = JSON.parse(get.responseText);
 					if (j.Err != null) {
-						console.log(j.Err);
+						statusBar.innerText = j.Err;
 						return;
 					}
 					if (UpdatingElement != null) {
@@ -636,31 +647,34 @@ function submitUpdaterOrAdder(ev, input) {
 						// remove possible 'invalid' class
 						UpdatingElement.classList.remove("invalid");
 					}
+					statusBar.innerHTML = "done";
+					return;
+				} else {
+					statusBar.innerText = "update done, but failed to get the new value:" + get.status.toString() + " " + get.statusText + ": " + get.responseText;
+					return;
 				}
 			}
 			get.send(getForm);
 		} else {
 			button.innerText = "Failed!";
-			console.log(req.status.toString() + " " + req.statusText + ": " + req.responseText);
+			statusBar.innerText = req.status.toString() + " " + req.statusText + ": " + req.responseText;
 		}
 	}
 	req.onerror = function(err) {
 		marker.style.visibility = "hidden";
 		button.innerText = "Failed!";
-		console.log("network error occurred. please check whether the server is down.");
+		statusBar.innerText = "network error occurred. please check whether the server is down.";
 	}
 	req.open(form.method, form.action);
 	req.send(new FormData(form));
 	marker.style.visibility = "visible";
 }
 
-let LastItemAdderOrUpdater;
-
 document.onkeydown = keyPressed;
 
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
-		toggleItemAdderOrUpdater();
+		toggleFooter();
 	}
 }
 
@@ -705,12 +719,12 @@ function showItemUpdater(elem, entry, ctg, name, type, value) {
 	// TODO: this way, we cannot retrive the latest value, if the prop/env/acl is updated in this page,
 	// should change the function to get data from `elem`
 
+	showFooter();
+
 	UpdatingElement = elem.parentElement.getElementsByClassName("propertyValue")[0]; // modify the global variable
 	hideItemAdder();
 	let updater = document.getElementById("itemUpdater");
-	LastItemAdderOrUpdater = updater;
 
-	updater.dataset.initialized = "1";
 	updater.style.display = "block";
 	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
 	updater.getElementsByClassName("entryInput")[0].value = entry;
@@ -737,12 +751,13 @@ let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
 function showItemAdder(entry, ctg) {
 	// TODO: Add the item inplace?
+
+	showFooter();
+
 	UpdatingElement = null;
 	hideItemUpdater();
 	let adder = document.getElementById("itemAdder");
-	LastItemAdderOrUpdater = adder;
 
-	adder.dataset.initialized = "1";
 	adder.style.display = "block";
 	adder.getElementsByClassName("entryLabel")[0].innerText = entry;
 	adder.getElementsByClassName("entryInput")[0].value = entry;
@@ -773,17 +788,33 @@ function hideItemAdder() {
 	adder.style.display = "none";
 }
 
-function toggleItemAdderOrUpdater() {
-	if (LastItemAdderOrUpdater == null) {
-		return;
-	}
-	if (LastItemAdderOrUpdater.style.display == "block") {
-		LastItemAdderOrUpdater.style.display = "none";
+// showStatusBarOnly shows statusBar and hide other elements in footer. (need for eg. update thumbnail failed.)
+// statusBar will be cleaned before it is shown.
+function showStatusBarOnly() {
+	showFooter();
+	hideItemAdder();
+	hideItemUpdater();
+	let statusBar = document.getElementById("statusBar");
+	statusBar.innerHTML = "";
+}
+
+function toggleFooter() {
+	let footer = document.getElementById("footer");
+	if (footer.style.display == "block") {
+		hideFooter();
 	} else {
-		if (LastItemAdderOrUpdater.dataset.initialized == "1") {
-			LastItemAdderOrUpdater.style.display = "block";
-		}
+		showFooter();
 	}
+}
+
+function showFooter() {
+	let footer = document.getElementById("footer");
+	footer.style.display = "block";
+}
+
+function hideFooter() {
+	let footer = document.getElementById("footer");
+	footer.style.display = "none";
 }
 
 function toggleCollapse() {
