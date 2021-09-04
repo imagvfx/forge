@@ -310,12 +310,13 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			ID:        p.ID,
-			EntryPath: p.EntryPath,
-			Name:      p.Name,
-			Type:      p.Type,
-			Value:     p.Value,
-			RawValue:  p.RawValue,
+			ID:         p.ID,
+			EntryPath:  p.EntryPath,
+			Name:       p.Name,
+			Type:       p.Type,
+			Value:      p.Value,
+			RawValue:   p.RawValue,
+			ValueError: p.ValueError,
 		}
 		props = append(props, prop)
 	}
@@ -334,12 +335,13 @@ func (s *Server) GetProperty(ctx context.Context, path string, name string) (*Pr
 		return nil, err
 	}
 	prop := &Property{
-		ID:        p.ID,
-		EntryPath: p.EntryPath,
-		Name:      p.Name,
-		Type:      p.Type,
-		Value:     p.Value,
-		RawValue:  p.RawValue,
+		ID:         p.ID,
+		EntryPath:  p.EntryPath,
+		Name:       p.Name,
+		Type:       p.Type,
+		Value:      p.Value,
+		RawValue:   p.RawValue,
+		ValueError: p.ValueError,
 	}
 	return prop, nil
 }
@@ -414,12 +416,13 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	props := make([]*Property, 0)
 	for _, p := range ps {
 		prop := &Property{
-			ID:        p.ID,
-			EntryPath: p.EntryPath,
-			Name:      p.Name,
-			Type:      p.Type,
-			Value:     p.Value,
-			RawValue:  p.RawValue,
+			ID:         p.ID,
+			EntryPath:  p.EntryPath,
+			Name:       p.Name,
+			Type:       p.Type,
+			Value:      p.Value,
+			RawValue:   p.RawValue,
+			ValueError: p.ValueError,
 		}
 		props = append(props, prop)
 	}
@@ -438,12 +441,13 @@ func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, 
 		return nil, err
 	}
 	env := &Property{
-		ID:        e.ID,
-		EntryPath: e.EntryPath,
-		Name:      e.Name,
-		Type:      e.Type,
-		Value:     e.Value,
-		RawValue:  e.RawValue,
+		ID:         e.ID,
+		EntryPath:  e.EntryPath,
+		Name:       e.Name,
+		Type:       e.Type,
+		Value:      e.Value,
+		RawValue:   e.RawValue,
+		ValueError: e.ValueError,
 	}
 	return env, nil
 }

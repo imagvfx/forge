@@ -49,12 +49,13 @@ type Thumbnail struct {
 
 // Property can be either a normal property or an environment.
 type Property struct {
-	ID        int
-	EntryPath string
-	Name      string
-	Type      string
-	Value     string
-	RawValue  string
+	ID         int
+	EntryPath  string
+	Name       string
+	Type       string
+	Value      string
+	ValueError error
+	RawValue   string
 }
 
 func (p *Property) MarshalJSON() ([]byte, error) {

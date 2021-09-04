@@ -90,10 +90,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 		if err != nil {
 			return nil, err
 		}
-		p.Value, err = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
-		if err != nil {
-			return nil, err
-		}
+		p.Value, p.ValueError = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
 		props = append(props, p)
 	}
 	return props, nil

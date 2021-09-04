@@ -108,7 +108,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 		if err != nil {
 			return nil, err
 		}
-		e.Value, err = evalProperty(tx, ctx, e.EntryPath, e.Type, e.RawValue)
+		e.Value, e.ValueError = evalProperty(tx, ctx, e.EntryPath, e.Type, e.RawValue)
 		if err != nil {
 			return nil, err
 		}

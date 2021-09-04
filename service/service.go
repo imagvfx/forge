@@ -171,12 +171,13 @@ type ThumbnailUpdater struct {
 }
 
 type Property struct {
-	ID        int
-	EntryPath string
-	Name      string
-	Type      string
-	Value     string
-	RawValue  string
+	ID         int
+	EntryPath  string
+	Name       string
+	Type       string
+	Value      string
+	ValueError error
+	RawValue   string
 }
 
 type PropertyFinder struct {
