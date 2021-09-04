@@ -83,6 +83,9 @@ var pathHandlerFuncs = template.FuncMap{
 		return template.JS(string(b)), nil
 	},
 	"divEachLine": func(s string) template.HTML {
+		if s == "" {
+			return ""
+		}
 		t := ""
 		lines := strings.Split(s, "\n")
 		for _, line := range lines {
