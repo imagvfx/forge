@@ -635,9 +635,9 @@ function submitUpdaterOrAdder(ev, input) {
 			// we know the value we just send,
 			// but let's get the corrected value from server.
 			let get = new XMLHttpRequest();
-			let getForm = new FormData();
-			getForm.append("path", form.path.value);
-			getForm.append("name", form.name.value);
+			let getFormData = new FormData();
+			getFormData.append("path", form.path.value);
+			getFormData.append("name", form.name.value);
 			get.open("post", "/api/get-" + form.ctg.value);
 			get.onload = function() {
 				if (get.status == 200) {
@@ -659,7 +659,7 @@ function submitUpdaterOrAdder(ev, input) {
 					return;
 				}
 			}
-			get.send(getForm);
+			get.send(getFormData);
 		} else {
 			button.innerText = "Failed!";
 			statusBar.innerText = req.status.toString() + " " + req.statusText + ": " + req.responseText;
