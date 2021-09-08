@@ -82,20 +82,14 @@ var pathHandlerFuncs = template.FuncMap{
 		}
 		return template.JS(string(b)), nil
 	},
-	"divEachLine": func(s string) template.HTML {
-		if s == "" {
-			return ""
-		}
+	"brLines": func(s string) template.HTML {
 		t := ""
 		lines := strings.Split(s, "\n")
-		for _, line := range lines {
-			if strings.TrimSpace(line) == "" {
-				// Empty line should occupy the same area.
-				// TODO: better solution for this?
-				t += "<div style='visibility:hidden'>|</div>"
-			} else {
-				t += "<div>" + line + "</div>"
+		for i, line := range lines {
+			if i != 0 {
+				t += "<br>"
 			}
+			t += line
 		}
 		return template.HTML(t)
 	},
