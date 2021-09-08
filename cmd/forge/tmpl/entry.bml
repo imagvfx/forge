@@ -446,6 +446,10 @@
 		transform: rotate(1turn);
 	}
 }
+
+#statusBar.error {
+	color: #A22;
+}
 `]
 
 <script> [`
@@ -544,7 +548,6 @@ function toggleRenameInput() {
 function updateThumbnail(thumbInput) {
 	let thumbID = thumbInput.id.replace("thumbnailInput", "thumbnail");
 	let thumb = document.getElementById(thumbID);
-	let statusBar = document.getElementById("statusBar");
 	showStatusBarOnly();
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
@@ -575,16 +578,16 @@ function updateThumbnail(thumbInput) {
 			thumb.dataset.hasThumb = "1";
 			thumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "hidden";
 			thumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "visible";
-			statusBar.innerHTML = "done";
+			printStatus("done");
 		} else {
 			img.parentElement.style.border = "1px solid #D72";
-			statusBar.innerHTML = req.status.toString() + " " + req.statusText + ": " + req.responseText;
+			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
 		img.parentElement.style.border = "1px solid #D72";
 		showStatusBarOnly();
-		statusBar.innerHTML = "network error occurred. please check whether the server is down.";
+		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
 
@@ -592,7 +595,6 @@ function deleteThumbnail(delButton) {
 	let thumbID = delButton.id.replace("deleteThumbnailButton", "thumbnail");
 	let thumb = document.getElementById(thumbID);
 	let imgID = delButton.id.replace("deleteThumbnailButton", "thumbnailImg");
-	let statusBar = document.getElementById("statusBar");
 	showStatusBarOnly();
 	let img = document.getElementById(imgID);
 	let req = new XMLHttpRequest();
@@ -608,15 +610,15 @@ function deleteThumbnail(delButton) {
 			thumb.dataset.hasThumb = "";
 			thumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "hidden";
 			thumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "visible";
-			statusBar.innerHTML = "done";
+			printStatus("done");
 		} else {
 			img.parentElement.style.border = "1px solid #D72";
-			statusBar.innerHTML = req.status.toString() + " " + req.statusText + ": " + req.responseText;
+			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
 		img.parentElement.style.border = "1px solid #D72";
-		statusBar.innerHTML = "network error occurred. please check whether the server is down.";
+		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
 
@@ -628,7 +630,6 @@ function submitUpdaterOrAdder(ev, input) {
 	let formData = new FormData(input.parentElement);
 	let button = form.getElementsByTagName("button")[0];
 	let marker = form.getElementsByClassName("updatingMarker")[0];
-	let statusBar = document.getElementById("statusBar");
 	req.onload = function() {
 		marker.style.visibility = "hidden";
 		if (req.status == 200) {
@@ -644,7 +645,7 @@ function submitUpdaterOrAdder(ev, input) {
 				if (get.status == 200) {
 					let j = JSON.parse(get.responseText);
 					if (j.Err != null) {
-						statusBar.innerText = j.Err;
+						printErrorStatus(j.Err);
 						return;
 					}
 					let UpdatingElement = document.getElementById(formData.get("ctg")+"Value-"+formData.get("item-id"));
@@ -653,23 +654,23 @@ function submitUpdaterOrAdder(ev, input) {
 						// remove possible 'invalid' class
 						UpdatingElement.classList.remove("invalid");
 					}
-					statusBar.innerHTML = "done";
+					printStatus("done");
 					return;
 				} else {
-					statusBar.innerText = "update done, but failed to get the new value:" + get.status.toString() + " " + get.statusText + ": " + get.responseText;
+					printErrorStatus("update done, but failed to get the new value:" + get.responseText);
 					return;
 				}
 			}
 			get.send(getFormData);
 		} else {
 			button.innerText = "Failed!";
-			statusBar.innerText = req.status.toString() + " " + req.statusText + ": " + req.responseText;
+			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
 		marker.style.visibility = "hidden";
 		button.innerText = "Failed!";
-		statusBar.innerText = "network error occurred. please check whether the server is down.";
+		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	req.open(form.method, form.action);
 	req.send(formData);
@@ -792,6 +793,18 @@ function showStatusBarOnly() {
 	hideItemUpdater();
 	let statusBar = document.getElementById("statusBar");
 	statusBar.innerHTML = "";
+}
+
+function printStatus(s) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.remove("error");
+	statusBar.innerHTML = s;
+}
+
+function printErrorStatus(e) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.add("error");
+	statusBar.innerHTML = e;
 }
 
 function toggleFooter() {
