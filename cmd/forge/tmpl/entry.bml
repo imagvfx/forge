@@ -144,31 +144,31 @@
 								{{range $p := $.Properties}}
 								<div class="property-items" style="display:none"> [
 									<div style="display:flex;gap:1rem;"> [
-										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer;" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
+										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer;" onclick="showItemUpdater('{{$.Entry.Path}}', 'property', '{{$p.ID}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
 										<a href="/logs?path={{$.Entry.Path}}&category=property&name={{$p.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="{{if $p.ValueError}}invalid{{end}} propertyValue" style="font-size:0.8rem"> [{{divEachLine $p.Value}}{{$p.ValueError}}]
+									<div id="propertyValue-{{$p.ID}}" class="{{if $p.ValueError}}invalid{{end}} itemValue" style="font-size:0.8rem"> [{{divEachLine $p.Value}}{{$p.ValueError}}]
 								]
 								{{end}}
 								{{range $e := $.Environs}}
 								<div class="environ-items" style="display:none"> [
 									<div style="display:flex;gap:1rem;"> [
-										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
+										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'environ', '{{$e.ID}}', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
 										<a href="/logs?path={{$.Entry.Path}}&category=environ&name={{$e.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="{{if $e.ValueError}}invalid{{end}} propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Value}}{{$e.ValueError}}]
+									<div id="environValue-{{$e.ID}}" class="{{if $e.ValueError}}invalid{{end}} itemValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $e.Value}}{{$e.ValueError}}]
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
 								<div class="access-items" style="display:none"> [
 									<div style="display:flex;gap:1rem;"> [
-										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater(this, '{{$.Entry.Path}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
+										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.ID}}', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
 										<a href="/logs?path={{$.Entry.Path}}&category=access&name={{$a.Accessor}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
+									<div id="accessValue-{{$a.ID}}" class="itemValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
 								]
 								{{end}}
 							]
@@ -265,10 +265,10 @@
 											{{range $name := $propFilters}}
 												<div class="property" style="width:12rem;"> [
 													{{$p := index $props $name}}
-													<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater(this, '{{$e.Path}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
+													<div style="font-size:0.75rem;color:#AAA;cursor:pointer" {{if $p}}onclick="showItemUpdater('{{$e.Path}}', 'property', '{{$p.ID}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [{{$name}}]
 													{{if $p}}
 													<div style="height:0.2rem"> []
-													<div class="{{if $p.ValueError}}invalid{{end}} propertyValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Value}}{{$p.ValueError}}]
+													<div id="propertyValue-{{$p.ID}}" class="{{if $p.ValueError}}invalid{{end}} itemValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{divEachLine $p.Value}}{{$p.ValueError}}]
 													{{end}}
 												]
 											{{end}}
@@ -295,6 +295,7 @@
 								<input name="path" class="entryInput" type="hidden"> []
 								<input name="name" class="nameInput" type="hidden"> []
 								<input name="ctg" class="categoryInput" type="hidden"> []
+								<input name="item-id" class="itemIDInput" type="hidden"> []
 								<input name="type" class="typeInput typeHolder" type="hidden"> []
 								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
 								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
@@ -357,7 +358,7 @@
 	text-decoration: line-through;
 }
 
-.propertyValue.invalid {
+.itemValue.invalid {
 	color: rgba(150, 15, 15, 0.7);
 }
 
@@ -623,6 +624,7 @@ function submitUpdaterOrAdder(ev, input) {
 	ev.preventDefault();
 	let req = new XMLHttpRequest();
 	let form = input.parentElement;
+	let formData = new FormData(input.parentElement);
 	let button = form.getElementsByTagName("button")[0];
 	let marker = form.getElementsByClassName("updatingMarker")[0];
 	let statusBar = document.getElementById("statusBar");
@@ -630,6 +632,8 @@ function submitUpdaterOrAdder(ev, input) {
 		marker.style.visibility = "hidden";
 		if (req.status == 200) {
 			button.innerText = "Success!";
+			// we know the value we just send,
+			// but let's get the corrected value from server.
 			let get = new XMLHttpRequest();
 			let getForm = new FormData();
 			getForm.append("path", form.path.value);
@@ -642,6 +646,7 @@ function submitUpdaterOrAdder(ev, input) {
 						statusBar.innerText = j.Err;
 						return;
 					}
+					let UpdatingElement = document.getElementById(formData.get("ctg")+"Value-"+formData.get("item-id"));
 					if (UpdatingElement != null) {
 						UpdatingElement.innerText = j.Msg.Value;
 						// remove possible 'invalid' class
@@ -712,23 +717,16 @@ function showItems(ctg) {
 	}
 }
 
-// UpdatingElement indicates the "propertyValue" div for a property currently updater is updating.
-let UpdatingElement = null;
-
-function showItemUpdater(elem, entry, ctg, name, type, value) {
-	// TODO: this way, we cannot retrive the latest value, if the prop/env/acl is updated in this page,
-	// should change the function to get data from `elem`
-
+function showItemUpdater(entry, ctg, id, name, type, value) {
 	showFooter();
-
-	UpdatingElement = elem.parentElement.getElementsByClassName("propertyValue")[0]; // modify the global variable
 	hideItemAdder();
-	let updater = document.getElementById("itemUpdater");
 
+	let updater = document.getElementById("itemUpdater");
 	updater.style.display = "block";
 	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
 	updater.getElementsByClassName("entryInput")[0].value = entry;
 	updater.getElementsByClassName("categoryInput")[0].value = ctg;
+	updater.getElementsByClassName("itemIDInput")[0].value = id;
 	updater.getElementsByClassName("nameLabel")[0].innerText = name;
 	updater.getElementsByClassName("nameInput")[0].value = name;
 	updater.getElementsByClassName("typeInput")[0].value = type;
@@ -751,13 +749,10 @@ let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
 function showItemAdder(entry, ctg) {
 	// TODO: Add the item inplace?
-
 	showFooter();
-
-	UpdatingElement = null;
 	hideItemUpdater();
-	let adder = document.getElementById("itemAdder");
 
+	let adder = document.getElementById("itemAdder");
 	adder.style.display = "block";
 	adder.getElementsByClassName("entryLabel")[0].innerText = entry;
 	adder.getElementsByClassName("entryInput")[0].value = entry;
