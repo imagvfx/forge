@@ -142,6 +142,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		user := session["user"]
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
 		setting, err := h.server.GetUserSetting(ctx, user)
@@ -395,6 +396,7 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 		user := session["user"]
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
 		path := r.FormValue("path")
@@ -516,6 +518,7 @@ func (h *userHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		user := session["user"]
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
 		users, err := h.server.Users(ctx)
@@ -553,6 +556,7 @@ func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		user := session["user"]
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
 		groups, err := h.server.FindAllGroups(ctx)
@@ -599,6 +603,7 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 		user := session["user"]
 		if user == "" {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return nil
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
 		entTypes, err := h.server.EntryTypes(ctx)
