@@ -92,7 +92,7 @@ func evalEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, 
 
 func evalDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
 	// 2006/01/02
-	if len(val) != 11 {
+	if len(val) != 10 {
 		return "", fmt.Errorf("invalid value for date: %v", val)
 	}
 	if val[4] != '/' && val[6] != '/' {
