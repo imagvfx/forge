@@ -66,9 +66,12 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (strin
 			tc += ch
 		}
 	}
-	if len(tc) != 8 {
+	if len(tc) > 8 {
 		return "", fmt.Errorf("invalid timecode string: %v", val)
 	}
+	extra := 8 - len(tc)
+	extraZero := strings.Repeat("0", extra)
+	tc = extraZero + tc
 	val = strings.Join(
 		[]string{
 			tc[0:2], tc[2:4], tc[4:6], tc[6:8],
