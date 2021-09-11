@@ -297,7 +297,7 @@
 								<input name="ctg" class="categoryInput" type="hidden"> []
 								<input name="item-id" class="itemIDInput" type="hidden"> []
 								<input name="type" class="typeInput typeHolder" type="hidden"> []
-								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1" rows="1"> []
 								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button style="width:5rem"> [Update]
@@ -315,7 +315,7 @@
 								<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
 								<input name="ctg" class="categoryInput" type="hidden"> []
 								<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1"> []
+								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1" rows="1"> []
 								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button style="width:5rem"> [Add]
@@ -431,6 +431,10 @@
 	overflow-wrap: break-word;
 }
 
+.valueInput {
+	max-height: 140px;
+}
+
 .updatingMarker {
 	animation-duration: 1s;
 	animation-name: rotating;
@@ -469,6 +473,11 @@ window.onload = function() {
 		}
 		input.parentElement.onsubmit = function(ev) {
 			submitUpdaterOrAdder(ev, input);
+		}
+	}
+	for (let input of inputs) {
+		input.oninput = function() {
+			resizeTextArea(input);
 		}
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
@@ -622,6 +631,11 @@ function deleteThumbnail(delButton) {
 	}
 }
 
+function resizeTextArea(textarea) {
+	textarea.style.height = "auto";
+	textarea.style.height = String(textarea.scrollHeight) + "px";
+}
+
 function submitUpdaterOrAdder(ev, input) {
 	ev.stopPropagation();
 	ev.preventDefault();
@@ -738,6 +752,7 @@ function showItemUpdater(entry, ctg, id, name, type, value) {
 	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;
 	valueInput.value = value;
+	resizeTextArea(valueInput);
 	valueInput.focus();
 }
 
@@ -777,6 +792,11 @@ function showItemAdder(entry, ctg) {
 		typeSel.appendChild(option)
 	}
 	adder.getElementsByClassName("valueForm")[0].action = "/api/add-" + ctg;
+
+	let valueInput = adder.getElementsByClassName("valueInput")[0];
+	valueInput.value = "";
+	resizeTextArea(valueInput);
+
 	nameInput.focus();
 }
 
