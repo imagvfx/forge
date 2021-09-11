@@ -188,7 +188,7 @@
 						{{end}}
 						{{if not $.ResultsFromSearch}}
 						<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2rem;margin-top:1rem;margin-bottom:1rem;"> [
-							<div style="font-size:1.2rem"> [<b> [{{$t}}]]
+							<div style="font-size:1.2rem"> [<b> [{{$t}} ({{len (index $entsByParent $.Entry.Path)}})]]
 							<!-- Add SubEntry -->
 							<form action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
@@ -229,7 +229,7 @@
 								<div style="height:1rem"> []
 								{{end}}
 								{{if $.ResultsFromSearch}}
-									<h5> [From <a href="{{$parent}}"> [{{$parent}}]]
+									<h5> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $entries}})]
 								{{end}}
 								<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
 									{{$propFilters := index $.PropertyFilters $t}}
