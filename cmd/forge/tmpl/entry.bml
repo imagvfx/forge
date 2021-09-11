@@ -176,7 +176,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem"> [
+				<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem;padding-bottom:16rem;"> [
 				{{if $.ResultsFromSearch}}
 					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
 				{{end}}
