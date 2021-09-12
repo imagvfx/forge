@@ -467,7 +467,7 @@ window.onload = function() {
 	let inputs = document.getElementsByClassName("updaterOrAdderInput");
 	for (let input of inputs) {
 		input.onkeydown = function(ev) {
-			if (ev.ctrlKey && ev.code == "Enter") {
+			if ((ev.ctrlKey && ev.code == "Enter") || ev.code == "NumpadEnter") {
 				submitUpdaterOrAdder(ev, input);
 			}
 		}
