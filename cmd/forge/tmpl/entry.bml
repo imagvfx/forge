@@ -297,7 +297,7 @@
 								<input name="ctg" class="categoryInput" type="hidden"> []
 								<input name="item-id" class="itemIDInput" type="hidden"> []
 								<input name="type" class="typeInput typeHolder" type="hidden"> []
-								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1" rows="1"> []
+								<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
 								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button style="width:5rem"> [Update]
@@ -315,7 +315,7 @@
 								<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
 								<input name="ctg" class="categoryInput" type="hidden"> []
 								<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-								<textarea name="value" class="valueInput updaterOrAdderInput" style="flex:1" rows="1"> []
+								<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
 								<img class="updatingMarker" src="/asset/update.svg" style="visibility:hidden;width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button style="width:5rem"> [Add]
@@ -464,7 +464,7 @@ window.onload = function() {
 	for (let input of allInputs) {
 		input.autocomplete = "off";
 	}
-	let inputs = document.getElementsByClassName("updaterOrAdderInput");
+	let inputs = document.getElementsByClassName("valueInput");
 	for (let input of inputs) {
 		input.onkeydown = function(ev) {
 			if ((ev.ctrlKey && ev.code == "Enter") || ev.code == "NumpadEnter") {
