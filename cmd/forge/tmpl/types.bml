@@ -45,10 +45,10 @@
 						<form action="/api/add-default" method="post"> [
 							<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
 							<select name="category"> [
-								<option value="sub_entry"> [sub entry]
 								<option value="property"> [property]
 								<option value="environ"> [environ]
 								<option value="access"> [access]
+								<option value="sub_entry"> [sub entry]
 							]
 							<input name="name" type="text" value="" placeholder="name"> []
 							<input name="type" type="text" value="" placeholder="type"> []

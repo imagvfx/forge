@@ -94,11 +94,6 @@ func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) (
 	}
 	defer tx.Rollback()
 	defaults := make([]*service.Default, 0)
-	subs, err := findDefaultSubEntries(tx, ctx, find)
-	if err != nil {
-		return nil, err
-	}
-	defaults = append(defaults, subs...)
 	props, err := findDefaultProperties(tx, ctx, find)
 	if err != nil {
 		return nil, err
@@ -114,6 +109,11 @@ func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) (
 		return nil, err
 	}
 	defaults = append(defaults, accs...)
+	subs, err := findDefaultSubEntries(tx, ctx, find)
+	if err != nil {
+		return nil, err
+	}
+	defaults = append(defaults, subs...)
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
