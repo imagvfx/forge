@@ -642,12 +642,10 @@ function submitUpdaterOrAdder(ev, input) {
 	let req = new XMLHttpRequest();
 	let form = input.parentElement;
 	let formData = new FormData(input.parentElement);
-	let button = form.getElementsByTagName("button")[0];
 	let marker = form.getElementsByClassName("updatingMarker")[0];
 	req.onload = function() {
 		marker.style.visibility = "hidden";
 		if (req.status == 200) {
-			button.innerText = "Success!";
 			// we know the value we just send,
 			// but let's get the corrected value from server.
 			let get = new XMLHttpRequest();
@@ -677,13 +675,11 @@ function submitUpdaterOrAdder(ev, input) {
 			}
 			get.send(getFormData);
 		} else {
-			button.innerText = "Failed!";
 			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
 		marker.style.visibility = "hidden";
-		button.innerText = "Failed!";
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	req.open(form.method, form.action);
@@ -748,6 +744,7 @@ function showItemUpdater(entry, ctg, id, name, type, value) {
 	updater.getElementsByClassName("typeInput")[0].value = type;
 	updater.getElementsByClassName("valueForm")[0].action = "/api/set-" + ctg;
 	updater.getElementsByTagName("button")[0].innerText = "Update";
+	clearStatus();
 
 	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;
@@ -775,6 +772,7 @@ function showItemAdder(entry, ctg) {
 	adder.getElementsByClassName("entryInput")[0].value = entry;
 	adder.getElementsByClassName("categoryInput")[0].value = ctg;
 	adder.getElementsByTagName("button")[0].innerText = "Add";
+	clearStatus();
 
 	let nameInput = adder.getElementsByClassName("nameInput")[0]
 	nameInput.value = name;
@@ -825,6 +823,10 @@ function printErrorStatus(e) {
 	let statusBar = document.getElementById("statusBar");
 	statusBar.classList.add("error");
 	statusBar.innerHTML = e;
+}
+
+function clearStatus() {
+	printStatus("");
 }
 
 function toggleFooter() {
