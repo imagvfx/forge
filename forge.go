@@ -116,27 +116,6 @@ func (p *Property) ServiceProperty() *service.Property {
 	return sp
 }
 
-type AccessMode int
-
-const (
-	ReadAccess = AccessMode(iota)
-	ReadWriteAccess
-)
-
-func (m AccessMode) String() string {
-	if m == ReadAccess {
-		return "r"
-	}
-	return "rw"
-}
-
-type AccessorType int
-
-const (
-	UserAccessor = AccessorType(iota)
-	GroupAccessor
-)
-
 func AccessorTypes() []string {
 	return []string{
 		"user",
@@ -144,19 +123,12 @@ func AccessorTypes() []string {
 	}
 }
 
-func (t AccessorType) String() string {
-	if t == UserAccessor {
-		return "user"
-	}
-	return "group"
-}
-
 type AccessControl struct {
 	ID           int
 	EntryPath    string
 	Accessor     string
-	AccessorType AccessorType
-	Mode         AccessMode
+	AccessorType string
+	Mode         string
 }
 
 func (p *AccessControl) MarshalJSON() ([]byte, error) {
@@ -169,9 +141,9 @@ func (p *AccessControl) MarshalJSON() ([]byte, error) {
 	}{
 		Path:     p.EntryPath,
 		Name:     p.Accessor,
-		Type:     p.AccessorType.String(),
-		Value:    p.Mode.String(),
-		RawValue: p.Mode.String(),
+		Type:     p.AccessorType,
+		Value:    p.Mode,
+		RawValue: p.Mode,
 	}
 	return json.Marshal(m)
 }
@@ -189,26 +161,11 @@ type Log struct {
 }
 
 func (l *Log) String() string {
-	switch l.Category {
-	case "access":
-		return l.AccessControlString()
-	default:
-		s := fmt.Sprintf("%v: %v %v %v: %v", l.When, l.User, l.Action, l.Category, l.Name)
-		if l.Value != "" {
-			s += fmt.Sprintf(" = %v", l.Value)
-		}
-		return s
+	s := fmt.Sprintf("%v: %v %v %v: %v", l.When, l.User, l.Action, l.Category, l.Name)
+	if l.Value != "" {
+		s += fmt.Sprintf(" = %v", l.Value)
 	}
-}
-
-func (l *Log) AccessControlString() string {
-	v, _ := strconv.Atoi(l.Value)
-	if l.Action != "delete" {
-		mode := AccessMode(v)
-		return fmt.Sprintf("%v: %v %v %v: %v = %v", l.When, l.User, l.Action, l.Category, l.Name, mode)
-	} else {
-		return fmt.Sprintf("%v: %v %v %v: %v", l.When, l.User, l.Action, l.Category, l.Name)
-	}
+	return s
 }
 
 type User struct {

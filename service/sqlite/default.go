@@ -68,6 +68,25 @@ func createDefaultEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
+func createDefaultAccessesTable(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		CREATE TABLE IF NOT EXISTS default_accesses (
+			id INTEGER PRIMARY KEY,
+			entry_type_id INTEGER NOT NULL,
+			accessor_id INTEGER NOT NULL,
+			mode INTEGER NOT NULL,
+			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
+			FOREIGN KEY (accessor_id) REFERENCES accessors (id),
+			UNIQUE (entry_type_id, accessor_id)
+		)
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_default_accesses_entry_type_id ON default_accesses (entry_type_id)`)
+	return err
+}
+
 func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -90,6 +109,11 @@ func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) (
 		return nil, err
 	}
 	defaults = append(defaults, envs...)
+	accs, err := findDefaultAccesses(tx, ctx, find)
+	if err != nil {
+		return nil, err
+	}
+	defaults = append(defaults, accs...)
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
@@ -269,6 +293,80 @@ func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string)
 	return defaults[0], err
 }
 
+func findDefaultAccesses(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if find.EntryType != nil {
+		keys = append(keys, "entry_types.name=?")
+		vals = append(vals, *find.EntryType)
+	}
+	if find.Name != nil {
+		keys = append(keys, "default_accesses.name=?")
+		vals = append(vals, *find.Name)
+	}
+	where := ""
+	if len(keys) != 0 {
+		where = "WHERE " + strings.Join(keys, " AND ")
+	}
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			entry_types.name,
+			default_accesses.accessor_id,
+			default_accesses.mode
+		FROM default_accesses
+		LEFT JOIN entry_types ON default_accesses.entry_type_id = entry_types.id
+		`+where,
+		vals...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	defaults := make([]*service.Default, 0)
+	for rows.Next() {
+		var acID int
+		var mode int
+		d := &service.Default{
+			Category: "access",
+		}
+		err := rows.Scan(
+			&d.EntryType,
+			&acID,
+			&mode,
+		)
+		if err != nil {
+			return nil, err
+		}
+		ac, err := getAccessorByID(tx, ctx, acID)
+		if err != nil {
+			return nil, err
+		}
+		d.Name = ac.Name
+		d.Type = "user"
+		if ac.IsGroup {
+			d.Type = "group"
+		}
+		d.Value = "r"
+		if mode == 1 {
+			d.Value = "rw"
+		}
+		defaults = append(defaults, d)
+	}
+	return defaults, nil
+}
+
+func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) (*service.Default, error) {
+	find := service.DefaultFinder{
+		EntryType: &entry_type,
+		Name:      &name,
+	}
+	defaults, err := findDefaultAccesses(tx, ctx, find)
+	if len(defaults) == 0 {
+		return nil, service.NotFound("default not found")
+	}
+	return defaults[0], err
+}
+
 func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -296,6 +394,11 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 		}
 	case "environ":
 		err = addDefaultEnviron(tx, ctx, d)
+		if err != nil {
+			return err
+		}
+	case "access":
+		err = addDefaultAccess(tx, ctx, d)
 		if err != nil {
 			return err
 		}
@@ -432,6 +535,57 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *service.Default) erro
 	return nil
 }
 
+func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *service.Default) error {
+	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
+	if err != nil {
+		return err
+	}
+	if d.Type != "user" && d.Type != "group" {
+		return fmt.Errorf("invalid default access type (want 'user' or 'group'): %v", d.Type)
+	}
+	if d.Value != "r" && d.Value != "rw" {
+		return fmt.Errorf("invalid default access value (want 'r' or 'rw'): %v", d.Value)
+	}
+	mode := 0
+	if d.Value == "rw" {
+		mode = 1
+	}
+	ac, err := getAccessor(tx, ctx, d.Name)
+	if err != nil {
+		return fmt.Errorf("invalid accessor name: %v", d.Name)
+	}
+	acType := "user"
+	if ac.IsGroup {
+		acType = "group"
+	}
+	if d.Type != acType {
+		return fmt.Errorf("mismatch accessor type: got %v, want %v", d.Type, acType)
+	}
+	result, err := tx.ExecContext(ctx, `
+		INSERT INTO default_accesses (
+			entry_type_id,
+			accessor_id,
+			mode
+		)
+		VALUES (?, ?, ?)
+	`,
+		typeID,
+		ac.ID,
+		mode,
+	)
+	if err != nil {
+		return err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	d.ID = int(id)
+	// Things can be chaotic if we change pre-existing accesses for entry.
+	// Let's not do that.
+	return nil
+}
+
 func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -459,6 +613,11 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 		}
 	case "environ":
 		err := updateDefaultEnviron(tx, ctx, upd)
+		if err != nil {
+			return err
+		}
+	case "access":
+		err := updateDefaultAccess(tx, ctx, upd)
 		if err != nil {
 			return err
 		}
@@ -661,6 +820,46 @@ func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd service.DefaultUp
 	return nil
 }
 
+func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if upd.Type != nil {
+		return fmt.Errorf("cannot change default accessor type")
+	}
+	if upd.Value != nil {
+		if *upd.Value != "r" && *upd.Value != "rw" {
+			return fmt.Errorf("invalid default access value (want 'r' or 'rw'): %v", upd.Type)
+		}
+		mode := 0
+		if *upd.Value == "rw" {
+			mode = 1
+		}
+		keys = append(keys, "value=?")
+		vals = append(vals, mode)
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "access", upd.Name)
+	}
+	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
+	if err != nil {
+		return err
+	}
+	vals = append(vals, typeID, upd.Name) // for where clause
+	_, err = tx.ExecContext(ctx, `
+		UPDATE default_accesses
+		SET `+strings.Join(keys, ", ")+`
+		WHERE entry_type_id=? AND name=?
+	`,
+		vals...,
+	)
+	if err != nil {
+		return err
+	}
+	// Things can be chaotic if we change pre-existing accesses on entry.
+	// Let's not do that.
+	return nil
+}
+
 func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -688,6 +887,11 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 		}
 	case "environ":
 		err := deleteDefaultEnviron(tx, ctx, entryType, name)
+		if err != nil {
+			return err
+		}
+	case "access":
+		err := deleteDefaultAccess(tx, ctx, entryType, name)
 		if err != nil {
 			return err
 		}
@@ -772,6 +976,35 @@ func deleteDefaultEnviron(tx *sql.Tx, ctx context.Context, entryType, name strin
 	}
 	if n == 0 {
 		return service.NotFound("no such default for entry type %v: %v %v", entryType, "environ", name)
+	}
+	return nil
+}
+
+func deleteDefaultAccess(tx *sql.Tx, ctx context.Context, entryType, name string) error {
+	typeID, err := getEntryTypeID(tx, ctx, entryType)
+	if err != nil {
+		return err
+	}
+	ac, err := getAccessor(tx, ctx, name)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		DELETE FROM default_accesses
+		WHERE entry_type_id=? AND accessor_id=?
+	`,
+		typeID,
+		ac.ID,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return service.NotFound("no such default for entry type %v: %v %v", entryType, "access", name)
 	}
 	return nil
 }

@@ -378,7 +378,22 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry, overrides *ser
 			return err
 		}
 	}
-	// TODO: implement entry default access
+	defAccs, err := findDefaultAccesses(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
+	if err != nil {
+		return err
+	}
+	for _, d := range defAccs {
+		dacc := &service.AccessControl{
+			EntryPath:    e.Path,
+			Accessor:     d.Name,
+			AccessorType: d.Type,
+			Mode:         d.Value,
+		}
+		err := addAccessControl(tx, ctx, dacc)
+		if err != nil {
+			return err
+		}
+	}
 
 	if overrides != nil {
 		// override default values

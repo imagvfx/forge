@@ -521,8 +521,8 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 			ID:           a.ID,
 			EntryPath:    a.EntryPath,
 			Accessor:     a.Accessor,
-			AccessorType: AccessorType(a.AccessorType),
-			Mode:         AccessMode(a.Mode),
+			AccessorType: a.AccessorType,
+			Mode:         a.Mode,
 		}
 		acs = append(acs, ac)
 	}
@@ -543,8 +543,8 @@ func (s *Server) GetAccessControl(ctx context.Context, path string, accessor str
 	acl := &AccessControl{
 		EntryPath:    sACL.EntryPath,
 		Accessor:     sACL.Accessor,
-		AccessorType: AccessorType(sACL.AccessorType),
-		Mode:         AccessMode(sACL.Mode),
+		AccessorType: sACL.AccessorType,
+		Mode:         sACL.Mode,
 	}
 	return acl, nil
 }
@@ -562,25 +562,23 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 	if mode == "" {
 		return fmt.Errorf("access mode not specified")
 	}
-	ac := &service.AccessControl{
-		EntryPath: path,
-		Accessor:  accessor,
-	}
 	switch accessor_type {
 	case "user":
-		ac.AccessorType = 0
 	case "group":
-		ac.AccessorType = 1
 	default:
 		return fmt.Errorf("unknown accessor type")
 	}
 	switch mode {
 	case "r":
-		ac.Mode = int(ReadAccess)
 	case "rw":
-		ac.Mode = int(ReadWriteAccess)
 	default:
 		return fmt.Errorf("unknown access type")
+	}
+	ac := &service.AccessControl{
+		EntryPath:    path,
+		Accessor:     accessor,
+		AccessorType: accessor_type,
+		Mode:         mode,
 	}
 	err := s.svc.AddAccessControl(ctx, ac)
 	if err != nil {
@@ -599,19 +597,16 @@ func (s *Server) SetAccessControl(ctx context.Context, path, accessor, mode stri
 	if mode == "" {
 		return fmt.Errorf("access mode not specified")
 	}
+	switch mode {
+	case "r":
+	case "rw":
+	default:
+		return fmt.Errorf("unknown access type")
+	}
 	ac := service.AccessControlUpdater{
 		EntryPath: path,
 		Accessor:  accessor,
-	}
-	switch mode {
-	case "r":
-		m := int(ReadAccess)
-		ac.Mode = &m
-	case "rw":
-		m := int(ReadWriteAccess)
-		ac.Mode = &m
-	default:
-		return fmt.Errorf("unknown access type")
+		Mode:      &mode,
 	}
 	err := s.svc.UpdateAccessControl(ctx, ac)
 	if err != nil {

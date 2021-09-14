@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -105,16 +104,26 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	defer rows.Close()
 	acss := make([]*service.AccessControl, 0)
 	for rows.Next() {
+		var isGroup bool
+		var mode int
 		a := &service.AccessControl{}
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryPath,
 			&a.Accessor,
-			&a.AccessorType,
-			&a.Mode,
+			&isGroup,
+			&mode,
 		)
 		if err != nil {
 			return nil, err
+		}
+		a.AccessorType = "user"
+		if isGroup {
+			a.AccessorType = "group"
+		}
+		a.Mode = "r"
+		if mode == 1 {
+			a.Mode = "rw"
 		}
 		acss = append(acss, a)
 	}
@@ -151,8 +160,7 @@ func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 		// The entry should invisible to the user.
 		return service.NotFound("cannot access to entry")
 	}
-	if *mode == 0 {
-		// read mode
+	if *mode == "r" {
 		return service.Unauthorized("entry modification not allowed")
 	}
 	return nil
@@ -161,7 +169,7 @@ func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 // userAccessMode returns the user's access control for an entry.
 // It checks the parents recursively as access control inherits.
 // It returns (nil, nil) when there is no access_control exists for the user.
-func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) {
+func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, error) {
 	if path == "" {
 		return nil, fmt.Errorf("path should be specified for access check")
 	}
@@ -172,7 +180,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 	}
 	if yes {
 		// admins can read any entry.
-		rwMode := 1
+		rwMode := "rw"
 		return &rwMode, nil
 	}
 	for {
@@ -183,12 +191,12 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*int, error) 
 		// Lower entry has precedence to higher entry.
 		// In a same entry, user accessor has precedence to group accessor.
 		for _, a := range as {
-			if a.AccessorType == 0 && a.Accessor == user {
+			if a.AccessorType == "user" && a.Accessor == user {
 				return &a.Mode, nil
 			}
 		}
 		for _, a := range as {
-			if a.AccessorType == 0 {
+			if a.AccessorType == "user" {
 				continue
 			}
 			// groups
@@ -274,6 +282,17 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	if err != nil {
 		return err
 	}
+	acType := "user"
+	if ac.IsGroup {
+		acType = "group"
+	}
+	if a.AccessorType != acType {
+		return fmt.Errorf("mismatch accessor type: got %v, want %v", a.AccessorType, acType)
+	}
+	mode := 0
+	if a.Mode == "rw" {
+		mode = 1
+	}
 	entryID, err := getEntryID(tx, ctx, a.EntryPath)
 	if err != nil {
 		return err
@@ -288,7 +307,7 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	`,
 		entryID,
 		ac.ID,
-		a.Mode,
+		mode,
 	)
 	if err != nil {
 		return err
@@ -299,18 +318,14 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	}
 	a.ID = int(id)
 	user := service.UserNameFromContext(ctx)
-	typ := 0
-	if ac.IsGroup {
-		typ = 1
-	}
 	err = addLog(tx, ctx, &service.Log{
 		EntryPath: a.EntryPath,
 		User:      user,
 		Action:    "create",
 		Category:  "access",
 		Name:      a.Accessor,
-		Type:      strconv.Itoa(typ),
-		Value:     strconv.Itoa(a.Mode),
+		Type:      a.AccessorType,
+		Value:     a.Mode,
 	})
 	if err != nil {
 		return err
@@ -347,8 +362,12 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Mode != nil {
+		mode := 0
+		if *upd.Mode == "rw" {
+			mode = 1
+		}
 		keys = append(keys, "mode=?")
-		vals = append(vals, *upd.Mode)
+		vals = append(vals, mode)
 		a.Mode = *upd.Mode
 	}
 	if len(keys) == 0 {
@@ -379,8 +398,8 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 		Action:    "update",
 		Category:  "access",
 		Name:      a.Accessor,
-		Type:      strconv.Itoa(a.AccessorType),
-		Value:     strconv.Itoa(a.Mode),
+		Type:      a.AccessorType,
+		Value:     a.Mode,
 	})
 	if err != nil {
 		return err
@@ -437,7 +456,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 		Action:    "delete",
 		Category:  "access",
 		Name:      a.Accessor,
-		Type:      strconv.Itoa(a.AccessorType),
+		Type:      a.AccessorType,
 		Value:     "",
 	})
 	if err != nil {

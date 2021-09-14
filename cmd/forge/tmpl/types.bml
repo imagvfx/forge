@@ -48,6 +48,7 @@
 								<option value="sub_entry"> [sub entry]
 								<option value="property"> [property]
 								<option value="environ"> [environ]
+								<option value="access"> [access]
 							]
 							<input name="name" type="text" value="" placeholder="name"> []
 							<input name="type" type="text" value="" placeholder="type"> []
