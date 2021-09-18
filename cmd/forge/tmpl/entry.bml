@@ -52,7 +52,7 @@
 							<input hidden name="search" value="1"> []
 							<select name="search_entry_type" class="search-box-left"> [
 								<option value=""> [(any)]
-							{{range $t := $.AllEntryTypes}}
+							{{range $t := $.BaseEntryTypes}}
 								{{if ne $t "root"}}
 								<option value="{{$t}}" {{if eq $t $.SearchEntryType}}selected{{end}}> [{{$t}}]
 								{{end}}

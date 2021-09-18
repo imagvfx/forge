@@ -90,7 +90,11 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 		if err != nil {
 			return nil, err
 		}
-		p.Value, p.ValueError = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
+		if strings.HasPrefix(p.Name, ".") {
+			p.Value, p.ValueError = evalSpecialProperty(tx, ctx, p.Name, p.RawValue)
+		} else {
+			p.Value, p.ValueError = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
+		}
 		props = append(props, p)
 	}
 	return props, nil
@@ -147,9 +151,16 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 	if err != nil {
 		return err
 	}
-	p.Value, err = validateProperty(tx, ctx, p.EntryPath, p.Type, p.Value)
-	if err != nil {
-		return err
+	if strings.HasPrefix(p.Name, ".") {
+		p.Value, err = validateSpecialProperty(tx, ctx, p.Name, p.Value)
+		if err != nil {
+			return err
+		}
+	} else {
+		p.Value, err = validateProperty(tx, ctx, p.EntryPath, p.Type, p.Value)
+		if err != nil {
+			return err
+		}
 	}
 	entryID, err := getEntryID(tx, ctx, p.EntryPath)
 	if err != nil {
@@ -222,9 +233,16 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {
-		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, p.Type, *upd.Value)
-		if err != nil {
-			return err
+		if strings.HasPrefix(p.Name, ".") {
+			*upd.Value, err = validateSpecialProperty(tx, ctx, p.Name, *upd.Value)
+			if err != nil {
+				return err
+			}
+		} else {
+			*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, p.Type, *upd.Value)
+			if err != nil {
+				return err
+			}
 		}
 		keys = append(keys, "val=?")
 		vals = append(vals, *upd.Value)

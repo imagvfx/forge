@@ -18,8 +18,16 @@ func NewService(db *sql.DB) *Service {
 	return s
 }
 
-func (s *Service) EntryTypes(ctx context.Context) ([]string, error) {
-	return EntryTypes(s.db, ctx)
+func (s *Service) FindEntryTypes(ctx context.Context) ([]string, error) {
+	return FindEntryTypes(s.db, ctx)
+}
+
+func (s *Service) FindBaseEntryTypes(ctx context.Context) ([]string, error) {
+	return FindBaseEntryTypes(s.db, ctx)
+}
+
+func (s *Service) FindOverrideEntryTypes(ctx context.Context) ([]string, error) {
+	return FindOverrideEntryTypes(s.db, ctx)
 }
 
 func (s *Service) AddEntryType(ctx context.Context, name string) error {

@@ -3,9 +3,14 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path"
+	"sort"
 	"strconv"
+	"strings"
+
+	"github.com/imagvfx/forge/service"
 )
 
 // evalProperty evaluates a value in db to a value for user.
@@ -118,6 +123,55 @@ func evalInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, error)
 	_, err := strconv.Atoi(val)
 	if err != nil {
 		return "", fmt.Errorf("invalid value for int: %v", val)
+	}
+	return val, nil
+}
+
+// evalSpecialProperty evaluates special properties that starts with dot (.).
+// For normal properties, it will return the input value unmodified.
+//
+// TODO: Match the arugments to other eval functions?
+func evalSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (string, error) {
+	// TODO: .sub_entry_types
+	switch name {
+	case ".predefined_sub_entries":
+		subNameType := make(map[string]string)
+		for _, nt := range strings.Split(val, ",") {
+			nt = strings.TrimSpace(nt)
+			toks := strings.Split(nt, ":")
+			if len(toks) != 2 {
+				return "", fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
+			}
+			sub := strings.TrimSpace(toks[0])
+			typeID := strings.TrimSpace(toks[1])
+			id, err := strconv.Atoi(typeID)
+			if err != nil {
+				return "", fmt.Errorf("invalid entry type id for '%v' in .predefined_sub_entries: %v", name, typeID)
+			}
+			// Internally it saves with entry type id. Get the type name.
+			typ, err := getEntryTypeByID(tx, ctx, id)
+			if err != nil {
+				var e *service.NotFoundError
+				if !errors.As(err, &e) {
+					return "", err
+				}
+				return "", fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+			}
+			subNameType[sub] = typ
+		}
+		subNames := make([]string, 0, len(subNameType))
+		for sub := range subNameType {
+			subNames = append(subNames, sub)
+		}
+		sort.Slice(subNames, func(i, j int) bool { return subNames[i] < subNames[j] })
+		val = ""
+		for i, sub := range subNames {
+			if i != 0 {
+				val += ", "
+			}
+			val += sub + ":" + subNameType[sub]
+		}
+		return val, nil
 	}
 	return val, nil
 }

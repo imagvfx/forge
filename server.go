@@ -78,7 +78,7 @@ func (s *Server) SearchEntries(ctx context.Context, path, entryType, query strin
 	}
 	if entryType != "" {
 		found := false
-		entTypes, err := s.svc.EntryTypes(ctx)
+		entTypes, err := s.svc.FindEntryTypes(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -162,8 +162,24 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 	return nil
 }
 
-func (s *Server) EntryTypes(ctx context.Context) ([]string, error) {
-	names, err := s.svc.EntryTypes(ctx)
+func (s *Server) FindEntryTypes(ctx context.Context) ([]string, error) {
+	names, err := s.svc.FindEntryTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return names, nil
+}
+
+func (s *Server) FindBaseEntryTypes(ctx context.Context) ([]string, error) {
+	names, err := s.svc.FindBaseEntryTypes(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return names, nil
+}
+
+func (s *Server) FindOverrideEntryTypes(ctx context.Context) ([]string, error) {
+	names, err := s.svc.FindOverrideEntryTypes(ctx)
 	if err != nil {
 		return nil, err
 	}

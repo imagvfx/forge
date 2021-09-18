@@ -3,11 +3,15 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/imagvfx/forge/service"
 )
 
 func validateProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (string, error) {
@@ -147,6 +151,49 @@ func validateInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, er
 	_, err := strconv.Atoi(val)
 	if err != nil {
 		return "", fmt.Errorf("cannot convert to int: %v", val)
+	}
+	return val, nil
+}
+
+// validateSpecialProperty validates special properties that starts with dot (.).
+// For normal properties, it will return the input value unmodified.
+func validateSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (string, error) {
+	// TODO: .sub_entry_types
+	switch name {
+	case ".predefined_sub_entries":
+		subNameType := make(map[string]int)
+		for _, nt := range strings.Split(val, ",") {
+			nt = strings.TrimSpace(nt)
+			toks := strings.Split(nt, ":")
+			if len(toks) != 2 {
+				return "", fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
+			}
+			sub := strings.TrimSpace(toks[0])
+			typ := strings.TrimSpace(toks[1])
+			// Save the type id, instead.
+			id, err := getEntryTypeID(tx, ctx, typ)
+			if err != nil {
+				var e *service.NotFoundError
+				if !errors.As(err, &e) {
+					return "", err
+				}
+				return "", fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+			}
+			subNameType[sub] = id
+		}
+		subNames := make([]string, 0, len(subNameType))
+		for sub := range subNameType {
+			subNames = append(subNames, sub)
+		}
+		sort.Slice(subNames, func(i, j int) bool { return subNames[i] < subNames[j] })
+		val = ""
+		for i, sub := range subNames {
+			if i != 0 {
+				val += ", "
+			}
+			val += sub + ":" + strconv.Itoa(subNameType[sub])
+		}
+		return val, nil
 	}
 	return val, nil
 }

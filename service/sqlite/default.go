@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -214,6 +213,10 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find service.Default
 		)
 		if err != nil {
 			return nil, err
+		}
+		if strings.HasPrefix(d.Name, ".") {
+			d.Value, _ = evalSpecialProperty(tx, ctx, d.Name, d.Value)
+			// TODO: what should I do when there was an evaluation error?
 		}
 		defaults = append(defaults, d)
 	}
@@ -452,6 +455,12 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *service.Default) err
 	if err != nil {
 		return err
 	}
+	if strings.HasPrefix(d.Name, ".") {
+		d.Value, err = validateSpecialProperty(tx, ctx, d.Name, d.Value)
+		if err != nil {
+			return err
+		}
+	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO default_properties (
 			entry_type_id,
@@ -643,13 +652,8 @@ func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 		vals = append(vals, subTypeID)
 	}
 	if upd.Value != nil {
-		v := *upd.Value // v overrides default values for the sub entry.
-		ok := json.Valid([]byte(v))
-		if !ok {
-			return fmt.Errorf("value is not a valid json: %v", v)
-		}
 		keys = append(keys, "value=?")
-		vals = append(vals, v)
+		vals = append(vals, *upd.Value)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "sub_entry", upd.Name)
@@ -682,6 +686,13 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 		vals = append(vals, *upd.Type)
 	}
 	if upd.Value != nil {
+		if strings.HasPrefix(upd.Name, ".") {
+			var err error
+			*upd.Value, err = validateSpecialProperty(tx, ctx, upd.Name, *upd.Value)
+			if err != nil {
+				return err
+			}
+		}
 		keys = append(keys, "value=?")
 		vals = append(vals, *upd.Value)
 	}

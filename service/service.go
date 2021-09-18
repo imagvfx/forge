@@ -7,7 +7,9 @@ import (
 )
 
 type Service interface {
-	EntryTypes(ctx context.Context) ([]string, error)
+	FindEntryTypes(ctx context.Context) ([]string, error)
+	FindBaseEntryTypes(ctx context.Context) ([]string, error)
+	FindOverrideEntryTypes(ctx context.Context) ([]string, error)
 	AddEntryType(ctx context.Context, name string) error
 	RenameEntryType(ctx context.Context, name, newName string) error
 	DeleteEntryType(ctx context.Context, name string) error

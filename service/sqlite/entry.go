@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -309,7 +308,7 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	defer tx.Rollback()
-	err = addEntryR(tx, ctx, e, nil)
+	err = addEntryR(tx, ctx, e)
 	if err != nil {
 		return err
 	}
@@ -320,106 +319,160 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 	return nil
 }
 
-func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry, overrides *service.EntryOverrides) error {
+func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
+	if e.Path != "/" {
+		// Check and apply the type if it is predefined sub entry of the parent.
+		parentPath := filepath.Dir(e.Path)
+		entName := filepath.Base(e.Path)
+		predefined, err := getProperty(tx, ctx, parentPath, ".predefined_sub_entries")
+		if err != nil {
+			var e *service.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+		}
+		if predefined != nil {
+			predefinedType := ""
+			for _, sub := range strings.Split(predefined.Value, ",") {
+				sub = strings.TrimSpace(sub)
+				toks := strings.Split(sub, ":")
+				if len(toks) != 2 {
+					// It's an error, but let's just continue.
+					continue
+				}
+				subName := strings.TrimSpace(toks[0])
+				subType := strings.TrimSpace(toks[1])
+				if subName == "*" || subName == entName {
+					// Star (*) is catch all name.
+					predefinedType = subType
+					break
+				}
+			}
+			if predefinedType != "" {
+				baseType := strings.Split(predefinedType, ".")[0]
+				if e.Type != baseType {
+					return fmt.Errorf("cannot create predefined sub entry %v as type %v, should be %v", entName, e.Type, baseType)
+				}
+				e.Type = predefinedType
+			}
+		}
+	}
 	err := addEntry(tx, ctx, e)
 	if err != nil {
 		return err
+	}
+	entTypes := make([]string, 0)
+	if strings.Contains(e.Type, ".") {
+		baseType := strings.Split(e.Type, ".")[0]
+		entTypes = append(entTypes, baseType, e.Type)
+	} else {
+		entTypes = append(entTypes, e.Type)
+	}
+	seenProp := make(map[string]bool)
+	seenEnv := make(map[string]bool)
+	seenAcc := make(map[string]bool)
+	for _, entType := range entTypes {
+		defProps, err := findDefaultProperties(tx, ctx, service.DefaultFinder{EntryType: &entType})
+		if err != nil {
+			return err
+		}
+		for _, d := range defProps {
+			if !seenProp[d.Name] {
+				dp := &service.Property{
+					EntryPath: e.Path,
+					Name:      d.Name,
+					Type:      d.Type,
+					Value:     d.Value,
+				}
+				err := addProperty(tx, ctx, dp)
+				if err != nil {
+					return err
+				}
+				seenProp[d.Name] = true
+			} else {
+				upd := service.PropertyUpdater{
+					EntryPath: e.Path,
+					Name:      d.Name,
+					Value:     &d.Value,
+				}
+				err := updateProperty(tx, ctx, upd)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		defEnvs, err := findDefaultEnvirons(tx, ctx, service.DefaultFinder{EntryType: &entType})
+		if err != nil {
+			return err
+		}
+		for _, d := range defEnvs {
+			if !seenEnv[d.Name] {
+				denv := &service.Property{
+					EntryPath: e.Path,
+					Name:      d.Name,
+					Type:      d.Type,
+					Value:     d.Value,
+				}
+				err := addEnviron(tx, ctx, denv)
+				if err != nil {
+					return err
+				}
+				seenEnv[d.Name] = true
+			} else {
+				upd := service.PropertyUpdater{
+					EntryPath: e.Path,
+					Name:      d.Name,
+					Value:     &d.Value,
+				}
+				err := updateEnviron(tx, ctx, upd)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		defAccs, err := findDefaultAccesses(tx, ctx, service.DefaultFinder{EntryType: &entType})
+		if err != nil {
+			return err
+		}
+		for _, d := range defAccs {
+			if !seenAcc[d.Name] {
+				dacc := &service.AccessControl{
+					EntryPath:    e.Path,
+					Accessor:     d.Name,
+					AccessorType: d.Type,
+					Mode:         d.Value,
+				}
+				err := addAccessControl(tx, ctx, dacc)
+				if err != nil {
+					return err
+				}
+				seenAcc[d.Name] = true
+			} else {
+				upd := service.AccessControlUpdater{
+					EntryPath: e.Path,
+					Accessor:  d.Name,
+					Mode:      &d.Value,
+				}
+				err := updateAccessControl(tx, ctx, upd)
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 	defSubs, err := findDefaultSubEntries(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
 	if err != nil {
 		return err
 	}
 	for _, d := range defSubs {
-		var over *service.EntryOverrides
-		if d.Value != "" {
-			err := json.Unmarshal([]byte(d.Value), &over)
-			if err != nil {
-				return err
-			}
-		}
 		de := &service.Entry{
 			Path: filepath.Join(e.Path, d.Name),
 			Type: d.Type,
 		}
-		err = addEntryR(tx, ctx, de, over)
+		err = addEntryR(tx, ctx, de)
 		if err != nil {
 			return err
 		}
-	}
-	defProps, err := findDefaultProperties(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
-	if err != nil {
-		return err
-	}
-	for _, d := range defProps {
-		dp := &service.Property{
-			EntryPath: e.Path,
-			Name:      d.Name,
-			Type:      d.Type,
-			Value:     d.Value,
-		}
-		err := addProperty(tx, ctx, dp)
-		if err != nil {
-			return err
-		}
-	}
-	defEnvs, err := findDefaultEnvirons(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
-	if err != nil {
-		return err
-	}
-	for _, d := range defEnvs {
-		denv := &service.Property{
-			EntryPath: e.Path,
-			Name:      d.Name,
-			Type:      d.Type,
-			Value:     d.Value,
-		}
-		err := addEnviron(tx, ctx, denv)
-		if err != nil {
-			return err
-		}
-	}
-	defAccs, err := findDefaultAccesses(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
-	if err != nil {
-		return err
-	}
-	for _, d := range defAccs {
-		dacc := &service.AccessControl{
-			EntryPath:    e.Path,
-			Accessor:     d.Name,
-			AccessorType: d.Type,
-			Mode:         d.Value,
-		}
-		err := addAccessControl(tx, ctx, dacc)
-		if err != nil {
-			return err
-		}
-	}
-
-	if overrides != nil {
-		// override default values
-		for name, val := range overrides.Properties {
-			upd := service.PropertyUpdater{
-				EntryPath: e.Path,
-				Name:      name,
-				Value:     &val,
-			}
-			err := updateProperty(tx, ctx, upd)
-			if err != nil {
-				return err
-			}
-		}
-		for name, val := range overrides.Environs {
-			upd := service.PropertyUpdater{
-				EntryPath: e.Path,
-				Name:      name,
-				Value:     &val,
-			}
-			err := updateEnviron(tx, ctx, upd)
-			if err != nil {
-				return err
-			}
-		}
-		// TODO: override access after default access implemented
 	}
 	return nil
 }
@@ -434,7 +487,8 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	if !strings.HasPrefix(e.Path, "/") {
 		return fmt.Errorf("path is not started with /")
 	}
-	typeID, err := getEntryTypeID(tx, ctx, e.Type)
+	baseType := strings.Split(e.Type, ".")[0]
+	typeID, err := getEntryTypeID(tx, ctx, baseType)
 	if err != nil {
 		return err
 	}

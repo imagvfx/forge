@@ -1,0 +1,9 @@
+[Unit]
+Description=Forge
+
+[Service]
+Restart=always
+ExecStart=forge -host ${HOSTNAME}
+
+[Install]
+WantedBy=multi-user.target

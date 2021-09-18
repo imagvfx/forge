@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -37,7 +38,8 @@ func addRootEntryType(tx *sql.Tx) error {
 	return nil
 }
 
-func EntryTypes(db *sql.DB, ctx context.Context) ([]string, error) {
+// TODO: it should get EntryTypeFinder as an argument.
+func FindEntryTypes(db *sql.DB, ctx context.Context) ([]string, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -78,6 +80,85 @@ func findEntryTypes(tx *sql.Tx, ctx context.Context) ([]string, error) {
 	return typs, nil
 }
 
+func FindBaseEntryTypes(db *sql.DB, ctx context.Context) ([]string, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	names, err := findBaseEntryTypes(tx, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return names, nil
+}
+
+func findBaseEntryTypes(tx *sql.Tx, ctx context.Context) ([]string, error) {
+	ts, err := findEntryTypes(tx, ctx)
+	if err != nil {
+		return nil, err
+	}
+	origTs := make([]string, 0, len(ts))
+	for _, t := range ts {
+		if !strings.Contains(t, ".") {
+			origTs = append(origTs, t)
+		}
+	}
+	return origTs, nil
+}
+
+func FindOverrideEntryTypes(db *sql.DB, ctx context.Context) ([]string, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	names, err := findOverrideEntryTypes(tx, ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return names, nil
+}
+
+func findOverrideEntryTypes(tx *sql.Tx, ctx context.Context) ([]string, error) {
+	ts, err := findEntryTypes(tx, ctx)
+	if err != nil {
+		return nil, err
+	}
+	overTs := make([]string, 0, len(ts))
+	for _, t := range ts {
+		if strings.Contains(t, ".") {
+			overTs = append(overTs, t)
+		}
+	}
+	return overTs, nil
+}
+
+func getEntryTypeByID(tx *sql.Tx, ctx context.Context, id int) (string, error) {
+	rows, err := tx.QueryContext(ctx, "SELECT name FROM entry_types WHERE id=?", id)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return "", service.NotFound("entry type not found with id: %v", id)
+	}
+	var name string
+	err = rows.Scan(&name)
+	if err != nil {
+		return "", err
+	}
+	return name, nil
+}
+
 func getEntryTypeID(tx *sql.Tx, ctx context.Context, name string) (int, error) {
 	rows, err := tx.QueryContext(ctx, "SELECT id FROM entry_types WHERE name=?", name)
 	if err != nil {
@@ -116,6 +197,23 @@ func addEntryType(tx *sql.Tx, ctx context.Context, name string) error {
 	if name == "" {
 		return fmt.Errorf("entry type name not specified")
 	}
+	origType := strings.Split(name, ".")[0]
+	if name != origType {
+		allTypes, err := findEntryTypes(tx, ctx)
+		if err != nil {
+			return err
+		}
+		found := false
+		for _, t := range allTypes {
+			if t == origType {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("not found original entry type of the override entry type: %v", name)
+		}
+	}
 	_, err := tx.ExecContext(ctx, `
 		INSERT INTO entry_types (
 			name
@@ -153,6 +251,27 @@ func renameEntryType(tx *sql.Tx, ctx context.Context, name, newName string) erro
 	}
 	if newName == "" {
 		return fmt.Errorf("new name of entry type not specified: %v", newName)
+	}
+	origType := strings.Split(name, ".")[0]
+	if name != origType {
+		newOrigType := strings.Split(newName, ".")[0]
+		if origType != newOrigType {
+			return fmt.Errorf("new override entry type name should not change it's original entry type name")
+		}
+		allTypes, err := findEntryTypes(tx, ctx)
+		if err != nil {
+			return err
+		}
+		found := false
+		for _, t := range allTypes {
+			if t == origType {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("not found original entry type of the override entry type: %v", name)
+		}
 	}
 	result, err := tx.ExecContext(ctx, `
 		UPDATE entry_types

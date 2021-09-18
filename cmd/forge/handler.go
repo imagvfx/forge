@@ -336,7 +336,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 				propFilters[typ] = defaultProps[typ]
 			}
 		}
-		alltyps, err := h.server.EntryTypes(ctx)
+		baseTypes, err := h.server.FindBaseEntryTypes(ctx)
 		if err != nil {
 			return err
 		}
@@ -357,7 +357,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Environs                 []*forge.Property
 			AccessorTypes            []string
 			AccessControls           []*forge.AccessControl
-			AllEntryTypes            []string
+			BaseEntryTypes           []string
 		}{
 			User:                     user,
 			UserSetting:              setting,
@@ -375,7 +375,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			Environs:                 envs,
 			AccessorTypes:            forge.AccessorTypes(),
 			AccessControls:           acs,
-			AllEntryTypes:            alltyps,
+			BaseEntryTypes:           baseTypes,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 		if err != nil {
@@ -606,7 +606,7 @@ func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return nil
 		}
 		ctx := service.ContextWithUserName(r.Context(), user)
-		entTypes, err := h.server.EntryTypes(ctx)
+		entTypes, err := h.server.FindEntryTypes(ctx)
 		if err != nil {
 			return err
 		}
