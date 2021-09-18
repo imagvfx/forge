@@ -158,6 +158,9 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 	if !yes {
 		return service.Unauthorized("user doesn't have permission to add group: %v", user)
 	}
+	if strings.Split(g.Name, "@")[0] == "everyone" {
+		return fmt.Errorf("'everyone[@host]' group will be created automatically and cannot be created by a user")
+	}
 	err = addGroup(tx, ctx, g)
 	if err != nil {
 		return err
@@ -170,9 +173,6 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 }
 
 func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
-	if strings.Split(g.Name, "@")[0] == "everyone" {
-		return fmt.Errorf("'everyone[@host]' group will be created automatically and cannot be created by a user")
-	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO accessors (
 			is_group,

@@ -3,6 +3,8 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/imagvfx/forge/service"
@@ -154,6 +156,23 @@ func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
 	return nil
 }
 
+// splitUserName splits a username into a name and a domain parts.
+func splitUserName(username string) (string, string, error) {
+	if strings.Contains(username, " ") {
+		return "", "", fmt.Errorf("username should not contains spaces: %v", username)
+	}
+	toks := strings.Split(username, "@")
+	if len(toks) != 2 {
+		return "", "", fmt.Errorf("username should be '{user}@{domain}' form: %v", username)
+	}
+	name := toks[0]
+	if name == "everyone" {
+		return "", "", fmt.Errorf("'everyone@{domain}' is reserved for groups: %v", username)
+	}
+	domain := toks[1]
+	return name, domain, nil
+}
+
 func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	users, err := findUsers(tx, ctx, service.UserFinder{})
 	if err != nil {
@@ -162,6 +181,10 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	firstUser := false
 	if len(users) == 0 {
 		firstUser = true
+	}
+	_, domain, err := splitUserName(u.Name)
+	if err != nil {
+		return err
 	}
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO accessors (
@@ -185,6 +208,19 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 			Group:  "admin",
 			Member: u.Name,
 		})
+		if err != nil {
+			return err
+		}
+	}
+	// add everyone group if the user is first one who is signed with this domain.
+	everyone := "everyone@" + domain
+	_, err = getGroup(tx, ctx, everyone)
+	if err != nil {
+		var e *service.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
+		err := addGroup(tx, ctx, &service.Group{Name: everyone})
 		if err != nil {
 			return err
 		}
