@@ -1,11 +1,15 @@
-[root] # reserved
+[[types]]
+
+name = "root"
 
 properties = [
 	".sub_entry_types text = show",
 ]
 
 
-[show]
+[[types]]
+
+name = "show"
 
 environs = [
 	"SHOW entry_name = .",
@@ -19,41 +23,66 @@ properties = [
 ]
 
 sub_entries = [
-	'shot category = {"properties": {".sub_entry_types":"shot_group"}}',
-	'asset category = {"properties": {".sub_entry_types":"asset_group"}}',
+	'shot category.shot',
+	'asset category.asset',
 ]
 
 
-[category]
+[[types]]
+
+name = "category"
 
 properties = [
 	".sub_entry_types text = group",
 ]
 
+[[types]]
 
-[shot_group]
+name = "category.shot"
+
+properties = [
+	".predefined_sub_entries text = *:group.shot",
+]
+
+[[types]]
+
+name = "category.asset"
+
+properties = [
+	".predefined_sub_entries text = *:group.asset",
+]
+
+
+[[types]]
+
+name = "group"
 
 environs = [
 	"GROUP entry_name = ."
 ]
+
+
+[[types]]
+
+name = "group.shot"
 
 properties = [
 	".sub_entry_types text = shot"
 ]
 
 
-[asset_group]
+[[types]]
 
-environs = [
-	"GROUP entry_name = ."
-]
+name = "group.asset"
 
 properties = [
 	".sub_entry_types text = asset"
 ]
 
 
-[shot]
+[[types]]
+
+name = "shot"
 
 environs = [
 	"UNIT entry_name = .",
@@ -76,7 +105,9 @@ sub_entries = [
 ]
 
 
-[asset]
+[[types]]
+
+name = "asset"
 
 environs = [
 	"UNIT entry_name = .",
@@ -98,7 +129,9 @@ sub_entries = [
 ]
 
 
-[part]
+[[types]]
+
+name = "part"
 
 environs = [
 	"PART entry_name = .",
@@ -113,7 +146,9 @@ sub_entries = [
 ]
 
 
-[elem]
+[[types]]
+
+name = "elem"
 
 environs = [
 	"ELEM entry_name = .",
@@ -129,7 +164,9 @@ sub_entries = [
 ]
 
 
-[ver]
+[[types]]
+
+name = "ver"
 
 environs = [
 	"VER entry_name = .",
