@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/json"
@@ -127,494 +128,437 @@ func handleError(w http.ResponseWriter, err error) {
 	http.Error(w, err.Error(), status)
 }
 
-func (h *pageHandler) HandleEntry(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
+func (h *pageHandler) HandlerFunc(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := func() error {
+			session, err := getSession(r)
+			if err != nil {
+				clearSession(w)
+				return err
+			}
+			user := session["user"]
+			if user == "" {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return nil
+			}
+			ctx := service.ContextWithUserName(r.Context(), user)
+			return handleFunc(ctx, w, r)
+		}()
 		if err != nil {
-			clearSession(w)
-			return err
+			handleError(w, err)
 		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return nil
+	}
+}
+
+func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := service.UserNameFromContext(ctx)
+	setting, err := h.server.GetUserSetting(ctx, user)
+	if err != nil {
+		return err
+	}
+	path := r.URL.Path
+	ent, err := h.server.GetEntry(ctx, path)
+	if err != nil {
+		return err
+	}
+	props, err := h.server.EntryProperties(ctx, path)
+	if err != nil {
+		return err
+	}
+	visibleProps := make([]*forge.Property, 0)
+	hiddenProps := make([]*forge.Property, 0)
+	for _, p := range props {
+		if strings.HasPrefix(p.Name, ".") {
+			hiddenProps = append(hiddenProps, p)
+		} else {
+			visibleProps = append(visibleProps, p)
 		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		setting, err := h.server.GetUserSetting(ctx, user)
-		if err != nil {
-			return err
+	}
+	props = visibleProps
+	envs, err := h.server.EntryEnvirons(ctx, path)
+	if err != nil {
+		return err
+	}
+	acs, err := h.server.EntryAccessControls(ctx, path)
+	if err != nil {
+		return err
+	}
+	pinned := false
+	for _, p := range setting.PinnedPaths {
+		if p == path {
+			pinned = true
+			break
 		}
-		path := r.URL.Path
-		ent, err := h.server.GetEntry(ctx, path)
-		if err != nil {
-			return err
+	}
+	resultsFromSearch := false
+	var subEnts []*forge.Entry
+	search := r.FormValue("search")
+	searchEntryType := r.FormValue("search_entry_type")
+	searchQuery := r.FormValue("search_query")
+	if search != "" {
+		// User pressed search button,
+		// Note that it rather clear the search if every search field is emtpy.
+		if searchEntryType != setting.EntryPageSearchEntryType {
+			// Whether perform search or not, it will remeber the search entry type.
+			err := h.server.UpdateUserSetting(ctx, user, "entry_page_search_entry_type", searchEntryType)
+			if err != nil {
+				return err
+			}
+			// the update doesn't affect current page
+			setting.EntryPageSearchEntryType = searchEntryType
 		}
-		props, err := h.server.EntryProperties(ctx, path)
-		if err != nil {
-			return err
-		}
-		visibleProps := make([]*forge.Property, 0)
-		hiddenProps := make([]*forge.Property, 0)
-		for _, p := range props {
-			if strings.HasPrefix(p.Name, ".") {
-				hiddenProps = append(hiddenProps, p)
-			} else {
-				visibleProps = append(visibleProps, p)
+		if searchEntryType != "" || searchQuery != "" {
+			resultsFromSearch = true
+			subEnts, err = h.server.SearchEntries(ctx, path, searchEntryType, searchQuery)
+			if err != nil {
+				return err
 			}
 		}
-		props = visibleProps
-		envs, err := h.server.EntryEnvirons(ctx, path)
+	}
+	if !resultsFromSearch {
+		// Normal entry page
+		subEnts, err = h.server.SubEntries(ctx, path)
 		if err != nil {
 			return err
 		}
-		acs, err := h.server.EntryAccessControls(ctx, path)
-		if err != nil {
-			return err
-		}
-		pinned := false
-		for _, p := range setting.PinnedPaths {
-			if p == path {
-				pinned = true
+		searchEntryType = setting.EntryPageSearchEntryType
+	}
+	subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
+	if !resultsFromSearch {
+		// If the entry have .sub_entry_types property,
+		// default sub entry types are overrided with the property.
+		subtyps := make([]string, 0)
+		for _, p := range hiddenProps {
+			if p.Name == ".sub_entry_types" {
+				for _, subtyp := range strings.Split(p.Value, ",") {
+					if subtyp == "" {
+						continue
+					}
+					subtyps = append(subtyps, strings.TrimSpace(subtyp))
+				}
 				break
 			}
 		}
-		resultsFromSearch := false
-		var subEnts []*forge.Entry
-		search := r.FormValue("search")
-		searchEntryType := r.FormValue("search_entry_type")
-		searchQuery := r.FormValue("search_query")
-		if search != "" {
-			// User pressed search button,
-			// Note that it rather clear the search if every search field is emtpy.
-			if searchEntryType != setting.EntryPageSearchEntryType {
-				// Whether perform search or not, it will remeber the search entry type.
-				err := h.server.UpdateUserSetting(ctx, user, "entry_page_search_entry_type", searchEntryType)
-				if err != nil {
-					return err
-				}
-				// the update doesn't affect current page
-				setting.EntryPageSearchEntryType = searchEntryType
+		for _, t := range subtyps {
+			subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
+		}
+	}
+	subEntProps := make(map[string]map[string]*forge.Property)
+	for _, e := range subEnts {
+		if subEntsByTypeByParent[e.Type] == nil {
+			// This should come from search results.
+			subEntsByTypeByParent[e.Type] = make(map[string][]*forge.Entry)
+		}
+		byParent := subEntsByTypeByParent[e.Type]
+		parent := filepath.Dir(e.Path)
+		if e.Path == "/" {
+			parent = ""
+		}
+		if byParent[parent] == nil {
+			byParent[parent] = make([]*forge.Entry, 0)
+		}
+		byParent[parent] = append(byParent[parent], e)
+		subEntsByTypeByParent[e.Type] = byParent
+		// subProps
+		props, err := h.server.EntryProperties(ctx, e.Path)
+		if err != nil {
+			return err
+		}
+		subProps := make(map[string]*forge.Property)
+		for _, p := range props {
+			if strings.HasPrefix(p.Name, ".") {
+				// hidden property
+				continue
 			}
-			if searchEntryType != "" || searchQuery != "" {
-				resultsFromSearch = true
-				subEnts, err = h.server.SearchEntries(ctx, path, searchEntryType, searchQuery)
-				if err != nil {
-					return err
-				}
+			subProps[p.Name] = p
+		}
+		subEntProps[e.Path] = subProps
+	}
+	// sort
+	for t, byParent := range subEntsByTypeByParent {
+		var prop string
+		var desc bool
+		sortProp := setting.EntryPageSortProperty[t]
+		if sortProp != "" {
+			prefix := sortProp[0]
+			prop = sortProp[1:]
+			if prefix == '-' {
+				desc = true
 			}
 		}
-		if !resultsFromSearch {
-			// Normal entry page
-			subEnts, err = h.server.SubEntries(ctx, path)
-			if err != nil {
-				return err
-			}
-			searchEntryType = setting.EntryPageSearchEntryType
-		}
-		subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
-		if !resultsFromSearch {
-			// If the entry have .sub_entry_types property,
-			// default sub entry types are overrided with the property.
-			subtyps := make([]string, 0)
-			for _, p := range hiddenProps {
-				if p.Name == ".sub_entry_types" {
-					for _, subtyp := range strings.Split(p.Value, ",") {
-						if subtyp == "" {
-							continue
-						}
-						subtyps = append(subtyps, strings.TrimSpace(subtyp))
+		for _, ents := range byParent {
+			sort.Slice(ents, func(i, j int) bool {
+				if prop == "" {
+					if !desc {
+						return ents[i].Name() < ents[j].Name()
 					}
-					break
+					return ents[i].Name() > ents[j].Name()
 				}
-			}
-			for _, t := range subtyps {
-				subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
-			}
-		}
-		subEntProps := make(map[string]map[string]*forge.Property)
-		for _, e := range subEnts {
-			if subEntsByTypeByParent[e.Type] == nil {
-				// This should come from search results.
-				subEntsByTypeByParent[e.Type] = make(map[string][]*forge.Entry)
-			}
-			byParent := subEntsByTypeByParent[e.Type]
-			parent := filepath.Dir(e.Path)
-			if e.Path == "/" {
-				parent = ""
-			}
-			if byParent[parent] == nil {
-				byParent[parent] = make([]*forge.Entry, 0)
-			}
-			byParent[parent] = append(byParent[parent], e)
-			subEntsByTypeByParent[e.Type] = byParent
-			// subProps
-			props, err := h.server.EntryProperties(ctx, e.Path)
-			if err != nil {
-				return err
-			}
-			subProps := make(map[string]*forge.Property)
-			for _, p := range props {
-				if strings.HasPrefix(p.Name, ".") {
-					// hidden property
-					continue
+				ip := subEntProps[ents[i].Path][prop]
+				jp := subEntProps[ents[j].Path][prop]
+				iv := ip.Value
+				jv := jp.Value
+				var less bool
+				if ip.Type != jp.Type {
+					less = ip.Type < jp.Type
+				} else if iv == jv {
+					less = ents[i].Name() < ents[j].Name()
+				} else {
+					less = forge.LessProperty(ip.Type, iv, jv)
 				}
-				subProps[p.Name] = p
-			}
-			subEntProps[e.Path] = subProps
-		}
-		// sort
-		for t, byParent := range subEntsByTypeByParent {
-			var prop string
-			var desc bool
-			sortProp := setting.EntryPageSortProperty[t]
-			if sortProp != "" {
-				prefix := sortProp[0]
-				prop = sortProp[1:]
-				if prefix == '-' {
-					desc = true
+				if desc {
+					less = !less
 				}
-			}
-			for _, ents := range byParent {
-				sort.Slice(ents, func(i, j int) bool {
-					if prop == "" {
-						if !desc {
-							return ents[i].Name() < ents[j].Name()
-						}
-						return ents[i].Name() > ents[j].Name()
-					}
-					ip := subEntProps[ents[i].Path][prop]
-					jp := subEntProps[ents[j].Path][prop]
-					iv := ip.Value
-					jv := jp.Value
-					var less bool
-					if ip.Type != jp.Type {
-						less = ip.Type < jp.Type
-					} else if iv == jv {
-						less = ents[i].Name() < ents[j].Name()
+				if iv == "" || jv == "" {
+					// Entry with empty value should stand behind of non-empty value
+					// regardless of the order type.
+					if iv == "" {
+						less = false
 					} else {
-						less = forge.LessProperty(ip.Type, iv, jv)
+						less = true
 					}
-					if desc {
-						less = !less
-					}
-					if iv == "" || jv == "" {
-						// Entry with empty value should stand behind of non-empty value
-						// regardless of the order type.
-						if iv == "" {
-							less = false
-						} else {
-							less = true
-						}
-					}
-					return less
-				})
-			}
-
-		}
-		// property filter
-		defaultProps := make(map[string][]string)
-		propFilters := make(map[string][]string)
-		for typ := range subEntsByTypeByParent {
-			defaults, err := h.server.Defaults(ctx, typ)
-			if err != nil {
-				return err
-			}
-			for _, d := range defaults {
-				if d.Category == "property" && !strings.HasPrefix(d.Name, ".") {
-					defaultProps[typ] = append(defaultProps[typ], d.Name)
 				}
-			}
-			if setting.EntryPagePropertyFilter != nil && setting.EntryPagePropertyFilter[typ] != "" {
-				filter := setting.EntryPagePropertyFilter[typ]
-				propFilters[typ] = strings.Fields(filter)
-			} else {
-				propFilters[typ] = defaultProps[typ]
-			}
+				return less
+			})
 		}
-		baseTypes, err := h.server.FindBaseEntryTypes(ctx)
-		if err != nil {
-			return err
-		}
-		recipe := struct {
-			User                     string
-			UserSetting              *forge.UserSetting
-			Entry                    *forge.Entry
-			EntryPinned              bool
-			SearchEntryType          string
-			SearchQuery              string
-			ResultsFromSearch        bool
-			SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
-			SubEntryProperties       map[string]map[string]*forge.Property
-			PropertyTypes            []string
-			DefaultProperties        map[string][]string
-			PropertyFilters          map[string][]string
-			Properties               []*forge.Property
-			Environs                 []*forge.Property
-			AccessorTypes            []string
-			AccessControls           []*forge.AccessControl
-			BaseEntryTypes           []string
-		}{
-			User:                     user,
-			UserSetting:              setting,
-			Entry:                    ent,
-			EntryPinned:              pinned,
-			SearchEntryType:          searchEntryType,
-			SearchQuery:              searchQuery,
-			ResultsFromSearch:        resultsFromSearch,
-			SubEntriesByTypeByParent: subEntsByTypeByParent,
-			SubEntryProperties:       subEntProps,
-			PropertyTypes:            forge.PropertyTypes(),
-			DefaultProperties:        defaultProps,
-			PropertyFilters:          propFilters,
-			Properties:               props,
-			Environs:                 envs,
-			AccessorTypes:            forge.AccessorTypes(),
-			AccessControls:           acs,
-			BaseEntryTypes:           baseTypes,
-		}
-		err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
-		if err != nil {
-			return err
-		}
-		return nil
-	}()
-	handleError(w, err)
-}
 
-func (h *pageHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return nil
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		ent, err := h.server.GetEntry(ctx, path)
+	}
+	// property filter
+	defaultProps := make(map[string][]string)
+	propFilters := make(map[string][]string)
+	for typ := range subEntsByTypeByParent {
+		defaults, err := h.server.Defaults(ctx, typ)
 		if err != nil {
 			return err
 		}
-		ctg := r.FormValue("category")
-		name := r.FormValue("name")
-		if ctg != "" || name != "" {
-			logs, err := h.server.GetLogs(ctx, path, ctg, name)
-			if err != nil {
-				return err
+		for _, d := range defaults {
+			if d.Category == "property" && !strings.HasPrefix(d.Name, ".") {
+				defaultProps[typ] = append(defaultProps[typ], d.Name)
 			}
-			// history is selected set of logs of an item.
-			history := make([]*forge.Log, 0)
-			for _, l := range logs {
-				if l.Value == "" {
-					continue
-				}
-				l.When = l.When.Local()
-				history = append(history, l)
-			}
-			recipe := struct {
-				User     string
-				Entry    *forge.Entry
-				Category string
-				Name     string
-				History  []*forge.Log
-			}{
-				User:     user,
-				Entry:    ent,
-				Category: ctg,
-				Name:     name,
-				History:  history,
-			}
-			err = Tmpl.ExecuteTemplate(w, "entry-item-history.bml", recipe)
-			if err != nil {
-				return err
-			}
-			return nil
+		}
+		if setting.EntryPagePropertyFilter != nil && setting.EntryPagePropertyFilter[typ] != "" {
+			filter := setting.EntryPagePropertyFilter[typ]
+			propFilters[typ] = strings.Fields(filter)
 		} else {
-			logs, err := h.server.EntryLogs(ctx, path)
-			if err != nil {
-				return err
-			}
-			for _, l := range logs {
-				l.When = l.When.Local()
-			}
-			recipe := struct {
-				User  string
-				Entry *forge.Entry
-				Logs  []*forge.Log
-			}{
-				User:  user,
-				Entry: ent,
-				Logs:  logs,
-			}
-			err = Tmpl.ExecuteTemplate(w, "entry-logs.bml", recipe)
-			if err != nil {
-				return err
-			}
-			return nil
+			propFilters[typ] = defaultProps[typ]
 		}
-	}()
-	handleError(w, err)
+	}
+	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
+	if err != nil {
+		return err
+	}
+	recipe := struct {
+		User                     string
+		UserSetting              *forge.UserSetting
+		Entry                    *forge.Entry
+		EntryPinned              bool
+		SearchEntryType          string
+		SearchQuery              string
+		ResultsFromSearch        bool
+		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
+		SubEntryProperties       map[string]map[string]*forge.Property
+		PropertyTypes            []string
+		DefaultProperties        map[string][]string
+		PropertyFilters          map[string][]string
+		Properties               []*forge.Property
+		Environs                 []*forge.Property
+		AccessorTypes            []string
+		AccessControls           []*forge.AccessControl
+		BaseEntryTypes           []string
+	}{
+		User:                     user,
+		UserSetting:              setting,
+		Entry:                    ent,
+		EntryPinned:              pinned,
+		SearchEntryType:          searchEntryType,
+		SearchQuery:              searchQuery,
+		ResultsFromSearch:        resultsFromSearch,
+		SubEntriesByTypeByParent: subEntsByTypeByParent,
+		SubEntryProperties:       subEntProps,
+		PropertyTypes:            forge.PropertyTypes(),
+		DefaultProperties:        defaultProps,
+		PropertyFilters:          propFilters,
+		Properties:               props,
+		Environs:                 envs,
+		AccessorTypes:            forge.AccessorTypes(),
+		AccessControls:           acs,
+		BaseEntryTypes:           baseTypes,
+	}
+	err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (h *pageHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if !strings.HasPrefix(r.URL.Path, "/thumbnail/") {
-			return fmt.Errorf("invalid thumbnail path")
-		}
-		path := strings.TrimPrefix(r.URL.Path, "/thumbnail")
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return nil
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		thumb, err := h.server.GetThumbnail(ctx, path)
+func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := service.UserNameFromContext(ctx)
+	path := r.FormValue("path")
+	ent, err := h.server.GetEntry(ctx, path)
+	if err != nil {
+		return err
+	}
+	ctg := r.FormValue("category")
+	name := r.FormValue("name")
+	if ctg != "" || name != "" {
+		logs, err := h.server.GetLogs(ctx, path, ctg, name)
 		if err != nil {
 			return err
 		}
-		sum := md5.Sum(thumb.Data)
-		hash := base64.URLEncoding.EncodeToString(sum[:])
-		if r.Header.Get("If-None-Match") == hash {
-			w.WriteHeader(http.StatusNotModified)
-			return nil
+		// history is selected set of logs of an item.
+		history := make([]*forge.Log, 0)
+		for _, l := range logs {
+			if l.Value == "" {
+				continue
+			}
+			l.When = l.When.Local()
+			history = append(history, l)
 		}
-		w.Header().Set("Content-Type", "image/png")
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("ETag", hash)
-		_, err = io.Copy(w, bytes.NewReader(thumb.Data))
+		recipe := struct {
+			User     string
+			Entry    *forge.Entry
+			Category string
+			Name     string
+			History  []*forge.Log
+		}{
+			User:     user,
+			Entry:    ent,
+			Category: ctg,
+			Name:     name,
+			History:  history,
+		}
+		err = Tmpl.ExecuteTemplate(w, "entry-item-history.bml", recipe)
 		if err != nil {
 			return err
 		}
 		return nil
-	}()
-	handleError(w, err)
-}
-
-func (h *pageHandler) HandleUsers(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return nil
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		users, err := h.server.Users(ctx)
+	} else {
+		logs, err := h.server.EntryLogs(ctx, path)
 		if err != nil {
 			return err
+		}
+		for _, l := range logs {
+			l.When = l.When.Local()
 		}
 		recipe := struct {
-			User    string
-			Users   []*forge.User
-			Members map[string][]*forge.Member
+			User  string
+			Entry *forge.Entry
+			Logs  []*forge.Log
 		}{
 			User:  user,
-			Users: users,
+			Entry: ent,
+			Logs:  logs,
 		}
-		err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)
+		err = Tmpl.ExecuteTemplate(w, "entry-logs.bml", recipe)
 		if err != nil {
 			return err
 		}
 		return nil
-	}()
-	handleError(w, err)
+	}
 }
 
-func (h *pageHandler) HandleGroups(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return nil
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		groups, err := h.server.FindAllGroups(ctx)
-		if err != nil {
-			return err
-		}
-		members := make(map[string][]*forge.Member)
-		for _, g := range groups {
-			mems, err := h.server.FindGroupMembers(ctx, g.Name)
-			if err != nil {
-				return err
-			}
-			members[g.Name] = mems
-		}
-		recipe := struct {
-			User    string
-			Groups  []*forge.Group
-			Members map[string][]*forge.Member
-		}{
-			User:    user,
-			Groups:  groups,
-			Members: members,
-		}
-		err = Tmpl.ExecuteTemplate(w, "groups.bml", recipe)
-		if err != nil {
-			return err
-		}
+func (h *pageHandler) handleThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	if !strings.HasPrefix(r.URL.Path, "/thumbnail/") {
+		return fmt.Errorf("invalid thumbnail path")
+	}
+	path := strings.TrimPrefix(r.URL.Path, "/thumbnail")
+	thumb, err := h.server.GetThumbnail(ctx, path)
+	if err != nil {
+		return err
+	}
+	sum := md5.Sum(thumb.Data)
+	hash := base64.URLEncoding.EncodeToString(sum[:])
+	if r.Header.Get("If-None-Match") == hash {
+		w.WriteHeader(http.StatusNotModified)
 		return nil
-	}()
-	handleError(w, err)
+	}
+	w.Header().Set("Content-Type", "image/png")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("ETag", hash)
+	_, err = io.Copy(w, bytes.NewReader(thumb.Data))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (h *pageHandler) HandleEntryTypes(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		if user == "" {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return nil
-		}
-		ctx := service.ContextWithUserName(r.Context(), user)
-		entTypes, err := h.server.FindEntryTypes(ctx)
-		if err != nil {
-			return err
-		}
-		entDefaults := make(map[string][]*forge.Default)
-		for _, t := range entTypes {
-			items, err := h.server.Defaults(ctx, t)
-			if err != nil {
-				return err
-			}
-			entDefaults[t] = items
-		}
-		recipe := struct {
-			User       string
-			EntryTypes []string
-			Defaults   map[string][]*forge.Default
-		}{
-			User:       user,
-			EntryTypes: entTypes,
-			Defaults:   entDefaults,
-		}
-		err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
+func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := service.UserNameFromContext(ctx)
+	users, err := h.server.Users(ctx)
+	if err != nil {
+		return err
+	}
+	recipe := struct {
+		User    string
+		Users   []*forge.User
+		Members map[string][]*forge.Member
+	}{
+		User:  user,
+		Users: users,
+	}
+	err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := service.UserNameFromContext(ctx)
+	groups, err := h.server.FindAllGroups(ctx)
+	if err != nil {
+		return err
+	}
+	members := make(map[string][]*forge.Member)
+	for _, g := range groups {
+		mems, err := h.server.FindGroupMembers(ctx, g.Name)
 		if err != nil {
 			return err
 		}
-		return nil
-	}()
-	handleError(w, err)
+		members[g.Name] = mems
+	}
+	recipe := struct {
+		User    string
+		Groups  []*forge.Group
+		Members map[string][]*forge.Member
+	}{
+		User:    user,
+		Groups:  groups,
+		Members: members,
+	}
+	err = Tmpl.ExecuteTemplate(w, "groups.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := service.UserNameFromContext(ctx)
+	entTypes, err := h.server.FindEntryTypes(ctx)
+	if err != nil {
+		return err
+	}
+	entDefaults := make(map[string][]*forge.Default)
+	for _, t := range entTypes {
+		items, err := h.server.Defaults(ctx, t)
+		if err != nil {
+			return err
+		}
+		entDefaults[t] = items
+	}
+	recipe := struct {
+		User       string
+		EntryTypes []string
+		Defaults   map[string][]*forge.Default
+	}{
+		User:       user,
+		EntryTypes: entTypes,
+		Defaults:   entDefaults,
+	}
+	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
 }
