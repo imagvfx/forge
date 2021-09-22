@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -18,6 +19,25 @@ type apiHandler struct {
 	server *forge.Server
 }
 
+func (h *apiHandler) HandlerFunc(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := func() error {
+			if r.Method != "POST" {
+				return fmt.Errorf("need POST, got %v", r.Method)
+			}
+			session, err := getSession(r)
+			if err != nil {
+				clearSession(w)
+				return err
+			}
+			user := session["user"]
+			ctx := service.ContextWithUserName(r.Context(), user)
+			return handleFunc(ctx, w, r)
+		}()
+		handleError(w, err)
+	}
+}
+
 func (h *apiHandler) WriteResponse(w http.ResponseWriter, m interface{}, e error) {
 	w.WriteHeader(httpStatusFromError(e))
 	resp, _ := json.Marshal(forge.APIResponse{Msg: m, Err: e})
@@ -27,852 +47,475 @@ func (h *apiHandler) WriteResponse(w http.ResponseWriter, m interface{}, e error
 	}
 }
 
-func (h *apiHandler) HandleAddEntryType(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		name := r.FormValue("name")
-		err = h.server.AddEntryType(ctx, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	name := r.FormValue("name")
+	err := h.server.AddEntryType(ctx, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleRenameEntryType(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		name := r.FormValue("name")
-		newName := r.FormValue("new_name")
-		err = h.server.RenameEntryType(ctx, name, newName)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleRenameEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	name := r.FormValue("name")
+	newName := r.FormValue("new_name")
+	err := h.server.RenameEntryType(ctx, name, newName)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteEntryType(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		// parent, if suggested, will be used as prefix of the path.
-		name := r.FormValue("name")
-		err = h.server.DeleteEntryType(ctx, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	name := r.FormValue("name")
+	err := h.server.DeleteEntryType(ctx, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddDefault(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		entType := r.FormValue("entry_type")
-		ctg := r.FormValue("category")
-		name := r.FormValue("name")
-		typ := r.FormValue("type")
-		value := r.FormValue("value")
-		err = h.server.AddDefault(ctx, entType, ctg, name, typ, value)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddDefault(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	ctg := r.FormValue("category")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	value := r.FormValue("value")
+	err := h.server.AddDefault(ctx, entType, ctg, name, typ, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleSetDefault(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		entType := r.FormValue("entry_type")
-		ctg := r.FormValue("category")
-		name := r.FormValue("name")
-		typ := r.FormValue("type")
-		value := r.FormValue("value")
-		err = h.server.SetDefault(ctx, entType, ctg, name, typ, value)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleSetDefault(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	ctg := r.FormValue("category")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	value := r.FormValue("value")
+	err := h.server.SetDefault(ctx, entType, ctg, name, typ, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteDefault(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		// parent, if suggested, will be used as prefix of the path.
-		entType := r.FormValue("entry_type")
-		ctg := r.FormValue("category")
-		name := r.FormValue("name")
-		err = h.server.DeleteDefault(ctx, entType, ctg, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteDefault(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	ctg := r.FormValue("category")
+	name := r.FormValue("name")
+	err := h.server.DeleteDefault(ctx, entType, ctg, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddEntry(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
+func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	// parent, if suggested, will be used as prefix of the path.
+	parent := r.FormValue("parent")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	for _, n := range strings.Fields(name) {
+		// treat seperate field a child name
+		path := filepath.Join(parent, n)
+		err := h.server.AddEntry(ctx, path, typ)
 		if err != nil {
-			clearSession(w)
 			return err
 		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		// parent, if suggested, will be used as prefix of the path.
-		parent := r.FormValue("parent")
-		name := r.FormValue("name")
-		typ := r.FormValue("type")
-		for _, n := range strings.Fields(name) {
-			// treat seperate field a child name
-			path := filepath.Join(parent, n)
-			err := h.server.AddEntry(ctx, path, typ)
-			if err != nil {
-				return err
-			}
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleRenameEntry(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		// parent, if suggested, will be used as prefix of the path.
-		path := r.FormValue("path")
-		newName := r.FormValue("new-name")
-		err = h.server.RenameEntry(ctx, path, newName)
-		if err != nil {
-			return err
-		}
-		newPath := filepath.Dir(path) + "/" + newName
-		if r.FormValue("back_to_referer") != "" {
-			referer := strings.Replace(r.Header.Get("Referer"), path, newPath, 1)
-			http.Redirect(w, r, referer, http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleRenameEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	newName := r.FormValue("new-name")
+	err := h.server.RenameEntry(ctx, path, newName)
+	if err != nil {
+		return err
+	}
+	newPath := filepath.Dir(path) + "/" + newName
+	if r.FormValue("back_to_referer") != "" {
+		referer := strings.Replace(r.Header.Get("Referer"), path, newPath, 1)
+		http.Redirect(w, r, referer, http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteEntry(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
+func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	err := h.server.DeleteEntry(ctx, path)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		referer := r.Header.Get("Referer")
+		toks := strings.SplitN(referer, "?", 2)
+		url := toks[0]
+		parm := ""
+		if len(toks) == 2 {
+			parm = toks[1]
 		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
+		if strings.HasSuffix(url, path) {
+			referer = filepath.Dir(path) + "?" + parm
 		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		// parent, if suggested, will be used as prefix of the path.
-		path := r.FormValue("path")
-		err = h.server.DeleteEntry(ctx, path)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			referer := r.Header.Get("Referer")
-			toks := strings.SplitN(referer, "?", 2)
-			url := toks[0]
-			parm := ""
-			if len(toks) == 2 {
-				parm = toks[1]
-			}
-			if strings.HasSuffix(url, path) {
-				referer = filepath.Dir(path) + "?" + parm
-			}
-			http.Redirect(w, r, referer, http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+		http.Redirect(w, r, referer, http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddProperty(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		typ := r.FormValue("type")
-		value := r.FormValue("value")
-		value = strings.TrimSpace(value)
-		err = h.server.AddProperty(ctx, path, name, typ, value)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	err := h.server.AddProperty(ctx, path, name, typ, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleSetProperty(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		value := r.FormValue("value")
-		value = strings.TrimSpace(value)
-		err = h.server.SetProperty(ctx, path, name, value)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleSetProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	err := h.server.SetProperty(ctx, path, name, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleGetProperty(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		p, err := h.server.GetProperty(ctx, path, name)
-		h.WriteResponse(w, p, err)
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleGetProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	p, err := h.server.GetProperty(ctx, path, name)
+	h.WriteResponse(w, p, err)
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteProperty(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		err = h.server.DeleteProperty(ctx, path, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	err := h.server.DeleteProperty(ctx, path, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddEnviron(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		typ := r.FormValue("type")
-		value := r.FormValue("value")
-		value = strings.TrimSpace(value)
-		err = h.server.AddEnviron(ctx, path, name, typ, value)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	err := h.server.AddEnviron(ctx, path, name, typ, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleSetEnviron(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		value := r.FormValue("value")
-		value = strings.TrimSpace(value)
-		err = h.server.SetEnviron(ctx, path, name, value)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleSetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	err := h.server.SetEnviron(ctx, path, name, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleGetEnviron(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		env, err := h.server.GetEnviron(ctx, path, name)
-		h.WriteResponse(w, env, err)
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleGetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	env, err := h.server.GetEnviron(ctx, path, name)
+	h.WriteResponse(w, env, err)
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteEnviron(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		err = h.server.DeleteEnviron(ctx, path, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	err := h.server.DeleteEnviron(ctx, path, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddAccess(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		accessor := r.FormValue("name")
-		accessor_type := r.FormValue("type")
-		mode := r.FormValue("value")
-		mode = strings.TrimSpace(mode)
-		err = h.server.AddAccessControl(ctx, path, accessor, accessor_type, mode)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	accessor := r.FormValue("name")
+	accessor_type := r.FormValue("type")
+	mode := r.FormValue("value")
+	mode = strings.TrimSpace(mode)
+	err := h.server.AddAccessControl(ctx, path, accessor, accessor_type, mode)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleSetAccess(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		accessor := r.FormValue("name")
-		mode := r.FormValue("value")
-		mode = strings.TrimSpace(mode)
-		err = h.server.SetAccessControl(ctx, path, accessor, mode)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleSetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	accessor := r.FormValue("name")
+	mode := r.FormValue("value")
+	mode = strings.TrimSpace(mode)
+	err := h.server.SetAccessControl(ctx, path, accessor, mode)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleGetAccess(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		acl, err := h.server.GetAccessControl(ctx, path, name)
-		h.WriteResponse(w, acl, err)
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	acl, err := h.server.GetAccessControl(ctx, path, name)
+	h.WriteResponse(w, acl, err)
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteAccess(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		name := r.FormValue("name")
-		err = h.server.DeleteAccessControl(ctx, path, name)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	name := r.FormValue("name")
+	err := h.server.DeleteAccessControl(ctx, path, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddGroup(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		group := r.FormValue("group")
-		g := &forge.Group{
-			Name: group,
-		}
-		err = h.server.AddGroup(ctx, g)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddGroup(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	group := r.FormValue("group")
+	g := &forge.Group{
+		Name: group,
+	}
+	err := h.server.AddGroup(ctx, g)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleRenameGroup(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		group := r.FormValue("group")
-		newName := r.FormValue("new-name")
-		err = h.server.RenameGroup(ctx, group, newName)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleRenameGroup(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	group := r.FormValue("group")
+	newName := r.FormValue("new-name")
+	err := h.server.RenameGroup(ctx, group, newName)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddGroupMember(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		group := r.FormValue("group")
-		member := r.FormValue("member")
-		err = h.server.AddGroupMember(ctx, group, member)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddGroupMember(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	group := r.FormValue("group")
+	member := r.FormValue("member")
+	err := h.server.AddGroupMember(ctx, group, member)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteGroupMember(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		group := r.FormValue("group")
-		member := r.FormValue("member")
-		err = h.server.DeleteGroupMember(ctx, group, member)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteGroupMember(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	group := r.FormValue("group")
+	member := r.FormValue("member")
+	err := h.server.DeleteGroupMember(ctx, group, member)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleAddThumbnail(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		KiB := int64(1 << 10)
-		r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
-		file, _, err := r.FormFile("file")
-		if err != nil {
-			return err
-		}
-		img, _, err := image.Decode(file)
-		if err != nil {
-			return err
-		}
-		err = h.server.AddThumbnail(ctx, path, img)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleAddThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	KiB := int64(1 << 10)
+	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		return err
+	}
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return err
+	}
+	err = h.server.AddThumbnail(ctx, path, img)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleUpdateThumbnail(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		KiB := int64(1 << 10)
-		r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
-		file, _, err := r.FormFile("file")
-		if err != nil {
-			return err
-		}
-		img, _, err := image.Decode(file)
-		if err != nil {
-			return err
-		}
-		err = h.server.UpdateThumbnail(ctx, path, img)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleUpdateThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	KiB := int64(1 << 10)
+	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		return err
+	}
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return err
+	}
+	err = h.server.UpdateThumbnail(ctx, path, img)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleDeleteThumbnail(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
-		}
-		session, err := getSession(r)
-		if err != nil {
-			clearSession(w)
-			return err
-		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		path := r.FormValue("path")
-		err = h.server.DeleteThumbnail(ctx, path)
-		if err != nil {
-			return err
-		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-		}
-		return nil
-	}()
-	handleError(w, err)
+func (h *apiHandler) handleDeleteThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	err := h.server.DeleteThumbnail(ctx, path)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
 
-func (h *apiHandler) HandleSetUserSetting(w http.ResponseWriter, r *http.Request) {
-	err := func() error {
-		if r.Method != "POST" {
-			return fmt.Errorf("need POST, got %v", r.Method)
+func (h *apiHandler) handleSetUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	// NOTE: don't use make, maps not for the update should be nil
+	if r.FormValue("update_filter") != "" {
+		entryType := r.FormValue("entry_page_entry_type")
+		filter := r.FormValue("entry_page_property_filter")
+		propertyFilter := map[string]string{
+			entryType: filter,
 		}
-		session, err := getSession(r)
+		user := service.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "entry_page_property_filter", propertyFilter)
 		if err != nil {
-			clearSession(w)
 			return err
 		}
-		user := session["user"]
-		ctx := service.ContextWithUserName(r.Context(), user)
-		// NOTE: don't use make, maps not for the update should be nil
-		if r.FormValue("update_filter") != "" {
-			entryType := r.FormValue("entry_page_entry_type")
-			filter := r.FormValue("entry_page_property_filter")
-			propertyFilter := map[string]string{
-				entryType: filter,
-			}
-			err := h.server.UpdateUserSetting(ctx, user, "entry_page_property_filter", propertyFilter)
-			if err != nil {
-				return err
-			}
+	}
+	if r.FormValue("update_sort") != "" {
+		entryType := r.FormValue("entry_page_entry_type")
+		sortProp := r.FormValue("entry_page_sort_property") // sort by entry name if empty
+		sortPrefix := "+"
+		if r.FormValue("entry_page_sort_desc") != "" {
+			sortPrefix = "-"
 		}
-		if r.FormValue("update_sort") != "" {
-			entryType := r.FormValue("entry_page_entry_type")
-			sortProp := r.FormValue("entry_page_sort_property") // sort by entry name if empty
-			sortPrefix := "+"
-			if r.FormValue("entry_page_sort_desc") != "" {
-				sortPrefix = "-"
-			}
-			sortProperty := map[string]string{
-				entryType: sortPrefix + sortProp,
-			}
-			err := h.server.UpdateUserSetting(ctx, user, "entry_page_sort_property", sortProperty)
-			if err != nil {
-				return err
-			}
+		sortProperty := map[string]string{
+			entryType: sortPrefix + sortProp,
 		}
-		if r.FormValue("update_quick_search") != "" {
-			name := r.FormValue("quick_search_name")
-			val := r.FormValue("quick_search_value")
-			quickSearch := map[string]string{
-				name: val,
-			}
-			err := h.server.UpdateUserSetting(ctx, user, "entry_page_quick_search", quickSearch)
-			if err != nil {
-				return err
-			}
+		user := service.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "entry_page_sort_property", sortProperty)
+		if err != nil {
+			return err
 		}
-		if r.FormValue("update_pinned_path") != "" {
-			path := strings.TrimSpace(r.FormValue("pinned_path"))
-			if path == "" {
-				return fmt.Errorf("pinned_path not provided")
-			}
-			at := r.FormValue("pinned_path_at")
-			n, err := strconv.Atoi(at)
-			if err != nil {
-				return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
-			}
-			pinnedPath := service.PinnedPathArranger{
-				Path:  path,
-				Index: n,
-			}
-			err = h.server.UpdateUserSetting(ctx, user, "pinned_paths", pinnedPath)
-			if err != nil {
-				return err
-			}
+	}
+	if r.FormValue("update_quick_search") != "" {
+		name := r.FormValue("quick_search_name")
+		val := r.FormValue("quick_search_value")
+		quickSearch := map[string]string{
+			name: val,
 		}
-		if r.FormValue("back_to_referer") != "" {
-			http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		user := service.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "entry_page_quick_search", quickSearch)
+		if err != nil {
+			return err
 		}
-		return nil
-	}()
-	handleError(w, err)
+	}
+	if r.FormValue("update_pinned_path") != "" {
+		path := strings.TrimSpace(r.FormValue("pinned_path"))
+		if path == "" {
+			return fmt.Errorf("pinned_path not provided")
+		}
+		at := r.FormValue("pinned_path_at")
+		n, err := strconv.Atoi(at)
+		if err != nil {
+			return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
+		}
+		pinnedPath := service.PinnedPathArranger{
+			Path:  path,
+			Index: n,
+		}
+		user := service.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "pinned_paths", pinnedPath)
+		if err != nil {
+			return err
+		}
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
 }
