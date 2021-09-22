@@ -172,34 +172,25 @@ func main() {
 			HostDomain:   host,
 		},
 	}
-	path := &pathHandler{
+	page := &pageHandler{
 		server: server,
 		cfg:    cfg,
-	}
-	user := &userHandler{
-		server: server,
-	}
-	group := &groupHandler{
-		server: server,
-	}
-	typ := &entryTypeHandler{
-		server: server,
 	}
 	api := &apiHandler{
 		server: server,
 	}
-	Tmpl = template.New("").Funcs(pathHandlerFuncs)
+	Tmpl = template.New("").Funcs(pageHandlerFuncs)
 	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", path.Handle)
-	mux.HandleFunc("/logs", path.HandleEntryLogs)
-	mux.HandleFunc("/thumbnail/", path.HandleThumbnail)
 	mux.HandleFunc("/login", login.Handle)
 	mux.HandleFunc("/login/callback/google", login.HandleCallback)
 	mux.HandleFunc("/logout", login.HandleLogout)
-	mux.HandleFunc("/users", user.Handle)
-	mux.HandleFunc("/groups", group.Handle)
-	mux.HandleFunc("/types", typ.Handle)
+	mux.HandleFunc("/", page.HandleEntry)
+	mux.HandleFunc("/logs", page.HandleEntryLogs)
+	mux.HandleFunc("/thumbnail/", page.HandleThumbnail)
+	mux.HandleFunc("/users", page.HandleUsers)
+	mux.HandleFunc("/groups", page.HandleGroups)
+	mux.HandleFunc("/types", page.HandleEntryTypes)
 	mux.HandleFunc("/api/add-entry-type", api.HandleAddEntryType)
 	mux.HandleFunc("/api/rename-entry-type", api.HandleRenameEntryType)
 	mux.HandleFunc("/api/delete-entry-type", api.HandleDeleteEntryType)

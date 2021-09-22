@@ -25,12 +25,12 @@ import (
 	"github.com/imagvfx/forge/service"
 )
 
-type pathHandler struct {
+type pageHandler struct {
 	server *forge.Server
 	cfg    *forge.Config
 }
 
-var pathHandlerFuncs = template.FuncMap{
+var pageHandlerFuncs = template.FuncMap{
 	"inc": func(i int) int {
 		return i + 1
 	},
@@ -132,7 +132,7 @@ func handleError(w http.ResponseWriter, err error) {
 	http.Error(w, err.Error(), status)
 }
 
-func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *pageHandler) HandleEntry(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
@@ -386,7 +386,7 @@ func (h *pathHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
-func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
+func (h *pageHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
@@ -465,7 +465,7 @@ func (h *pathHandler) HandleEntryLogs(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
-func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
+func (h *pageHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		if !strings.HasPrefix(r.URL.Path, "/thumbnail/") {
 			return fmt.Errorf("invalid thumbnail path")
@@ -504,11 +504,7 @@ func (h *pathHandler) HandleThumbnail(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
-type userHandler struct {
-	server *forge.Server
-}
-
-func (h *userHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *pageHandler) HandleUsers(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
@@ -542,11 +538,7 @@ func (h *userHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
-type groupHandler struct {
-	server *forge.Server
-}
-
-func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *pageHandler) HandleGroups(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
@@ -589,11 +581,7 @@ func (h *groupHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	handleError(w, err)
 }
 
-type entryTypeHandler struct {
-	server *forge.Server
-}
-
-func (h *entryTypeHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (h *pageHandler) HandleEntryTypes(w http.ResponseWriter, r *http.Request) {
 	err := func() error {
 		session, err := getSession(r)
 		if err != nil {
