@@ -128,7 +128,7 @@ func handleError(w http.ResponseWriter, err error) {
 	http.Error(w, err.Error(), status)
 }
 
-func (h *pageHandler) HandlerFunc(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := func() error {
 			session, err := getSession(r)

@@ -19,7 +19,7 @@ type apiHandler struct {
 	server *forge.Server
 }
 
-func (h *apiHandler) HandlerFunc(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
+func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := func() error {
 			if r.Method != "POST" {
