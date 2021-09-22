@@ -144,9 +144,7 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 			ctx := service.ContextWithUserName(r.Context(), user)
 			return handleFunc(ctx, w, r)
 		}()
-		if err != nil {
-			handleError(w, err)
-		}
+		handleError(w, err)
 	}
 }
 
