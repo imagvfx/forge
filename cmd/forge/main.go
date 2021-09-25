@@ -220,6 +220,8 @@ func main() {
 	mux.HandleFunc("/api/add-group-member", api.Handler(api.handleAddGroupMember))
 	mux.HandleFunc("/api/delete-group-member", api.Handler(api.handleDeleteGroupMember))
 	mux.HandleFunc("/api/set-user-setting", api.Handler(api.handleSetUserSetting))
+	mux.HandleFunc("/api/check-bulk-update", api.Handler(api.handleCheckBulkUpdate))
+	mux.HandleFunc("/api/bulk-update", api.Handler(api.handleBulkUpdate))
 	fs := http.FileServer(http.Dir("asset"))
 	mux.Handle("/asset/", http.StripPrefix("/asset/", fs))
 

@@ -519,3 +519,47 @@ func (h *apiHandler) handleSetUserSetting(ctx context.Context, w http.ResponseWr
 	}
 	return nil
 }
+
+// handleCheckBulkUpdate checks what will happen when bulk update of entries processed from uploaded excel file.
+//
+// The result shows what entries will be added, and what entries will be updated in the following format.
+// Entries not in any of the list is already match with given data.
+// Msg is null when Err is not empty.
+//
+// {
+// 	"Err": "",
+// 	"Msg": {
+// 		"add": {
+// 			"{entry-type}": ["{entry}", ...],
+// 			...
+// 		}
+// 		"update": {
+// 			"{entry-type}": ["{entry}", ...],
+// 			...
+// 		}
+// 	}
+// }
+//
+func (h *apiHandler) handleCheckBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	// TODO
+	return nil
+}
+
+// handleBulkUpdate adds and/or updates multiple entries at once from uploaded excel file.
+//
+// First row of the file should hold label of columns.
+// It needs 2 special columns, 'from' and 'name'. They consist of full path of the entry, and cannot be empty.
+// Other column represents a property of entry. If the property does not exist in the entry type, it will be skipped.
+//
+// NOTE: It is safe to let user know what will happen by showing the result of handleCheckBulkUpdate first.
+//
+// The result shows an error if it happened during the process. When error happened
+//
+// {
+// 	"Err": "",
+// }
+//
+func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	// TODO
+	return nil
+}
