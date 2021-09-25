@@ -163,16 +163,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
-	visibleProps := make([]*forge.Property, 0)
-	hiddenProps := make([]*forge.Property, 0)
-	for _, p := range props {
-		if strings.HasPrefix(p.Name, ".") {
-			hiddenProps = append(hiddenProps, p)
-		} else {
-			visibleProps = append(visibleProps, p)
-		}
-	}
-	props = visibleProps
 	envs, err := h.server.EntryEnvirons(ctx, path)
 	if err != nil {
 		return err
@@ -226,7 +216,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		// If the entry have .sub_entry_types property,
 		// default sub entry types are overrided with the property.
 		subtyps := make([]string, 0)
-		for _, p := range hiddenProps {
+		for _, p := range props {
 			if p.Name == ".sub_entry_types" {
 				for _, subtyp := range strings.Split(p.Value, ",") {
 					if subtyp == "" {
@@ -264,10 +254,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		subProps := make(map[string]*forge.Property)
 		for _, p := range props {
-			if strings.HasPrefix(p.Name, ".") {
-				// hidden property
-				continue
-			}
 			subProps[p.Name] = p
 		}
 		subEntProps[e.Path] = subProps
