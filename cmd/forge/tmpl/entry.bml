@@ -142,30 +142,30 @@
 							<!-- Property / Environ / Access Items -->
 							<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 								{{range $p := $.Properties}}
-								<div class="property-items" style="display:none"> [
+								<div class="property-items info" data-entry="{{$p.EntryPath}}" data-info-type="property" data-info-name="{{$p.Name}}" style="display:none"> [
 									<div style="display:flex;gap:1rem;"> [
 										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer;" onclick="showItemUpdater('{{$.Entry.Path}}', 'property', '{{$p.ID}}', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"> [{{$p.Name}}]
-										<a href="/logs?path={{$.Entry.Path}}&category=property&name={{$p.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
+										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
 									<div id="propertyValue-{{$p.ID}}" class="{{if $p.ValueError}}invalid{{end}} itemValue" style="font-size:0.8rem"> [{{brLines $p.Value}}{{$p.ValueError}}]
 								]
 								{{end}}
 								{{range $e := $.Environs}}
-								<div class="environ-items" style="display:none"> [
+								<div class="environ-items info" data-entry="{{$e.EntryPath}}" data-info-type="environ" data-info-name="{{$e.Name}}" style="display:none"> [
 									<div style="display:flex;gap:1rem;"> [
 										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'environ', '{{$e.ID}}', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"> [{{$e.Name}}]
-										<a href="/logs?path={{$.Entry.Path}}&category=environ&name={{$e.Name}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
+										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
 									<div id="environValue-{{$e.ID}}" class="{{if $e.ValueError}}invalid{{end}} itemValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{brLines $e.Value}}{{$e.ValueError}}]
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
-								<div class="access-items" style="display:none"> [
+								<div class="access-items info" data-entry="{{$a.EntryPath}}" data-info-type="access" data-info-name="{{$a.Accessor}}" style="display:none"> [
 									<div style="display:flex;gap:1rem;"> [
 										<div style="flex:1;font-size:0.75rem;color:#AAA;cursor:pointer" onclick="showItemUpdater('{{$.Entry.Path}}', 'access', '{{$a.ID}}', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"> [{{$a.Accessor}}]
-										<a href="/logs?path={{$.Entry.Path}}&category=access&name={{$a.Accessor}}" style="padding:0 2px;font-size:0.75rem;color:#AAA;border-radius:2px;opacity:0.5;"> [&middot;&middot;&middot;]
+										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
 									<div id="accessValue-{{$a.ID}}" class="itemValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
@@ -324,6 +324,10 @@
 					]
 					<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
 				]
+				<div id="infoContextMenu" style="position:absolute;visibility:hidden;display:flex;flex-direction:column;width:4rem;padding:0.3rem 0.6rem;gap:0.3rem;border:1px solid #AAA;border-radius:2px;background-color:#F4F4F4;font-size:0.75rem;"> [
+					<a class="infoHistory" style="color:black;"> [History]
+					<a class="infoDelete" style="color:#A22;"> [Delete]
+				]
 			]
 		]
 	]
@@ -431,6 +435,21 @@
 	overflow-wrap: break-word;
 }
 
+.infoContextMenuLoader {
+	user-select: none;
+	padding:0 2px;
+	font-size:0.75rem;
+	color:#AAA;
+	border-radius:2px;
+	opacity:0.5;
+	cursor:pointer;
+	border:1px solid #FFF;
+}
+
+.infoContextMenuLoader:hover {
+	border:1px solid #DDD;
+}
+
 .valueInput {
 	max-height: 140px;
 }
@@ -460,6 +479,15 @@
 "use strict";
 
 window.onload = function() {
+	let currentContextMenuLoader = null;
+	document.onclick = function(event) {
+		let menu = document.getElementById("infoContextMenu");
+		if (currentContextMenuLoader != null) {
+			menu.style.visibility = "hidden"
+			currentContextMenuLoader = null;
+			return;
+		}
+	}
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
 		input.autocomplete = "off";
@@ -517,6 +545,54 @@ window.onload = function() {
 			deleteThumbnail(delButton);
 		}
 	}
+	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
+	for (let loader of infoContextMenuLoaders) {
+		loader.onclick = function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			let info = parentWithClass(loader, "info");
+			if (info == null) {
+				console.log("info not found");
+				return;
+			}
+			let menu = document.getElementById("infoContextMenu");
+			if (currentContextMenuLoader == loader) {
+				currentContextMenuLoader = null;
+				menu.style.visibility = "hidden";
+				return;
+			}
+			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
+			infoHistory.href = "/logs?path=" + info.dataset.entry + "&category=" + info.dataset.infoType + "&name=" + info.dataset.infoName;
+			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
+			infoDelete.href = "/api/delete-" + info.dataset.infoType;
+			infoDelete.onclick = function(ev) {
+				ev.stopPropagation();
+				ev.preventDefault();
+				let req = new XMLHttpRequest();
+				let formData = new FormData();
+				formData.append("path", info.dataset.entry);
+				formData.append("name", info.dataset.infoName);
+				req.open("post", infoDelete.href);
+				req.send(formData);
+				req.onload = function() {
+					if (req.status == 200) {
+						location.reload();
+					} else {
+						printErrorStatus(req.responseText);
+					}
+				}
+				req.onerror = function(err) {
+					printErrorStatus(err);
+				}
+			}
+			let x = loader.offsetLeft;
+			let y = loader.offsetTop + loader.offsetHeight;
+			menu.style.visibility = "visible";
+			menu.style.left = x + "px";
+			menu.style.top = y + "px";
+			currentContextMenuLoader = loader;
+		}
+	}
 }
 
 window.onpageshow = function() {
@@ -532,6 +608,19 @@ window.onpageshow = function() {
 			// It makes the browser uses the old 'not found' cache.
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
 		}
+	}
+}
+
+function parentWithClass(from, clsName) {
+	while (true) {
+		let parent = from.parentElement;
+		if (parent == null) {
+			return null;
+		}
+		if (parent.classList.contains(clsName)) {
+			return parent;
+		}
+		from = parent;
 	}
 }
 
@@ -691,6 +780,11 @@ document.onkeydown = keyPressed;
 
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
+		let menu = document.getElementById("infoContextMenu");
+		if (menu.style.visibility != "hidden") {
+			menu.style.visibility = "hidden"
+			return;
+		}
 		toggleFooter();
 	}
 }
