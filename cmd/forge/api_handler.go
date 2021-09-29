@@ -560,6 +560,15 @@ func (h *apiHandler) handleDryRunBulkUpdate(ctx context.Context, w http.Response
 // NOTE: With non-empty "dryrun" form-value, like "dryrun=1", it will perform handleDryRunBulkUpdate and return it's result instead.
 //
 func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	// TODO
+	KiB := int64(1 << 10)
+	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
+	_, _, err := r.FormFile("file")
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		return nil
+	}
 	return nil
 }

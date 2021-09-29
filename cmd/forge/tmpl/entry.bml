@@ -82,6 +82,12 @@
 						]
 						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;font-size:0.75rem;"> [
 							{{if eq $.Entry.Path "/"}}
+								<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
+									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+									<input id="uploadExcelInput" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none"> []
+									<label for="uploadExcelInput" class="uploadExcelButton" style="cursor:pointer;color:#22A;"> [upload excel]
+									<input readonly name="back_to_referer" type="hidden" value="1"> []
+								]
 							{{else}}
 								<form action="/api/set-user-setting" method="POST"> [
 									<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
@@ -509,6 +515,13 @@ window.onload = function() {
 	for (let input of inputs) {
 		input.oninput = function() {
 			resizeTextArea(input);
+		}
+	}
+	let uploadExcelInput = document.getElementById("uploadExcelInput");
+	if (uploadExcelInput != null) {
+		uploadExcelInput.onchange = function() {
+			let uploadExcelForm = document.getElementById("uploadExcelForm");
+			uploadExcelForm.submit();
 		}
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
