@@ -326,7 +326,7 @@
 				]
 				<div id="infoContextMenu" style="position:absolute;visibility:hidden;display:flex;flex-direction:column;width:4rem;padding:0.3rem 0.6rem;gap:0.3rem;border:1px solid #AAA;border-radius:2px;background-color:#F4F4F4;font-size:0.75rem;"> [
 					<a class="infoHistory" style="color:black;"> [History]
-					<a class="infoDelete" style="color:#A22;"> [Delete]
+					<a class="infoDelete" style="color:#A22;cursor:pointer;"> [Delete]
 				]
 			]
 		]
@@ -564,7 +564,6 @@ window.onload = function() {
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
 			infoHistory.href = "/logs?path=" + info.dataset.entry + "&category=" + info.dataset.infoType + "&name=" + info.dataset.infoName;
 			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
-			infoDelete.href = "/api/delete-" + info.dataset.infoType;
 			infoDelete.onclick = function(ev) {
 				ev.stopPropagation();
 				ev.preventDefault();
@@ -572,7 +571,7 @@ window.onload = function() {
 				let formData = new FormData();
 				formData.append("path", info.dataset.entry);
 				formData.append("name", info.dataset.infoName);
-				req.open("post", infoDelete.href);
+				req.open("post", "/api/delete-" + info.dataset.infoType);
 				req.send(formData);
 				req.onload = function() {
 					if (req.status == 200) {
