@@ -540,7 +540,7 @@ func (h *apiHandler) handleSetUserSetting(ctx context.Context, w http.ResponseWr
 // 	}
 // }
 //
-func (h *apiHandler) handleCheckBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleDryRunBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// TODO
 	return nil
 }
@@ -551,13 +551,13 @@ func (h *apiHandler) handleCheckBulkUpdate(ctx context.Context, w http.ResponseW
 // It needs 2 special columns, 'from' and 'name'. They consist of full path of the entry, and cannot be empty.
 // Other column represents a property of entry. If the property does not exist in the entry type, it will be skipped.
 //
-// NOTE: It is safe to let user know what will happen by showing the result of handleCheckBulkUpdate first.
-//
-// The result shows an error if it happened during the process. When error happened
+// The result shows an error if it happened during the process.
 //
 // {
 // 	"Err": "",
 // }
+//
+// NOTE: With non-empty "dryrun" form-value, like "dryrun=1", it will perform handleDryRunBulkUpdate and return it's result instead.
 //
 func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// TODO
