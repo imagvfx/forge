@@ -578,10 +578,12 @@ window.onload = function() {
 					if (req.status == 200) {
 						location.reload();
 					} else {
+						showStatusBarOnly();
 						printErrorStatus(req.responseText);
 					}
 				}
 				req.onerror = function(err) {
+					showStatusBarOnly();
 					printErrorStatus(err);
 				}
 			}
