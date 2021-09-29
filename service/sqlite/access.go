@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -428,6 +429,20 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
+	}
+	ent, err := getEntry(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	_, err = getDefaultAccess(tx, ctx, ent.Type, name)
+	if err == nil {
+		return fmt.Errorf("cannot delete default access of %q: %v", ent.Type, name)
+	}
+	if err != nil {
+		var e *service.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
 	}
 	a, err := getAccessControl(tx, ctx, path, name)
 	if err != nil {

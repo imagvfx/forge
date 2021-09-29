@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -306,6 +307,20 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
+	}
+	ent, err := getEntry(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	_, err = getDefaultProperty(tx, ctx, ent.Type, name)
+	if err == nil {
+		return fmt.Errorf("cannot delete default property of %q: %v", ent.Type, name)
+	}
+	if err != nil {
+		var e *service.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
 	}
 	p, err := getProperty(tx, ctx, path, name)
 	if err != nil {
