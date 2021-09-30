@@ -13,6 +13,7 @@ import (
 
 	"github.com/imagvfx/forge"
 	"github.com/imagvfx/forge/service"
+	"github.com/xuri/excelize/v2"
 )
 
 type apiHandler struct {
@@ -562,9 +563,22 @@ func (h *apiHandler) handleDryRunBulkUpdate(ctx context.Context, w http.Response
 func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	KiB := int64(1 << 10)
 	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
-	_, _, err := r.FormFile("file")
+	file, _, err := r.FormFile("file")
 	if err != nil {
 		return err
+	}
+	xlr, err := excelize.OpenReader(file)
+	if err != nil {
+		return err
+	}
+	sheet := xlr.GetSheetList()[0]
+	rows, err := xlr.GetRows(sheet)
+	if err != nil {
+		return err
+	}
+	labels := rows[0]
+	for _, l := range labels {
+		fmt.Println(l)
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
