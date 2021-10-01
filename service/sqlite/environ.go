@@ -36,6 +36,18 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 		return nil, err
 	}
 	defer tx.Rollback()
+	envs, err := entryEnvirons(tx, ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return envs, nil
+}
+
+func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*service.Property, error) {
 	envmap := make(map[string]*service.Property)
 	for {
 		envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path})
@@ -55,10 +67,6 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 	envs := make([]*service.Property, 0, len(envmap))
 	for _, e := range envmap {
 		envs = append(envs, e)
-	}
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
 	}
 	return envs, nil
 }

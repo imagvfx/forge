@@ -35,7 +35,7 @@ func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*service.P
 		return nil, err
 	}
 	defer tx.Rollback()
-	props, err := findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path})
+	props, err := entryProperties(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +44,10 @@ func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*service.P
 		return nil, err
 	}
 	return props, nil
+}
+
+func entryProperties(tx *sql.Tx, ctx context.Context, path string) ([]*service.Property, error) {
+	return findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path})
 }
 
 // when id is empty, it will find properties of root.

@@ -36,6 +36,18 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*servi
 		return nil, err
 	}
 	defer tx.Rollback()
+	accs, err := entryAccessControls(tx, ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return accs, nil
+}
+
+func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*service.AccessControl, error) {
 	acm := make(map[string]*service.AccessControl)
 	for {
 		ent, err := getEntry(tx, ctx, path)
@@ -62,10 +74,6 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*servi
 	acs := make([]*service.AccessControl, 0)
 	for _, a := range acm {
 		acs = append(acs, a)
-	}
-	err = tx.Commit()
-	if err != nil {
-		return nil, err
 	}
 	return acs, nil
 }
