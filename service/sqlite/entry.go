@@ -269,7 +269,7 @@ func getEntry(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, err
 		return nil, err
 	}
 	if len(ents) == 0 {
-		return nil, service.NotFound("entry not found")
+		return nil, service.NotFound("entry not found: %v", path)
 	}
 	return ents[0], nil
 }
@@ -280,7 +280,7 @@ func getEntryByID(tx *sql.Tx, ctx context.Context, id int) (*service.Entry, erro
 		return nil, err
 	}
 	if len(ents) == 0 {
-		return nil, service.NotFound("entry not found")
+		return nil, service.NotFound("entry not found: %v", id)
 	}
 	return ents[0], nil
 }

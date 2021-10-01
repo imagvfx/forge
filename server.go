@@ -407,6 +407,12 @@ func (s *Server) SetProperty(ctx context.Context, path string, name, value strin
 	return nil
 }
 
+func (s *Server) BulkUpdateProperties(ctx context.Context, upds []service.PropertyUpdater) error {
+	// Note it directly uses service.UpdateProperty unlike others methods here.
+	// I will change to use service instead of Server in the future.
+	return s.svc.BulkUpdateProperties(ctx, upds)
+}
+
 func (s *Server) DeleteProperty(ctx context.Context, path string, name string) error {
 	if path == "" {
 		return fmt.Errorf("property path not specified")

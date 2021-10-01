@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"log"
@@ -549,7 +550,7 @@ func (h *apiHandler) handleDryRunBulkUpdate(ctx context.Context, w http.Response
 // handleBulkUpdate adds and/or updates multiple entries at once from uploaded excel file.
 //
 // First row of the file should hold label of columns.
-// It needs 2 special columns, 'from' and 'name'. They consist of full path of the entry, and cannot be empty.
+// It needs 2 special columns, 'parent' and 'name'. They consist of full path of the entry, and cannot be empty.
 // Other column represents a property of entry. If the property does not exist in the entry type, it will be skipped.
 //
 // The result shows an error if it happened during the process.
@@ -576,9 +577,104 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	if err != nil {
 		return err
 	}
-	labels := rows[0]
-	for _, l := range labels {
-		fmt.Println(l)
+	propFor := make(map[int]string)
+	labelRow := rows[0]
+	nameIdx := -1
+	parentIdx := -1
+	typeIdx := -1
+	for i, p := range labelRow {
+		propFor[i] = p
+		if p == "name" {
+			nameIdx = i
+			continue
+		}
+		if p == "parent" {
+			parentIdx = i
+			continue
+		}
+		if p == "type" {
+			typeIdx = i
+			continue
+		}
+	}
+	if nameIdx == -1 {
+		return fmt.Errorf("'name' field not found")
+	}
+	if parentIdx == -1 {
+		return fmt.Errorf("'parent' field not found")
+	}
+	if typeIdx == -1 {
+		return fmt.Errorf("'type' field not found")
+	}
+	valueRows := rows[1:]
+	for _, cols := range valueRows {
+		if len(cols) == 0 {
+			// The length can be zero when the row is entirely empty
+			continue
+		}
+		// Create the entry.
+		parent := cols[parentIdx]
+		if parent == "" {
+			return fmt.Errorf("'parent' field empty")
+		}
+		if !filepath.IsAbs(parent) {
+			return fmt.Errorf("'parent' field should be abs path: %v", parent)
+		}
+		parent = filepath.Clean(parent)
+		name := cols[nameIdx]
+		if name == "" {
+			return fmt.Errorf("'name' field empty")
+		}
+		entType := cols[typeIdx]
+		if entType == "" {
+			return fmt.Errorf("'type' field empty")
+		}
+		_, err := h.server.GetEntry(ctx, parent)
+		if err != nil {
+			// parent should exist already.
+			return err
+		}
+		entPath := filepath.Clean(filepath.Join(parent, name))
+		_, err = h.server.GetEntry(ctx, entPath)
+		if err != nil {
+			e := &service.NotFoundError{}
+			if !errors.As(err, &e) {
+				return err
+			}
+			err := h.server.AddEntry(ctx, entPath, entType)
+			if err != nil {
+				return err
+			}
+		}
+		// Update the entry's properties.
+		defs, err := h.server.Defaults(ctx, cols[typeIdx])
+		if err != nil {
+			return err
+		}
+		knownProp := make(map[string]bool)
+		for _, d := range defs {
+			if d.Category != "property" {
+				continue
+			}
+			knownProp[d.Name] = true
+		}
+		upds := make([]service.PropertyUpdater, 0)
+		for i, val := range cols {
+			p := propFor[i]
+			if !knownProp[p] {
+				continue
+			}
+			v := val // val will be updated by the loop
+			upds = append(upds, service.PropertyUpdater{
+				EntryPath: entPath,
+				Name:      p,
+				Value:     &v,
+			})
+		}
+		err = h.server.BulkUpdateProperties(ctx, upds)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)

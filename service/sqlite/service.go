@@ -114,6 +114,10 @@ func (s *Service) UpdateProperty(ctx context.Context, upd service.PropertyUpdate
 	return UpdateProperty(s.db, ctx, upd)
 }
 
+func (s *Service) BulkUpdateProperties(ctx context.Context, upds []service.PropertyUpdater) error {
+	return BulkUpdateProperties(s.db, ctx, upds)
+}
+
 func (s *Service) DeleteProperty(ctx context.Context, path, name string) error {
 	return DeleteProperty(s.db, ctx, path, name)
 }
