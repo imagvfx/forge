@@ -209,6 +209,38 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 	return nil
 }
 
+// BulkUpdateProperties is an efficient way of update properties of an entry, by group them in a transaction.
+// If there's an error, all changes will be reverted.
+func BulkUpdateProperties(db *sql.DB, ctx context.Context, upds []service.PropertyUpdater) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if len(upds) == 0 {
+		return nil
+	}
+	// Before update the properties, check the updates are all related with an entry.
+	// If it isn't, refuse the updates.
+	path := upds[0].EntryPath
+	for _, upd := range upds[1:] {
+		if upd.EntryPath != path {
+			return fmt.Errorf("entry path should be same among property updaters in a bulk update")
+		}
+	}
+	for _, upd := range upds {
+		err := updateProperty(tx, ctx, upd)
+		if err != nil {
+			return err
+		}
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func UpdateProperty(db *sql.DB, ctx context.Context, upd service.PropertyUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
