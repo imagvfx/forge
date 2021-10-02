@@ -320,44 +320,66 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 }
 
 func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
-	if e.Path != "/" {
-		// Check and apply the type if it is predefined sub entry of the parent.
-		parentPath := filepath.Dir(e.Path)
-		entName := filepath.Base(e.Path)
-		predefined, err := getProperty(tx, ctx, parentPath, ".predefined_sub_entries")
+	if e.Path == "/" {
+		return fmt.Errorf("root entry cannot be created or deleted by user")
+	}
+	// Check and apply the type if it is predefined sub entry of the parent.
+	parentPath := filepath.Dir(e.Path)
+	entName := filepath.Base(e.Path)
+	if e.Type == "" {
+		// '.sub_entry_types' property should have only one sub entry type to fill the type.
+		subTypes, err := getProperty(tx, ctx, parentPath, ".sub_entry_types")
 		if err != nil {
 			var e *service.NotFoundError
-			if !errors.As(err, &e) {
+			if errors.As(err, &e) {
+				return fmt.Errorf("cannot guess entry type: '.sub_entry_types' property not exist on entry: %v", parentPath)
+			} else {
 				return err
 			}
 		}
-		if predefined != nil {
-			predefinedType := ""
-			for _, sub := range strings.Split(predefined.Value, ",") {
-				sub = strings.TrimSpace(sub)
-				toks := strings.Split(sub, ":")
-				if len(toks) != 2 {
-					// It's an error, but let's just continue.
-					continue
-				}
-				subName := strings.TrimSpace(toks[0])
-				subType := strings.TrimSpace(toks[1])
-				if subName == "*" || subName == entName {
-					// Star (*) is catch all name.
-					predefinedType = subType
-					break
-				}
-			}
-			if predefinedType != "" {
-				baseType := strings.Split(predefinedType, ".")[0]
-				if e.Type != baseType {
-					return fmt.Errorf("cannot create predefined sub entry %v as type %v, should be %v", entName, e.Type, baseType)
-				}
-				e.Type = predefinedType
-			}
+		toks := strings.Split(subTypes.Value, ",")
+		if len(toks) != 1 {
+			return fmt.Errorf("cannot guess entry type: multiple sub entry types defined on entry: %v", parentPath)
+		}
+		firstType := strings.TrimSpace(toks[0])
+		if firstType == "" {
+			return fmt.Errorf("cannot guess entry type: no sub entry type defined on entry: %v", parentPath)
+		}
+		e.Type = firstType
+	}
+	predefined, err := getProperty(tx, ctx, parentPath, ".predefined_sub_entries")
+	if err != nil {
+		var e *service.NotFoundError
+		if !errors.As(err, &e) {
+			return err
 		}
 	}
-	err := addEntry(tx, ctx, e)
+	if predefined != nil {
+		predefinedType := ""
+		for _, sub := range strings.Split(predefined.Value, ",") {
+			sub = strings.TrimSpace(sub)
+			toks := strings.Split(sub, ":")
+			if len(toks) != 2 {
+				// It's an error, but let's just continue.
+				continue
+			}
+			subName := strings.TrimSpace(toks[0])
+			subType := strings.TrimSpace(toks[1])
+			if subName == "*" || subName == entName {
+				// Star (*) is catch all name.
+				predefinedType = subType
+				break
+			}
+		}
+		if predefinedType != "" {
+			baseType := strings.Split(predefinedType, ".")[0]
+			if e.Type != baseType {
+				return fmt.Errorf("cannot create predefined sub entry %v as type %v, should be %v", entName, e.Type, baseType)
+			}
+			e.Type = predefinedType
+		}
+	}
+	err = addEntry(tx, ctx, e)
 	if err != nil {
 		return err
 	}
