@@ -581,7 +581,6 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	labelRow := rows[0]
 	nameIdx := -1
 	parentIdx := -1
-	typeIdx := -1
 	for i, p := range labelRow {
 		propFor[i] = p
 		if p == "name" {
@@ -592,19 +591,12 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			parentIdx = i
 			continue
 		}
-		if p == "type" {
-			typeIdx = i
-			continue
-		}
 	}
 	if nameIdx == -1 {
 		return fmt.Errorf("'name' field not found")
 	}
 	if parentIdx == -1 {
 		return fmt.Errorf("'parent' field not found")
-	}
-	if typeIdx == -1 {
-		return fmt.Errorf("'type' field not found")
 	}
 	// To check the ancestor with db only once.
 	knownAncestor := make(map[string]bool)
@@ -656,29 +648,30 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		if name == "" {
 			return fmt.Errorf("'name' field empty")
 		}
-		entType := cols[typeIdx]
-		if entType == "" {
-			return fmt.Errorf("'type' field empty")
-		}
 		_, err := h.server.GetEntry(ctx, parent)
 		if err != nil {
 			// parent should exist already.
 			return err
 		}
 		entPath := path.Clean(path.Join(parent, name))
-		_, err = h.server.GetEntry(ctx, entPath)
+		ent, err := h.server.GetEntry(ctx, entPath)
 		if err != nil {
 			e := &service.NotFoundError{}
 			if !errors.As(err, &e) {
 				return err
 			}
-			err := h.server.AddEntry(ctx, entPath, entType)
+			err := h.server.AddEntry(ctx, entPath, "")
+			if err != nil {
+				return err
+			}
+			// To check entry type, need to get the entry.
+			ent, err = h.server.GetEntry(ctx, entPath)
 			if err != nil {
 				return err
 			}
 		}
 		// Update the entry's properties.
-		defs, err := h.server.Defaults(ctx, cols[typeIdx])
+		defs, err := h.server.Defaults(ctx, ent.Type)
 		if err != nil {
 			return err
 		}
