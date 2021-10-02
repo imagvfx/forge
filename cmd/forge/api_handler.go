@@ -623,6 +623,12 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			return fmt.Errorf("'parent' field should be abs path: %v", parent)
 		}
 		parent = path.Clean(parent)
+		if parent == "/" {
+			// It's uncommon to create a child of root from bulk update.
+			// When it happens it will be very hard to restore.
+			// Maybe it wouldn't sufficient to prevent disaster, but better than nothing.
+			return fmt.Errorf("cannot create a direct child of root from bulk update")
+		}
 		ancestors := make([]string, 0)
 		anc := ""
 		for _, p := range strings.Split(parent, "/")[1:] {
