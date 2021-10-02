@@ -81,34 +81,31 @@
 							<b> [{{pathLinks $.Entry.Path}}]
 						]
 						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;font-size:0.75rem;"> [
-							{{if eq $.Entry.Path "/"}}
-								<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<input id="uploadExcelInput" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none"> []
-									<label for="uploadExcelInput" class="uploadExcelButton" style="cursor:pointer;color:#22A;"> [upload excel]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-							{{else}}
-								<form action="/api/set-user-setting" method="POST"> [
-									<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
-									<input name="pinned_path_at" type="hidden" value="{{if $.EntryPinned}}-1{{else}}{{len $.UserSetting.PinnedPaths}}{{end}}"> []
-									<button id="updatePinnedPathButton" name="update_pinned_path" value="1" hidden> []
-									<label for="updatePinnedPathButton" style="cursor:pointer;"> [{{if $.EntryPinned}}Unpin{{else}}Pin{{end}}]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-								<form action="/api/rename-entry" method="post"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<input id="renameInput" name="new-name" type="text" style="display:none"> []
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-								<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
-								<form action="/api/delete-entry" method="post"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<button id="delete-entry-button" style="display:none"> []
-									<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-							{{end}}
+							<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<input id="uploadExcelInput" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none"> []
+								<label for="uploadExcelInput" class="uploadExcelButton" style="cursor:pointer;"> [Update With Excel]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<form action="/api/set-user-setting" method="POST"> [
+								<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
+								<input name="pinned_path_at" type="hidden" value="{{if $.EntryPinned}}-1{{else}}{{len $.UserSetting.PinnedPaths}}{{end}}"> []
+								<button id="updatePinnedPathButton" name="update_pinned_path" value="1" hidden> []
+								<label for="updatePinnedPathButton" style="cursor:pointer;"> [{{if $.EntryPinned}}Unpin{{else}}Pin{{end}}]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<form action="/api/rename-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<input id="renameInput" name="new-name" type="text" style="display:none"> []
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
+							<form action="/api/delete-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<button id="delete-entry-button" style="display:none"> []
+								<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
 						]
 					]
 					<div style="display:flex;"> [
