@@ -606,6 +606,8 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	if typeIdx == -1 {
 		return fmt.Errorf("'type' field not found")
 	}
+	// To check the ancestor with db only once.
+	knownAncestor := make(map[string]bool)
 	valueRows := rows[1:]
 	for _, cols := range valueRows {
 		if len(cols) == 0 {
@@ -621,6 +623,29 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			return fmt.Errorf("'parent' field should be abs path: %v", parent)
 		}
 		parent = path.Clean(parent)
+		ancestors := make([]string, 0)
+		anc := ""
+		for _, p := range strings.Split(parent, "/")[1:] {
+			anc += "/" + p
+			ancestors = append(ancestors, anc)
+		}
+		for _, anc := range ancestors {
+			if knownAncestor[anc] {
+				continue
+			}
+			_, err = h.server.GetEntry(ctx, anc)
+			if err != nil {
+				e := &service.NotFoundError{}
+				if !errors.As(err, &e) {
+					return err
+				}
+				err := h.server.AddEntry(ctx, anc, "")
+				if err != nil {
+					return err
+				}
+			}
+			knownAncestor[anc] = true
+		}
 		name := cols[nameIdx]
 		if name == "" {
 			return fmt.Errorf("'name' field empty")
