@@ -8,7 +8,7 @@ import (
 	"image"
 	"log"
 	"net/http"
-	"path/filepath"
+	"path"
 	"strconv"
 	"strings"
 
@@ -139,7 +139,7 @@ func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, 
 	typ := r.FormValue("type")
 	for _, n := range strings.Fields(name) {
 		// treat seperate field a child name
-		entPath := filepath.Join(parent, n)
+		entPath := path.Join(parent, n)
 		err := h.server.AddEntry(ctx, entPath, typ)
 		if err != nil {
 			return err
@@ -158,7 +158,7 @@ func (h *apiHandler) handleRenameEntry(ctx context.Context, w http.ResponseWrite
 	if err != nil {
 		return err
 	}
-	newPath := filepath.Dir(entPath) + "/" + newName
+	newPath := path.Dir(entPath) + "/" + newName
 	if r.FormValue("back_to_referer") != "" {
 		referer := strings.Replace(r.Header.Get("Referer"), entPath, newPath, 1)
 		http.Redirect(w, r, referer, http.StatusSeeOther)
@@ -181,7 +181,7 @@ func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWrite
 			parm = toks[1]
 		}
 		if strings.HasSuffix(url, entPath) {
-			referer = filepath.Dir(entPath) + "?" + parm
+			referer = path.Dir(entPath) + "?" + parm
 		}
 		http.Redirect(w, r, referer, http.StatusSeeOther)
 	}
@@ -617,10 +617,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		if parent == "" {
 			return fmt.Errorf("'parent' field empty")
 		}
-		if !filepath.IsAbs(parent) {
+		if !path.IsAbs(parent) {
 			return fmt.Errorf("'parent' field should be abs path: %v", parent)
 		}
-		parent = filepath.Clean(parent)
+		parent = path.Clean(parent)
 		name := cols[nameIdx]
 		if name == "" {
 			return fmt.Errorf("'name' field empty")
@@ -634,7 +634,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			// parent should exist already.
 			return err
 		}
-		entPath := filepath.Clean(filepath.Join(parent, name))
+		entPath := path.Clean(path.Join(parent, name))
 		_, err = h.server.GetEntry(ctx, entPath)
 		if err != nil {
 			e := &service.NotFoundError{}
