@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -581,8 +582,8 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	labelRow := rows[0]
 	nameIdx := -1
 	parentIdx := -1
+	thumbnailIdx := -1
 	for i, p := range labelRow {
-		propFor[i] = p
 		if p == "name" {
 			nameIdx = i
 			continue
@@ -591,6 +592,11 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			parentIdx = i
 			continue
 		}
+		if p == "thumbnail" {
+			thumbnailIdx = i
+			continue
+		}
+		propFor[i] = p
 	}
 	if nameIdx == -1 {
 		return fmt.Errorf("'name' field not found")
@@ -601,11 +607,12 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	// To check the ancestor with db only once.
 	knownAncestor := make(map[string]bool)
 	valueRows := rows[1:]
-	for _, cols := range valueRows {
+	for n, cols := range valueRows {
 		if len(cols) == 0 {
 			// The length can be zero when the row is entirely empty
 			continue
 		}
+		row := n + 1 // Label row removed.
 		// Create the entry.
 		parent := cols[parentIdx]
 		if parent == "" {
@@ -670,6 +677,34 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 				return err
 			}
 		}
+		// Update the entry's thumbnail.
+		if thumbnailIdx != -1 {
+			// Excel coordinate starts from 1.
+			thumbCell, err := excelize.CoordinatesToCellName(thumbnailIdx+1, row+1)
+			if err != nil {
+				return err
+			}
+			_, thumb, err := xlr.GetPicture(sheet, thumbCell)
+			if err != nil {
+				return err
+			}
+			thumbReader := bytes.NewBuffer(thumb)
+			img, _, err := image.Decode(thumbReader)
+			if err != nil {
+				return err
+			}
+			if ent.HasThumbnail {
+				err = h.server.UpdateThumbnail(ctx, entPath, img)
+				if err != nil {
+					return err
+				}
+			} else {
+				err = h.server.AddThumbnail(ctx, entPath, img)
+				if err != nil {
+					return err
+				}
+			}
+		}
 		// Update the entry's properties.
 		defs, err := h.server.Defaults(ctx, ent.Type)
 		if err != nil {
@@ -685,6 +720,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		upds := make([]service.PropertyUpdater, 0)
 		for i, val := range cols {
 			p := propFor[i]
+			if p == "" {
+				// empty or non-prop label like 'name'
+				continue
+			}
 			if !knownProp[p] {
 				continue
 			}
