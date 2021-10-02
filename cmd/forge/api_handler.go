@@ -139,8 +139,8 @@ func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, 
 	typ := r.FormValue("type")
 	for _, n := range strings.Fields(name) {
 		// treat seperate field a child name
-		path := filepath.Join(parent, n)
-		err := h.server.AddEntry(ctx, path, typ)
+		entPath := filepath.Join(parent, n)
+		err := h.server.AddEntry(ctx, entPath, typ)
 		if err != nil {
 			return err
 		}
@@ -152,23 +152,23 @@ func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, 
 }
 
 func (h *apiHandler) handleRenameEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	newName := r.FormValue("new-name")
-	err := h.server.RenameEntry(ctx, path, newName)
+	err := h.server.RenameEntry(ctx, entPath, newName)
 	if err != nil {
 		return err
 	}
-	newPath := filepath.Dir(path) + "/" + newName
+	newPath := filepath.Dir(entPath) + "/" + newName
 	if r.FormValue("back_to_referer") != "" {
-		referer := strings.Replace(r.Header.Get("Referer"), path, newPath, 1)
+		referer := strings.Replace(r.Header.Get("Referer"), entPath, newPath, 1)
 		http.Redirect(w, r, referer, http.StatusSeeOther)
 	}
 	return nil
 }
 
 func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
-	err := h.server.DeleteEntry(ctx, path)
+	entPath := r.FormValue("path")
+	err := h.server.DeleteEntry(ctx, entPath)
 	if err != nil {
 		return err
 	}
@@ -180,8 +180,8 @@ func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWrite
 		if len(toks) == 2 {
 			parm = toks[1]
 		}
-		if strings.HasSuffix(url, path) {
-			referer = filepath.Dir(path) + "?" + parm
+		if strings.HasSuffix(url, entPath) {
+			referer = filepath.Dir(entPath) + "?" + parm
 		}
 		http.Redirect(w, r, referer, http.StatusSeeOther)
 	}
@@ -189,12 +189,12 @@ func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.AddProperty(ctx, path, name, typ, value)
+	err := h.server.AddProperty(ctx, entPath, name, typ, value)
 	if err != nil {
 		return err
 	}
@@ -205,11 +205,11 @@ func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *apiHandler) handleSetProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.SetProperty(ctx, path, name, value)
+	err := h.server.SetProperty(ctx, entPath, name, value)
 	if err != nil {
 		return err
 	}
@@ -220,17 +220,17 @@ func (h *apiHandler) handleSetProperty(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *apiHandler) handleGetProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
-	p, err := h.server.GetProperty(ctx, path, name)
+	p, err := h.server.GetProperty(ctx, entPath, name)
 	h.WriteResponse(w, p, err)
 	return nil
 }
 
 func (h *apiHandler) handleDeleteProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
-	err := h.server.DeleteProperty(ctx, path, name)
+	err := h.server.DeleteProperty(ctx, entPath, name)
 	if err != nil {
 		return err
 	}
@@ -241,12 +241,12 @@ func (h *apiHandler) handleDeleteProperty(ctx context.Context, w http.ResponseWr
 }
 
 func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.AddEnviron(ctx, path, name, typ, value)
+	err := h.server.AddEnviron(ctx, entPath, name, typ, value)
 	if err != nil {
 		return err
 	}
@@ -257,11 +257,11 @@ func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter
 }
 
 func (h *apiHandler) handleSetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.SetEnviron(ctx, path, name, value)
+	err := h.server.SetEnviron(ctx, entPath, name, value)
 	if err != nil {
 		return err
 	}
@@ -272,17 +272,17 @@ func (h *apiHandler) handleSetEnviron(ctx context.Context, w http.ResponseWriter
 }
 
 func (h *apiHandler) handleGetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
-	env, err := h.server.GetEnviron(ctx, path, name)
+	env, err := h.server.GetEnviron(ctx, entPath, name)
 	h.WriteResponse(w, env, err)
 	return nil
 }
 
 func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
-	err := h.server.DeleteEnviron(ctx, path, name)
+	err := h.server.DeleteEnviron(ctx, entPath, name)
 	if err != nil {
 		return err
 	}
@@ -293,12 +293,12 @@ func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWri
 }
 
 func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	accessor := r.FormValue("name")
 	accessor_type := r.FormValue("type")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
-	err := h.server.AddAccessControl(ctx, path, accessor, accessor_type, mode)
+	err := h.server.AddAccessControl(ctx, entPath, accessor, accessor_type, mode)
 	if err != nil {
 		return err
 	}
@@ -309,11 +309,11 @@ func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter,
 }
 
 func (h *apiHandler) handleSetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	accessor := r.FormValue("name")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
-	err := h.server.SetAccessControl(ctx, path, accessor, mode)
+	err := h.server.SetAccessControl(ctx, entPath, accessor, mode)
 	if err != nil {
 		return err
 	}
@@ -324,17 +324,17 @@ func (h *apiHandler) handleSetAccess(ctx context.Context, w http.ResponseWriter,
 }
 
 func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
-	acl, err := h.server.GetAccessControl(ctx, path, name)
+	acl, err := h.server.GetAccessControl(ctx, entPath, name)
 	h.WriteResponse(w, acl, err)
 	return nil
 }
 
 func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	name := r.FormValue("name")
-	err := h.server.DeleteAccessControl(ctx, path, name)
+	err := h.server.DeleteAccessControl(ctx, entPath, name)
 	if err != nil {
 		return err
 	}
@@ -399,7 +399,7 @@ func (h *apiHandler) handleDeleteGroupMember(ctx context.Context, w http.Respons
 }
 
 func (h *apiHandler) handleAddThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	KiB := int64(1 << 10)
 	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
 	file, _, err := r.FormFile("file")
@@ -410,7 +410,7 @@ func (h *apiHandler) handleAddThumbnail(ctx context.Context, w http.ResponseWrit
 	if err != nil {
 		return err
 	}
-	err = h.server.AddThumbnail(ctx, path, img)
+	err = h.server.AddThumbnail(ctx, entPath, img)
 	if err != nil {
 		return err
 	}
@@ -421,7 +421,7 @@ func (h *apiHandler) handleAddThumbnail(ctx context.Context, w http.ResponseWrit
 }
 
 func (h *apiHandler) handleUpdateThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
+	entPath := r.FormValue("path")
 	KiB := int64(1 << 10)
 	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
 	file, _, err := r.FormFile("file")
@@ -432,7 +432,7 @@ func (h *apiHandler) handleUpdateThumbnail(ctx context.Context, w http.ResponseW
 	if err != nil {
 		return err
 	}
-	err = h.server.UpdateThumbnail(ctx, path, img)
+	err = h.server.UpdateThumbnail(ctx, entPath, img)
 	if err != nil {
 		return err
 	}
@@ -443,8 +443,8 @@ func (h *apiHandler) handleUpdateThumbnail(ctx context.Context, w http.ResponseW
 }
 
 func (h *apiHandler) handleDeleteThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	path := r.FormValue("path")
-	err := h.server.DeleteThumbnail(ctx, path)
+	entPath := r.FormValue("path")
+	err := h.server.DeleteThumbnail(ctx, entPath)
 	if err != nil {
 		return err
 	}
