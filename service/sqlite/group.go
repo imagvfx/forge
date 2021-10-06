@@ -222,21 +222,29 @@ func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) erro
 }
 
 func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) error {
+	g, err := getGroup(tx, ctx, upd.Name)
+	if err != nil {
+		return err
+	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.NewName != nil {
 		if upd.Name == "admin" || strings.Split(upd.Name, "@")[0] == "everyone" {
 			return fmt.Errorf("rename 'admin' or 'everyone[@host]' group is not supported: %v", upd.Name)
 		}
-		keys = append(keys, "name=?")
-		vals = append(vals, upd.NewName)
+		if g.Name != *upd.NewName {
+			keys = append(keys, "name=?")
+			vals = append(vals, *upd.NewName)
+		}
 	}
 	if upd.Called != nil {
-		keys = append(keys, "called=?")
-		vals = append(vals, upd.Called)
+		if g.Called != *upd.Called {
+			keys = append(keys, "called=?")
+			vals = append(vals, *upd.Called)
+		}
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update group: %v", upd.Name)
+		return nil
 	}
 	vals = append(vals, upd.Name) // for where clause
 	result, err := tx.ExecContext(ctx, `

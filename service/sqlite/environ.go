@@ -255,12 +255,14 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 		if err != nil {
 			return err
 		}
-		keys = append(keys, "val=?")
-		vals = append(vals, *upd.Value)
-		e.Value = *upd.Value // for logging
+		if e.RawValue != *upd.Value {
+			keys = append(keys, "val=?")
+			vals = append(vals, *upd.Value)
+			e.Value = *upd.Value // for logging
+		}
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update property %v:%v", upd.EntryPath, upd.Name)
+		return nil
 	}
 	vals = append(vals, e.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `

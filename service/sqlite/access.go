@@ -114,14 +114,13 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 	acss := make([]*service.AccessControl, 0)
 	for rows.Next() {
 		var isGroup bool
-		var mode int
 		a := &service.AccessControl{}
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryPath,
 			&a.Accessor,
 			&isGroup,
-			&mode,
+			&a.RawMode,
 		)
 		if err != nil {
 			return nil, err
@@ -131,7 +130,7 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			a.AccessorType = "group"
 		}
 		a.Mode = "r"
-		if mode == 1 {
+		if a.RawMode == 1 {
 			a.Mode = "rw"
 		}
 		acss = append(acss, a)
@@ -298,9 +297,9 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	if a.AccessorType != acType {
 		return fmt.Errorf("mismatch accessor type: got %v, want %v", a.AccessorType, acType)
 	}
-	mode := 0
+	a.RawMode = 0
 	if a.Mode == "rw" {
-		mode = 1
+		a.RawMode = 1
 	}
 	entryID, err := getEntryID(tx, ctx, a.EntryPath)
 	if err != nil {
@@ -316,7 +315,7 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	`,
 		entryID,
 		ac.ID,
-		mode,
+		a.RawMode,
 	)
 	if err != nil {
 		return err
@@ -371,16 +370,18 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Mode != nil {
-		mode := 0
+		rawMode := 0
 		if *upd.Mode == "rw" {
-			mode = 1
+			rawMode = 1
 		}
-		keys = append(keys, "mode=?")
-		vals = append(vals, mode)
-		a.Mode = *upd.Mode
+		if rawMode != a.RawMode {
+			keys = append(keys, "mode=?")
+			vals = append(vals, rawMode)
+			a.Mode = *upd.Mode
+		}
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update property %v:%v", upd.EntryPath, upd.Accessor)
+		return nil
 	}
 	vals = append(vals, a.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `

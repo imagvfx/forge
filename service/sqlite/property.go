@@ -281,12 +281,14 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 				return err
 			}
 		}
-		keys = append(keys, "val=?")
-		vals = append(vals, *upd.Value)
-		p.Value = *upd.Value // for logging
+		if p.RawValue != *upd.Value {
+			keys = append(keys, "val=?")
+			vals = append(vals, *upd.Value)
+			p.Value = *upd.Value // for logging
+		}
 	}
 	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update property %v:%v", upd.EntryPath, upd.Name)
+		return nil
 	}
 	vals = append(vals, p.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
