@@ -710,13 +710,15 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		if err != nil {
 			return err
 		}
-		knownProp := make(map[string]bool)
+		defaultProp := make(map[string]bool)
 		for _, d := range defs {
 			if d.Category != "property" {
 				continue
 			}
-			knownProp[d.Name] = true
+			defaultProp[d.Name] = true
 		}
+		props := make([]string, 0)
+		propValue := make(map[string]string)
 		upds := make([]service.PropertyUpdater, 0)
 		for i, val := range cols {
 			p := propFor[i]
@@ -724,15 +726,38 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 				// empty or non-prop label like 'name'
 				continue
 			}
-			if !knownProp[p] {
+			plus := false
+			if strings.HasSuffix(p, "+") {
+				plus = true
+				p = p[:len(p)-1]
+			}
+			if !defaultProp[p] {
 				continue
 			}
-			v := val // val will be updated by the loop
+			oldv, seen := propValue[p]
+			if !seen {
+				props = append(props, p)
+			}
+			v := strings.TrimSpace(val)
+			if plus {
+				if v != "" {
+					propValue[p] = oldv + "\n\n" + v
+				}
+			} else {
+				if seen {
+					return fmt.Errorf("got label %q more than once, use %q if you want to combine them", p, p+"+")
+				}
+				propValue[p] = v
+			}
+		}
+		for _, p := range props {
+			v := propValue[p]
 			upds = append(upds, service.PropertyUpdater{
 				EntryPath: entPath,
 				Name:      p,
 				Value:     &v,
 			})
+
 		}
 		err = h.server.BulkUpdateProperties(ctx, upds)
 		if err != nil {
