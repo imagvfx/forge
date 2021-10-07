@@ -235,7 +235,10 @@
 								<div style="height:1rem"> []
 								{{end}}
 								{{if $.ResultsFromSearch}}
-									<h5> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $entries}})]
+									<div style="display:flex;align-items:end;margin-top:1rem;margin-bottom:1rem;"> [
+										<img src="/thumbnail{{$parent}}" width="96px" height="54px" alt="" style="margin:0.3rem;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;" onerror="this.style.display='none';"> []
+										<div style="margin:0.3rem 0;font-size:0.83rem;font-weight:bold;"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $entries}})]
+									]
 								{{end}}
 								<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
 									{{$propFilters := index $.PropertyFilters $t}}
