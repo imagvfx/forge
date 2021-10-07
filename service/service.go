@@ -200,6 +200,7 @@ type AccessControl struct {
 	Accessor     string
 	AccessorType string
 	Mode         string
+	RawMode      int
 }
 
 type AccessControlFinder struct {
