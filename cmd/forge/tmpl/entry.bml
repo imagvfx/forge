@@ -27,7 +27,7 @@
 					<div id="quickSearch"> [
 						<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
 							<div> [quick search]
-							<div id="quickSearchEditButton" style="margin-left:0.4rem" onclick="toggleQuickSearchEditMode()"> [(edit)]
+							<div id="quickSearchEditButton" style="margin-left:0.4rem;cursor:pointer;" onclick="toggleQuickSearchEditMode()"> [(edit)]
 						]
 						<div style="display:flex;font-size:1rem;"> [
 						{{range $searchName, $searchValue := $.UserSetting.EntryPageQuickSearch -}}
