@@ -263,7 +263,7 @@ type UserSetting struct {
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
-	EntryPageQuickSearch     map[string]string
+	QuickSearches            []StringKV
 	PinnedPaths              []string
 }
 
@@ -275,6 +275,11 @@ type UserSettingUpdater struct {
 	User  string
 	Key   string
 	Value interface{}
+}
+
+type StringKV struct {
+	K string
+	V string
 }
 
 // PinnedPathArranger add/move/remove the path from UserSetting.PinnedPaths.

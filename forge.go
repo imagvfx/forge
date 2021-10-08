@@ -180,8 +180,13 @@ type UserSetting struct {
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
-	EntryPageQuickSearch     map[string]string
+	QuickSearches            []service.StringKV
 	PinnedPaths              []string
+}
+
+type StringKV struct {
+	K string
+	V string
 }
 
 type Group struct {

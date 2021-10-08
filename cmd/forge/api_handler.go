@@ -488,11 +488,11 @@ func (h *apiHandler) handleSetUserSetting(ctx context.Context, w http.ResponseWr
 	if r.FormValue("update_quick_search") != "" {
 		name := r.FormValue("quick_search_name")
 		val := r.FormValue("quick_search_value")
-		quickSearch := map[string]string{
-			name: val,
+		quickSearch := []service.StringKV{
+			{K: name, V: val},
 		}
 		user := service.UserNameFromContext(ctx)
-		err := h.server.UpdateUserSetting(ctx, user, "entry_page_quick_search", quickSearch)
+		err := h.server.UpdateUserSetting(ctx, user, "quick_searches", quickSearch)
 		if err != nil {
 			return err
 		}

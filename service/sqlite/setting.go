@@ -93,8 +93,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			err = json.Unmarshal([]byte(value), &s.EntryPagePropertyFilter)
 		case "entry_page_sort_property":
 			err = json.Unmarshal([]byte(value), &s.EntryPageSortProperty)
-		case "entry_page_quick_search":
-			err = json.Unmarshal([]byte(value), &s.EntryPageQuickSearch)
+		case "quick_searches":
+			err = json.Unmarshal([]byte(value), &s.QuickSearches)
 		case "pinned_paths":
 			err = json.Unmarshal([]byte(value), &s.PinnedPaths)
 		default:
@@ -222,28 +222,48 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		if err != nil {
 			return err
 		}
-	case "entry_page_quick_search":
-		quickSearch := setting.EntryPageQuickSearch
-		if quickSearch == nil {
-			quickSearch = make(map[string]string)
+	case "quick_searches":
+		quickSearches := setting.QuickSearches
+		if quickSearches == nil {
+			quickSearches = make([]service.StringKV, 0)
 		}
-		updateQuickSearch, ok := upd.Value.(map[string]string)
+		updateQuickSearch, ok := upd.Value.([]service.StringKV)
 		if !ok {
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
-		for name, query := range updateQuickSearch {
-			if name == "" {
-				// TODO: check this for other map[string]string settings as well
+		for _, updQs := range updateQuickSearch {
+			if updQs.K == "" {
+				// TODO: check this for other settings as well
 				return fmt.Errorf("quick search name is empty")
 			}
-			if query == "" {
-				// remove the quick search instead of add
-				delete(quickSearch, name)
+			if updQs.V == "" {
+				// Remove the quick search.
+				idx := -1
+				for i, s := range quickSearches {
+					if s.K == updQs.K {
+						idx = i
+						break
+					}
+				}
+				if idx != -1 {
+					quickSearches = append(quickSearches[:idx], quickSearches[idx+1:]...)
+				}
 			} else {
-				quickSearch[name] = query
+				// Add or update the quick search.
+				found := false
+				for i, qs := range quickSearches {
+					if qs.K != updQs.K {
+						continue
+					}
+					found = true
+					quickSearches[i] = updQs
+				}
+				if !found {
+					quickSearches = append(quickSearches, updQs)
+				}
 			}
 		}
-		value, err = json.Marshal(quickSearch)
+		value, err = json.Marshal(quickSearches)
 		if err != nil {
 			return err
 		}

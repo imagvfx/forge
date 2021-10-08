@@ -772,7 +772,7 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 		EntryPagePropertyFilter:  ss.EntryPagePropertyFilter,
 		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
 		EntryPageSortProperty:    ss.EntryPageSortProperty,
-		EntryPageQuickSearch:     ss.EntryPageQuickSearch,
+		QuickSearches:            ss.QuickSearches,
 		PinnedPaths:              ss.PinnedPaths,
 	}
 	return us, nil
