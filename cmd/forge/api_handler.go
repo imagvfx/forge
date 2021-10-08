@@ -741,7 +741,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			v := strings.TrimSpace(val)
 			if plus {
 				if v != "" {
-					propValue[p] = oldv + "\n\n" + v
+					propValue[p] = oldv + "\n\n\n" + v
 				}
 			} else {
 				if seen {
