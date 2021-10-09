@@ -30,19 +30,19 @@
 							<div id="quickSearchEditButton" style="margin-left:0.4rem;cursor:pointer;" onclick="toggleQuickSearchEditMode()"> [(edit)]
 						]
 						<div style="display:flex;font-size:1rem;"> [
-						{{range $search := $.UserSetting.QuickSearches -}}
-						<div style="display:flex;"> [
-							<!-- Either quickSearchLinks or quickSearchRemoveButton can be shown at a time -->
-							<a class="quickSearchLink" style="color:#333" href="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}"> [{{$search.K}}]
-							<form action="/api/set-user-setting" method="POST"> [
-								<input name="quick_search_name" type="hidden" value="{{$search.K}}">
-								<input name="quick_search_value" type="hidden" value=""> []
-								<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$search.K}}]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<div style="display:flex;"> [
+							{{range $search := $.UserSetting.QuickSearches -}}
+								<!-- Either quickSearchLinks or quickSearchRemoveButtons can be shown at a time -->
+								<div class="quickSearchLink" style="color:#333;cursor:pointer;" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
+								<form action="/api/set-user-setting" method="POST"> [
+									<input name="quick_search_name" type="hidden" value="{{$search.K}}">
+									<input name="quick_search_value" type="hidden" value=""> []
+									<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$search.K}}]
+									<input readonly name="back_to_referer" type="hidden" value="1"> []
+								]
+							<div style="display:inline-block;width:0.8rem;"> []
+							{{- end}}
 							]
-						]
-						<div style="display:inline-block;width:0.8rem;"> []
-						{{- end}}
 						]
 					]
 					]
@@ -355,6 +355,10 @@
 	display:inline-block;
 }
 
+.quickSearchLink:hover {
+	text-decoration: underline;
+}
+
 #quickSearch.editMode .quickSearchLink {
 	display:none;
 }
@@ -522,6 +526,87 @@ window.onload = function() {
 		uploadExcelInput.onchange = function() {
 			let uploadExcelForm = document.getElementById("uploadExcelForm");
 			uploadExcelForm.submit();
+		}
+	}
+	let quickSearches = document.getElementsByClassName("quickSearchLink");
+	for (let qs of quickSearches) {
+		qs.onclick = function(event) {
+			// I've had hard time when I drag quickSearchLink while it is 'a' tag.
+			// At first glance qs.ondragstart seemed to work consitently, then the link is clicked instead.
+			// Hope I got peace by making quickSearchLink 'div'.
+			window.location.href = qs.dataset.link;
+			return;
+		}
+		qs.ondragstart = function(event) {
+			let newMarker = function(i) {
+				let marker = document.createElement("div");
+				marker.classList.add("quickSearchIndexMarker");
+				marker.innerText = "|";
+				marker.dataset.idx = i;
+				marker.style.color = "#AAA";
+				marker.style.fontWeight = "bold";
+				marker.style.padding = "0 0.5rem";
+				return marker
+			}
+			event.dataTransfer.setData("application/forge", qs.id);
+			event.dataTransfer.effectAllowed = "move";
+			let searches = document.getElementsByClassName("quickSearchLink");
+			let i = 0;
+			for (let s of searches) {
+				let marker = newMarker(i);
+				s.parentNode.insertBefore(marker, s);
+				if (s != qs) {
+					i++;
+				}
+			}
+			// Put a marker at the end as well.
+			let marker = newMarker(i);
+			searches[0].parentNode.append(marker);
+
+			let markers = document.getElementsByClassName("quickSearchIndexMarker");
+			for (let m of markers) {
+				m.ondragover = function(ev) {
+					ev.preventDefault();
+					ev.dataTransfer.dropEffect = "move";
+					m.style.color = "#00F";
+				};
+				m.ondragleave = function(ev) {
+					ev.preventDefault();
+					ev.dataTransfer.dropEffect = "none";
+					m.style.color = "#AAA";
+				}
+				m.ondrop = function(ev) {
+					let id = event.dataTransfer.getData("application/forge");
+					let req = new XMLHttpRequest();
+					let formData = new FormData();
+					formData.append("arrange_quick_search", "1");
+					formData.append("quick_search_name", qs.innerText);
+					formData.append("quick_search_at", m.dataset.idx);
+					req.open("post", "/api/set-user-setting");
+					req.send(formData);
+					req.onload = function() {
+						if (req.status == 200) {
+							location.reload();
+						} else {
+							showStatusBarOnly();
+							printErrorStatus(req.responseText);
+						}
+					}
+					req.onerror = function(err) {
+						showStatusBarOnly();
+						printErrorStatus(err);
+					}
+				}
+			}
+		}
+		qs.ondragend = function(event) {
+			if (event.dataTransfer.dropEffect == "none") {
+				let markers = document.getElementsByClassName("quickSearchIndexMarker");
+				// Delete from backward prevents out-of-sync of a HTMLCollection.
+				for (let i = markers.length-1; i >= 0; i--) {
+					markers[i].remove();
+				}
+			}
 		}
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');

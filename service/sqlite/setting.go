@@ -223,49 +223,87 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 			return err
 		}
 	case "quick_searches":
-		quickSearches := setting.QuickSearches
-		if quickSearches == nil {
-			quickSearches = make([]service.StringKV, 0)
-		}
-		updateQuickSearch, ok := upd.Value.([]service.StringKV)
-		if !ok {
-			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
-		}
-		for _, updQs := range updateQuickSearch {
-			if updQs.K == "" {
-				// TODO: check this for other settings as well
-				return fmt.Errorf("quick search name is empty")
+		switch val := upd.Value.(type) {
+		case []service.StringKV:
+			updateQuickSearch := val
+			quickSearches := setting.QuickSearches
+			if quickSearches == nil {
+				quickSearches = make([]service.StringKV, 0)
 			}
-			if updQs.V == "" {
-				// Remove the quick search.
-				idx := -1
-				for i, s := range quickSearches {
-					if s.K == updQs.K {
-						idx = i
-						break
+			for _, updQs := range updateQuickSearch {
+				if updQs.K == "" {
+					// TODO: check this for other settings as well
+					return fmt.Errorf("quick search name is empty")
+				}
+				if updQs.V == "" {
+					// Remove the quick search.
+					idx := -1
+					for i, s := range quickSearches {
+						if s.K == updQs.K {
+							idx = i
+							break
+						}
+					}
+					if idx != -1 {
+						quickSearches = append(quickSearches[:idx], quickSearches[idx+1:]...)
+					}
+				} else {
+					// Add or update the quick search.
+					found := false
+					for i, qs := range quickSearches {
+						if qs.K != updQs.K {
+							continue
+						}
+						found = true
+						quickSearches[i] = updQs
+					}
+					if !found {
+						quickSearches = append(quickSearches, updQs)
 					}
 				}
-				if idx != -1 {
-					quickSearches = append(quickSearches[:idx], quickSearches[idx+1:]...)
-				}
-			} else {
-				// Add or update the quick search.
-				found := false
-				for i, qs := range quickSearches {
-					if qs.K != updQs.K {
-						continue
-					}
-					found = true
-					quickSearches[i] = updQs
-				}
-				if !found {
-					quickSearches = append(quickSearches, updQs)
-				}
 			}
-		}
-		value, err = json.Marshal(quickSearches)
-		if err != nil {
-			return err
+			value, err = json.Marshal(quickSearches)
+			if err != nil {
+				return err
+			}
+		case service.QuickSearchArranger:
+			arr := val
+			if arr.Name == "" {
+				return fmt.Errorf("%v: name empty", upd.Key)
+			}
+			oldSearches := setting.QuickSearches
+			if oldSearches == nil {
+				oldSearches = make([]service.StringKV, 0)
+			}
+			searches := make([]service.StringKV, 0, len(oldSearches)+1)
+			search := service.StringKV{}
+			for _, s := range oldSearches {
+				if s.K == arr.Name {
+					search = s
+					continue
+				}
+				searches = append(searches, s)
+			}
+			if search.K == "" {
+				return fmt.Errorf("%v: not found quick search: %v", upd.Key, arr.Name)
+			}
+			switch n := arr.Index; {
+			case n < 0:
+				// remove: already done
+			case n < len(oldSearches):
+				// insert el at n
+				searches = append(searches, service.StringKV{})
+				copy(searches[n+1:], searches[n:])
+				searches[n] = search
+			default:
+				searches = append(searches, search)
+			}
+			value, err = json.Marshal(searches)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("invalid type of value: %v", upd.Key)
 		}
 	case "pinned_paths":
 		updatePinnedPath, ok := upd.Value.(service.PinnedPathArranger)

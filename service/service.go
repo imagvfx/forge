@@ -282,6 +282,11 @@ type StringKV struct {
 	V string
 }
 
+type QuickSearchArranger struct {
+	Name  string
+	Index int
+}
+
 // PinnedPathArranger add/move/remove the path from UserSetting.PinnedPaths.
 // The index system in Arranger is a little different than the others, so please read below.
 //

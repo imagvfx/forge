@@ -497,6 +497,20 @@ func (h *apiHandler) handleSetUserSetting(ctx context.Context, w http.ResponseWr
 			return err
 		}
 	}
+	if r.FormValue("arrange_quick_search") != "" {
+		name := r.FormValue("quick_search_name")
+		at := r.FormValue("quick_search_at")
+		n, err := strconv.Atoi(at)
+		if err != nil {
+			return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
+		}
+		arr := service.QuickSearchArranger{Name: name, Index: n}
+		user := service.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "quick_searches", arr)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_pinned_path") != "" {
 		path := strings.TrimSpace(r.FormValue("pinned_path"))
 		if path == "" {
