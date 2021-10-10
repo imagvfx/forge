@@ -650,7 +650,7 @@ window.onload = function() {
 		}
 		req.onerror = function(err) {
 			showStatusBarOnly();
-			printErrorStatus(err);
+			printErrorStatus("network error occurred. please check whether the server is down.");
 		}
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
@@ -728,7 +728,7 @@ window.onload = function() {
 				}
 				req.onerror = function(err) {
 					showStatusBarOnly();
-					printErrorStatus(err);
+					printErrorStatus("network error occurred. please check whether the server is down.");
 				}
 			}
 			let x = loader.offsetLeft;
