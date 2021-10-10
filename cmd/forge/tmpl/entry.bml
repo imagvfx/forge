@@ -30,19 +30,17 @@
 							<div id="quickSearchEditButton" style="margin-left:0.4rem;cursor:pointer;" onclick="toggleQuickSearchEditMode()"> [(edit)]
 						]
 						<div style="display:flex;font-size:1rem;"> [
-							<div style="display:flex;"> [
-							{{range $search := $.UserSetting.QuickSearches -}}
-								<!-- Either quickSearchLinks or quickSearchRemoveButtons can be shown at a time -->
-								<div class="quickSearchLink" style="color:#333;cursor:pointer;" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
-								<form action="/api/set-user-setting" method="POST"> [
-									<input name="quick_search_name" type="hidden" value="{{$search.K}}">
-									<input name="quick_search_value" type="hidden" value=""> []
-									<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$search.K}}]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
-								]
-							<div style="display:inline-block;width:0.8rem;"> []
-							{{- end}}
+						{{range $search := $.UserSetting.QuickSearches -}}
+							<!-- Either quickSearchLinks or quickSearchRemoveButtons can be shown at a time -->
+							<div class="quickSearchLink" style="color:#333;cursor:pointer;" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
+							<form action="/api/set-user-setting" method="POST"> [
+								<input name="quick_search_name" type="hidden" value="{{$search.K}}">
+								<input name="quick_search_value" type="hidden" value=""> []
+								<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$search.K}}]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
+							<div style="display:inline-block;width:0.8rem;"> []
+						{{- end}}
 						]
 					]
 					]
