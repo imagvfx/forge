@@ -576,7 +576,7 @@ window.onload = function() {
 					m.style.color = "#AAA";
 				}
 				m.ondrop = function(ev) {
-					let id = event.dataTransfer.getData("application/forge");
+					let id = ev.dataTransfer.getData("application/forge");
 					let req = new XMLHttpRequest();
 					let formData = new FormData();
 					formData.append("arrange_quick_search", "1");
