@@ -29,17 +29,16 @@
 							<div> [quick search]
 							<div id="quickSearchEditButton" style="margin-left:0.4rem;cursor:pointer;" onclick="toggleQuickSearchEditMode()"> [(edit)]
 						]
-						<div style="display:flex;font-size:1rem;"> [
-						{{range $search := $.UserSetting.QuickSearches -}}
+						<div id="quickSearchDropZone" style="display:flex;font-size:1rem;"> [
+						{{range $i, $search := $.UserSetting.QuickSearches -}}
 							<!-- Either quickSearchLinks or quickSearchRemoveButtons can be shown at a time -->
-							<div class="quickSearchLink" style="color:#333;cursor:pointer;" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
+							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#333;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
 							<form action="/api/set-user-setting" method="POST"> [
 								<input name="quick_search_name" type="hidden" value="{{$search.K}}">
 								<input name="quick_search_value" type="hidden" value=""> []
 								<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$search.K}}]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
-							<div style="display:inline-block;width:0.8rem;"> []
 						{{- end}}
 						]
 					]
@@ -536,75 +535,122 @@ window.onload = function() {
 			return;
 		}
 		qs.ondragstart = function(event) {
-			let newMarker = function(i) {
-				let marker = document.createElement("div");
-				marker.classList.add("quickSearchIndexMarker");
-				marker.innerText = "|";
-				marker.dataset.idx = i;
-				marker.style.color = "#AAA";
-				marker.style.fontWeight = "bold";
-				marker.style.padding = "0 0.5rem";
-				return marker
-			}
-			event.dataTransfer.setData("application/forge", qs.id);
+			event.dataTransfer.setData("application/quicksearch/id", qs.id);
 			event.dataTransfer.effectAllowed = "move";
 			let searches = document.getElementsByClassName("quickSearchLink");
-			let i = 0;
-			for (let s of searches) {
-				let marker = newMarker(i);
-				s.parentNode.insertBefore(marker, s);
-				if (s != qs) {
-					i++;
-				}
-			}
-			// Put a marker at the end as well.
-			let marker = newMarker(i);
-			searches[0].parentNode.append(marker);
-
-			let markers = document.getElementsByClassName("quickSearchIndexMarker");
-			for (let m of markers) {
-				m.ondragover = function(ev) {
-					ev.preventDefault();
-					ev.dataTransfer.dropEffect = "move";
-					m.style.color = "#00F";
-				};
-				m.ondragleave = function(ev) {
-					ev.preventDefault();
-					ev.dataTransfer.dropEffect = "none";
-					m.style.color = "#AAA";
-				}
-				m.ondrop = function(ev) {
-					let id = ev.dataTransfer.getData("application/forge");
-					let req = new XMLHttpRequest();
-					let formData = new FormData();
-					formData.append("arrange_quick_search", "1");
-					formData.append("quick_search_name", qs.innerText);
-					formData.append("quick_search_at", m.dataset.idx);
-					req.open("post", "/api/set-user-setting");
-					req.send(formData);
-					req.onload = function() {
-						if (req.status == 200) {
-							location.reload();
-						} else {
-							showStatusBarOnly();
-							printErrorStatus(req.responseText);
-						}
-					}
-					req.onerror = function(err) {
-						showStatusBarOnly();
-						printErrorStatus(err);
-					}
-				}
-			}
 		}
 		qs.ondragend = function(event) {
 			if (event.dataTransfer.dropEffect == "none") {
-				let markers = document.getElementsByClassName("quickSearchIndexMarker");
-				// Delete from backward prevents out-of-sync of a HTMLCollection.
-				for (let i = markers.length-1; i >= 0; i--) {
-					markers[i].remove();
+				let targetId = event.dataTransfer.getData("application/quicksearch/id");
+				let target = document.getElementById(targetId);
+				if (target == null) {
+					console.log("unable to find drop target");
+					return;
+				}
+				let curIdx = -1;
+				let searches = document.getElementsByClassName("quickSearchLink");
+				for (let i = 0; i < searches.length; i++) {
+					qs = searches[i];
+					if (qs == target) {
+						curIdx = i;
+						break;
+					}
+				}
+				if (curIdx == -1) {
+					console.log("unable to find drop target from quicksearches");
+					return;
+				}
+				let origIdx = parseInt(target.dataset.idx);
+				if (curIdx == origIdx) {
+					return;
+				}
+				if (curIdx > origIdx) {
+					target.parentNode.insertBefore(target, target.parentNode.children[origIdx]);
+					return
+				}
+				if (curIdx < origIdx) {
+					if (origIdx+1 == searches.length) {
+						target.parentNode.appendChild(target);
+						return;
+					}
+					target.parentNode.insertBefore(target, target.parentNode.children[origIdx+1]);
+					return
 				}
 			}
+		}
+	}
+	let quickSearchDropZone = document.getElementById("quickSearchDropZone");
+	quickSearchDropZone.ondragover = function(event) {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = "move";
+		let targetId = event.dataTransfer.getData("application/quicksearch/id");
+		let target = document.getElementById(targetId);
+		if (target == null) {
+			console.log("unable to find drop target");
+			return;
+		}
+		let searches = document.getElementsByClassName("quickSearchLink");
+		for (let qs of searches) {
+			if (qs == target) {
+				continue
+			}
+			if (Math.abs(qs.offsetLeft - event.clientX) < 5) {
+				qs.parentNode.insertBefore(target, qs);
+				break;
+			}
+			if (Math.abs(qs.offsetLeft + qs.offsetWidth - event.clientX) < 5) {
+				let next = qs.nextSibling;
+				if (next == null) {
+					qs.parentNode.appendChild(target);
+				} else {
+					qs.parentNode.insertBefore(target, next);
+				}
+				break;
+			}
+		}
+	}
+	quickSearchDropZone.ondragleave = function(event) {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = "none";
+	}
+	quickSearchDropZone.ondrop = function(event) {
+		let targetId = event.dataTransfer.getData("application/quicksearch/id");
+		let target = document.getElementById(targetId);
+		if (target == null) {
+			console.log("unable to find drop target");
+			return;
+		}
+		let at = -1;
+		let searches = document.getElementsByClassName("quickSearchLink");
+		for (let i = 0; i < searches.length; i++) {
+			let qs = searches[i];
+			if (qs == target) {
+				at = i;
+				break;
+			}
+		}
+		if (at == -1) {
+			console.log("unable to find drop target from quicksearches");
+			return;
+		}
+		let req = new XMLHttpRequest();
+		let formData = new FormData();
+		formData.append("arrange_quick_search", "1");
+		formData.append("quick_search_name", target.innerText);
+		formData.append("quick_search_at", at);
+		req.open("post", "/api/set-user-setting");
+		req.send(formData);
+		req.onload = function() {
+			if (req.status == 200) {
+				location.reload();
+			} else {
+				showStatusBarOnly();
+				printErrorStatus(req.responseText);
+			}
+		}
+		req.onerror = function(err) {
+			showStatusBarOnly();
+			printErrorStatus(err);
 		}
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
