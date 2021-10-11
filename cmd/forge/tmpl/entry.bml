@@ -8,10 +8,11 @@
 		{{template "nav" $}}
 		<div class="main"> [
 			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
+				<!-- Pinned Path -->
 				<div style="padding:1.5rem;font-size:1rem;color:#555"> [Pinned]
 				<div style="padding:0 1.5rem;font-size:0.9rem;"> [
 					{{range $p := $.UserSetting.PinnedPaths}}
-					<div style="margin:0.2rem 0;"> [<a style="color:#22A;" href="{{$p}}"> [{{$p}}]]
+					<div class="pinnedPathLink" data-link="{{$p}}" style="margin:0.2rem 0;cursor:pointer;"> [{{$p}}]
 					{{end}}
 				]
 			]
@@ -340,6 +341,10 @@
 ]
 
 <style> [`
+.pinnedPathLink:hover {
+	text-decoration: underline;
+}
+
 #quickSearchEditButton {
 	color: #CCC;
 }
@@ -523,6 +528,12 @@ window.onload = function() {
 		uploadExcelInput.onchange = function() {
 			let uploadExcelForm = document.getElementById("uploadExcelForm");
 			uploadExcelForm.submit();
+		}
+	}
+	let pinnedPaths = document.getElementsByClassName("pinnedPathLink");
+	for (let pp of pinnedPaths) {
+		pp.onclick = function(event) {
+			window.location.href = pp.dataset.link;
 		}
 	}
 	let quickSearches = document.getElementsByClassName("quickSearchLink");
