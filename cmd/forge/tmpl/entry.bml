@@ -29,7 +29,7 @@
 							<div> [quick search]
 							<div id="quickSearchEditButton" style="margin-left:0.4rem;cursor:pointer;" onclick="toggleQuickSearchEditMode()"> [(edit)]
 						]
-						<div id="quickSearchDropZone" style="display:flex;font-size:1rem;"> [
+						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 						{{range $i, $search := $.UserSetting.QuickSearches -}}
 							<!-- Either quickSearchLinks or quickSearchRemoveButtons can be shown at a time -->
 							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#333;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
