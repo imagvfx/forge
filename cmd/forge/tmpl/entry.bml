@@ -597,19 +597,14 @@ window.onload = function() {
 		let paths = document.getElementsByClassName("pinnedPathLink");
 		for (let pp of paths) {
 			if (pp == target) {
-				continue
+				continue;
 			}
-			if (Math.abs(pp.offsetTop - event.clientY) < 3) {
+			if (event.clientY < pp.offsetTop + pp.offsetHeight/2) {
 				pp.parentNode.insertBefore(target, pp);
 				break;
 			}
-			if (Math.abs(pp.offsetTop + pp.offsetHeight - event.clientY) < 3) {
-				let next = pp.nextSibling;
-				if (next == null) {
-					pp.parentNode.appendChild(target);
-				} else {
-					pp.parentNode.insertBefore(target, next);
-				}
+			if (pp.nextElementSibling == null) {
+				pp.parentNode.appendChild(target, pp);
 				break;
 			}
 		}
