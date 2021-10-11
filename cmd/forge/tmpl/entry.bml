@@ -26,7 +26,10 @@
 					]
 					<!-- Quick Search -->
 					<div id="quickSearch"> [
-						<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [quick search]
+						<div style="display:flex;margin-bottom:0.5rem;"> [
+							<div id="quickSearchLabel" style="font-size:0.8rem;color:#AAA;margin-right:1rem;"> [quick search]
+							<div id="quickSearchDeleteButton" style="display:none;border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
+						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 						{{range $i, $search := $.UserSetting.QuickSearches -}}
 							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#333;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
@@ -613,9 +616,36 @@ window.onload = function() {
 		qs.ondragstart = function(event) {
 			event.dataTransfer.setData("application/quicksearch/id", qs.id);
 			event.dataTransfer.effectAllowed = "move";
-			let searches = document.getElementsByClassName("quickSearchLink");
+			let del = document.getElementById("quickSearchDeleteButton");
+			del.style.display = "inline-block";
+			del.ondragenter = function(ev) {
+				ev.preventDefault();
+				ev.dataTransfer.dropEffect = "move";
+				del.style.color = "#A22";
+				del.style.border = "1px solid #A22";
+			}
+			del.ondragover = function(ev) {
+				ev.preventDefault();
+			}
+			del.ondragleave = function(ev) {
+				ev.preventDefault();
+				ev.dataTransfer.dropEffect = "none";
+				del.style.color = "#DDD";
+				del.style.border = "1px solid #DDD";
+			}
+			del.ondrop = function(ev) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				let targetId = event.dataTransfer.getData("application/quicksearch/id");
+				if (targetId != qs.id) {
+					return;
+				}
+				updateQuickSearch(qs.innerText, -1);
+			}
 		}
 		qs.ondragend = function(event) {
+			let del = document.getElementById("quickSearchDeleteButton");
+			del.style.display = "none";
 			if (event.dataTransfer.dropEffect == "none") {
 				let targetId = event.dataTransfer.getData("application/quicksearch/id");
 				let target = document.getElementById(targetId);
