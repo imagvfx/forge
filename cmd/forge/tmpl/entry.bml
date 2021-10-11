@@ -728,22 +728,22 @@ window.onload = function() {
 		let searches = document.getElementsByClassName("quickSearchLink");
 		for (let qs of searches) {
 			if (qs == target) {
-				continue
+				continue;
 			}
-			if ((qs.offsetTop > event.clientY) || (qs.offsetTop + qs.offsetHeight < event.clientY)) {
-				continue
+			if (event.clientY < qs.offsetTop || qs.offsetTop + qs.offsetHeight <= event.clientY) {
+				continue;
 			}
-			if (Math.abs(qs.offsetLeft - event.clientX) < 5) {
-				qs.parentNode.insertBefore(target, qs);
-				break;
-			}
-			if (Math.abs(qs.offsetLeft + qs.offsetWidth - event.clientX) < 5) {
-				let next = qs.nextSibling;
-				if (next == null) {
-					qs.parentNode.appendChild(target);
-				} else {
-					qs.parentNode.insertBefore(target, next);
+			if (event.clientX < qs.offsetLeft + qs.offsetWidth) {
+				if (event.clientX < qs.offsetLeft + qs.offsetWidth/2) {
+					qs.parentNode.insertBefore(target, qs);
+					break;
 				}
+				let next = qs.nextElementSibling;
+				if (next == null) {
+					qs.parentNode.appendChild(target, qs);
+					break;
+				}
+				qs.parentNode.insertBefore(target, next);
 				break;
 			}
 		}
