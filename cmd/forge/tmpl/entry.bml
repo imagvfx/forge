@@ -26,20 +26,10 @@
 					]
 					<!-- Quick Search -->
 					<div id="quickSearch"> [
-						<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [
-							<div> [quick search]
-							<div id="quickSearchEditButton" style="margin-left:0.4rem;cursor:pointer;" onclick="toggleQuickSearchEditMode()"> [(edit)]
-						]
+						<div style="display:flex;font-size:0.7rem;color:#AAA;margin-right:1rem;margin-bottom:0.5rem;"> [quick search]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 						{{range $i, $search := $.UserSetting.QuickSearches -}}
-							<!-- Either quickSearchLinks or quickSearchRemoveButtons can be shown at a time -->
 							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#333;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
-							<form action="/api/set-user-setting" method="POST"> [
-								<input name="quick_search_name" type="hidden" value="{{$search.K}}">
-								<input name="quick_search_value" type="hidden" value=""> []
-								<button name="update_quick_search" value="1" class="quickSearchRemoveButton" style="color:#A00;border:0;background-color:rgba(1,1,1,0);"> [{{$search.K}}]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-							]
 						{{- end}}
 						]
 					]
@@ -345,36 +335,8 @@
 	text-decoration: underline;
 }
 
-#quickSearchEditButton {
-	color: #CCC;
-}
-
-#quickSearchEditButton:hover {
-	color: #AAA;
-}
-
-.quickSearchLink {
-	display:inline-block;
-}
-
 .quickSearchLink:hover {
 	text-decoration: underline;
-}
-
-#quickSearch.editMode .quickSearchLink {
-	display:none;
-}
-
-.quickSearchRemoveButton {
-	display:none;
-}
-
-#quickSearch.editMode .quickSearchRemoveButton {
-	display:inline-block;
-}
-
-#quickSearch.editMode .quickSearchRemoveButton:hover {
-	text-decoration: line-through;
 }
 
 .itemValue.invalid {
@@ -911,15 +873,6 @@ function parentWithClass(from, clsName) {
 		}
 		from = parent;
 	}
-}
-
-function toggleQuickSearchEditMode() {
-	let el = document.getElementById("quickSearch");
-	if (el.classList.contains("editMode")) {
-		el.classList.remove("editMode");
-		return;
-	}
-	el.classList.add("editMode");
 }
 
 function toggleRenameInput() {
