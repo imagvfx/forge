@@ -10,9 +10,9 @@
 			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
 				<!-- Pinned Path -->
 				<div style="padding:1.5rem;font-size:1rem;color:#555"> [Pinned]
-				<div style="padding:0 1.5rem;font-size:0.9rem;"> [
-					{{range $p := $.UserSetting.PinnedPaths}}
-					<div class="pinnedPathLink" data-link="{{$p}}" style="margin:0.2rem 0;cursor:pointer;"> [{{$p}}]
+				<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
+					{{range $i, $p := $.UserSetting.PinnedPaths}}
+					<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-link="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;"> [{{$p}}]
 					{{end}}
 				]
 			]
@@ -534,6 +534,123 @@ window.onload = function() {
 	for (let pp of pinnedPaths) {
 		pp.onclick = function(event) {
 			window.location.href = pp.dataset.link;
+		}
+		pp.ondragstart = function(event) {
+			event.dataTransfer.setData("application/pinnedpath/id", pp.id);
+			event.dataTransfer.effectAllowed = "move";
+		}
+		pp.ondragend = function(event) {
+			if (event.dataTransfer.dropEffect == "none") {
+				let targetId = event.dataTransfer.getData("application/pinnedpath/id");
+				let target = document.getElementById(targetId);
+				if (target == null) {
+					console.log("unable to find drop target");
+					return;
+				}
+				let curIdx = -1;
+				let paths = document.getElementsByClassName("pinnedPathLink");
+				for (let i = 0; i < paths.length; i++) {
+					pp = paths[i];
+					if (pp == target) {
+						curIdx = i;
+						break;
+					}
+				}
+				if (curIdx == -1) {
+					console.log("unable to find drop target from pinnedpaths");
+					return;
+				}
+				let origIdx = parseInt(target.dataset.idx);
+				if (curIdx == origIdx) {
+					return;
+				}
+				if (curIdx > origIdx) {
+					target.parentNode.insertBefore(target, target.parentNode.children[origIdx]);
+					return
+				}
+				if (curIdx < origIdx) {
+					if (origIdx+1 == paths.length) {
+						target.parentNode.appendChild(target);
+						return;
+					}
+					target.parentNode.insertBefore(target, target.parentNode.children[origIdx+1]);
+					return
+				}
+			}
+		}
+	}
+	let pinnedPathDropZone = document.getElementById("pinnedPathDropZone");
+	pinnedPathDropZone.ondragover = function(event) {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = "move";
+		let targetId = event.dataTransfer.getData("application/pinnedpath/id");
+		let target = document.getElementById(targetId);
+		if (target == null) {
+			console.log("unable to find drop target");
+			return;
+		}
+		let paths = document.getElementsByClassName("pinnedPathLink");
+		for (let pp of paths) {
+			if (pp == target) {
+				continue
+			}
+			if (Math.abs(pp.offsetTop - event.clientY) < 3) {
+				pp.parentNode.insertBefore(target, pp);
+				break;
+			}
+			if (Math.abs(pp.offsetTop + pp.offsetHeight - event.clientY) < 3) {
+				let next = pp.nextSibling;
+				if (next == null) {
+					pp.parentNode.appendChild(target);
+				} else {
+					pp.parentNode.insertBefore(target, next);
+				}
+				break;
+			}
+		}
+	}
+	pinnedPathDropZone.ondragleave = function(event) {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = "none";
+	}
+	pinnedPathDropZone.ondrop = function(event) {
+		let targetId = event.dataTransfer.getData("application/pinnedpath/id");
+		let target = document.getElementById(targetId);
+		if (target == null) {
+			console.log("unable to find drop target");
+			return;
+		}
+		let at = -1;
+		let paths = document.getElementsByClassName("pinnedPathLink");
+		for (let i = 0; i < paths.length; i++) {
+			let pp = paths[i];
+			if (pp == target) {
+				at = i;
+				break;
+			}
+		}
+		if (at == -1) {
+			console.log("unable to find drop target from pinned paths");
+			return;
+		}
+		let req = new XMLHttpRequest();
+		let formData = new FormData();
+		formData.append("update_pinned_path", "1");
+		formData.append("pinned_path", target.innerText);
+		formData.append("pinned_path_at", at);
+		req.open("post", "/api/set-user-setting");
+		req.send(formData);
+		req.onload = function() {
+			if (req.status == 200) {
+				location.reload();
+			} else {
+				showStatusBarOnly();
+				printErrorStatus(req.responseText);
+			}
+		}
+		req.onerror = function(err) {
+			showStatusBarOnly();
+			printErrorStatus("network error occurred. please check whether the server is down.");
 		}
 	}
 	let quickSearches = document.getElementsByClassName("quickSearchLink");
