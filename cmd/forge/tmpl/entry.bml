@@ -594,6 +594,9 @@ window.onload = function() {
 			if (qs == target) {
 				continue
 			}
+			if ((qs.offsetTop > event.clientY) || (qs.offsetTop + qs.offsetHeight < event.clientY)) {
+				continue
+			}
 			if (Math.abs(qs.offsetLeft - event.clientX) < 5) {
 				qs.parentNode.insertBefore(target, qs);
 				break;
