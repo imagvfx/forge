@@ -584,6 +584,10 @@ window.onload = function() {
 		event.preventDefault();
 		event.dataTransfer.dropEffect = "move";
 		let targetId = event.dataTransfer.getData("application/pinnedpath/id");
+		if (targetId == "") {
+			// possibly dragged from other zone.
+			return;
+		}
 		let target = document.getElementById(targetId);
 		if (target == null) {
 			console.log("unable to find drop target");
@@ -615,6 +619,10 @@ window.onload = function() {
 	}
 	pinnedPathDropZone.ondrop = function(event) {
 		let targetId = event.dataTransfer.getData("application/pinnedpath/id");
+		if (targetId == "") {
+			// possibly dragged from other zone.
+			return;
+		}
 		let target = document.getElementById(targetId);
 		if (target == null) {
 			console.log("unable to find drop target");
@@ -712,6 +720,10 @@ window.onload = function() {
 		event.preventDefault();
 		event.dataTransfer.dropEffect = "move";
 		let targetId = event.dataTransfer.getData("application/quicksearch/id");
+		if (targetId == "") {
+			// possibly dragged from other zone.
+			return;
+		}
 		let target = document.getElementById(targetId);
 		if (target == null) {
 			console.log("unable to find drop target");
@@ -746,6 +758,10 @@ window.onload = function() {
 	}
 	quickSearchDropZone.ondrop = function(event) {
 		let targetId = event.dataTransfer.getData("application/quicksearch/id");
+		if (targetId == "") {
+			// possibly dragged from other zone.
+			return;
+		}
 		let target = document.getElementById(targetId);
 		if (target == null) {
 			console.log("unable to find drop target");
