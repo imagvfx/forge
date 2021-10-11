@@ -15,7 +15,7 @@
 				]
 				<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
 					{{range $i, $p := $.UserSetting.PinnedPaths}}
-					<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-link="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;"> [{{$p}}]
+					<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-link="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
 					{{end}}
 				]
 			]
@@ -35,7 +35,7 @@
 						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 						{{range $i, $search := $.UserSetting.QuickSearches -}}
-							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#333;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
+							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#555;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
 						{{- end}}
 						]
 					]
