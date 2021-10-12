@@ -165,8 +165,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		idxEqual := strings.Index(p, "=")
 		if idxColon == -1 && idxEqual == -1 {
 			// generic search; not tied to a property
-			keys = append(keys, "(entries.path LIKE ? OR properties.val LIKE ?)")
-			vals = append(vals, search.SearchRoot+`/%`+p, `%`+p+`%`)
+			keys = append(keys, "(entries.path LIKE ? OR (properties.name NOT LIKE ? AND properties.val LIKE ?))")
+			vals = append(vals, search.SearchRoot+`/%`+p, ".%", `%`+p+`%`)
 			continue
 		}
 		// Check which is appeared earlier.
