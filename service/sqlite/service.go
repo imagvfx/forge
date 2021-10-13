@@ -66,6 +66,10 @@ func (s *Service) SearchEntries(ctx context.Context, search service.EntrySearche
 	return SearchEntries(s.db, ctx, search)
 }
 
+func (s *Service) CountAllSubEntries(ctx context.Context, path string) (int, error) {
+	return CountAllSubEntries(s.db, ctx, path)
+}
+
 func (s *Service) GetEntry(ctx context.Context, path string) (*service.Entry, error) {
 	return GetEntry(s.db, ctx, path)
 }

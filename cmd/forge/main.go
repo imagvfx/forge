@@ -200,6 +200,7 @@ func main() {
 	mux.HandleFunc("/api/add-entry", api.Handler(api.handleAddEntry))
 	mux.HandleFunc("/api/rename-entry", api.Handler(api.handleRenameEntry))
 	mux.HandleFunc("/api/delete-entry", api.Handler(api.handleDeleteEntry))
+	mux.HandleFunc("/api/count-all-sub-entries", api.Handler(api.handleCountAllSubEntries))
 	mux.HandleFunc("/api/add-property", api.Handler(api.handleAddProperty))
 	mux.HandleFunc("/api/set-property", api.Handler(api.handleSetProperty))
 	mux.HandleFunc("/api/get-property", api.Handler(api.handleGetProperty))

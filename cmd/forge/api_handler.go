@@ -133,6 +133,16 @@ func (h *apiHandler) handleDeleteDefault(ctx context.Context, w http.ResponseWri
 	return nil
 }
 
+func (h *apiHandler) handleCountAllSubEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	n, err := h.server.CountAllSubEntries(ctx, path)
+	h.WriteResponse(w, n, err)
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// parent, if suggested, will be used as prefix of the path.
 	parent := r.FormValue("parent")

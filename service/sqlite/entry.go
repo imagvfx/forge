@@ -246,6 +246,45 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 	return ents, nil
 }
 
+func CountAllSubEntries(db *sql.DB, ctx context.Context, path string) (int, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	n, err := countAllSubEntries(tx, ctx, path)
+	if err != nil {
+		return 0, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+func countAllSubEntries(tx *sql.Tx, ctx context.Context, path string) (int, error) {
+	rows, err := tx.QueryContext(ctx, `
+		SELECT COUNT(*) FROM entries WHERE path LIKE ?`,
+		path+"/%",
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return 0, err
+		}
+	}
+	var n int
+	err = rows.Scan(&n)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
 func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

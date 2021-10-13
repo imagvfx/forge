@@ -113,6 +113,13 @@ func (s *Server) SearchEntries(ctx context.Context, path, entryType, query strin
 	return ents, nil
 }
 
+func (s *Server) CountAllSubEntries(ctx context.Context, path string) (int, error) {
+	if path == "" {
+		return 0, fmt.Errorf("entry path not specified")
+	}
+	return s.svc.CountAllSubEntries(ctx, path)
+}
+
 func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	if path == "" {
 		return fmt.Errorf("entry path not specified")

@@ -19,6 +19,7 @@ type Service interface {
 	DeleteDefault(ctx context.Context, entType, ctg, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	SearchEntries(ctx context.Context, search EntrySearcher) ([]*Entry, error)
+	CountAllSubEntries(ctx context.Context, path string) (int, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
 	AddEntry(ctx context.Context, ent *Entry) error
 	RenameEntry(ctx context.Context, path string, newName string) error
