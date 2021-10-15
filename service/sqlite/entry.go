@@ -264,6 +264,9 @@ func CountAllSubEntries(db *sql.DB, ctx context.Context, path string) (int, erro
 }
 
 func countAllSubEntries(tx *sql.Tx, ctx context.Context, path string) (int, error) {
+	if path == "/" {
+		path = ""
+	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT COUNT(*) FROM entries WHERE path LIKE ?`,
 		path+"/%",
