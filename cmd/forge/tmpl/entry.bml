@@ -94,12 +94,7 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
-							<form action="/api/delete-entry" method="post"> [
-								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<button id="delete-entry-button" style="display:none"> []
-								<label for="delete-entry-button" class="item-box" style="color:#A22;cursor:pointer"> [Delete]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-							]
+							<label class="item-box" style="color:#A22;cursor:pointer" onclick="openDeleteEntryDialog('{{$.Entry.Path}}')"> [Delete]
 						]
 					]
 					<div style="display:flex;"> [
@@ -333,6 +328,20 @@
 				]
 			]
 		]
+		<div id="deleteEntryDialogBackground"> [
+			<div id="deleteEntryDialog"> [
+				<div id="deleteEntryDialogTitle"> [Delete Entry]
+				<div id="deleteEntryDialogContent"> [
+					<div id="deleteEntryDialogEntry" style="color:#A22;margin-bottom:0.8rem;"> []
+					<div id="deleteEntryDialogNoSub"> [It does not have sub entries.]
+					<div id="deleteEntryDialogHasSub"> [It will also delete <div id="deleteEntryDialogTotalSub" style="display:inline-block;color:#A22;"> [] sub entries.]
+				]
+				<div style="padding:0.3rem;border-top:1px solid #CCC;border-radius:0 0 2px 2px;background-color:#EEE;display:flex;justify-content:right;gap:0.3rem;"> [
+					<div id="confirmDeleteEntryButton" class="deleteEntryDialogButton" > [Delete]
+					<div id="cancelDeleteEntryButton" class="deleteEntryDialogButton"> [Cancel]
+				]
+			]
+		]
 	]
 ]
 
@@ -455,6 +464,73 @@
 
 #statusBar.error {
 	color: #A22;
+}
+
+#deleteEntryDialogBackground {
+	visibility: hidden;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(255,255,255,0.4);
+}
+
+#deleteEntryDialog {
+	display: flex;
+	flex-direction: column;
+	border-radius: 3px;
+	width: 24rem;
+	min-height: 16rem;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 30px rgba(128,128,128,0.3);
+	background-color: #F8F8F8;
+}
+
+#deleteEntryDialogTitle {
+	font-size: 1.1rem;
+	padding: 0.5rem;
+	border-radius: 2px 2px 0 0;
+	background-color: #A22;
+	color: white;"
+}
+
+#deleteEntryDialogContent {
+	flex: 1;
+	padding: 1rem;
+	background-color: #F8F8F8;
+	color: #222;
+}
+
+.deleteEntryDialogButton {
+	height: 2rem;
+	width: 4.5rem;
+	border: 1px solid #AAA;
+	border-radius: 2px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 0.85rem;
+	color: #222;
+	cursor: pointer;
+}
+
+#confirmDeleteEntryButton {
+	background-color: #F8F4F4;
+	color:#A22;
+}
+
+#confirmDeleteEntryButton:hover {
+	background-color: #F8E0E0;
+}
+
+#cancelDeleteEntryButton {
+	background-color: #F8F8F8;
+}
+
+#cancelDeleteEntryButton:hover {
+	background-color: #F0F0F0;
 }
 `]
 
@@ -1266,5 +1342,76 @@ function toggleCollapse() {
 var coll = document.getElementsByClassName("collapsible");
 for (let i = 0; i < coll.length; i++) {
 	coll[i].getElementsByClassName("title")[0].addEventListener("click", toggleCollapse);
+}
+
+function openDeleteEntryDialog(path) {
+	// The dialog itself is not hidden but the parent sets the visibility.
+	let dialogBg = document.getElementById("deleteEntryDialogBackground");
+	let numSubEntries = -1;
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	formData.append("path", path);
+	req.open("post", "/api/count-all-sub-entries");
+	req.send(formData);
+	req.onerror = function(err) {
+		showStatusBarOnly();
+		printErrorStatus("network error occurred. please check whether the server is down.");
+	}
+	req.onload = function() {
+		if (req.status != 200) {
+			showStatusBarOnly();
+			printErrorStatus(req.responseText);
+			return;
+		}
+		let j = JSON.parse(req.responseText);
+		if (j.Err != null) {
+			showStatusBarOnly();
+			printErrorStatus(j.Err);
+			return;
+		}
+		numSubEntries = j.Msg;
+		if (numSubEntries != 0) {
+			document.getElementById("deleteEntryDialogNoSub").style.display = "none";
+			document.getElementById("deleteEntryDialogHasSub").style.display = "block";
+			document.getElementById("deleteEntryDialogTotalSub").innerText = String(numSubEntries);
+		} else {
+			document.getElementById("deleteEntryDialogNoSub").style.display = "block";
+			document.getElementById("deleteEntryDialogHasSub").style.display = "none";
+			document.getElementById("deleteEntryDialogTotalSub").innerText = "";
+		}
+		document.getElementById("deleteEntryDialogEntry").innerText = path;
+		dialogBg.style.visibility = "visible";
+	}
+	// cancel or confirm delete
+	document.getElementById("cancelDeleteEntryButton").onclick = function() {
+		dialogBg.style.visibility = "hidden";
+	}
+	document.getElementById("confirmDeleteEntryButton").onclick = function() {
+		let req = new XMLHttpRequest();
+		let formData = new FormData();
+		formData.append("path", path);
+		if (numSubEntries != 0) {
+			formData.append("recursive", path);
+		}
+		req.open("post", "/api/delete-entry");
+		req.send(formData);
+		req.onerror = function(err) {
+			showStatusBarOnly();
+			printErrorStatus("network error occurred. please check whether the server is down.");
+			dialogBg.style.visibility = "hidden";
+		}
+		req.onload = function() {
+			if (req.status != 200) {
+				showStatusBarOnly();
+				printErrorStatus(req.responseText);
+				dialogBg.style.visibility = "hidden";
+				return;
+			}
+			let toks = path.split("/");
+			toks.pop();
+			let parent = toks.join("/");
+			window.location.href = parent;
+		}
+	}
 }
 `]
