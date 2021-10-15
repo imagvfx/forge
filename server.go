@@ -166,6 +166,17 @@ func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 	return nil
 }
 
+func (s *Server) DeleteEntryRecursive(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("entry path not specified")
+	}
+	err := s.svc.DeleteEntryRecursive(ctx, path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) FindEntryTypes(ctx context.Context) ([]string, error) {
 	names, err := s.svc.FindEntryTypes(ctx)
 	if err != nil {

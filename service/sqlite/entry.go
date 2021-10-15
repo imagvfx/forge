@@ -812,3 +812,40 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	return nil
 }
+
+func DeleteEntryRecursive(db *sql.DB, ctx context.Context, path string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = deleteEntryR(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteEntryR(tx *sql.Tx, ctx context.Context, path string) error {
+	subEnts, err := findEntries(tx, ctx, service.EntryFinder{ParentPath: &path})
+	if err != nil {
+		return err
+	}
+	if len(subEnts) == 0 {
+		err := deleteEntry(tx, ctx, path)
+		if err != nil {
+			return err
+		}
+	}
+	for _, ent := range subEnts {
+		err := deleteEntryR(tx, ctx, ent.Path)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

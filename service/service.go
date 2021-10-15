@@ -24,6 +24,7 @@ type Service interface {
 	AddEntry(ctx context.Context, ent *Entry) error
 	RenameEntry(ctx context.Context, path string, newName string) error
 	DeleteEntry(ctx context.Context, path string) error
+	DeleteEntryRecursive(ctx context.Context, path string) error
 	AddThumbnail(ctx context.Context, thumb *Thumbnail) error
 	UpdateThumbnail(ctx context.Context, upd ThumbnailUpdater) error
 	GetThumbnail(ctx context.Context, path string) (*Thumbnail, error)

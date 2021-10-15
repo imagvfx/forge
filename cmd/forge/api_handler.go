@@ -179,22 +179,14 @@ func (h *apiHandler) handleRenameEntry(ctx context.Context, w http.ResponseWrite
 
 func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
-	err := h.server.DeleteEntry(ctx, entPath)
+	delFn := h.server.DeleteEntry
+	recursive := r.FormValue("recursive")
+	if recursive != "" {
+		delFn = h.server.DeleteEntryRecursive
+	}
+	err := delFn(ctx, entPath)
 	if err != nil {
 		return err
-	}
-	if r.FormValue("back_to_referer") != "" {
-		referer := r.Header.Get("Referer")
-		toks := strings.SplitN(referer, "?", 2)
-		url := toks[0]
-		parm := ""
-		if len(toks) == 2 {
-			parm = toks[1]
-		}
-		if strings.HasSuffix(url, entPath) {
-			referer = path.Dir(entPath) + "?" + parm
-		}
-		http.Redirect(w, r, referer, http.StatusSeeOther)
 	}
 	return nil
 }

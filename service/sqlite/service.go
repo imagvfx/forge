@@ -86,6 +86,10 @@ func (s *Service) DeleteEntry(ctx context.Context, path string) error {
 	return DeleteEntry(s.db, ctx, path)
 }
 
+func (s *Service) DeleteEntryRecursive(ctx context.Context, path string) error {
+	return DeleteEntryRecursive(s.db, ctx, path)
+}
+
 func (s *Service) GetThumbnail(ctx context.Context, path string) (*service.Thumbnail, error) {
 	return GetThumbnail(s.db, ctx, path)
 }
