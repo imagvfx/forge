@@ -835,17 +835,15 @@ func deleteEntryR(tx *sql.Tx, ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	if len(subEnts) == 0 {
-		err := deleteEntry(tx, ctx, path)
-		if err != nil {
-			return err
-		}
-	}
 	for _, ent := range subEnts {
 		err := deleteEntryR(tx, ctx, ent.Path)
 		if err != nil {
 			return err
 		}
+	}
+	err = deleteEntry(tx, ctx, path)
+	if err != nil {
+		return err
 	}
 	return nil
 }
