@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -95,8 +96,24 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 			err = json.Unmarshal([]byte(value), &s.EntryPageSortProperty)
 		case "quick_searches":
 			err = json.Unmarshal([]byte(value), &s.QuickSearches)
-		case "pinned_paths":
-			err = json.Unmarshal([]byte(value), &s.PinnedPaths)
+		case "pinned_paths_v2":
+			var pinnedEntIDs []int
+			err = json.Unmarshal([]byte(value), &pinnedEntIDs)
+			if err == nil {
+				s.PinnedPaths = make([]string, 0, len(pinnedEntIDs))
+				for _, entID := range pinnedEntIDs {
+					ent, err := getEntryByID(tx, ctx, entID)
+					if err != nil {
+						var e *service.NotFoundError
+						if !errors.As(err, &e) {
+							return nil, err
+						}
+						// The entry deleted, don't show it.
+						continue
+					}
+					s.PinnedPaths = append(s.PinnedPaths, ent.Path)
+				}
+			}
 		default:
 			// It may have legacy settings, nothing to do with them.
 			continue
@@ -306,11 +323,17 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 			return fmt.Errorf("invalid type of value: %v", upd.Key)
 		}
 	case "pinned_paths":
+		// Correct the key with internal represetation version.
+		upd.Key = "pinned_paths_v2"
 		updatePinnedPath, ok := upd.Value.(service.PinnedPathArranger)
 		if !ok {
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
 		path := updatePinnedPath.Path
+		_, err := getEntryID(tx, ctx, path)
+		if err != nil {
+			return err
+		}
 		n := updatePinnedPath.Index
 		// Insert/Remove pinned paths by specifiying the index n.
 		// n < 0 means remove the path,
@@ -344,7 +367,20 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		} else {
 			pinned = append(pinned, path)
 		}
-		value, err = json.Marshal(pinned)
+		// Convert to internal represetation.
+		pinnedIDs := make([]int, 0)
+		for _, p := range pinned {
+			id, err := getEntryID(tx, ctx, p)
+			if err != nil {
+				var e *service.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+				continue
+			}
+			pinnedIDs = append(pinnedIDs, id)
+		}
+		value, err = json.Marshal(pinnedIDs)
 		if err != nil {
 			return err
 		}
