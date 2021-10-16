@@ -611,7 +611,7 @@ window.onload = function() {
 		}
 		pp.ondragend = function(event) {
 			let del = document.getElementById("pinnedPathDeleteButton");
-			del.style.display = "inline-block";
+			del.style.display = "none";
 			if (event.dataTransfer.dropEffect == "none") {
 				let targetId = event.dataTransfer.getData("application/pinnedpath/id");
 				let target = document.getElementById(targetId);
