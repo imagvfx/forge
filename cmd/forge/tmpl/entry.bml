@@ -90,7 +90,7 @@
 							]
 							<form action="/api/rename-entry" method="post"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input id="renameInput" name="new-name" type="text" style="display:none"> []
+								<input id="renameInput" name="new-name" type="text" style="display:none" value="{{$.Entry.Name}}"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
@@ -1024,6 +1024,8 @@ function toggleRenameInput() {
 	let input = document.getElementById("renameInput");
 	if (input.style.display == "none") {
 		input.style.display = "block";
+		let end = input.value.length;
+		input.setSelectionRange(0, end);
 		input.focus();
 	} else {
 		input.style.display = "none";
