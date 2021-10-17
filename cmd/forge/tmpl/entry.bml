@@ -258,6 +258,10 @@
 											<a style="color:black" href="{{$e.Path}}"> [
 												<div class="subEntryName" style="margin-top:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
 											]
+											{{$assignee := index $props "assignee"}}
+											{{if $assignee}}
+											<input class="assigneeInput" data-path="{{$e.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
+											{{end}}
 										]
 										<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
 											{{range $name := $propFilters}}
@@ -326,6 +330,7 @@
 					<a class="infoHistory" style="color:black;"> [History]
 					<a class="infoDelete" style="color:#A22;cursor:pointer;"> [Delete]
 				]
+				<div id="userAutoCompleteMenu"> []
 			]
 		]
 		<div id="deleteEntryDialogBackground"> [
@@ -373,6 +378,7 @@
 }
 
 .subEntryName {
+	padding-left: 2px;
 	text-decoration: none;
 }
 
@@ -532,6 +538,41 @@
 #cancelDeleteEntryButton:hover {
 	background-color: #F0F0F0;
 }
+
+.assigneeInput {
+	width: 96px;
+	box-sizing: border-box;
+	font-size: 0.7rem;
+	padding: 2px;
+	background-color: transparent;
+	border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.assigneeInput::placeholder {
+	color: #BBB;
+}
+
+#userAutoCompleteMenu {
+	position: absolute;
+	width: 96px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	border: 1px solid #777;
+	border-radius: 2px;
+	background-color: #E0E0E0;
+	font-size: 0.6rem;
+	word-wrap: break-word;
+}
+
+.userAutoCompleteItem {
+	background-color: #EEE;
+}
+
+.userAutoCompleteItem.active {
+	background-color: #D0D0D0;
+}
 `]
 
 <script> [`
@@ -540,9 +581,12 @@
 window.onload = function() {
 	let currentContextMenuLoader = null;
 	document.onclick = function(event) {
-		let menu = document.getElementById("infoContextMenu");
+		let userMenu = document.getElementById("userAutoCompleteMenu");
+		userMenu.replaceChildren();
+		userMenu.style.visibility = "hidden";
+		let infoMenu = document.getElementById("infoContextMenu");
 		if (currentContextMenuLoader != null) {
-			menu.style.visibility = "hidden"
+			infoMenu.style.visibility = "hidden"
 			currentContextMenuLoader = null;
 			return;
 		}
@@ -896,6 +940,37 @@ window.onload = function() {
 			deleteThumbnail(delButton);
 		}
 	}
+	let assigneeInputs = document.getElementsByClassName("assigneeInput")
+	for (let input of assigneeInputs) {
+		let called = CalledByName[input.dataset.assignee];
+		if (!called) {
+			called = "";
+		}
+		input.value = called;
+		let oncomplete = function(value) {
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("path", input.dataset.path);
+			formData.append("name", "assignee");
+			formData.append("ctg", "property");
+			formData.append("value", value);
+			req.open("post", "/api/set-property");
+			req.send(formData);
+			req.onerror = function() {
+				showStatusBarOnly();
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					showStatusBarOnly();
+					printErrorStatus(req.responseText);
+					return;
+				}
+				input.value = CalledByName[value];
+			}
+		}
+		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
+	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
 	for (let loader of infoContextMenuLoaders) {
 		loader.onclick = function(event) {
@@ -1169,9 +1244,15 @@ document.onkeydown = keyPressed;
 
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
-		let menu = document.getElementById("infoContextMenu");
-		if (menu.style.visibility != "hidden") {
-			menu.style.visibility = "hidden"
+		let userMenu = document.getElementById("userAutoCompleteMenu");
+		if (userMenu.style.visibility != "hidden") {
+			userMenu.replaceChildren();
+			userMenu.style.visibility = "hidden";
+			return;
+		}
+		let infoMenu = document.getElementById("infoContextMenu");
+		if (infoMenu.style.visibility != "hidden") {
+			infoMenu.style.visibility = "hidden";
 			return;
 		}
 		toggleFooter();
@@ -1414,6 +1495,133 @@ function openDeleteEntryDialog(path) {
 			let parent = toks.join("/");
 			window.location.href = parent;
 		}
+	}
+}
+
+let AllUserNames = [
+{{- range $u := $.AllUsers -}}
+	"{{$u.Name}}",
+{{end}}
+];
+
+let AllUserLabels = [
+{{- range $u := $.AllUsers -}}
+	"{{$u.Called}} ({{$u.Name}})",
+{{end}}
+];
+
+// pun intended
+let CalledByName = {
+{{- range $u := $.AllUsers -}}
+	"{{$u.Name}}": "{{$u.Called}}",
+{{end}}
+}
+
+// autoComplete takes input tag and possible autocompleted values and label.
+// It takes oncomplete function as an argument that will be called with user selected value.
+function autoComplete(input, labels, vals, oncomplete) {
+	// Turn off browser's default autocomplete behavior.
+	input.setAttribute("autocomplete", "off");
+	let focus = -1;
+	input.oninput = function(event) {
+		let search = input.value;
+		if (search == "") {
+			return;
+		}
+		let lsearch = search.toLowerCase();
+		// reset focus on further input.
+		focus = -1;
+		let menu = document.getElementById("userAutoCompleteMenu");
+		menu.style.visibility = "hidden";
+		menu.style.left = String(input.offsetLeft) + "px";
+		menu.style.top = String(input.offsetTop + input.offsetHeight) + "px";
+		menu.replaceChildren();
+		let items = [];
+		for (let [i, l] of labels.entries()) {
+			let ll = l.toLowerCase();
+			let matchStart = ll.indexOf(lsearch);
+			if (matchStart == -1) {
+				continue
+			}
+			let matchEnd = matchStart + lsearch.length;
+			let pre = l.slice(0, matchStart);
+			let match = l.slice(matchStart, matchEnd);
+			let post = l.slice(matchEnd, l.length);
+			let item = document.createElement("div");
+			item.classList.add("userAutoCompleteItem");
+			item.innerHTML = pre + "<strong>" + match + "</strong>" + post;
+			item.dataset.label = labels[i];
+			item.dataset.value = vals[i];
+			item.onclick = function(ev) {
+				oncomplete(item.dataset.value);
+				menu.replaceChildren();
+				menu.style.visibility = "hidden";
+			}
+			menu.appendChild(item);
+		}
+		if (menu.children.length != 0) {
+			menu.style.visibility = "visible";
+		}
+	}
+	// Don't set input.onkeydown, it will swipe default (typing characters) behavior of input.
+	input.addEventListener("keydown", function(event) {
+		let menu = document.getElementById("userAutoCompleteMenu");
+		let items = menu.getElementsByClassName("userAutoCompleteItem");
+		if (items.length == 0) {
+			return;
+		}
+		if (event.key == "Tab") {
+			// Let the cursor move to another input.
+			menu.replaceChildren();
+			menu.style.visibility = "hidden";
+			return;
+		}
+		deactivate(items);
+		if (event.key == "ArrowDown") {
+			event.preventDefault();
+			focus++;
+			if (focus == items.length) {
+				focus = -1;
+			} else {
+				activate(items, focus);
+			}
+		} else if (event.key == "ArrowUp") {
+			event.preventDefault();
+			if (focus == -1) {
+				focus = items.length;
+			}
+			focus--;
+			if (focus != -1) {
+				activate(items, focus);
+			}
+		} else if (event.key == "Enter") {
+			event.preventDefault();
+			if (focus == -1) {
+				focus = 0;
+			}
+			items[focus].click();
+		}
+	})
+	input.onkeyup = function(event) {
+		let menu = document.getElementById("userAutoCompleteMenu");
+		if (input.value == "") {
+			menu.replaceChildren();
+			menu.style.visibility = "hidden";
+		}
+	}
+	function deactivate(items) {
+		for (let item of items) {
+			item.classList.remove("active");
+		}
+	}
+	function activate(items, focus) {
+		if (items.length == 0) {
+			return;
+		}
+		if (focus == -1) {
+			return;
+		}
+		items[focus].classList.add("active");
 	}
 }
 `]

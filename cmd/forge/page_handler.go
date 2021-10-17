@@ -331,6 +331,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	allUsers, err := h.server.Users(ctx)
+	if err != nil {
+		return err
+	}
 	recipe := struct {
 		User                     string
 		UserSetting              *forge.UserSetting
@@ -349,6 +353,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		AccessorTypes            []string
 		AccessControls           []*forge.AccessControl
 		BaseEntryTypes           []string
+		AllUsers                 []*forge.User
 	}{
 		User:                     user,
 		UserSetting:              setting,
@@ -367,6 +372,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		AccessorTypes:            forge.AccessorTypes(),
 		AccessControls:           acs,
 		BaseEntryTypes:           baseTypes,
+		AllUsers:                 allUsers,
 	}
 	err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 	if err != nil {
