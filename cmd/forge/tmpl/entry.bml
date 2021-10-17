@@ -966,7 +966,11 @@ window.onload = function() {
 					printErrorStatus(req.responseText);
 					return;
 				}
-				input.value = CalledByName[value];
+				let called = CalledByName[value];
+				if (!called) {
+					called = "";
+				}
+				input.value = called;
 			}
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
@@ -1519,6 +1523,7 @@ let CalledByName = {
 
 // autoComplete takes input tag and possible autocompleted values and label.
 // It takes oncomplete function as an argument that will be called with user selected value.
+// It will give oncomplete raw input value when it cannot find any item with the value.
 function autoComplete(input, labels, vals, oncomplete) {
 	// Turn off browser's default autocomplete behavior.
 	input.setAttribute("autocomplete", "off");
@@ -1556,6 +1561,7 @@ function autoComplete(input, labels, vals, oncomplete) {
 				oncomplete(item.dataset.value);
 				menu.replaceChildren();
 				menu.style.visibility = "hidden";
+				focus = -1;
 			}
 			menu.appendChild(item);
 		}
@@ -1567,9 +1573,6 @@ function autoComplete(input, labels, vals, oncomplete) {
 	input.addEventListener("keydown", function(event) {
 		let menu = document.getElementById("userAutoCompleteMenu");
 		let items = menu.getElementsByClassName("userAutoCompleteItem");
-		if (items.length == 0) {
-			return;
-		}
 		if (event.key == "Tab") {
 			// Let the cursor move to another input.
 			menu.replaceChildren();
@@ -1597,6 +1600,13 @@ function autoComplete(input, labels, vals, oncomplete) {
 		} else if (event.key == "Enter") {
 			event.preventDefault();
 			if (focus == -1) {
+				if (items.length == 0) {
+					oncomplete(input.value);
+					menu.replaceChildren();
+					menu.style.visibility = "hidden";
+					focus = -1;
+					return;
+				}
 				focus = 0;
 			}
 			items[focus].click();
