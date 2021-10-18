@@ -554,6 +554,7 @@
 
 #userAutoCompleteMenu {
 	position: absolute;
+	visibility: hidden;
 	width: 96px;
 	box-sizing: border-box;
 	display: flex;
