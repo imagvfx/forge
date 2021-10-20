@@ -69,6 +69,7 @@
 				]
 				{{end}}
 				{{if not $.ResultsFromSearch}}
+				<!-- This Entry -->
 				<div class="entry" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 						<div style="flex:3;font-size:1.2rem"> [
@@ -229,6 +230,7 @@
 										<div style="margin:0.3rem 0;font-size:0.83rem;font-weight:bold;"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $entries}})]
 									]
 								{{end}}
+								<!-- Sub Entries -->
 								<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
 									{{$propFilters := index $.PropertyFilters $t}}
 									{{range $k, $e := $entries}}
