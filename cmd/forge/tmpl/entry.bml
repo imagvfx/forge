@@ -239,11 +239,14 @@
 									{{if $k}}
 									<div style="border-top:1px solid #DDD"> []
 									{{end}}
-									<div class="subEntry" style="flex:1;display:flex;color:black"> [
-										<div class="subEntryLink" style="padding:{{$pad}};width:96px"> [
+									<div class="subEntry" style="flex:1;display:flex;align-items:stretch;color:black"> [
+										<div class="subEntryLink" style="padding:{{$pad}};width:96px;padding:0.4rem 0.8rem 0.4rem 0.5rem;"> [
+											<a style="color:black" href="{{$e.Path}}"> [
+												<div class="subEntryName" style="margin-bottom:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
+											]
 											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
-												<div style="display:flex;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;"> [
-													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}}"> []
+												<div style="display:flex;vertical-align:middle;border:1px solid #CCCCCC;background-color:#F4F4F4;"> [
+													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}};"> []
 												]
 												<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 													<input name="path" type="hidden" value="{{$e.Path}}"> []
@@ -257,15 +260,13 @@
 													<input readonly name="back_to_referer" type="hidden" value="1"> []
 												]
 											]
-											<a style="color:black" href="{{$e.Path}}"> [
-												<div class="subEntryName" style="margin-top:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
-											]
 											{{$assignee := index $props "assignee"}}
 											{{if $assignee}}
 											<input class="assigneeInput" data-path="{{$e.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
 											{{end}}
 										]
-										<div style="flex:1;padding:{{$pad}};display:flex;flex-wrap:wrap;gap:0.5rem;"> [
+										<div style="border-left:1px dashed #DDD"> []
+										<div style="flex:1;padding:0.4rem 0.7rem 1.8rem 0.7rem;display:flex;flex-wrap:wrap;gap:0.5rem;"> [
 											{{range $name := $propFilters}}
 												<div class="property" style="width:12rem;"> [
 													{{$p := index $props $name}}
