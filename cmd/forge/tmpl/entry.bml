@@ -102,8 +102,8 @@
 						<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 							<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
 								<div id="thumbnail" class="thumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
-									<div style="display:flex;border:1px solid #CCCCCC"> [
-										<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}"> []
+									<div style="display:flex;border:1px solid #CCCCCC;border-radius:4px;"> [
+										<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}border-radius:3px;"> []
 									]
 									<form class="updateThumbnail" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -226,7 +226,7 @@
 								{{end}}
 								{{if $.ResultsFromSearch}}
 									<div style="display:flex;align-items:end;margin-top:1rem;margin-bottom:1rem;"> [
-										<img src="/thumbnail{{$parent}}" width="96px" height="54px" alt="" style="margin:0.3rem;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;" onerror="this.style.display='none';"> []
+										<img src="/thumbnail{{$parent}}" width="96px" height="54px" alt="" style="margin:0.3rem;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;border-radius:3px;" onerror="this.style.display='none';"> []
 										<div style="margin:0.3rem 0;font-size:0.83rem;font-weight:bold;"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $entries}})]
 									]
 								{{end}}
@@ -245,8 +245,8 @@
 												<div class="subEntryName" style="margin-bottom:{{$pad}};width:96px"> [<b> [{{$e.Name}}]]
 											]
 											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
-												<div style="display:flex;vertical-align:middle;border:1px solid #CCCCCC;background-color:#F4F4F4;"> [
-													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}};"> []
+												<div style="display:flex;vertical-align:middle;border:1px solid #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
+													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}};border-radius:2px;"> []
 												]
 												<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 													<input name="path" type="hidden" value="{{$e.Path}}"> []
