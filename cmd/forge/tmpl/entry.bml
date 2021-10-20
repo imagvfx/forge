@@ -241,7 +241,7 @@
 									{{end}}
 									<div class="subEntry" style="flex:1;display:flex;align-items:stretch;color:black"> [
 										<div class="subEntryLink" style="padding:{{$pad}};width:98px;padding:0.4rem 0.6rem 0.4rem 0.5rem;"> [
-											<div style="display:flex;margin-bottom:{{$pad}};"> [
+											<div style="display:flex;margin-bottom:0.1rem;"> [
 												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;"> [<b> [{{$e.Name}}]]
 												{{$status := index $props "status"}}
 												{{if $status}}
