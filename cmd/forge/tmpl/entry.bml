@@ -964,7 +964,11 @@ window.onload = function() {
 			called = "";
 		}
 		input.value = called;
+		input.dataset.oldValue = called;
 		let oncomplete = function(value) {
+			if (value == input.dataset.oldValue) {
+				return;
+			}
 			let req = new XMLHttpRequest();
 			let formData = new FormData();
 			formData.append("path", input.dataset.path);
@@ -988,6 +992,7 @@ window.onload = function() {
 					called = "";
 				}
 				input.value = called;
+				input.dataset.oldValue = called;
 			}
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
