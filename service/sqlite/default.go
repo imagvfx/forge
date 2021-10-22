@@ -9,26 +9,6 @@ import (
 	"github.com/imagvfx/forge/service"
 )
 
-func createDefaultSubEntriesTable(tx *sql.Tx) error {
-	_, err := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS default_sub_entries (
-			id INTEGER PRIMARY KEY,
-			entry_type_id INTEGER NOT NULL,
-			name STRING NOT NULL,
-			sub_entry_type_id INTEGER NOT NULL,
-			value STRING NOT NULL,
-			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
-			FOREIGN KEY (sub_entry_type_id) REFERENCES entry_types (id),
-			UNIQUE (entry_type_id, name)
-		)
-	`)
-	if err != nil {
-		return err
-	}
-	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_default_sub_entries_entry_type_id ON default_sub_entries (entry_type_id)`)
-	return err
-}
-
 func createDefaultPropertiesTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS default_properties (
@@ -86,6 +66,26 @@ func createDefaultAccessesTable(tx *sql.Tx) error {
 	return err
 }
 
+func createDefaultSubEntriesTable(tx *sql.Tx) error {
+	_, err := tx.Exec(`
+		CREATE TABLE IF NOT EXISTS default_sub_entries (
+			id INTEGER PRIMARY KEY,
+			entry_type_id INTEGER NOT NULL,
+			name STRING NOT NULL,
+			sub_entry_type_id INTEGER NOT NULL,
+			value STRING NOT NULL,
+			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
+			FOREIGN KEY (sub_entry_type_id) REFERENCES entry_types (id),
+			UNIQUE (entry_type_id, name)
+		)
+	`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_default_sub_entries_entry_type_id ON default_sub_entries (entry_type_id)`)
+	return err
+}
+
 func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -116,56 +116,6 @@ func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) (
 	err = tx.Commit()
 	if err != nil {
 		return nil, err
-	}
-	return defaults, nil
-}
-
-func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
-	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
-	if find.EntryType != nil {
-		keys = append(keys, "entry_types.name=?")
-		vals = append(vals, *find.EntryType)
-	}
-	if find.Name != nil {
-		keys = append(keys, "default_sub_entries.name=?")
-		vals = append(vals, *find.Name)
-	}
-	where := ""
-	if len(keys) != 0 {
-		where = "WHERE " + strings.Join(keys, " AND ")
-	}
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			entry_types.name,
-			default_sub_entries.name,
-			sub_entry_types.name,
-			default_sub_entries.value
-		FROM default_sub_entries
-		LEFT JOIN entry_types ON default_sub_entries.entry_type_id = entry_types.id
-		LEFT JOIN entry_types AS sub_entry_types ON default_sub_entries.sub_entry_type_id = sub_entry_types.id
-		`+where,
-		vals...,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	defaults := make([]*service.Default, 0)
-	for rows.Next() {
-		d := &service.Default{
-			Category: "sub_entry",
-		}
-		err := rows.Scan(
-			&d.EntryType,
-			&d.Name,
-			&d.Type,
-			&d.Value,
-		)
-		if err != nil {
-			return nil, err
-		}
-		defaults = append(defaults, d)
 	}
 	return defaults, nil
 }
@@ -370,6 +320,56 @@ func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) 
 	return defaults[0], err
 }
 
+func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if find.EntryType != nil {
+		keys = append(keys, "entry_types.name=?")
+		vals = append(vals, *find.EntryType)
+	}
+	if find.Name != nil {
+		keys = append(keys, "default_sub_entries.name=?")
+		vals = append(vals, *find.Name)
+	}
+	where := ""
+	if len(keys) != 0 {
+		where = "WHERE " + strings.Join(keys, " AND ")
+	}
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			entry_types.name,
+			default_sub_entries.name,
+			sub_entry_types.name,
+			default_sub_entries.value
+		FROM default_sub_entries
+		LEFT JOIN entry_types ON default_sub_entries.entry_type_id = entry_types.id
+		LEFT JOIN entry_types AS sub_entry_types ON default_sub_entries.sub_entry_type_id = sub_entry_types.id
+		`+where,
+		vals...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	defaults := make([]*service.Default, 0)
+	for rows.Next() {
+		d := &service.Default{
+			Category: "sub_entry",
+		}
+		err := rows.Scan(
+			&d.EntryType,
+			&d.Name,
+			&d.Type,
+			&d.Value,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defaults = append(defaults, d)
+	}
+	return defaults, nil
+}
+
 func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -385,11 +385,6 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 		return service.Unauthorized("user doesn't have permission to add default: %v", user)
 	}
 	switch d.Category {
-	case "sub_entry":
-		err = addDefaultSubEntry(tx, ctx, d)
-		if err != nil {
-			return err
-		}
 	case "property":
 		err = addDefaultProperty(tx, ctx, d)
 		if err != nil {
@@ -405,6 +400,11 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 		if err != nil {
 			return err
 		}
+	case "sub_entry":
+		err = addDefaultSubEntry(tx, ctx, d)
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("invalid category for default: %v", d.Category)
 	}
@@ -412,41 +412,6 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) error {
-	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
-	if err != nil {
-		return err
-	}
-	subTypeID, err := getEntryTypeID(tx, ctx, d.Type)
-	if err != nil {
-		return err
-	}
-	result, err := tx.ExecContext(ctx, `
-		INSERT INTO default_sub_entries (
-			entry_type_id,
-			name,
-			sub_entry_type_id,
-			value
-		)
-		VALUES (?, ?, ?, ?)
-	`,
-		typeID,
-		d.Name,
-		subTypeID,
-		d.Value,
-	)
-	if err != nil {
-		return err
-	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-	d.ID = int(id)
-	// TODO: should I add sub_entry when a default created?
 	return nil
 }
 
@@ -595,6 +560,41 @@ func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *service.Default) error
 	return nil
 }
 
+func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) error {
+	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
+	if err != nil {
+		return err
+	}
+	subTypeID, err := getEntryTypeID(tx, ctx, d.Type)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		INSERT INTO default_sub_entries (
+			entry_type_id,
+			name,
+			sub_entry_type_id,
+			value
+		)
+		VALUES (?, ?, ?, ?)
+	`,
+		typeID,
+		d.Name,
+		subTypeID,
+		d.Value,
+	)
+	if err != nil {
+		return err
+	}
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	d.ID = int(id)
+	// TODO: should I add sub_entry when a default created?
+	return nil
+}
+
 func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -610,11 +610,6 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 		return service.Unauthorized("user doesn't have permission to update default: %v", user)
 	}
 	switch upd.Category {
-	case "sub_entry":
-		err := updateDefaultSubEntry(tx, ctx, upd)
-		if err != nil {
-			return err
-		}
 	case "property":
 		err := updateDefaultProperty(tx, ctx, upd)
 		if err != nil {
@@ -630,6 +625,11 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 		if err != nil {
 			return err
 		}
+	case "sub_entry":
+		err := updateDefaultSubEntry(tx, ctx, upd)
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("invalid category for default: %v", upd.Category)
 	}
@@ -637,44 +637,6 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
-	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
-	if upd.Type != nil {
-		keys = append(keys, "sub_entry_type_id=?")
-		subTypeID, err := getEntryTypeID(tx, ctx, *upd.Type)
-		if err != nil {
-			return err
-		}
-		vals = append(vals, subTypeID)
-	}
-	if upd.Value != nil {
-		keys = append(keys, "value=?")
-		vals = append(vals, *upd.Value)
-	}
-	if len(keys) == 0 {
-		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "sub_entry", upd.Name)
-	}
-	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
-	if err != nil {
-		return err
-	}
-	vals = append(vals, typeID, upd.Name) // for where clause
-	_, err = tx.ExecContext(ctx, `
-		UPDATE default_sub_entries
-		SET `+strings.Join(keys, ", ")+`
-		WHERE entry_type_id=? AND name=?
-	`,
-		vals...,
-	)
-	if err != nil {
-		return err
-	}
-	// Will not update sub-entries of the entries unlike properties or environs.
-	// As sub-entries are more complicated then others and hard to update correctly.
 	return nil
 }
 
@@ -871,6 +833,44 @@ func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd service.DefaultUpd
 	return nil
 }
 
+func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
+	keys := make([]string, 0)
+	vals := make([]interface{}, 0)
+	if upd.Type != nil {
+		keys = append(keys, "sub_entry_type_id=?")
+		subTypeID, err := getEntryTypeID(tx, ctx, *upd.Type)
+		if err != nil {
+			return err
+		}
+		vals = append(vals, subTypeID)
+	}
+	if upd.Value != nil {
+		keys = append(keys, "value=?")
+		vals = append(vals, *upd.Value)
+	}
+	if len(keys) == 0 {
+		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "sub_entry", upd.Name)
+	}
+	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
+	if err != nil {
+		return err
+	}
+	vals = append(vals, typeID, upd.Name) // for where clause
+	_, err = tx.ExecContext(ctx, `
+		UPDATE default_sub_entries
+		SET `+strings.Join(keys, ", ")+`
+		WHERE entry_type_id=? AND name=?
+	`,
+		vals...,
+	)
+	if err != nil {
+		return err
+	}
+	// Will not update sub-entries of the entries unlike properties or environs.
+	// As sub-entries are more complicated then others and hard to update correctly.
+	return nil
+}
+
 func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -886,11 +886,6 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 		return service.Unauthorized("user doesn't have permission to delete default: %v", user)
 	}
 	switch ctg {
-	case "sub_entry":
-		err := deleteDefaultSubEntry(tx, ctx, entryType, name)
-		if err != nil {
-			return err
-		}
 	case "property":
 		err := deleteDefaultProperty(tx, ctx, entryType, name)
 		if err != nil {
@@ -906,37 +901,17 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 		if err != nil {
 			return err
 		}
+	case "sub_entry":
+		err := deleteDefaultSubEntry(tx, ctx, entryType, name)
+		if err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("invalid category for default: %v", ctg)
 	}
 	err = tx.Commit()
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-func deleteDefaultSubEntry(tx *sql.Tx, ctx context.Context, entryType, name string) error {
-	typeID, err := getEntryTypeID(tx, ctx, entryType)
-	if err != nil {
-		return err
-	}
-	result, err := tx.ExecContext(ctx, `
-		DELETE FROM default_sub_entries
-		WHERE entry_type_id=? AND name=?
-	`,
-		typeID,
-		name,
-	)
-	if err != nil {
-		return err
-	}
-	n, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if n == 0 {
-		return service.NotFound("no such default for entry type %v: %v %v", entryType, "sub_entry", name)
 	}
 	return nil
 }
@@ -1016,6 +991,31 @@ func deleteDefaultAccess(tx *sql.Tx, ctx context.Context, entryType, name string
 	}
 	if n == 0 {
 		return service.NotFound("no such default for entry type %v: %v %v", entryType, "access", name)
+	}
+	return nil
+}
+
+func deleteDefaultSubEntry(tx *sql.Tx, ctx context.Context, entryType, name string) error {
+	typeID, err := getEntryTypeID(tx, ctx, entryType)
+	if err != nil {
+		return err
+	}
+	result, err := tx.ExecContext(ctx, `
+		DELETE FROM default_sub_entries
+		WHERE entry_type_id=? AND name=?
+	`,
+		typeID,
+		name,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return service.NotFound("no such default for entry type %v: %v %v", entryType, "sub_entry", name)
 	}
 	return nil
 }
