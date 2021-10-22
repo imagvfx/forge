@@ -36,6 +36,9 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return b
 	},
+	"has": func(s, tok string) bool {
+		return strings.Contains(s, tok)
+	},
 	"pathLinks": func(path string) (template.HTML, error) {
 		if !strings.HasPrefix(path, "/") {
 			return "", fmt.Errorf("path should start with /")
@@ -529,6 +532,14 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 	if err != nil {
 		return err
 	}
+	entGlobals := make(map[string][]*forge.Global)
+	for _, t := range entTypes {
+		items, err := h.server.Globals(ctx, t)
+		if err != nil {
+			return err
+		}
+		entGlobals[t] = items
+	}
 	entDefaults := make(map[string][]*forge.Default)
 	for _, t := range entTypes {
 		items, err := h.server.Defaults(ctx, t)
@@ -540,11 +551,13 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 	recipe := struct {
 		User       string
 		EntryTypes []string
+		Globals    map[string][]*forge.Global
 		Defaults   map[string][]*forge.Default
 	}{
 		User:       user,
 		EntryTypes: entTypes,
 		Defaults:   entDefaults,
+		Globals:    entGlobals,
 	}
 	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
 	if err != nil {

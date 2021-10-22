@@ -133,6 +133,49 @@ func (h *apiHandler) handleDeleteDefault(ctx context.Context, w http.ResponseWri
 	return nil
 }
 
+func (h *apiHandler) handleAddGlobal(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	value := r.FormValue("value")
+	err := h.server.AddGlobal(ctx, entType, name, typ, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
+func (h *apiHandler) handleSetGlobal(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	name := r.FormValue("name")
+	typ := r.FormValue("type")
+	value := r.FormValue("value")
+	err := h.server.SetGlobal(ctx, entType, name, typ, value)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
+func (h *apiHandler) handleDeleteGlobal(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	name := r.FormValue("name")
+	err := h.server.DeleteGlobal(ctx, entType, name)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleCountAllSubEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	path := r.FormValue("path")
 	n, err := h.server.CountAllSubEntries(ctx, path)

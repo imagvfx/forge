@@ -58,6 +58,22 @@ func (s *Service) DeleteDefault(ctx context.Context, entType, ctg, name string) 
 	return DeleteDefault(s.db, ctx, entType, ctg, name)
 }
 
+func (s *Service) FindGlobals(ctx context.Context, find service.GlobalFinder) ([]*service.Global, error) {
+	return FindGlobals(s.db, ctx, find)
+}
+
+func (s *Service) AddGlobal(ctx context.Context, d *service.Global) error {
+	return AddGlobal(s.db, ctx, d)
+}
+
+func (s *Service) UpdateGlobal(ctx context.Context, upd service.GlobalUpdater) error {
+	return UpdateGlobal(s.db, ctx, upd)
+}
+
+func (s *Service) DeleteGlobal(ctx context.Context, entType, name string) error {
+	return DeleteGlobal(s.db, ctx, entType, name)
+}
+
 func (s *Service) FindEntries(ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
 	return FindEntries(s.db, ctx, find)
 }

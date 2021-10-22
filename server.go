@@ -330,6 +330,87 @@ func (s *Server) DeleteDefault(ctx context.Context, entType, ctg, name string) e
 	return nil
 }
 
+func (s *Server) Globals(ctx context.Context, entType string) ([]*Global, error) {
+	if entType == "" {
+		return nil, fmt.Errorf("entry type name not specified")
+	}
+	ds, err := s.svc.FindGlobals(ctx, service.GlobalFinder{EntryType: &entType})
+	if err != nil {
+		return nil, err
+	}
+	defaults := make([]*Global, 0)
+	for _, d := range ds {
+		def := &Global{
+			EntryType: d.EntryType,
+			Type:      d.Type,
+			Name:      d.Name,
+			Value:     d.Value,
+		}
+		defaults = append(defaults, def)
+	}
+	return defaults, nil
+}
+
+func (s *Server) AddGlobal(ctx context.Context, entType, name, typ, value string) error {
+	if entType == "" {
+		return fmt.Errorf("global entry type not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("global name not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("global type not specified")
+	}
+	d := &service.Global{
+		EntryType: entType,
+		Name:      name,
+		Type:      typ,
+		Value:     value,
+	}
+	err := s.svc.AddGlobal(ctx, d)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) SetGlobal(ctx context.Context, entType, name, typ, value string) error {
+	if entType == "" {
+		return fmt.Errorf("global entry type not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("global name not specified")
+	}
+	if typ == "" {
+		return fmt.Errorf("global type not specified")
+	}
+	upd := service.GlobalUpdater{
+		EntryType: entType,
+		Name:      name,
+		Type:      &typ,
+		Value:     &value,
+	}
+	err := s.svc.UpdateGlobal(ctx, upd)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteGlobal(ctx context.Context, entType, name string) error {
+	if entType == "" {
+		return fmt.Errorf("global entry type not specified")
+	}
+	if name == "" {
+		return fmt.Errorf("global name not specified")
+	}
+	err := s.svc.DeleteGlobal(ctx, entType, name)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property, error) {
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")

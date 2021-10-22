@@ -41,6 +41,15 @@ type Default struct {
 	Value     string
 }
 
+// Global is similar with Default in a sense that it is tied to an EntryType.
+// But it won't be created for each entry. So it cannot be overrided as well.
+type Global struct {
+	EntryType string
+	Name      string
+	Type      string
+	Value     string
+}
+
 type Thumbnail struct {
 	ID        int
 	EntryPath string

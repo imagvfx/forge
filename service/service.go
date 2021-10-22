@@ -17,6 +17,10 @@ type Service interface {
 	AddDefault(ctx context.Context, d *Default) error
 	UpdateDefault(ctx context.Context, upd DefaultUpdater) error
 	DeleteDefault(ctx context.Context, entType, ctg, name string) error
+	FindGlobals(ctx context.Context, find GlobalFinder) ([]*Global, error)
+	AddGlobal(ctx context.Context, d *Global) error
+	UpdateGlobal(ctx context.Context, upd GlobalUpdater) error
+	DeleteGlobal(ctx context.Context, entType, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	SearchEntries(ctx context.Context, search EntrySearcher) ([]*Entry, error)
 	CountAllSubEntries(ctx context.Context, path string) (int, error)
@@ -155,6 +159,26 @@ type DefaultFinder struct {
 type DefaultUpdater struct {
 	EntryType string
 	Category  string
+	Name      string
+	Type      *string
+	Value     *string
+}
+
+type Global struct {
+	ID        int
+	EntryType string
+	Name      string
+	Type      string
+	Value     string
+}
+
+type GlobalFinder struct {
+	EntryType *string
+	Name      *string
+}
+
+type GlobalUpdater struct {
+	EntryType string
 	Name      string
 	Type      *string
 	Value     *string

@@ -61,6 +61,10 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	err = createGlobalsTable(tx)
+	if err != nil {
+		return err
+	}
 	err = createEntriesTable(tx)
 	if err != nil {
 		return err
