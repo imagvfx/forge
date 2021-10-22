@@ -641,8 +641,47 @@ window.onload = function() {
 			window.location.href = pp.dataset.link;
 		}
 		pp.ondragstart = function(event) {
-			event.dataTransfer.setData("application/pinnedpath/id", pp.id);
 			event.dataTransfer.effectAllowed = "move";
+			let zone = document.getElementById("pinnedPathDropZone");
+			// TODO: extract common code to drag-drop for zones as functions.
+			zone.ondragover = function(event) {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = "move";
+				let paths = document.getElementsByClassName("pinnedPathLink");
+				for (let p of paths) {
+					if (p == pp) {
+						continue;
+					}
+					if (event.clientY < p.offsetTop + p.offsetHeight/2) {
+						p.parentNode.insertBefore(pp, p);
+						break;
+					}
+					if (p.nextElementSibling == null) {
+						p.parentNode.appendChild(pp, p);
+						break;
+					}
+				}
+			}
+			zone.ondragleave = function(event) {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = "none";
+			}
+			zone.ondrop = function(event) {
+				let at = -1;
+				let paths = document.getElementsByClassName("pinnedPathLink");
+				for (let i = 0; i < paths.length; i++) {
+					let p = paths[i];
+					if (p == pp) {
+						at = i;
+						break;
+					}
+				}
+				if (at == -1) {
+					console.log("unable to find drop target from pinned paths");
+					return;
+				}
+				updatePinnedPath(pp.innerText, at);
+			}
 			let del = document.getElementById("pinnedPathDeleteButton");
 			del.style.display = "inline-block";
 			del.ondragenter = function(ev) {
@@ -663,28 +702,21 @@ window.onload = function() {
 			del.ondrop = function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				let targetId = event.dataTransfer.getData("application/pinnedpath/id");
-				if (targetId != pp.id) {
-					return;
-				}
 				updatePinnedPath(pp.innerText, -1);
 			}
 		}
 		pp.ondragend = function(event) {
+			let zone = document.getElementById("pinnedPathDropZone");
+			removeDragDropEvents(zone);
 			let del = document.getElementById("pinnedPathDeleteButton");
+			removeDragDropEvents(del);
 			del.style.display = "none";
 			if (event.dataTransfer.dropEffect == "none") {
-				let targetId = event.dataTransfer.getData("application/pinnedpath/id");
-				let target = document.getElementById(targetId);
-				if (target == null) {
-					console.log("unable to find drop target");
-					return;
-				}
 				let curIdx = -1;
 				let paths = document.getElementsByClassName("pinnedPathLink");
 				for (let i = 0; i < paths.length; i++) {
-					pp = paths[i];
-					if (pp == target) {
+					let p = paths[i];
+					if (p == pp) {
 						curIdx = i;
 						break;
 					}
@@ -693,84 +725,24 @@ window.onload = function() {
 					console.log("unable to find drop target from pinnedpaths");
 					return;
 				}
-				let origIdx = parseInt(target.dataset.idx);
+				let origIdx = parseInt(pp.dataset.idx);
 				if (curIdx == origIdx) {
 					return;
 				}
 				if (curIdx > origIdx) {
-					target.parentNode.insertBefore(target, target.parentNode.children[origIdx]);
-					return
+					pp.parentNode.insertBefore(pp, pp.parentNode.children[origIdx]);
+					return;
 				}
 				if (curIdx < origIdx) {
 					if (origIdx+1 == paths.length) {
-						target.parentNode.appendChild(target);
+						pp.parentNode.appendChild(pp);
 						return;
 					}
-					target.parentNode.insertBefore(target, target.parentNode.children[origIdx+1]);
-					return
+					pp.parentNode.insertBefore(pp, pp.parentNode.children[origIdx+1]);
+					return;
 				}
 			}
 		}
-	}
-	// TODO: extract common code to drag-drop for zones as functions.
-	let pinnedPathDropZone = document.getElementById("pinnedPathDropZone");
-	pinnedPathDropZone.ondragover = function(event) {
-		event.preventDefault();
-		event.dataTransfer.dropEffect = "move";
-		let targetId = event.dataTransfer.getData("application/pinnedpath/id");
-		if (targetId == "") {
-			// possibly dragged from other zone.
-			return;
-		}
-		let target = document.getElementById(targetId);
-		if (target == null) {
-			console.log("unable to find drop target");
-			return;
-		}
-		let paths = document.getElementsByClassName("pinnedPathLink");
-		for (let pp of paths) {
-			if (pp == target) {
-				continue;
-			}
-			if (event.clientY < pp.offsetTop + pp.offsetHeight/2) {
-				pp.parentNode.insertBefore(target, pp);
-				break;
-			}
-			if (pp.nextElementSibling == null) {
-				pp.parentNode.appendChild(target, pp);
-				break;
-			}
-		}
-	}
-	pinnedPathDropZone.ondragleave = function(event) {
-		event.preventDefault();
-		event.dataTransfer.dropEffect = "none";
-	}
-	pinnedPathDropZone.ondrop = function(event) {
-		let targetId = event.dataTransfer.getData("application/pinnedpath/id");
-		if (targetId == "") {
-			// possibly dragged from other zone.
-			return;
-		}
-		let target = document.getElementById(targetId);
-		if (target == null) {
-			console.log("unable to find drop target");
-			return;
-		}
-		let at = -1;
-		let paths = document.getElementsByClassName("pinnedPathLink");
-		for (let i = 0; i < paths.length; i++) {
-			let pp = paths[i];
-			if (pp == target) {
-				at = i;
-				break;
-			}
-		}
-		if (at == -1) {
-			console.log("unable to find drop target from pinned paths");
-			return;
-		}
-		updatePinnedPath(target.innerText, at);
 	}
 	let quickSearches = document.getElementsByClassName("quickSearchLink");
 	for (let qs of quickSearches) {
@@ -782,8 +754,54 @@ window.onload = function() {
 			return;
 		}
 		qs.ondragstart = function(event) {
-			event.dataTransfer.setData("application/quicksearch/id", qs.id);
 			event.dataTransfer.effectAllowed = "move";
+			let zone = document.getElementById("quickSearchDropZone");
+			zone.ondragover = function(event) {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = "move";
+				let searches = document.getElementsByClassName("quickSearchLink");
+				for (let s of searches) {
+					if (s == qs) {
+						continue;
+					}
+					if (event.clientY < s.offsetTop || s.offsetTop + s.offsetHeight <= event.clientY) {
+						continue;
+					}
+					if (event.clientX < s.offsetLeft + s.offsetWidth) {
+						if (event.clientX < s.offsetLeft + s.offsetWidth/2) {
+							s.parentNode.insertBefore(qs, s);
+							break;
+						}
+						let next = s.nextElementSibling;
+						if (next == null) {
+							s.parentNode.appendChild(qs, s);
+							break;
+						}
+						s.parentNode.insertBefore(qs, next);
+						break;
+					}
+				}
+			}
+			zone.ondragleave = function(event) {
+				event.preventDefault();
+				event.dataTransfer.dropEffect = "none";
+			}
+			zone.ondrop = function(event) {
+				let at = -1;
+				let searches = document.getElementsByClassName("quickSearchLink");
+				for (let i = 0; i < searches.length; i++) {
+					let s = searches[i];
+					if (s == qs) {
+						at = i;
+						break;
+					}
+				}
+				if (at == -1) {
+					console.log("unable to find drop target from quicksearches");
+					return;
+				}
+				updateQuickSearch(qs.innerText, at);
+			}
 			let del = document.getElementById("quickSearchDeleteButton");
 			del.style.display = "inline-block";
 			del.ondragenter = function(ev) {
@@ -804,28 +822,21 @@ window.onload = function() {
 			del.ondrop = function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				let targetId = event.dataTransfer.getData("application/quicksearch/id");
-				if (targetId != qs.id) {
-					return;
-				}
 				updateQuickSearch(qs.innerText, -1);
 			}
 		}
 		qs.ondragend = function(event) {
+			let zone = document.getElementById("quickSearchDropZone");
+			removeDragDropEvents(zone);
 			let del = document.getElementById("quickSearchDeleteButton");
+			removeDragDropEvents(del);
 			del.style.display = "none";
 			if (event.dataTransfer.dropEffect == "none") {
-				let targetId = event.dataTransfer.getData("application/quicksearch/id");
-				let target = document.getElementById(targetId);
-				if (target == null) {
-					console.log("unable to find drop target");
-					return;
-				}
 				let curIdx = -1;
 				let searches = document.getElementsByClassName("quickSearchLink");
 				for (let i = 0; i < searches.length; i++) {
-					qs = searches[i];
-					if (qs == target) {
+					let s = searches[i];
+					if (s == qs) {
 						curIdx = i;
 						break;
 					}
@@ -834,91 +845,24 @@ window.onload = function() {
 					console.log("unable to find drop target from quicksearches");
 					return;
 				}
-				let origIdx = parseInt(target.dataset.idx);
+				let origIdx = parseInt(qs.dataset.idx);
 				if (curIdx == origIdx) {
 					return;
 				}
 				if (curIdx > origIdx) {
-					target.parentNode.insertBefore(target, target.parentNode.children[origIdx]);
-					return
+					qs.parentNode.insertBefore(qs, qs.parentNode.children[origIdx]);
+					return;
 				}
 				if (curIdx < origIdx) {
 					if (origIdx+1 == searches.length) {
-						target.parentNode.appendChild(target);
+						qs.parentNode.appendChild(qs);
 						return;
 					}
-					target.parentNode.insertBefore(target, target.parentNode.children[origIdx+1]);
-					return
+					qs.parentNode.insertBefore(qs, qs.parentNode.children[origIdx+1]);
+					return;
 				}
 			}
 		}
-	}
-	let quickSearchDropZone = document.getElementById("quickSearchDropZone");
-	quickSearchDropZone.ondragover = function(event) {
-		event.preventDefault();
-		event.dataTransfer.dropEffect = "move";
-		let targetId = event.dataTransfer.getData("application/quicksearch/id");
-		if (targetId == "") {
-			// possibly dragged from other zone.
-			return;
-		}
-		let target = document.getElementById(targetId);
-		if (target == null) {
-			console.log("unable to find drop target");
-			return;
-		}
-		let searches = document.getElementsByClassName("quickSearchLink");
-		for (let qs of searches) {
-			if (qs == target) {
-				continue;
-			}
-			if (event.clientY < qs.offsetTop || qs.offsetTop + qs.offsetHeight <= event.clientY) {
-				continue;
-			}
-			if (event.clientX < qs.offsetLeft + qs.offsetWidth) {
-				if (event.clientX < qs.offsetLeft + qs.offsetWidth/2) {
-					qs.parentNode.insertBefore(target, qs);
-					break;
-				}
-				let next = qs.nextElementSibling;
-				if (next == null) {
-					qs.parentNode.appendChild(target, qs);
-					break;
-				}
-				qs.parentNode.insertBefore(target, next);
-				break;
-			}
-		}
-	}
-	quickSearchDropZone.ondragleave = function(event) {
-		event.preventDefault();
-		event.dataTransfer.dropEffect = "none";
-	}
-	quickSearchDropZone.ondrop = function(event) {
-		let targetId = event.dataTransfer.getData("application/quicksearch/id");
-		if (targetId == "") {
-			// possibly dragged from other zone.
-			return;
-		}
-		let target = document.getElementById(targetId);
-		if (target == null) {
-			console.log("unable to find drop target");
-			return;
-		}
-		let at = -1;
-		let searches = document.getElementsByClassName("quickSearchLink");
-		for (let i = 0; i < searches.length; i++) {
-			let qs = searches[i];
-			if (qs == target) {
-				at = i;
-				break;
-			}
-		}
-		if (at == -1) {
-			console.log("unable to find drop target from quicksearches");
-			return;
-		}
-		updateQuickSearch(target.innerText, at);
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
 	for (let thumb of thumbs) {
@@ -1075,6 +1019,13 @@ function parentWithClass(from, clsName) {
 		}
 		from = parent;
 	}
+}
+
+function removeDragDropEvents(el) {
+	el.ondragenter = null;
+	el.ondragover = null;
+	el.ondragleave = null;
+	el.ondrop = null;
 }
 
 function updatePinnedPath(path, at) {
