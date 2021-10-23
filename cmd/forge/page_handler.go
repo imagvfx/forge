@@ -323,12 +323,24 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				defaultProps[typ] = append(defaultProps[typ], d.Name)
 			}
 		}
+		// user property filter
 		if setting.EntryPagePropertyFilter != nil && setting.EntryPagePropertyFilter[typ] != "" {
 			filter := setting.EntryPagePropertyFilter[typ]
 			propFilters[typ] = strings.Fields(filter)
-		} else {
-			propFilters[typ] = defaultProps[typ]
+			continue
 		}
+		// global property filter
+		g, err := h.server.GetGlobal(ctx, typ, "property_filter")
+		if err != nil {
+			var e *service.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+			// neither filter exists
+			propFilters[typ] = defaultProps[typ]
+			continue
+		}
+		propFilters[typ] = strings.Fields(g.Value)
 	}
 	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
