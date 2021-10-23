@@ -334,21 +334,21 @@ func (s *Server) Globals(ctx context.Context, entType string) ([]*Global, error)
 	if entType == "" {
 		return nil, fmt.Errorf("entry type name not specified")
 	}
-	ds, err := s.svc.FindGlobals(ctx, service.GlobalFinder{EntryType: &entType})
+	svcGlobals, err := s.svc.FindGlobals(ctx, service.GlobalFinder{EntryType: &entType})
 	if err != nil {
 		return nil, err
 	}
-	defaults := make([]*Global, 0)
-	for _, d := range ds {
-		def := &Global{
-			EntryType: d.EntryType,
-			Type:      d.Type,
-			Name:      d.Name,
-			Value:     d.Value,
+	globals := make([]*Global, 0)
+	for _, sg := range svcGlobals {
+		g := &Global{
+			EntryType: sg.EntryType,
+			Type:      sg.Type,
+			Name:      sg.Name,
+			Value:     sg.Value,
 		}
-		defaults = append(defaults, def)
+		globals = append(globals, g)
 	}
-	return defaults, nil
+	return globals, nil
 }
 
 func (s *Server) AddGlobal(ctx context.Context, entType, name, typ, value string) error {
@@ -361,13 +361,13 @@ func (s *Server) AddGlobal(ctx context.Context, entType, name, typ, value string
 	if typ == "" {
 		return fmt.Errorf("global type not specified")
 	}
-	d := &service.Global{
+	sg := &service.Global{
 		EntryType: entType,
 		Name:      name,
 		Type:      typ,
 		Value:     value,
 	}
-	err := s.svc.AddGlobal(ctx, d)
+	err := s.svc.AddGlobal(ctx, sg)
 	if err != nil {
 		return err
 	}
