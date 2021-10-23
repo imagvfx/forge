@@ -18,6 +18,7 @@ type Service interface {
 	UpdateDefault(ctx context.Context, upd DefaultUpdater) error
 	DeleteDefault(ctx context.Context, entType, ctg, name string) error
 	FindGlobals(ctx context.Context, find GlobalFinder) ([]*Global, error)
+	GetGlobal(ctx context.Context, entType, name string) (*Global, error)
 	AddGlobal(ctx context.Context, d *Global) error
 	UpdateGlobal(ctx context.Context, upd GlobalUpdater) error
 	DeleteGlobal(ctx context.Context, entType, name string) error

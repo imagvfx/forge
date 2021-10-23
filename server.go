@@ -351,6 +351,23 @@ func (s *Server) Globals(ctx context.Context, entType string) ([]*Global, error)
 	return globals, nil
 }
 
+func (s *Server) GetGlobal(ctx context.Context, entType, name string) (*Global, error) {
+	if entType == "" {
+		return nil, fmt.Errorf("entry type name not specified")
+	}
+	sg, err := s.svc.GetGlobal(ctx, entType, name)
+	if err != nil {
+		return nil, err
+	}
+	g := &Global{
+		EntryType: sg.EntryType,
+		Type:      sg.Type,
+		Name:      sg.Name,
+		Value:     sg.Value,
+	}
+	return g, nil
+}
+
 func (s *Server) AddGlobal(ctx context.Context, entType, name, typ, value string) error {
 	if entType == "" {
 		return fmt.Errorf("global entry type not specified")

@@ -62,6 +62,10 @@ func (s *Service) FindGlobals(ctx context.Context, find service.GlobalFinder) ([
 	return FindGlobals(s.db, ctx, find)
 }
 
+func (s *Service) GetGlobal(ctx context.Context, entType, name string) (*service.Global, error) {
+	return GetGlobal(s.db, ctx, entType, name)
+}
+
 func (s *Service) AddGlobal(ctx context.Context, d *service.Global) error {
 	return AddGlobal(s.db, ctx, d)
 }

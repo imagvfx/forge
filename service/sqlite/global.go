@@ -88,6 +88,19 @@ func findGlobals(tx *sql.Tx, ctx context.Context, find service.GlobalFinder) ([]
 	return globals, nil
 }
 
+func GetGlobal(db *sql.DB, ctx context.Context, entryType, name string) (*service.Global, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	g, err := getGlobal(tx, ctx, entryType, name)
+	if err != nil {
+		return nil, err
+	}
+	return g, nil
+}
+
 func getGlobal(tx *sql.Tx, ctx context.Context, entryType, name string) (*service.Global, error) {
 	find := service.GlobalFinder{
 		EntryType: &entryType,
@@ -95,7 +108,7 @@ func getGlobal(tx *sql.Tx, ctx context.Context, entryType, name string) (*servic
 	}
 	globals, err := findGlobals(tx, ctx, find)
 	if len(globals) == 0 {
-		return nil, service.NotFound("global not found")
+		return nil, service.NotFound("global not found on %v: %v", entryType, name)
 	}
 	return globals[0], err
 }
