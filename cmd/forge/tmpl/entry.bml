@@ -244,7 +244,7 @@
 											<div style="display:flex;margin-bottom:0.3rem;"> [
 												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;font-weight:bold;overflow-wrap:anywhere;"> [{{$e.Name}}]
 												{{with $s := index $props "status"}}
-												<div class="statusDot status-{{$entType}}-{{$s.Value}}"> []
+												<div class="statusSelect statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$e.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 												{{end}}
 											]
 											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
@@ -337,6 +337,20 @@
 					<a class="infoDelete" style="display:none;color:#A22;cursor:pointer;"> [Delete <!-- temporarily hidden -->]
 				]
 				<div id="userAutoCompleteMenu"> []
+				{{range $entType, $ps := $.PossibleStatus}}
+				<div id="selectStatusMenu-{{$entType}}" class="selectStatusMenu"> [
+					<div class="selectStatusMenuItem" data-value=""> [
+						<div class="selectStatusMenuItemDot statusDot statusDot-{{$entType}}-"> []
+						<div class="selectStatusMenuItemValue" style="color:#888888;"> [(none)]
+					]
+					{{range $s := $ps}}
+					<div class="selectStatusMenuItem" data-value="{{$s.Name}}"> [
+						<div class="selectStatusMenuItemDot statusDot statusDot-{{$entType}}-{{$s.Name}}"> []
+						<div class="selectStatusMenuItemValue"> [{{$s.Name}}]
+					]
+					{{end}}
+				]
+				{{end}}
 			]
 		]
 		<div id="deleteEntryDialogBackground"> [
@@ -386,7 +400,7 @@
 
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
-.status-{{$entType}}-{{$s.Name}} {
+.statusDot-{{$entType}}-{{$s.Name}} {
 	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
 	border: 1px solid {{$s.Color}} !important;
 }
@@ -600,6 +614,55 @@
 .userAutoCompleteItem.active {
 	background-color: #D0D0D0;
 }
+
+.statusSelect {
+	cursor: pointer;
+}
+
+.selectStatusMenu {
+	position: absolute;
+	visibility: hidden;
+	width: 8rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	border: 1px solid #AAAAAA;
+	border-radius: 4px;
+	background-color: #E0E0E0;
+	font-size: 0.8rem;
+	word-wrap: break-word;
+}
+
+.selectStatusMenuItem {
+	display: flex;
+	background-color: #FFFFFF;
+	cursor: pointer;
+}
+
+.selectStatusMenuItem:hover {
+	display: flex;
+	background-color: #AACCFF;
+}
+
+.selectStatusMenuItem:first-child {
+	border-radius: 3px 3px 0 0;
+}
+
+.selectStatusMenuItem:last-child {
+	border-radius: 0 0 3px 3px;
+}
+
+
+.selectStatusMenuItemDot {
+	margin: 0.3rem;
+}
+
+.selectStatusMenuItemValue {
+	margin: 0.35rem 0.3rem 0.3rem 0.3rem;
+}
+
+
 `]
 
 <script> [`
@@ -608,6 +671,10 @@
 window.onload = function() {
 	let currentContextMenuLoader = null;
 	document.onclick = function(event) {
+		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
+		for (let menu of selectStatusMenus) {
+			menu.style.visibility = "hidden";
+		}
 		let userMenu = document.getElementById("userAutoCompleteMenu");
 		userMenu.replaceChildren();
 		userMenu.style.visibility = "hidden";
@@ -870,6 +937,56 @@ window.onload = function() {
 					}
 					qs.parentNode.insertBefore(qs, qs.parentNode.children[origIdx+1]);
 					return;
+				}
+			}
+		}
+	}
+	let currentStatusSelect = null;
+	let statusSelects = document.getElementsByClassName("statusSelect");
+	for (let sel of statusSelects) {
+		let entType = sel.dataset.entryType;
+		let menu = document.getElementById("selectStatusMenu-" + entType);
+		sel.onclick = function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+			if (currentStatusSelect == sel && menu.style.visibility == "visible") {
+				menu.style.visibility = "hidden";
+				currentStatusSelect = null;
+				return;
+			}
+			currentStatusSelect = sel;
+			// slight adjust of the menu position to make statusDots aligned.
+			menu.style.visibility = "visible";
+			menu.style.left = String(sel.offsetLeft - 6) + "px";
+			menu.style.top = String(sel.offsetTop + sel.offsetHeight + 4) + "px";
+			let items = menu.getElementsByClassName("selectStatusMenuItem");
+			for (let item of items) {
+				item.onclick = function(ev) {
+					ev.stopPropagation();
+					ev.preventDefault();
+					let req = new XMLHttpRequest();
+					let formData = new FormData();
+					formData.append("path", sel.dataset.path);
+					formData.append("name", "status");
+					formData.append("value", item.dataset.value);
+					req.open("post", "/api/set-property");
+					req.send(formData);
+					req.onload = function() {
+						if (req.status == 200) {
+							let oldClass = "statusDot-" + sel.dataset.entryType + "-" + sel.dataset.value;
+							let newClass = "statusDot-" + sel.dataset.entryType + "-" + item.dataset.value;
+							sel.classList.replace(oldClass, newClass);
+							sel.dataset.value = item.dataset.value;
+							menu.style.visibility = "hidden";
+						} else {
+							showStatusBarOnly();
+							printErrorStatus(req.responseText);
+						}
+					}
+					req.onerror = function(err) {
+						showStatusBarOnly();
+						printErrorStatus("network error occurred. please check whether the server is down.");
+					}
 				}
 			}
 		}
@@ -1231,17 +1348,30 @@ document.onkeydown = keyPressed;
 
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
+		// Will close floating UIs first, if any exists.
+		let closed = false;
+		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
+		for (let menu of selectStatusMenus) {
+			if (menu.style.visibility != "hidden") {
+				menu.style.visibility = "hidden";
+				closed = true;
+			}
+		}
 		let userMenu = document.getElementById("userAutoCompleteMenu");
 		if (userMenu.style.visibility != "hidden") {
 			userMenu.replaceChildren();
 			userMenu.style.visibility = "hidden";
-			return;
+			closed = true;
 		}
 		let infoMenu = document.getElementById("infoContextMenu");
 		if (infoMenu.style.visibility != "hidden") {
 			infoMenu.style.visibility = "hidden";
+			closed = true;
+		}
+		if (closed) {
 			return;
 		}
+		// No float UIs were there. Do default job.
 		toggleFooter();
 	}
 }
