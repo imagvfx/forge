@@ -244,15 +244,7 @@
 											<div style="display:flex;margin-bottom:0.3rem;"> [
 												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;"> [<b> [{{$e.Name}}]]
 												{{with $s := index $props "status"}}
-													{{$color := ""}}
-													{{with $pStatus := index $.PossibleStatus $entType}}
-														{{range $ps := $pStatus}}
-															{{if eq $ps.Name $s.Value}}
-																{{$color = $ps.Color}}
-															{{end}}
-														{{end}}
-														<div class="statusDot" {{if $color}}style="background-color:{{setAlphaToColor $color 0.8}};border:1px solid {{$color}};"{{end}}> []
-													{{end}}
+												<div class="statusDot status-{{$entType}}-{{$s.Value}}"> []
 												{{end}}
 											]
 											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
@@ -390,6 +382,15 @@
 	opacity: 0.8;
 	background-color: #DDD;
 }
+
+{{range $entType, $status := $.PossibleStatus}}
+{{range $s := $status}}
+.status-{{$entType}}-{{$s.Name}} {
+	background-color: {{setAlphaToColor $s.Color 0.8}};
+	border: 1px solid {{$s.Color}};
+}
+{{end}}
+{{end}}
 
 .statusDot {
 	align-self: center;
