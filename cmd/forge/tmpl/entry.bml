@@ -241,7 +241,7 @@
 									{{end}}
 									<div class="subEntry" style="flex:1;display:flex;align-items:stretch;color:black"> [
 										<div class="subEntryLink" style="padding:{{$pad}};width:98px;padding:0.4rem 0.6rem 0.4rem 0.5rem;"> [
-											<div style="display:flex;margin-bottom:0.1rem;"> [
+											<div style="display:flex;margin-bottom:0.3rem;"> [
 												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;"> [<b> [{{$e.Name}}]]
 												{{$status := index $props "status"}}
 												{{if $status}}
@@ -386,9 +386,10 @@
 
 .statusDot {
 	align-self: center;
-	width: 0.7rem;
-	height: 0.7rem;
+	width: 0.75rem;
+	height: 0.75rem;
 	border-radius: 0.6rem;
+	margin-left: 0.5rem;
 	margin-bottom: 0.1rem;
 	background-color: #EC4;
 }
