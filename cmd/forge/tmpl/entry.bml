@@ -240,9 +240,9 @@
 									<div style="border-top:1px solid #DDD"> []
 									{{end}}
 									<div class="subEntry" style="flex:1;display:flex;align-items:stretch;color:black"> [
-										<div class="subEntryLink" style="padding:{{$pad}};width:98px;padding:0.4rem 0.6rem 0.8rem 0.5rem;"> [
+										<div class="subEntryLink" style="padding:{{$pad}};width:98px;padding:0.4rem 0.5rem 0.8rem 0.5rem;"> [
 											<div style="display:flex;margin-bottom:0.3rem;"> [
-												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;"> [<b> [{{$e.Name}}]]
+												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;font-weight:bold;overflow-wrap:anywhere;"> [{{$e.Name}}]
 												{{with $s := index $props "status"}}
 												<div class="statusDot status-{{$entType}}-{{$s.Value}}"> []
 												{{end}}
@@ -394,7 +394,6 @@
 {{end}}
 
 .statusDot {
-	align-self: center;
 	width: 0.75rem;
 	height: 0.75rem;
 	border-radius: 0.6rem;
