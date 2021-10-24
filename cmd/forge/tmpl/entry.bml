@@ -383,11 +383,12 @@
 	background-color: #DDD;
 }
 
+
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
 .status-{{$entType}}-{{$s.Name}} {
-	background-color: {{setAlphaToColor $s.Color 0.8}};
-	border: 1px solid {{$s.Color}};
+	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
+	border: 1px solid {{$s.Color}} !important;
 }
 {{end}}
 {{end}}
@@ -399,6 +400,8 @@
 	border-radius: 0.6rem;
 	margin-left: 0.5rem;
 	margin-bottom: 0.1rem;
+	background-color: {{setAlphaToColor "#DDD" 0.8}};
+	border: 1px solid #DDD;
 }
 
 .subEntryName {
