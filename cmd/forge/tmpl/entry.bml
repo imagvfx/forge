@@ -177,38 +177,38 @@
 					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
 				{{end}}
 				{{$i := 0}}
-				{{range $t, $entsByParent := $.SubEntriesByTypeByParent}}
+				{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div> [
 						{{if $i}}
 						<div style="margin-top:3rem;margin-bottom:3rem;border-top:1px solid #DDD"> []
 						{{end}}
 						{{if not $.ResultsFromSearch}}
 						<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2rem;margin-top:1rem;margin-bottom:1rem;"> [
-							<div style="font-size:1.2rem"> [<b> [{{$t}} ({{len (index $entsByParent $.Entry.Path)}})]]
+							<div style="font-size:1.2rem"> [<b> [{{$entType}} ({{len (index $entsByParent $.Entry.Path)}})]]
 							<!-- Add SubEntry -->
 							<form action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-								<input name="type" type="hidden" value="{{$t}}"> []
+								<input name="type" type="hidden" value="{{$entType}}"> []
 								<input name="name" style="border:1px solid #DDD;border-right:0;border-radius:2px 0 0 2px" placeholder="name"> []
 								<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [+]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<!-- Property Filter -->
 							<form action="/api/set-user-setting" style="flex:1;display:flex" method="POST"> [
-								<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
-								<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $t}}" placeholder="filter"> []
+								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
+								<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $entType}}" placeholder="filter"> []
 								<button style="display:none" name="update_filter" value="1"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<!-- Sort -->
 							<form action="/api/set-user-setting" style="display:flex;align-items:center" method="POST"> [
-								<input name="entry_page_entry_type" type="hidden" value="{{$t}}"> []
-								{{$sortProp := index $.UserSetting.EntryPageSortProperty $t}}
+								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
+								{{$sortProp := index $.UserSetting.EntryPageSortProperty $entType}}
 								{{$prop := sortProperty $sortProp}}
 								{{$desc := sortDesc $sortProp}}
 								<select name="entry_page_sort_property" style="appearance:none;margin-right:0.5rem;min-width:6rem;border:1px solid #DDD;border-radius:2px;"> [
 									<option value=""> [(name)]
-								{{range $p := index $.DefaultProperties $t}}
+								{{range $p := index $.DefaultProperties $entType}}
 									<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
 								{{end}}
 								]
@@ -232,7 +232,7 @@
 								{{end}}
 								<!-- Sub Entries -->
 								<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
-									{{$propFilters := index $.PropertyFilters $t}}
+									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $e := $entries}}
 									{{$props := index $.SubEntryProperties $e.Path}}
 									{{$pad := "0.3rem"}}
@@ -243,9 +243,16 @@
 										<div class="subEntryLink" style="padding:{{$pad}};width:98px;padding:0.4rem 0.6rem 0.4rem 0.5rem;"> [
 											<div style="display:flex;margin-bottom:0.3rem;"> [
 												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;"> [<b> [{{$e.Name}}]]
-												{{$status := index $props "status"}}
-												{{if $status}}
-												<div class="statusDot"> []
+												{{with $s := index $props "status"}}
+													{{$color := ""}}
+													{{with $pStatus := index $.PossibleStatus $entType}}
+														{{range $ps := $pStatus}}
+															{{if eq $ps.Name $s.Value}}
+																{{$color = $ps.Color}}
+															{{end}}
+														{{end}}
+														<div class="statusDot" {{if $color}}style="background-color:{{$color}}"{{end}}> []
+													{{end}}
 												{{end}}
 											]
 											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
@@ -391,7 +398,6 @@
 	border-radius: 0.6rem;
 	margin-left: 0.5rem;
 	margin-bottom: 0.1rem;
-	background-color: #EC4;
 }
 
 .subEntryName {

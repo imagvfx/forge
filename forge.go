@@ -31,6 +31,13 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+// Status indicates a status in an entry type.
+// It should have css complient color information.
+type Status struct {
+	Name  string
+	Color string
+}
+
 // Default is property, environ or sub-entry defined for entry type,
 // So it will be automatically created while creation of an entry of the entry type.
 type Default struct {

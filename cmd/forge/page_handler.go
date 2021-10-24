@@ -342,6 +342,28 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		propFilters[typ] = strings.Fields(g.Value)
 	}
+	possibleStatus := make(map[string][]forge.Status, 0)
+	for typ := range subEntsByTypeByParent {
+		status := make([]forge.Status, 0)
+		p, err := h.server.GetGlobal(ctx, typ, "possible_status")
+		if err != nil {
+			var e *service.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+			continue
+		}
+		for _, ps := range strings.Fields(p.Value) {
+			toks := strings.Split(ps, ":")
+			name := toks[0]
+			color := ""
+			if len(toks) > 1 {
+				color = toks[1]
+			}
+			status = append(status, forge.Status{Name: name, Color: color})
+		}
+		possibleStatus[typ] = status
+	}
 	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
 		return err
@@ -363,6 +385,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		PropertyTypes            []string
 		DefaultProperties        map[string][]string
 		PropertyFilters          map[string][]string
+		PossibleStatus           map[string][]forge.Status
 		Properties               []*forge.Property
 		Environs                 []*forge.Property
 		AccessorTypes            []string
@@ -382,6 +405,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		PropertyTypes:            forge.PropertyTypes(),
 		DefaultProperties:        defaultProps,
 		PropertyFilters:          propFilters,
+		PossibleStatus:           possibleStatus,
 		Properties:               props,
 		Environs:                 envs,
 		AccessorTypes:            forge.AccessorTypes(),
