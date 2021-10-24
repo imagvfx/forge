@@ -251,7 +251,7 @@
 																{{$color = $ps.Color}}
 															{{end}}
 														{{end}}
-														<div class="statusDot" {{if $color}}style="background-color:{{$color}}"{{end}}> []
+														<div class="statusDot" {{if $color}}style="background-color:{{setAlphaToColor $color 0.8}};border:1px solid {{$color}};"{{end}}> []
 													{{end}}
 												{{end}}
 											]

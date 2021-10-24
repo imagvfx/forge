@@ -100,6 +100,24 @@ var pageHandlerFuncs = template.FuncMap{
 	"topName": func(s string) string {
 		return strings.Split(s, "/")[1]
 	},
+	"setAlphaToColor": func(c string, alpha float32) string {
+		c = strings.TrimSpace(c)
+		hexChar := "0123456789ABCDEF"
+		if strings.HasPrefix(c, "#") {
+			cc := c[1:]
+			if len(cc) != 3 && len(cc) != 6 {
+				return c
+			}
+			long := len(cc) == 6
+			a := int(alpha * 255)
+			astr := string(hexChar[a/16])
+			if long {
+				astr += string(hexChar[a%16])
+			}
+			return c + astr
+		}
+		return c
+	},
 }
 
 func httpStatusFromError(err error) int {
