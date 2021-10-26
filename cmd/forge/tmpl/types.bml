@@ -30,7 +30,7 @@
 							<input readonly name="name" type="hidden" value="{{$t}}"> []
 							<input name="new_name" type="text" value="{{$t}}"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button style="display:none" type="submit"> [Rename]
+							<button style="visibility:hidden;" type="submit"> [Rename]
 						]
 					]
 					{{end}}
@@ -77,7 +77,7 @@
 								<input name="type" type="text" value="{{$d.Type}}"> []
 								<input name="value" type="text" value="{{$d.Value}}"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="display:none" type="submit"> [Set]
+								<button style="visibility:hidden;" type="submit"> [Set]
 							]
 						]
 						{{end}}
@@ -98,7 +98,7 @@
 								<input name="type" type="text" value="{{$g.Type}}"> []
 								<input name="value" type="text" value="{{$g.Value}}"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="display:none" type="submit"> [Set]
+								<button style="visibility:hidden;" type="submit"> [Set]
 							]
 						]
 						{{end}}
