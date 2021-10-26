@@ -586,37 +586,67 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 	if err != nil {
 		return err
 	}
+	recipe := struct {
+		User           string
+		EntryTypeNames []string
+	}{
+		User:           user,
+		EntryTypeNames: typeNames,
+	}
+	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := service.UserNameFromContext(ctx)
+	toks := strings.Split(r.URL.Path, "/")
+	tname := toks[2]
+	if tname == "" {
+		return fmt.Errorf("entry type not specified")
+	}
+	typeNames, err := h.server.FindEntryTypes(ctx)
+	if err != nil {
+		return err
+	}
+	found := false
+	for _, tn := range typeNames {
+		if tn == tname {
+			found = true
+		}
+	}
+	if !found {
+		return fmt.Errorf("entry type not found: %v", tname)
+	}
 	// TODO: maybe better to have this in package forge?
 	type EntryType struct {
 		Name     string
 		Globals  []*forge.Global
 		Defaults []*forge.Default
 	}
-	entTypes := make([]*EntryType, 0)
-	for _, tname := range typeNames {
-		globals, err := h.server.Globals(ctx, tname)
-		if err != nil {
-			return err
-		}
-		defaults, err := h.server.Defaults(ctx, tname)
-		if err != nil {
-			return err
-		}
-		t := &EntryType{
-			Name:     tname,
-			Globals:  globals,
-			Defaults: defaults,
-		}
-		entTypes = append(entTypes, t)
+	globals, err := h.server.Globals(ctx, tname)
+	if err != nil {
+		return err
+	}
+	defaults, err := h.server.Defaults(ctx, tname)
+	if err != nil {
+		return err
+	}
+	t := &EntryType{
+		Name:     tname,
+		Globals:  globals,
+		Defaults: defaults,
 	}
 	recipe := struct {
-		User       string
-		EntryTypes []*EntryType
+		User      string
+		EntryType *EntryType
 	}{
-		User:       user,
-		EntryTypes: entTypes,
+		User:      user,
+		EntryType: t,
 	}
-	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
+	err = Tmpl.ExecuteTemplate(w, "type.bml", recipe)
 	if err != nil {
 		return err
 	}

@@ -191,6 +191,7 @@ func main() {
 	mux.HandleFunc("/users", page.Handler(page.handleUsers))
 	mux.HandleFunc("/groups", page.Handler(page.handleGroups))
 	mux.HandleFunc("/types", page.Handler(page.handleEntryTypes))
+	mux.HandleFunc("/types/", page.Handler(page.handleEachEntryType))
 	mux.HandleFunc("/api/add-entry-type", api.Handler(api.handleAddEntryType))
 	mux.HandleFunc("/api/rename-entry-type", api.Handler(api.handleRenameEntryType))
 	mux.HandleFunc("/api/delete-entry-type", api.Handler(api.handleDeleteEntryType))

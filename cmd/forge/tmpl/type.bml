@@ -1,0 +1,158 @@
+<!doctype html>
+<html> [
+	<head> [
+		{{template "style"}}
+	]
+	<body> [
+		{{template "nav" $}}
+		<div class="main"> [
+			<div class="one"> [
+				<div class="entryTypeName"> [
+					{{$.EntryType.Name}}
+				]
+				<div class="subGroup"> [
+					<form class="addForm" action="/api/add-default" method="post"> [
+						<input readonly name="entry_type" type="hidden" value="{{$.EntryType.Name}}"> []
+						<select name="category" style="width:6rem;"> [
+							<option value="property"> [property]
+							<option value="environ"> [environ]
+							<option value="access"> [access]
+							<option value="sub_entry"> [sub entry]
+							{{if not (has $.EntryType.Name ".")}}
+							<!-- global only has meaning to base types -->
+							<option value="global"> [global]
+							{{end}}
+						]
+						<input name="name" type="text" value="" placeholder="name" style="width:10rem;"> []
+						<input name="type" type="text" value="" placeholder="type" style="width:8rem;"> []
+						<input name="value" type="text" value="" placeholder="value" style="width:32rem;"> []
+						<input readonly name="back_to_referer" type="hidden" value="1"> []
+						<button type="submit"> [Add]
+					]
+					<div style="height:0.5rem"> []
+					{{range $d := $.EntryType.Defaults}}
+					<div class="modifyForms"> [
+						<form class="deleteForm" action="/api/delete-default" method="post"> [
+							<input readonly name="entry_type" type="hidden" value="{{$.EntryType.Name}}"> []
+							<input readonly name="category" type="hidden" value="{{$d.Category}}"> []
+							<input readonly name="name" type="hidden" value="{{$d.Name}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button style="color:red" type="submit"> [-]
+						]
+						<form class="updateForm" action="/api/set-default" method="post"> [
+							<input hidden name="entry_type" value="{{$.EntryType.Name}}"> []
+							<input readonly class="firstVisible" name="category" type="text" value="{{$d.Category}}" style="width:6rem;"> []
+							<input readonly name="name" type="text" value="{{$d.Name}}" style="width:10rem;"> []
+							<input name="type" type="text" value="{{$d.Type}}" style="width:8rem;"> []
+							<input class="lastVisible" name="value" type="text" value="{{$d.Value}}" style="width:32rem;"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button hidden type="submit"> [Set]
+						]
+					]
+					{{end}}
+					{{range $g := $.EntryType.Globals}}
+					<div class="modifyForms"> [
+						<form class="deleteForm" action="/api/delete-global" method="post"> [
+							<input readonly name="entry_type" type="hidden" value="{{$.EntryType.Name}}"> []
+							<input readonly name="category" type="hidden" value="global"> []
+							<input readonly name="name" type="hidden" value="{{$g.Name}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button style="padding:0;color:red" type="submit"> [-]
+						]
+						<form class="updateForm" action="/api/set-global" method="post"> [
+							<input readonly name="entry_type" type="hidden" value="{{$.EntryType.Name}}"> []
+							<input readonly class="firstVisible" name="category" type="text" value="global" style="width:6rem;"> []
+							<input readonly name="name" type="text" value="{{$g.Name}}" style="width:10rem;"> []
+							<input name="type" type="text" value="{{$g.Type}}" style="width:8rem;"> []
+							<input class="lastVisible" name="value" type="text" value="{{$g.Value}}" style="width:32rem;"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button hidden type="submit"> [Set]
+						]
+					]
+					{{end}}
+				]
+			]
+		]
+	]
+]
+
+<style> [`
+.entryType {
+	margin-bottom: 2rem;
+	display: none;
+}
+
+.entryTypeName {
+	font-weight: bold;
+	font-size: 1.1rem;
+	margin-bottom: 1rem;
+}
+
+.subGroup {
+	margin-left: 1.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.subTitle {
+	font-size: 0.9rem;
+	margin-bottom: 0.5rem;
+}
+
+.addForm {
+	margin-bottom: 0.4rem;
+}
+
+.modifyForms {
+	display: flex;
+	gap: 0.2rem;
+	align-items: center;
+	margin-bottom: 0.4rem;
+}
+
+.deleteForm button {
+	padding: 0;
+}
+
+.updateForm {
+	display: flex;
+	gap: 1px;
+	background-color: #AAAAAA;
+	border: 1px solid #888888;
+	border-radius: 3px;
+	padding: 0;
+}
+
+.updateForm input {
+	border: 0;
+	padding: 0.1rem 0.4rem;
+}
+
+.updateForm .firstVisible {
+	border-radius: 2px 0 0 2px;
+}
+
+.updateForm .lastVisible {
+	border-radius: 0 2px 2px 0;
+}
+
+.editTypeButton {
+	color: #8888AA;
+	cursor: pointer;
+}
+`]
+
+<script> [`
+"use strict";
+
+window.onload = function() {
+	let addForms = document.getElementsByClassName("addForm");
+	for (let form of addForms) {
+		form.onsubmit = function() {
+			let formData = new FormData(form);
+			if (formData.get("category") == "global") {
+				form.action = "/api/add-global";
+			}
+		}
+	}
+}
+`]
