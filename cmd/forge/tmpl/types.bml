@@ -43,7 +43,7 @@
 					<div class="subGroup"> [
 						<form class="addForm" action="/api/add-default" method="post"> [
 							<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
-							<select name="category"> [
+							<select name="category" style="width:6rem;"> [
 								<option value="property"> [property]
 								<option value="environ"> [environ]
 								<option value="access"> [access]
@@ -53,9 +53,9 @@
 								<option value="global"> [global]
 								{{end}}
 							]
-							<input name="name" type="text" value="" placeholder="name"> []
-							<input name="type" type="text" value="" placeholder="type"> []
-							<input name="value" type="text" value="" placeholder="value"> []
+							<input name="name" type="text" value="" placeholder="name" style="width:10rem;"> []
+							<input name="type" type="text" value="" placeholder="type" style="width:8rem;"> []
+							<input name="value" type="text" value="" placeholder="value" style="width:32rem;"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
 						]
@@ -72,12 +72,12 @@
 							]
 							<form class="updateForm" style="display:inline-block" action="/api/set-default" method="post"> [
 								<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
-								<input readonly name="category" type="text" value="{{$d.Category}}"> []
-								<input readonly name="name" type="text" value="{{$d.Name}}"> []
-								<input name="type" type="text" value="{{$d.Type}}"> []
-								<input name="value" type="text" value="{{$d.Value}}"> []
+								<input readonly name="category" type="text" value="{{$d.Category}}" style="border:0;width:6rem;"> []
+								<input readonly name="name" type="text" value="{{$d.Name}}" style="width:10rem;"> []
+								<input name="type" type="text" value="{{$d.Type}}" style="width:8rem;"> []
+								<input name="value" type="text" value="{{$d.Value}}" style="width:32rem;"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="visibility:hidden;" type="submit"> [Set]
+								<button type="submit"> [Set]
 							]
 						]
 						{{end}}
@@ -93,12 +93,12 @@
 							]
 							<form class="updateForm" style="display:inline-block" action="/api/set-global" method="post"> [
 								<input readonly name="entry_type" type="hidden" value="{{$t}}"> []
-								<input readonly name="category" type="text" value="global"> []
-								<input readonly name="name" type="text" value="{{$g.Name}}"> []
-								<input name="type" type="text" value="{{$g.Type}}"> []
-								<input name="value" type="text" value="{{$g.Value}}"> []
+								<input readonly name="category" type="text" value="global" style="border:0;width:6rem;"> []
+								<input readonly name="name" type="text" value="{{$g.Name}}" style="width:10rem;"> []
+								<input name="type" type="text" value="{{$g.Type}}" style="width:8rem;"> []
+								<input name="value" type="text" value="{{$g.Value}}" style="width:32rem;"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="visibility:hidden;" type="submit"> [Set]
+								<button type="submit"> [Set]
 							]
 						]
 						{{end}}
@@ -138,6 +138,34 @@
 .subTitle {
 	font-size: 0.9rem;
 	margin-bottom: 0.5rem;
+}
+
+.addForm {
+	margin-bottom: 0.4rem;
+}
+
+.modifyForms {
+	margin-bottom: 0.3rem;
+}
+
+.updateForm {
+	border: 1px solid #888888;
+	border-radius: 3px;
+	padding: 0;
+}
+
+.updateForm input {
+	margin: 0;
+	padding: 0 0.3rem;
+	border: 0;
+	border-left: 1px solid #CCCCCC;
+}
+
+.updateForm button {
+	visibility: hidden;
+	width: 0;
+	margin: 0;
+	padding: 0;
 }
 `]
 
