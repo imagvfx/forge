@@ -946,6 +946,10 @@ window.onload = function() {
 	for (let sel of statusSelects) {
 		let entType = sel.dataset.entryType;
 		let menu = document.getElementById("selectStatusMenu-" + entType);
+		if (menu == null) {
+			// It can be null, if possible_status global for the entry type is not exists.
+			continue
+		}
 		sel.onclick = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
