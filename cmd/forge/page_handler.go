@@ -582,36 +582,39 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 
 func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := service.UserNameFromContext(ctx)
-	entTypes, err := h.server.FindEntryTypes(ctx)
+	typeNames, err := h.server.FindEntryTypes(ctx)
 	if err != nil {
 		return err
 	}
-	entGlobals := make(map[string][]*forge.Global)
-	for _, t := range entTypes {
-		items, err := h.server.Globals(ctx, t)
-		if err != nil {
-			return err
-		}
-		entGlobals[t] = items
+	// TODO: maybe better to have this in package forge?
+	type EntryType struct {
+		Name     string
+		Globals  []*forge.Global
+		Defaults []*forge.Default
 	}
-	entDefaults := make(map[string][]*forge.Default)
-	for _, t := range entTypes {
-		items, err := h.server.Defaults(ctx, t)
+	entTypes := make([]*EntryType, 0)
+	for _, tname := range typeNames {
+		globals, err := h.server.Globals(ctx, tname)
 		if err != nil {
 			return err
 		}
-		entDefaults[t] = items
+		defaults, err := h.server.Defaults(ctx, tname)
+		if err != nil {
+			return err
+		}
+		t := &EntryType{
+			Name:     tname,
+			Globals:  globals,
+			Defaults: defaults,
+		}
+		entTypes = append(entTypes, t)
 	}
 	recipe := struct {
 		User       string
-		EntryTypes []string
-		Globals    map[string][]*forge.Global
-		Defaults   map[string][]*forge.Default
+		EntryTypes []*EntryType
 	}{
 		User:       user,
 		EntryTypes: entTypes,
-		Defaults:   entDefaults,
-		Globals:    entGlobals,
 	}
 	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
 	if err != nil {
