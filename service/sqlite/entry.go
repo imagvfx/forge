@@ -150,6 +150,10 @@ func SearchEntries(db *sql.DB, ctx context.Context, search service.EntrySearcher
 func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher) ([]*service.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
+	if search.SearchRoot == "/" {
+		// Prevent search root become two slashes by adding slash again.
+		search.SearchRoot = ""
+	}
 	keys = append(keys, "entries.path LIKE ?")
 	vals = append(vals, search.SearchRoot+`/%`)
 	if search.EntryType != "" {

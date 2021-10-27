@@ -20,7 +20,6 @@
 				]
 			]
 			<div class="right"> [
-				{{if ne $.Entry.Path "/"}}
 				<!-- Search Related -->
 				<div style="display:flex;flex-wrap:wrap;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
 					<div style="flex:3;"> [
@@ -67,7 +66,6 @@
 						{{end}}
 					]
 				]
-				{{end}}
 				{{if not $.ResultsFromSearch}}
 				<!-- This Entry -->
 				<div class="entry" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
