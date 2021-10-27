@@ -165,8 +165,22 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		idxEqual := strings.Index(p, "=")
 		if idxColon == -1 && idxEqual == -1 {
 			// generic search; not tied to a property
-			keys = append(keys, "(entries.path LIKE ? OR (properties.name NOT LIKE ? AND properties.val LIKE ?))")
-			vals = append(vals, search.SearchRoot+`/%`+p, ".%", `%`+p+`%`)
+			keys = append(keys, `
+				(entries.path LIKE ? OR
+					(properties.name NOT LIKE '.%' AND
+						(
+							(properties.typ!='user' AND properties.val LIKE ?) OR
+							(properties.typ='user' AND properties.id IN
+								(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+									WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+								)
+							)
+						)
+					)
+				)
+			`)
+			pl := `%` + p + `%`
+			vals = append(vals, search.SearchRoot+`/%`+p, pl, pl, pl)
 			continue
 		}
 		// Check which is appeared earlier.
@@ -185,11 +199,30 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		k := p[:idx]
 		v := p[idx+1:] // exclude colon or equal
 		if exactSearch {
-			keys = append(keys, "(properties.name=? AND properties.val=?)")
-			vals = append(vals, k, v)
+			keys = append(keys, `
+				(
+					(properties.typ!='user' AND properties.val LIKE ?) OR
+					(properties.typ='user' AND properties.id IN
+						(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+							WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
+						)
+					)
+				)
+			`)
+			vals = append(vals, k, v, v, v)
 		} else {
-			keys = append(keys, "(properties.name=? AND properties.val LIKE ?)")
-			vals = append(vals, k, `%`+v+`%`)
+			keys = append(keys, `
+				(
+					(properties.typ!='user' AND properties.val LIKE ?) OR
+					(properties.typ='user' AND properties.id IN
+						(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+							WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+						)
+					)
+				)
+			`)
+			vl := `%` + v + `%`
+			vals = append(vals, k, vl, vl, vl)
 		}
 	}
 	where := ""
