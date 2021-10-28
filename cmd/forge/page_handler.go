@@ -382,6 +382,36 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		possibleStatus[typ] = status
 	}
+	hasThumbnail := make(map[string]bool)
+	thumbnailPath := make(map[string]string)
+	allEnts := append(subEnts, ent)
+	for _, ent := range allEnts {
+		if ent.HasThumbnail {
+			hasThumbnail[ent.Path] = true
+			thumbnailPath[ent.Path] = ent.Path
+			continue
+		}
+		pth := ent.Path
+		for {
+			if hasThumbnail[pth] {
+				thumbnailPath[ent.Path] = pth
+				break
+			}
+			e, err := h.server.GetEntry(ctx, pth)
+			if err != nil {
+				return fmt.Errorf("check thumbnail info: %w", err)
+			}
+			if e.HasThumbnail {
+				hasThumbnail[pth] = true
+				thumbnailPath[ent.Path] = pth
+				break
+			}
+			if pth == "/" {
+				break
+			}
+			pth = filepath.Dir(pth)
+		}
+	}
 	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
 		return err
@@ -408,6 +438,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		Environs                 []*forge.Property
 		AccessorTypes            []string
 		AccessControls           []*forge.AccessControl
+		ThumbnailPath            map[string]string
 		BaseEntryTypes           []string
 		AllUsers                 []*forge.User
 	}{
@@ -428,6 +459,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		Environs:                 envs,
 		AccessorTypes:            forge.AccessorTypes(),
 		AccessControls:           acs,
+		ThumbnailPath:            thumbnailPath,
 		BaseEntryTypes:           baseTypes,
 		AllUsers:                 allUsers,
 	}

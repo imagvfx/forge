@@ -68,7 +68,7 @@
 				]
 				{{if not $.ResultsFromSearch}}
 				<!-- This Entry -->
-				<div class="entry" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
+				<div class="entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 						<div style="flex:3;font-size:1.2rem"> [
 							<b> [{{pathLinks $.Entry.Path}}]
@@ -100,8 +100,9 @@
 						<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 							<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
 								<div id="thumbnail" class="thumbnail" data-has-thumb="{{if $.Entry.HasThumbnail}}1{{end}}" style="display:flex"> [
-									<div style="display:flex;border:1px solid #CCCCCC;border-radius:4px;"> [
-										<img id="thumbnailImg" src="/thumbnail{{$.Entry.Path}}" width="128px" height="72px" style="{{if not $.Entry.HasThumbnail}}visibility:hidden;{{end}}border-radius:3px;"> []
+									<div style="display:flex;border:1px {{if $.Entry.HasThumbnail}}solid{{else}}dashed{{end}} #CCCCCC;background-color:#F4F4F4;border-radius:4px;"> [
+										{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
+										<img id="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px" style="{{if not $thumbnailPath}}visibility:hidden;{{end}};border-radius:3px;{{if ne $.Entry.Path $thumbnailPath}}opacity:60%;{{end}}"> []
 									]
 									<form class="updateThumbnail" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -224,7 +225,6 @@
 								{{end}}
 								{{if $.ResultsFromSearch}}
 									<div style="display:flex;align-items:end;margin-top:1rem;margin-bottom:1rem;"> [
-										<img src="/thumbnail{{$parent}}" width="96px" height="54px" alt="" style="margin:0.3rem;border:1px solid #CCCCCC;vertical-align:middle;background-color:#F4F4F4;border-radius:3px;" onerror="this.style.display='none';"> []
 										<div style="margin:0.3rem 0;font-size:0.83rem;font-weight:bold;"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $entries}})]
 									]
 								{{end}}
@@ -237,7 +237,7 @@
 									{{if $k}}
 									<div style="border-top:1px solid #DDD"> []
 									{{end}}
-									<div class="subEntry" style="flex:1;display:flex;align-items:stretch;color:black"> [
+									<div class="subEntry entry" data-entry-path="{{$e.Path}}" style="flex:1;display:flex;align-items:stretch;color:black"> [
 										<div class="subEntryLink" style="padding:{{$pad}};width:98px;padding:0.4rem 0.5rem 0.8rem 0.5rem;"> [
 											<div style="display:flex;margin-bottom:0.3rem;"> [
 												<a class="subEntryName" href="{{$e.Path}}" style="color:black;flex:1;font-weight:bold;overflow-wrap:anywhere;"> [{{$e.Name}}]
@@ -246,8 +246,9 @@
 												{{end}}
 											]
 											<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
-												<div style="display:flex;vertical-align:middle;border:1px solid #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
-													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$e.Path}}" width="96px" height="54px" alt="" style="{{if not $e.HasThumbnail}}visibility:hidden{{end}};border-radius:2px;"> []
+												<div style="display:flex;vertical-align:middle;border:1px {{if $e.HasThumbnail}}solid{{else}}dashed{{end}} #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
+													{{$thumbnailPath := index $.ThumbnailPath $e.Path}}
+													<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt="" style="{{if not $thumbnailPath}}visibility:hidden{{end}};border-radius:2px;{{if ne $e.Path $thumbnailPath}}opacity:60%;{{end}}"> []
 												]
 												<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 													<input name="path" type="hidden" value="{{$e.Path}}"> []
@@ -1241,8 +1242,11 @@ function updateThumbnail(thumbInput) {
 	req.send(new FormData(form));
 	req.onload = function() {
 		if (req.status == 200) {
-			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
+			let entryPath = parentWithClass(thumb, "entry").dataset.entryPath;
+			img.src = "/thumbnail" + entryPath + "?t=" + new Date().getTime();
 			img.style.visibility = "visible";
+			img.parentElement.style.borderStyle = "solid";
+			img.style.opacity = "100%";
 			thumb.dataset.hasThumb = "1";
 			thumb.getElementsByClassName("updateThumbnailButton")[0].style.visibility = "hidden";
 			thumb.getElementsByClassName("deleteThumbnailButton")[0].style.visibility = "visible";
@@ -1272,7 +1276,10 @@ function deleteThumbnail(delButton) {
 	req.onload = function() {
 		if (req.status == 200) {
 			// the image is gone, reflect it to img tag (even if it will not visible).
+			// TODO: inherit parent thumbnail
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
+			img.style.opacity = "60%";
+			img.parentElement.style.borderStyle = "dashed";
 			img.style.visibility = "hidden";
 			form.action = form.action.replace("/api/set", "/api/add");
 			thumb.dataset.hasThumb = "";
