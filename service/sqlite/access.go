@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -19,11 +20,16 @@ func createAccessControlsTable(tx *sql.Tx) error {
 			entry_id INTEGER NOT NULL,
 			accessor_id INTEGER,
 			mode INTEGER NOT NULL,
+			updated_at TIMESTAMP,
 			FOREIGN KEY (accessor_id) REFERENCES accessors (id),
 			UNIQUE (entry_id, accessor_id)
 		)
 	`)
 	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`ALTER TABLE access_controls ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT '0000-01-01 00:00:00'`)
+	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
 		return err
 	}
 	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_access_controls_entry_id ON access_controls (entry_id)`)
@@ -100,7 +106,8 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			entries.path,
 			accessors.name,
 			accessors.is_group,
-			access_controls.mode
+			access_controls.mode,
+			access_controls.updated_at
 		FROM access_controls
 		LEFT JOIN entries ON access_controls.entry_id = entries.id
 		LEFT JOIN accessors ON access_controls.accessor_id = accessors.id
@@ -121,6 +128,7 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 			&a.Accessor,
 			&isGroup,
 			&a.RawMode,
+			&a.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -309,13 +317,15 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		INSERT INTO access_controls (
 			entry_id,
 			accessor_id,
-			mode
+			mode,
+			updated_at
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		entryID,
 		ac.ID,
 		a.RawMode,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return err
@@ -383,6 +393,8 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if len(keys) == 0 {
 		return nil
 	}
+	keys = append(keys, "updated_at=?")
+	vals = append(vals, time.Now().UTC())
 	vals = append(vals, a.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE access_controls

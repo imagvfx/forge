@@ -444,6 +444,7 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 			Value:      p.Value,
 			RawValue:   p.RawValue,
 			ValueError: p.ValueError,
+			UpdatedAt:  p.UpdatedAt,
 		}
 		props = append(props, prop)
 	}
@@ -469,6 +470,7 @@ func (s *Server) GetProperty(ctx context.Context, path string, name string) (*Pr
 		Value:      p.Value,
 		RawValue:   p.RawValue,
 		ValueError: p.ValueError,
+		UpdatedAt:  p.UpdatedAt,
 	}
 	return prop, nil
 }
@@ -556,6 +558,7 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 			Value:      p.Value,
 			RawValue:   p.RawValue,
 			ValueError: p.ValueError,
+			UpdatedAt:  p.UpdatedAt,
 		}
 		props = append(props, prop)
 	}
@@ -581,6 +584,7 @@ func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, 
 		Value:      e.Value,
 		RawValue:   e.RawValue,
 		ValueError: e.ValueError,
+		UpdatedAt:  e.UpdatedAt,
 	}
 	return env, nil
 }
@@ -656,6 +660,7 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 			Accessor:     a.Accessor,
 			AccessorType: a.AccessorType,
 			Mode:         a.Mode,
+			UpdatedAt:    a.UpdatedAt,
 		}
 		acs = append(acs, ac)
 	}
@@ -678,6 +683,7 @@ func (s *Server) GetAccessControl(ctx context.Context, path string, accessor str
 		Accessor:     sACL.Accessor,
 		AccessorType: sACL.AccessorType,
 		Mode:         sACL.Mode,
+		UpdatedAt:    sACL.UpdatedAt,
 	}
 	return acl, nil
 }

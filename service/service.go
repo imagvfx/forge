@@ -208,6 +208,7 @@ type Property struct {
 	Value      string
 	ValueError error
 	RawValue   string
+	UpdatedAt  time.Time
 }
 
 type PropertyFinder struct {
@@ -228,6 +229,7 @@ type AccessControl struct {
 	AccessorType string
 	Mode         string
 	RawMode      int
+	UpdatedAt    time.Time
 }
 
 type AccessControlFinder struct {

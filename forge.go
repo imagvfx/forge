@@ -72,6 +72,7 @@ type Property struct {
 	Value      string
 	ValueError error
 	RawValue   string
+	UpdatedAt  time.Time
 }
 
 func (p *Property) MarshalJSON() ([]byte, error) {
@@ -128,6 +129,7 @@ func (p *Property) ServiceProperty() *service.Property {
 		Type:      p.Type,
 		Value:     p.Value,
 		RawValue:  p.RawValue,
+		UpdatedAt: p.UpdatedAt,
 	}
 	return sp
 }
@@ -145,6 +147,7 @@ type AccessControl struct {
 	Accessor     string
 	AccessorType string
 	Mode         string
+	UpdatedAt    time.Time
 }
 
 func (p *AccessControl) MarshalJSON() ([]byte, error) {

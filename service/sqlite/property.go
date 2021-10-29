@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -18,11 +19,16 @@ func createPropertiesTable(tx *sql.Tx) error {
 			name STRING NOT NULL,
 			typ STRING NOT NULL,
 			val STRING NOT NULL,
+			updated_at TIMESTAMP NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			UNIQUE (entry_id, name)
 		)
 	`)
 	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`ALTER TABLE properties ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT '0000-01-01 00:00:00'`)
+	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
 		return err
 	}
 	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_properties_entry_id ON properties (entry_id)`)
@@ -72,6 +78,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 			properties.name,
 			properties.typ,
 			properties.val,
+			properties.updated_at,
 			entries.path
 		FROM properties
 		LEFT JOIN entries ON properties.entry_id = entries.id
@@ -90,6 +97,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 			&p.Name,
 			&p.Type,
 			&p.RawValue,
+			&p.UpdatedAt,
 			&p.EntryPath,
 		)
 		if err != nil {
@@ -176,14 +184,16 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 			entry_id,
 			typ,
 			name,
-			val
+			val,
+			updated_at
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`,
 		entryID,
 		p.Type,
 		p.Name,
 		p.Value,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return err
@@ -290,6 +300,8 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if len(keys) == 0 {
 		return nil
 	}
+	keys = append(keys, "updated_at=?")
+	vals = append(vals, time.Now().UTC())
 	vals = append(vals, p.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE properties

@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge"
 	"github.com/imagvfx/forge/service"
@@ -117,6 +118,22 @@ var pageHandlerFuncs = template.FuncMap{
 			return c + astr
 		}
 		return c
+	},
+	"recentlyUpdated": func(i interface{}) (bool, error) {
+		var updatedAt time.Time
+		switch v := i.(type) {
+		case *forge.Property:
+			updatedAt = v.UpdatedAt
+		case *forge.AccessControl:
+			updatedAt = v.UpdatedAt
+		default:
+			return false, fmt.Errorf("unknown type: %v", i)
+		}
+		delta := time.Now().UTC().Sub(updatedAt)
+		if delta < 24*time.Hour {
+			return true, nil
+		}
+		return false, nil
 	},
 }
 
