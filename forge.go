@@ -77,17 +77,19 @@ type Property struct {
 
 func (p *Property) MarshalJSON() ([]byte, error) {
 	m := struct {
-		Path     string
-		Name     string
-		Type     string
-		Value    string
-		RawValue string
+		Path      string
+		Name      string
+		Type      string
+		Value     string
+		RawValue  string
+		UpdatedAt time.Time
 	}{
-		Path:     p.EntryPath,
-		Name:     p.Name,
-		Type:     p.Type,
-		Value:    p.Value,
-		RawValue: p.RawValue,
+		Path:      p.EntryPath,
+		Name:      p.Name,
+		Type:      p.Type,
+		Value:     p.Value,
+		RawValue:  p.RawValue,
+		UpdatedAt: p.UpdatedAt,
 	}
 	return json.Marshal(m)
 }
@@ -152,17 +154,19 @@ type AccessControl struct {
 
 func (p *AccessControl) MarshalJSON() ([]byte, error) {
 	m := struct {
-		Path     string
-		Name     string
-		Type     string
-		Value    string
-		RawValue string
+		Path      string
+		Name      string
+		Type      string
+		Value     string
+		RawValue  string
+		UpdatedAt time.Time
 	}{
-		Path:     p.EntryPath,
-		Name:     p.Accessor,
-		Type:     p.AccessorType,
-		Value:    p.Mode,
-		RawValue: p.Mode,
+		Path:      p.EntryPath,
+		Name:      p.Accessor,
+		Type:      p.AccessorType,
+		Value:     p.Mode,
+		RawValue:  p.Mode,
+		UpdatedAt: p.UpdatedAt,
 	}
 	return json.Marshal(m)
 }
