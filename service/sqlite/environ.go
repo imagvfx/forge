@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -19,11 +20,16 @@ func createEnvironsTable(tx *sql.Tx) error {
 			name STRING NOT NULL,
 			typ STRING NOT NULL,
 			val STRING NOT NULL,
+			updated_at TIMESTAMP NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			UNIQUE (entry_id, name)
 		)
 	`)
 	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`ALTER TABLE environs ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT '0000-01-01 00:00:00'`)
+	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
 		return err
 	}
 	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_environs_entry_id ON environs (entry_id)`)
@@ -94,6 +100,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 			environs.name,
 			environs.typ,
 			environs.val,
+			environs.updated_at,
 			entries.path
 		FROM environs
 		LEFT JOIN entries ON environs.entry_id = entries.id
@@ -112,6 +119,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 			&e.Name,
 			&e.Type,
 			&e.RawValue,
+			&e.UpdatedAt,
 			&e.EntryPath,
 		)
 		if err != nil {
@@ -189,14 +197,16 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
 			entry_id,
 			name,
 			typ,
-			val
+			val,
+			updated_at
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`,
 		entryID,
 		e.Name,
 		e.Type,
 		e.Value,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return err
@@ -264,6 +274,8 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	if len(keys) == 0 {
 		return nil
 	}
+	keys = append(keys, "updated_at=?")
+	vals = append(vals, time.Now().UTC())
 	vals = append(vals, e.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE environs
