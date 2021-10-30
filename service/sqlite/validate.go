@@ -37,6 +37,7 @@ func validateProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (
 }
 
 func validateText(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+	val = strings.ReplaceAll(val, "\r\n", "\n")
 	return val, nil
 }
 
