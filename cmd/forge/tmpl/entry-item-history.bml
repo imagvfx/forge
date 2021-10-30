@@ -6,7 +6,7 @@
 	<body> [
 		{{template "nav" $}}
 		<div class="main"> [
-			<div class="left"> [
+			<div class="one"> [
 				<h1> [
 					{{pathLinks $.Entry.Path}} ({{$.Entry.Type}})
 				]
@@ -15,13 +15,13 @@
 				]
 				<div> [
 				{{range $log := $.History}}
-					<div> [
+					<div style="width:40rem;"> [
 						<div style="display:flex;justify-content:space-between;align-items:end"> [
 							<div style="font-size:0.9rem;color:#222"> [{{$log.User}}]
 							<div style="font-size:0.7rem;color:#666"> [{{$log.When.Local.Format "2006/01/02 15:04:05"}}]
 						]
 						<div style="display:flex"> [
-							<div style="flex:1;border:solid 1px grey;border-radius:5px;padding:8px"> [{{$log.Value}}]
+							<pre style="flex:1;border:solid 1px grey;border-radius:5px;padding:8px;"> [{{$log.Value}}]
 							<div style="width:2px"> []
 						]
 					]
