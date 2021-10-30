@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge/service"
 )
@@ -453,11 +454,12 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *service.Default) err
 			entry_id,
 			name,
 			typ,
-			val
-		) SELECT id, ?, ?, ? FROM entries WHERE type_id=?
+			val,
+			updated_at
+		) SELECT id, ?, ?, ?, ? FROM entries WHERE type_id=?
 		ON CONFLICT DO NOTHING
 	`,
-		d.Name, d.Type, d.Value, typeID,
+		d.Name, d.Type, d.Value, time.Now().UTC(), typeID,
 	)
 	if err != nil {
 		return err
@@ -497,11 +499,12 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *service.Default) erro
 			entry_id,
 			name,
 			typ,
-			val
-		) SELECT id, ?, ?, ? FROM entries WHERE type_id=?
+			val,
+			updated_at
+		) SELECT id, ?, ?, ?, ? FROM entries WHERE type_id=?
 		ON CONFLICT DO NOTHING
 	`,
-		d.Name, d.Type, d.Value, typeID,
+		d.Name, d.Type, d.Value, time.Now().UTC(), typeID,
 	)
 	if err != nil {
 		return err
