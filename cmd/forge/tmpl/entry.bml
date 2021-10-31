@@ -243,43 +243,43 @@
 								<!-- Sub Entries -->
 								<div class="subEntryList"> [
 									{{$propFilters := index $.PropertyFilters $entType}}
-									{{range $k, $e := $entries}}
-									{{$props := index $.SubEntryProperties $e.Path}}
-									<div class="subEntry entry" data-entry-path="{{$e.Path}}"> [
+									{{range $k, $ent := $entries}}
+									{{$props := index $.SubEntryProperties $ent.Path}}
+									<div class="subEntry entry" data-entry-path="{{$ent.Path}}"> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
-											<div class="statusSelect statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$e.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
+											<div class="statusSelect statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 											{{end}}
-											<a class="subEntryName" href="{{$e.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$e.Name}}]
+											<a class="subEntryName" href="{{$ent.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
 										]
 										<div class="subEntryBottom"> [
 											<div class="subEntryBottomLeft"> [
-												<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
-													<div style="display:flex;vertical-align:middle;border:1px {{if $e.HasThumbnail}}solid{{else}}dashed{{end}} #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
-														{{$thumbnailPath := index $.ThumbnailPath $e.Path}}
-														<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt="" style="{{if not $thumbnailPath}}visibility:hidden{{end}};border-radius:2px;{{if ne $e.Path $thumbnailPath}}opacity:60%;{{end}}"> []
+												<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $ent.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$ent.Path}}"> [
+													<div style="display:flex;vertical-align:middle;border:1px {{if $ent.HasThumbnail}}solid{{else}}dashed{{end}} #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
+														{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
+														<img id="thumbnailImg-{{$i}}-{{$j}}-{{$k}}" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt="" style="{{if not $thumbnailPath}}visibility:hidden{{end}};border-radius:2px;{{if ne $ent.Path $thumbnailPath}}opacity:60%;{{end}}"> []
 													]
-													<form class="updateThumbnail" action="/api/{{if $e.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
-														<input name="path" type="hidden" value="{{$e.Path}}"> []
+													<form class="updateThumbnail" action="/api/{{if $ent.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
+														<input name="path" type="hidden" value="{{$ent.Path}}"> []
 														<input id="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none" onchange="updateThumbnail(this)"> []
-														<label for="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailButton thumbnailButton" style="{{if $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
+														<label for="thumbnailInput-{{$i}}-{{$j}}-{{$k}}" class="updateThumbnailButton thumbnailButton" style="{{if $ent.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+]
 														<input readonly name="back_to_referer" type="hidden" value="1"> []
 													]
 													<form class="deleteThumbnail" action="/api/delete-thumbnail" method="POST"> [
-														<input name="path" type="hidden" value="{{$e.Path}}"> []
-														<label id="deleteThumbnailButton-{{$i}}-{{$j}}-{{$k}}" class="deleteThumbnailButton thumbnailButton" style="{{if not $e.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+														<input name="path" type="hidden" value="{{$ent.Path}}"> []
+														<label id="deleteThumbnailButton-{{$i}}-{{$j}}-{{$k}}" class="deleteThumbnailButton thumbnailButton" style="{{if not $ent.HasThumbnail}}visibility:hidden;{{end}}position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
 														<input readonly name="back_to_referer" type="hidden" value="1"> []
 													]
 												]
 												{{$assignee := index $props "assignee"}}
 												{{if $assignee}}
-												<input class="assigneeInput" data-path="{{$e.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
+												<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
 												{{end}}
 											]
 											<div class="subEntryProperties"> [
 												{{range $name := $propFilters}}
 													{{$p := index $props $name}}
-													<div class="property" data-info-id="{{$e.Path}}.property.{{$name}}" style="width:12rem;"> [
+													<div class="property" data-info-id="{{$ent.Path}}.property.{{$name}}" style="width:12rem;"> [
 														<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
 															<div> [{{$p.Name}}]
 															<div class="recentlyUpdatedDot {{if recentlyUpdated $p}}unhide{{end}}"> []
