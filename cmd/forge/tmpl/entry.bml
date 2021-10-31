@@ -99,21 +99,21 @@
 					<div style="display:flex;"> [
 						<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 							<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
-								<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{end}}" style="display:flex"> [
+								{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
+								<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex"> [
 									<div class="thumbnailContainer"> [
-										{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
-										<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px" style="{{if not $thumbnailPath}}visibility:hidden;{{end}};border-radius:3px;{{if ne $.Entry.Path $thumbnailPath}}opacity:60%;{{end}}"> []
+										<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px"> []
 									]
 									<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-										<label class="updateThumbnailButton thumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer"> [+
+										<label class="updateThumbnailButton thumbnailButton"> [+
 											<input class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none"> []
 										]
 										<input readonly name="back_to_referer" type="hidden" value="1"> []
 									]
 									<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
 										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-										<label class="deleteThumbnailButton thumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+										<label class="deleteThumbnailButton thumbnailButton"> [-]
 										<input readonly name="back_to_referer" type="hidden" value="1"> []
 									]
 								]
@@ -253,21 +253,21 @@
 										]
 										<div class="subEntryBottom"> [
 											<div class="subEntryBottomLeft"> [
-												<a class="thumbnail {{if $ent.HasThumbnail}}exists{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$ent.Path}}"> [
-													<div class="thumbnailContainer" style="display:flex;vertical-align:middle;border:1px {{if $ent.HasThumbnail}}solid{{else}}dashed{{end}} #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
-														{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-														<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt="" style="{{if not $thumbnailPath}}visibility:hidden{{end}};border-radius:2px;{{if ne $ent.Path $thumbnailPath}}opacity:60%;{{end}}"> []
+												{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
+												<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$ent.Path}}"> [
+													<div class="thumbnailContainer"> [
+														<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
 													]
 													<form class="updateThumbnailForm" action="/api/{{if $ent.HasThumbnail}}set{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 														<input name="path" type="hidden" value="{{$ent.Path}}"> []
-														<label class="updateThumbnailButton thumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;;color:#888"> [+
+														<label class="updateThumbnailButton thumbnailButton"> [+
 															<input class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none"> []
 														]
 														<input readonly name="back_to_referer" type="hidden" value="1"> []
 													]
 													<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
 														<input name="path" type="hidden" value="{{$ent.Path}}"> []
-														<label class="deleteThumbnailButton thumbnailButton" style="position:relative;top:0;margin-left:-1rem;box-sizing:border-box;width:1rem;height:1rem;border-radius:0 0 0 3px;display:flex;justify-content:center;align-items:center;font-size:0.75rem;cursor:pointer;color:#888"> [-]
+														<label class="deleteThumbnailButton thumbnailButton"> [-]
 														<input readonly name="back_to_referer" type="hidden" value="1"> []
 													]
 												]
@@ -398,11 +398,23 @@
 	display: flex;
 	border: 1px dashed #CCCCCC;
 	background-color: #F4F4F4;
-	border-radius: 4px;
+	border-radius: 3px;
 }
 
 .thumbnail.exists .thumbnailContainer {
 	border-style: solid;
+}
+
+.thumbnailImg {
+	border-radius: 2px;
+}
+
+.thumbnail.inherited .thumbnailImg {
+	opacity: 0.6;
+}
+
+.thumbnail:not(:is(.exists, .inherited)) .thumbnailImg {
+	visibility: hidden;
 }
 
 .thumbnail.exists .updateThumbnailButton {
@@ -415,7 +427,20 @@
 
 .thumbnailButton {
 	opacity: 0;
-	background-color: #DDD;
+	color: #888888;
+	background-color: #DDDDDD;
+	position: relative;
+	top: 0;
+	margin-left: -1rem;
+	box-sizing: border-box;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 0 3px 0 3px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size:0.75rem;
+	cursor: pointer;
 }
 
 .thumbnailButton:hover {
@@ -1353,9 +1378,7 @@ function updateThumbnail(thumb) {
 		if (req.status == 200) {
 			let entryPath = parentWithClass(thumb, "entry").dataset.entryPath;
 			img.src = "/thumbnail" + entryPath + "?t=" + new Date().getTime();
-			img.style.visibility = "visible";
-			img.parentElement.style.borderStyle = "solid";
-			img.style.opacity = "100%";
+			thumb.classList.remove("inherited");
 			thumb.classList.add("exists");
 			printStatus("done");
 		} else {
@@ -1382,9 +1405,6 @@ function deleteThumbnail(thumb) {
 			// the image is gone, reflect it to img tag (even if it will not visible).
 			// TODO: inherit parent thumbnail
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
-			img.style.opacity = "60%";
-			img.parentElement.style.borderStyle = "dashed";
-			img.style.visibility = "hidden";
 			form.action = form.action.replace("/api/set", "/api/add");
 			thumb.classList.remove("exists");
 			printStatus("done");
