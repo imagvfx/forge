@@ -236,9 +236,7 @@
 								<div style="height:1rem"> []
 								{{end}}
 								{{if $.ResultsFromSearch}}
-									<div style="display:flex;align-items:end;margin-top:1rem;margin-bottom:1rem;"> [
-										<div style="margin:0.3rem 0;font-size:0.83rem;font-weight:bold;"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $subEntries}})]
-									]
+								<div class="subEntryListFrom"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $subEntries}})]
 								{{end}}
 								<!-- Sub Entries -->
 								<div class="subEntryList"> [
@@ -424,6 +422,12 @@
 	background-color: #FAFAFA;
 	padding: 1.5rem;
 	padding-bottom: 16rem;
+}
+
+.subEntryListFrom {
+	margin: 1.3rem 0;
+	font-size: 0.83rem;
+	font-weight: bold;
 }
 
 .subEntryList {
