@@ -183,7 +183,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntries" style="flex:1;background-color:#FAFAFA;padding:1.5rem;padding-bottom:16rem;"> [
+				<div class="subEntryArea"> [
 				{{if $.ResultsFromSearch}}
 					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
 				{{end}}
@@ -241,23 +241,20 @@
 									]
 								{{end}}
 								<!-- Sub Entries -->
-								<div style="display:flex;flex-direction:column;border:1px solid #DDD;border-radius:4px"> [
+								<div class="subEntryList"> [
 									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $e := $entries}}
 									{{$props := index $.SubEntryProperties $e.Path}}
 									{{$pad := "0.3rem"}}
-									{{if $k}}
-									<div style="border-top:1px solid #DDD"> []
-									{{end}}
-									<div class="subEntry entry" data-entry-path="{{$e.Path}}" style="display:flex;flex-direction:column;justify-content:start;padding:0.6rem 0.6rem 0.9rem 0.6rem;gap:0.6rem;"> [
-										<div style="display:flex;align-items:center;gap:0.3rem;"> [
+									<div class="subEntry entry" data-entry-path="{{$e.Path}}"> [
+										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
 											<div class="statusSelect statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$e.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 											{{end}}
 											<a class="subEntryName" href="{{$e.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$e.Name}}]
 										]
-										<div style="flex:1;gap:1.2rem;display:flex;align-items:stretch;color:black;"> [
-											<div class="subEntryLink" style="width:98px;"> [
+										<div class="subEntryBottom"> [
+											<div class="subEntryBottomLeft"> [
 												<a id="thumbnail-{{$i}}-{{$j}}-{{$k}}" class="thumbnail" data-has-thumb="{{if $e.HasThumbnail}}1{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$e.Path}}"> [
 													<div style="display:flex;vertical-align:middle;border:1px {{if $e.HasThumbnail}}solid{{else}}dashed{{end}} #CCCCCC;background-color:#F4F4F4;border-radius:3px;"> [
 														{{$thumbnailPath := index $.ThumbnailPath $e.Path}}
@@ -280,7 +277,7 @@
 												<input class="assigneeInput" data-path="{{$e.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
 												{{end}}
 											]
-											<div style="flex:1;display:flex;flex-wrap:wrap;gap:0.5rem;"> [
+											<div class="subEntryProperties"> [
 												{{range $name := $propFilters}}
 													{{$p := index $props $name}}
 													<div class="property" data-info-id="{{$e.Path}}.property.{{$name}}" style="width:12rem;"> [
@@ -422,6 +419,69 @@
 {{end}}
 {{end}}
 
+
+.subEntryArea {
+	flex: 1;
+	background-color: #FAFAFA;
+	padding: 1.5rem;
+	padding-bottom: 16rem;
+}
+
+.subEntryList {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #DDD;
+	border-radius: 4px;
+}
+
+.subEntry {
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	padding: 0.6rem 0.6rem 0.9rem 0.6rem;
+	gap: 0.6rem;
+	border-top:1px solid #DDD
+}
+
+.subEntry:first-child {
+	border-top: 0;
+}
+
+.subEntryTop {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+
+.subEntryName {
+	padding-left: 2px;
+	text-decoration: none;
+}
+
+.subEntryName:hover {
+	text-decoration: underline;
+}
+
+.subEntryBottom {
+	flex: 1;
+	gap: 1.2rem;
+	display: flex;
+	align-items: stretch;
+	color: black;
+}
+
+.subEntryBottomLeft {
+	width: 98px;
+}
+
+.subEntryProperties {
+	flex:1;
+	display:flex;
+	flex-wrap:wrap;
+	gap:0.5rem;"
+}
+
 .statusDot {
 	width: 0.75rem;
 	height: 0.75rem;
@@ -429,15 +489,6 @@
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
 	border: 1px solid #DDD;
-}
-
-.subEntryName {
-	padding-left: 2px;
-	text-decoration: none;
-}
-
-.subEntryLink:hover .subEntryName {
-	text-decoration: underline;
 }
 
 .item-category {
