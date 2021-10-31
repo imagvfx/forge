@@ -245,7 +245,6 @@
 									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $e := $entries}}
 									{{$props := index $.SubEntryProperties $e.Path}}
-									{{$pad := "0.3rem"}}
 									<div class="subEntry entry" data-entry-path="{{$e.Path}}"> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
