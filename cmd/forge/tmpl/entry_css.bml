@@ -1,0 +1,417 @@
+<style> [`
+.pinnedPathLink:hover {
+	text-decoration: underline;
+}
+
+.quickSearchLink:hover {
+	text-decoration: underline;
+}
+
+.itemValue.invalid {
+	color: rgba(150, 15, 15, 0.7);
+}
+
+.thumbnailContainer {
+	display: flex;
+	border: 1px dashed #CCCCCC;
+	background-color: #F4F4F4;
+	border-radius: 3px;
+}
+
+.thumbnail.exists .thumbnailContainer {
+	border-style: solid;
+}
+
+.thumbnailImg {
+	border-radius: 2px;
+}
+
+.thumbnail.inherited .thumbnailImg {
+	opacity: 0.6;
+}
+
+.thumbnail:not(:is(.exists, .inherited)) .thumbnailImg {
+	visibility: hidden;
+}
+
+.thumbnail.exists .updateThumbnailButton {
+	visibility: hidden;
+}
+
+.thumbnail:not(.exists) .deleteThumbnailButton {
+	visibility: hidden;
+}
+
+.thumbnailButton {
+	opacity: 0;
+	color: #888888;
+	background-color: #DDDDDD;
+	position: relative;
+	top: 0;
+	margin-left: -1rem;
+	box-sizing: border-box;
+	width: 1rem;
+	height: 1rem;
+	border-radius: 0 3px 0 3px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size:0.75rem;
+	cursor: pointer;
+}
+
+.thumbnailButton:hover {
+	opacity: 0.8;
+}
+
+.thumbnail.prepareDrop .thumbnailButton {
+	opacity: 0.8;
+}
+
+.thumbnail.prepareDrop .updateThumbnailButton {
+	visibility: visible !important;
+}
+
+.thumbnail.prepareDrop .deleteThumbnailButton {
+	visibility: hidden !important;
+}
+
+
+{{range $entType, $status := $.PossibleStatus}}
+{{range $s := $status}}
+.statusDot-{{$entType}}-{{$s.Name}} {
+	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
+	border: 1px solid {{$s.Color}} !important;
+}
+{{end}}
+{{end}}
+
+
+.subEntryArea {
+	flex: 1;
+	background-color: #FAFAFA;
+	padding: 1.5rem;
+	padding-bottom: 16rem;
+}
+
+.subEntryListFrom {
+	margin: 1.3rem 0;
+	font-size: 0.83rem;
+	font-weight: bold;
+}
+
+.subEntryList {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid #DDD;
+	border-radius: 4px;
+}
+
+.subEntry {
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	padding: 0.6rem 0.6rem 0.9rem 0.6rem;
+	gap: 0.6rem;
+	border-top:1px solid #DDD
+}
+
+.subEntry:first-child {
+	border-top: 0;
+}
+
+.subEntryTop {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+
+.subEntryName {
+	padding-left: 2px;
+	text-decoration: none;
+}
+
+.subEntryName:hover {
+	text-decoration: underline;
+}
+
+.subEntryBottom {
+	flex: 1;
+	gap: 1.2rem;
+	display: flex;
+	align-items: stretch;
+	color: black;
+}
+
+.subEntryBottomLeft {
+	width: 98px;
+}
+
+.subEntryProperties {
+	flex:1;
+	display:flex;
+	flex-wrap:wrap;
+	gap:0.5rem;"
+}
+
+.statusDot {
+	width: 0.75rem;
+	height: 0.75rem;
+	border-radius: 0.6rem;
+	margin-bottom: 0.1rem;
+	background-color: {{setAlphaToColor "#DDD" 0.8}};
+	border: 1px solid #DDD;
+}
+
+.item-category {
+	padding: 0.3rem;
+	border-radius: 2px 0 0 2px;
+	cursor: pointer;
+}
+
+.item-box:hover .item-category {
+	background-color: #EEE;
+}
+
+.item-box.selected .item-category {
+	background-color:#E0EEEE;
+}
+
+.item-adder {
+	padding: 0.3rem;
+	border-radius: 0 2px 2px 0;
+	color: #999;
+	cursor: pointer;
+}
+
+.item-box:hover .item-adder {
+	background-color: #EEE;
+}
+
+.item-box.selected .item-adder {
+	background-color:#E0EEEE;
+
+}
+
+.item-adder:hover {
+	color: #555;
+}
+
+.property-items, .environ-items, .access-items {
+	width: 12rem;
+	height: 4rem;
+	padding: 0.3rem;
+	padding-right: 0.5rem;
+	padding-bottom: 0.5rem;
+	background-color: #FFF;
+	border-radius: 2px;
+	border: 1px solid #EEE;
+	overflow: auto;
+	overflow-wrap: break-word;
+}
+
+.infoContextMenuLoader {
+	user-select: none;
+	padding:0 2px;
+	font-size:0.75rem;
+	color:#AAA;
+	border-radius:2px;
+	opacity:0.5;
+	cursor:pointer;
+	border:1px solid #FFF;
+}
+
+.infoContextMenuLoader:hover {
+	border:1px solid #DDD;
+}
+
+.valueInput {
+	max-height: 140px;
+}
+
+.updatingMarker {
+	animation-duration: 1s;
+	animation-name: rotating;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+}
+
+@keyframes rotating {
+	from {
+		transform: rotate(0turn);
+	}
+	to {
+		transform: rotate(1turn);
+	}
+}
+
+#statusBar.error {
+	color: #A22;
+}
+
+#deleteEntryDialogBackground {
+	visibility: hidden;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(255,255,255,0.4);
+}
+
+#deleteEntryDialog {
+	display: flex;
+	flex-direction: column;
+	border-radius: 3px;
+	width: 24rem;
+	min-height: 16rem;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 30px rgba(128,128,128,0.3);
+	background-color: #F8F8F8;
+}
+
+#deleteEntryDialogTitle {
+	font-size: 1.1rem;
+	padding: 0.5rem;
+	border-radius: 2px 2px 0 0;
+	background-color: #A22;
+	color: white;"
+}
+
+#deleteEntryDialogContent {
+	flex: 1;
+	padding: 1rem;
+	background-color: #F8F8F8;
+	color: #222;
+}
+
+.deleteEntryDialogButton {
+	height: 2rem;
+	width: 4.5rem;
+	border: 1px solid #AAA;
+	border-radius: 2px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 0.85rem;
+	color: #222;
+	cursor: pointer;
+}
+
+#confirmDeleteEntryButton {
+	background-color: #F8F4F4;
+	color:#A22;
+}
+
+#confirmDeleteEntryButton:hover {
+	background-color: #F8E0E0;
+}
+
+#cancelDeleteEntryButton {
+	background-color: #F8F8F8;
+}
+
+#cancelDeleteEntryButton:hover {
+	background-color: #F0F0F0;
+}
+
+.assigneeInput {
+	width: 96px;
+	box-sizing: border-box;
+	font-size: 0.7rem;
+	padding: 2px;
+	background-color: transparent;
+	border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.assigneeInput::placeholder {
+	color: #BBB;
+}
+
+.recentlyUpdatedDot {
+	width: 3px;
+	height: 3px;
+	border-radius:2px;
+	margin: 1px;
+	background-color: #CC8888;
+	visibility: hidden;
+}
+
+.recentlyUpdatedDot.unhide {
+	visibility: visible;
+}
+
+#userAutoCompleteMenu {
+	position: absolute;
+	visibility: hidden;
+	width: 96px;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	border: 1px solid #777;
+	border-radius: 2px;
+	background-color: #E0E0E0;
+	font-size: 0.6rem;
+	word-wrap: break-word;
+}
+
+.userAutoCompleteItem {
+	background-color: #EEE;
+}
+
+.userAutoCompleteItem.active {
+	background-color: #D0D0D0;
+}
+
+.statusSelect {
+	cursor: pointer;
+}
+
+.selectStatusMenu {
+	position: absolute;
+	visibility: hidden;
+	width: 8rem;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	border: 1px solid #AAAAAA;
+	border-radius: 4px;
+	background-color: #E0E0E0;
+	font-size: 0.8rem;
+	word-wrap: break-word;
+}
+
+.selectStatusMenuItem {
+	display: flex;
+	background-color: #FFFFFF;
+	cursor: pointer;
+}
+
+.selectStatusMenuItem:hover {
+	display: flex;
+	background-color: #AACCFF;
+}
+
+.selectStatusMenuItem:first-child {
+	border-radius: 3px 3px 0 0;
+}
+
+.selectStatusMenuItem:last-child {
+	border-radius: 0 0 3px 3px;
+}
+
+
+.selectStatusMenuItemDot {
+	margin: 0.3rem;
+}
+
+.selectStatusMenuItemValue {
+	margin: 0.35rem 0.3rem 0.3rem 0.3rem;
+}
+
+
+`]
