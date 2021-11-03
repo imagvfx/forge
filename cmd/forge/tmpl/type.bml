@@ -77,6 +77,9 @@
 				]
 				{{end}}
 			]
+			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
+				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
+			]
 		]
 	]
 ]
@@ -160,6 +163,10 @@
 	color: #8888AA;
 	cursor: pointer;
 }
+
+#statusBar.error {
+	color: #A22;
+}
 `]
 
 <script> [`
@@ -186,15 +193,31 @@ window.onload = function() {
 			// TODO: show the error response to user
 			req.onload = function() {
 				if (req.status != 200) {
-					console.log(req.responseText);
+					printErrorStatus(req.responseText);
 					return;
 				}
 				location.reload();
 			}
 			req.onerror = function() {
-				console.log(req.responseText);
+				printErrorStatus(req.responseText);
 			}
 		}
 	}
+}
+
+function printStatus(s) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.remove("error");
+	statusBar.innerHTML = s;
+}
+
+function printErrorStatus(e) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.add("error");
+	statusBar.innerHTML = e;
+}
+
+function clearStatus() {
+	printStatus("");
 }
 `]
