@@ -25,6 +25,10 @@ func Open(path string) (*sql.DB, error) {
 	if _, err := db.Exec(`PRAGMA strict = ON;`); err != nil {
 		return nil, fmt.Errorf("strict mode: %w", err)
 	}
+	// Enable foreign keys.
+	if _, err := db.Exec(`PRAGMA foreign_keys = ON;`); err != nil {
+		return nil, fmt.Errorf("foreign keys: %w", err)
+	}
 	return db, nil
 }
 
