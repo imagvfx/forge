@@ -21,11 +21,6 @@
 					<div style="height:1rem"> []
 					{{range $tname := $.EntryTypeNames}}
 					<div style="display:flex;justify-content:start;align-items:center;gap:0.2rem;margin-bottom:1rem;"> [
-						<form action="/api/delete-entry-type" method="post"> [
-							<input name="name" type="hidden" value="{{$tname}}"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button style="padding:0;color:red" type="submit"> [-]
-						]
 						<form action="/api/rename-entry-type" method="post"> [
 							<input readonly name="name" type="hidden" value="{{$tname}}"> []
 							<input name="new_name" type="text" value="{{$tname}}"> []

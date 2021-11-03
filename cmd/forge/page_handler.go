@@ -631,7 +631,7 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 
 func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := service.UserNameFromContext(ctx)
-	typeNames, err := h.server.FindEntryTypes(ctx)
+	typeNames, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
 		return err
 	}
@@ -656,44 +656,54 @@ func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWr
 	if tname == "" {
 		return fmt.Errorf("entry type not specified")
 	}
-	typeNames, err := h.server.FindEntryTypes(ctx)
+	allTypeNames, err := h.server.FindEntryTypes(ctx)
 	if err != nil {
 		return err
 	}
-	found := false
-	for _, tn := range typeNames {
+	typeNames := make([]string, 0)
+	for _, tn := range allTypeNames {
 		if tn == tname {
-			found = true
+			typeNames = append(typeNames, tn)
+			continue
+		}
+		if strings.HasPrefix(tn, tname+".") {
+			typeNames = append(typeNames, tn)
+			continue
 		}
 	}
-	if !found {
+	if len(typeNames) == 0 {
 		return fmt.Errorf("entry type not found: %v", tname)
 	}
+	sort.Strings(typeNames)
 	// TODO: maybe better to have this in package forge?
 	type EntryType struct {
 		Name     string
 		Globals  []*forge.Global
 		Defaults []*forge.Default
 	}
-	globals, err := h.server.Globals(ctx, tname)
-	if err != nil {
-		return err
-	}
-	defaults, err := h.server.Defaults(ctx, tname)
-	if err != nil {
-		return err
-	}
-	t := &EntryType{
-		Name:     tname,
-		Globals:  globals,
-		Defaults: defaults,
+	types := make([]*EntryType, 0)
+	for _, tname := range typeNames {
+		globals, err := h.server.Globals(ctx, tname)
+		if err != nil {
+			return err
+		}
+		defaults, err := h.server.Defaults(ctx, tname)
+		if err != nil {
+			return err
+		}
+		t := &EntryType{
+			Name:     tname,
+			Globals:  globals,
+			Defaults: defaults,
+		}
+		types = append(types, t)
 	}
 	recipe := struct {
-		User      string
-		EntryType *EntryType
+		User       string
+		EntryTypes []*EntryType
 	}{
-		User:      user,
-		EntryType: t,
+		User:       user,
+		EntryTypes: types,
 	}
 	err = Tmpl.ExecuteTemplate(w, "type.bml", recipe)
 	if err != nil {
