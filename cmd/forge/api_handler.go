@@ -628,6 +628,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 	xlr, err := excelize.OpenReader(file)
 	if err != nil {
 		return err
