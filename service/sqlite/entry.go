@@ -17,8 +17,9 @@ func createEntriesTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			parent_id INTEGER,
 			path STRING NOT NULL UNIQUE,
-			type_id INT NOT NULL,
-			FOREIGN KEY (parent_id) REFERENCES entries (id)
+			type_id INTEGER NOT NULL,
+			FOREIGN KEY (parent_id) REFERENCES entries (id),
+			FOREIGN KEY (type_id) REFERENCES entry_types (id)
 		)
 	`)
 	if err != nil {
