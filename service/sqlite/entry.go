@@ -206,10 +206,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		if exactSearch {
 			keys = append(keys, `
 				(properties.name=? AND
-					(properties.typ!='user' AND properties.val LIKE ?) OR
-					(properties.typ='user' AND properties.id IN
-						(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-							WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
+					(
+						(properties.typ!='user' AND properties.val LIKE ?) OR
+						(properties.typ='user' AND properties.id IN
+							(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+								WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
+							)
 						)
 					)
 				)
@@ -218,10 +220,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		} else {
 			keys = append(keys, `
 				(properties.name=? AND
-					(properties.typ!='user' AND properties.val LIKE ?) OR
-					(properties.typ='user' AND properties.id IN
-						(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-							WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+					(
+						(properties.typ!='user' AND properties.val LIKE ?) OR
+						(properties.typ='user' AND properties.id IN
+							(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+								WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+							)
 						)
 					)
 				)
