@@ -369,10 +369,44 @@ func (h *apiHandler) handleUpdateAccess(ctx context.Context, w http.ResponseWrit
 	return nil
 }
 
+func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPath := r.FormValue("path")
+	accessor := r.FormValue("name")
+	accessor_type := r.FormValue("type")
+	mode := r.FormValue("value")
+	mode = strings.TrimSpace(mode)
+	acl, err := h.server.GetAccessControl(ctx, entPath, accessor)
+	if err != nil {
+		var e *service.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
+	}
+	if acl != nil {
+		if accessor_type != "" && accessor_type != acl.AccessorType {
+			return fmt.Errorf("accessor exists, but with different type: %v", acl.AccessorType)
+		}
+		err := h.server.UpdateAccessControl(ctx, entPath, accessor, mode)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	err = h.server.AddAccessControl(ctx, entPath, accessor, accessor_type, mode)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+		return nil
+	}
+	return nil
+}
+
 func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
-	name := r.FormValue("name")
-	acl, err := h.server.GetAccessControl(ctx, entPath, name)
+	accessor := r.FormValue("name")
+	acl, err := h.server.GetAccessControl(ctx, entPath, accessor)
 	h.WriteResponse(w, acl, err)
 	return nil
 }

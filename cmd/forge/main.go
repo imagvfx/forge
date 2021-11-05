@@ -218,6 +218,7 @@ func main() {
 	mux.HandleFunc("/api/delete-thumbnail", api.Handler(api.handleDeleteThumbnail))
 	mux.HandleFunc("/api/add-access", api.Handler(api.handleAddAccess))
 	mux.HandleFunc("/api/update-access", api.Handler(api.handleUpdateAccess))
+	mux.HandleFunc("/api/add-or-update-access", api.Handler(api.handleAddOrUpdateAccess))
 	mux.HandleFunc("/api/get-access", api.Handler(api.handleGetAccess))
 	mux.HandleFunc("/api/delete-access", api.Handler(api.handleDeleteAccess))
 	mux.HandleFunc("/api/add-group", api.Handler(api.handleAddGroup))
