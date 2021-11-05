@@ -207,7 +207,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 			keys = append(keys, `
 				(properties.name=? AND
 					(
-						(properties.typ!='user' AND properties.val LIKE ?) OR
+						(properties.typ!='user' AND properties.val=?) OR
 						(properties.typ='user' AND properties.id IN
 							(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
 								WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
