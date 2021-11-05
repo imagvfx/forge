@@ -284,7 +284,7 @@ func (s *Server) AddDefault(ctx context.Context, entType, ctg, name, typ, value 
 	return nil
 }
 
-func (s *Server) SetDefault(ctx context.Context, entType, ctg, name, typ, value string) error {
+func (s *Server) UpdateDefault(ctx context.Context, entType, ctg, name, typ, value string) error {
 	if entType == "" {
 		return fmt.Errorf("default entry type not specified")
 	}
@@ -389,7 +389,7 @@ func (s *Server) AddGlobal(ctx context.Context, entType, name, typ, value string
 	return nil
 }
 
-func (s *Server) SetGlobal(ctx context.Context, entType, name, typ, value string) error {
+func (s *Server) UpdateGlobal(ctx context.Context, entType, name, typ, value string) error {
 	if entType == "" {
 		return fmt.Errorf("global entry type not specified")
 	}
@@ -502,7 +502,7 @@ func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value 
 	return nil
 }
 
-func (s *Server) SetProperty(ctx context.Context, path string, name, value string) error {
+func (s *Server) UpdateProperty(ctx context.Context, path string, name, value string) error {
 	if path == "" {
 		return fmt.Errorf("property path not specified")
 	}
@@ -612,7 +612,7 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 	return nil
 }
 
-func (s *Server) SetEnviron(ctx context.Context, path string, name, value string) error {
+func (s *Server) UpdateEnviron(ctx context.Context, path string, name, value string) error {
 	if path == "" {
 		return fmt.Errorf("environ path not specified")
 	}
@@ -726,7 +726,7 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 	return nil
 }
 
-func (s *Server) SetAccessControl(ctx context.Context, path, accessor, mode string) error {
+func (s *Server) UpdateAccessControl(ctx context.Context, path, accessor, mode string) error {
 	if path == "" {
 		return fmt.Errorf("access control path not specified")
 	}

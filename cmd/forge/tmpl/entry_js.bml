@@ -306,7 +306,7 @@ window.onload = function() {
 					formData.append("path", sel.dataset.path);
 					formData.append("name", "status");
 					formData.append("value", item.dataset.value);
-					req.open("post", "/api/set-property");
+					req.open("post", "/api/update-property");
 					req.send(formData);
 					req.onload = function() {
 						if (req.status == 200) {
@@ -386,7 +386,7 @@ window.onload = function() {
 			formData.append("name", "assignee");
 			formData.append("ctg", "property");
 			formData.append("value", value);
-			req.open("post", "/api/set-property");
+			req.open("post", "/api/update-property");
 			req.send(formData);
 			req.onerror = function() {
 				showStatusBarOnly();
@@ -500,7 +500,7 @@ function updatePinnedPath(path, at) {
 	formData.append("update_pinned_path", "1");
 	formData.append("pinned_path", path);
 	formData.append("pinned_path_at", at);
-	req.open("post", "/api/set-user-setting");
+	req.open("post", "/api/update-user-setting");
 	req.send(formData);
 	req.onload = function() {
 		if (req.status == 200) {
@@ -522,7 +522,7 @@ function updateQuickSearch(path, at) {
 	formData.append("arrange_quick_search", "1");
 	formData.append("quick_search_name", path);
 	formData.append("quick_search_at", at);
-	req.open("post", "/api/set-user-setting");
+	req.open("post", "/api/update-user-setting");
 	req.send(formData);
 	req.onload = function() {
 		if (req.status == 200) {
@@ -567,9 +567,9 @@ function updateThumbnail(thumb) {
 	thumb.dataset.lastUpload = String(now);
 	let req = new XMLHttpRequest();
 	if (thumb.classList.contains("exists")) {
-		form.action = form.action.replace("/api/add", "/api/set");
+		form.action = form.action.replace("/api/add", "/api/update");
 	} else {
-		form.action = form.action.replace("/api/set", "/api/add");
+		form.action = form.action.replace("/api/update", "/api/add");
 	}
 	req.open(form.method, form.action);
 	req.send(new FormData(form));
@@ -604,7 +604,7 @@ function deleteThumbnail(thumb) {
 			// the image is gone, reflect it to img tag (even if it will not visible).
 			// TODO: inherit parent thumbnail
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
-			form.action = form.action.replace("/api/set", "/api/add");
+			form.action = form.action.replace("/api/update", "/api/add");
 			thumb.classList.remove("exists");
 			printStatus("done");
 		} else {
@@ -767,7 +767,7 @@ function showItemUpdater(entry, ctg, name, type, value) {
 	updater.getElementsByClassName("nameLabel")[0].innerText = name;
 	updater.getElementsByClassName("nameInput")[0].value = name;
 	updater.getElementsByClassName("typeInput")[0].value = type;
-	updater.getElementsByClassName("valueForm")[0].action = "/api/set-" + ctg;
+	updater.getElementsByClassName("valueForm")[0].action = "/api/update-" + ctg;
 	updater.getElementsByTagName("button")[0].innerText = "Update";
 	clearStatus();
 

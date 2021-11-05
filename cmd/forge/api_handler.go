@@ -103,13 +103,13 @@ func (h *apiHandler) handleAddDefault(ctx context.Context, w http.ResponseWriter
 	return nil
 }
 
-func (h *apiHandler) handleSetDefault(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleUpdateDefault(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entType := r.FormValue("entry_type")
 	ctg := r.FormValue("category")
 	name := r.FormValue("name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
-	err := h.server.SetDefault(ctx, entType, ctg, name, typ, value)
+	err := h.server.UpdateDefault(ctx, entType, ctg, name, typ, value)
 	if err != nil {
 		return err
 	}
@@ -148,12 +148,12 @@ func (h *apiHandler) handleAddGlobal(ctx context.Context, w http.ResponseWriter,
 	return nil
 }
 
-func (h *apiHandler) handleSetGlobal(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleUpdateGlobal(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entType := r.FormValue("entry_type")
 	name := r.FormValue("name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
-	err := h.server.SetGlobal(ctx, entType, name, typ, value)
+	err := h.server.UpdateGlobal(ctx, entType, name, typ, value)
 	if err != nil {
 		return err
 	}
@@ -250,12 +250,12 @@ func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWrite
 	return nil
 }
 
-func (h *apiHandler) handleSetProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleUpdateProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	name := r.FormValue("name")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.SetProperty(ctx, entPath, name, value)
+	err := h.server.UpdateProperty(ctx, entPath, name, value)
 	if err != nil {
 		return err
 	}
@@ -302,12 +302,12 @@ func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter
 	return nil
 }
 
-func (h *apiHandler) handleSetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleUpdateEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	name := r.FormValue("name")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.SetEnviron(ctx, entPath, name, value)
+	err := h.server.UpdateEnviron(ctx, entPath, name, value)
 	if err != nil {
 		return err
 	}
@@ -354,12 +354,12 @@ func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter,
 	return nil
 }
 
-func (h *apiHandler) handleSetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleUpdateAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	accessor := r.FormValue("name")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
-	err := h.server.SetAccessControl(ctx, entPath, accessor, mode)
+	err := h.server.UpdateAccessControl(ctx, entPath, accessor, mode)
 	if err != nil {
 		return err
 	}
@@ -500,7 +500,7 @@ func (h *apiHandler) handleDeleteThumbnail(ctx context.Context, w http.ResponseW
 	return nil
 }
 
-func (h *apiHandler) handleSetUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// NOTE: don't use make, maps not for the update should be nil
 	if r.FormValue("update_filter") != "" {
 		entryType := r.FormValue("entry_page_entry_type")
