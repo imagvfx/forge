@@ -9,16 +9,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
 	"golang.org/x/image/draw"
 )
 
 type Server struct {
-	svc service.Service
+	svc Service
 	cfg *Config
 }
 
-func NewServer(svc service.Service, cfg *Config) *Server {
+func NewServer(svc Service, cfg *Config) *Server {
 	s := &Server{
 		svc: svc,
 		cfg: cfg,
@@ -30,15 +29,9 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")
 	}
-	e, err := s.svc.GetEntry(ctx, path)
+	ent, err := s.svc.GetEntry(ctx, path)
 	if err != nil {
 		return nil, err
-	}
-	ent := &Entry{
-		ID:           e.ID,
-		Path:         e.Path,
-		Type:         e.Type,
-		HasThumbnail: e.HasThumbnail,
 	}
 	return ent, nil
 }
@@ -47,21 +40,11 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")
 	}
-	es, err := s.svc.FindEntries(ctx, service.EntryFinder{
+	ents, err := s.svc.FindEntries(ctx, EntryFinder{
 		ParentPath: &path,
 	})
 	if err != nil {
 		return nil, err
-	}
-	ents := make([]*Entry, 0)
-	for _, e := range es {
-		ent := &Entry{
-			ID:           e.ID,
-			Path:         e.Path,
-			Type:         e.Type,
-			HasThumbnail: e.HasThumbnail,
-		}
-		ents = append(ents, ent)
 	}
 	return ents, nil
 }
@@ -90,23 +73,13 @@ func (s *Server) SearchEntries(ctx context.Context, path, entryType, query strin
 			return nil, fmt.Errorf("unknown entry type: %v", entryType)
 		}
 	}
-	es, err := s.svc.SearchEntries(ctx, service.EntrySearcher{
+	ents, err := s.svc.SearchEntries(ctx, EntrySearcher{
 		SearchRoot: path,
 		EntryType:  entryType,
 		Keywords:   strings.Fields(query),
 	})
 	if err != nil {
 		return nil, err
-	}
-	ents := make([]*Entry, 0)
-	for _, e := range es {
-		ent := &Entry{
-			ID:           e.ID,
-			Path:         e.Path,
-			Type:         e.Type,
-			HasThumbnail: e.HasThumbnail,
-		}
-		ents = append(ents, ent)
 	}
 	return ents, nil
 }
@@ -128,7 +101,7 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	if err != nil {
 		return fmt.Errorf("error on parent check: %v", err)
 	}
-	e := &service.Entry{
+	e := &Entry{
 		Path: path,
 		Type: typ,
 	}
@@ -239,20 +212,9 @@ func (s *Server) Defaults(ctx context.Context, entType string) ([]*Default, erro
 	if entType == "" {
 		return nil, fmt.Errorf("entry type name not specified")
 	}
-	ds, err := s.svc.FindDefaults(ctx, service.DefaultFinder{EntryType: &entType})
+	defaults, err := s.svc.FindDefaults(ctx, DefaultFinder{EntryType: &entType})
 	if err != nil {
 		return nil, err
-	}
-	defaults := make([]*Default, 0)
-	for _, d := range ds {
-		def := &Default{
-			EntryType: d.EntryType,
-			Category:  d.Category,
-			Type:      d.Type,
-			Name:      d.Name,
-			Value:     d.Value,
-		}
-		defaults = append(defaults, def)
 	}
 	return defaults, nil
 }
@@ -270,7 +232,7 @@ func (s *Server) AddDefault(ctx context.Context, entType, ctg, name, typ, value 
 	if typ == "" {
 		return fmt.Errorf("default type not specified")
 	}
-	d := &service.Default{
+	d := &Default{
 		EntryType: entType,
 		Category:  ctg,
 		Name:      name,
@@ -297,7 +259,7 @@ func (s *Server) UpdateDefault(ctx context.Context, entType, ctg, name, typ, val
 	if typ == "" {
 		return fmt.Errorf("default type not specified")
 	}
-	upd := service.DefaultUpdater{
+	upd := DefaultUpdater{
 		EntryType: entType,
 		Category:  ctg,
 		Name:      name,
@@ -332,19 +294,9 @@ func (s *Server) Globals(ctx context.Context, entType string) ([]*Global, error)
 	if entType == "" {
 		return nil, fmt.Errorf("entry type name not specified")
 	}
-	svcGlobals, err := s.svc.FindGlobals(ctx, service.GlobalFinder{EntryType: &entType})
+	globals, err := s.svc.FindGlobals(ctx, GlobalFinder{EntryType: &entType})
 	if err != nil {
 		return nil, err
-	}
-	globals := make([]*Global, 0)
-	for _, sg := range svcGlobals {
-		g := &Global{
-			EntryType: sg.EntryType,
-			Type:      sg.Type,
-			Name:      sg.Name,
-			Value:     sg.Value,
-		}
-		globals = append(globals, g)
 	}
 	return globals, nil
 }
@@ -353,15 +305,9 @@ func (s *Server) GetGlobal(ctx context.Context, entType, name string) (*Global, 
 	if entType == "" {
 		return nil, fmt.Errorf("entry type name not specified")
 	}
-	sg, err := s.svc.GetGlobal(ctx, entType, name)
+	g, err := s.svc.GetGlobal(ctx, entType, name)
 	if err != nil {
 		return nil, err
-	}
-	g := &Global{
-		EntryType: sg.EntryType,
-		Type:      sg.Type,
-		Name:      sg.Name,
-		Value:     sg.Value,
 	}
 	return g, nil
 }
@@ -376,7 +322,7 @@ func (s *Server) AddGlobal(ctx context.Context, entType, name, typ, value string
 	if typ == "" {
 		return fmt.Errorf("global type not specified")
 	}
-	sg := &service.Global{
+	sg := &Global{
 		EntryType: entType,
 		Name:      name,
 		Type:      typ,
@@ -399,7 +345,7 @@ func (s *Server) UpdateGlobal(ctx context.Context, entType, name, typ, value str
 	if typ == "" {
 		return fmt.Errorf("global type not specified")
 	}
-	upd := service.GlobalUpdater{
+	upd := GlobalUpdater{
 		EntryType: entType,
 		Name:      name,
 		Type:      &typ,
@@ -430,23 +376,9 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")
 	}
-	ps, err := s.svc.EntryProperties(ctx, path)
+	props, err := s.svc.EntryProperties(ctx, path)
 	if err != nil {
 		return nil, err
-	}
-	props := make([]*Property, 0)
-	for _, p := range ps {
-		prop := &Property{
-			ID:         p.ID,
-			EntryPath:  p.EntryPath,
-			Name:       p.Name,
-			Type:       p.Type,
-			Value:      p.Value,
-			RawValue:   p.RawValue,
-			ValueError: p.ValueError,
-			UpdatedAt:  p.UpdatedAt,
-		}
-		props = append(props, prop)
 	}
 	return props, nil
 }
@@ -462,17 +394,7 @@ func (s *Server) GetProperty(ctx context.Context, path string, name string) (*Pr
 	if err != nil {
 		return nil, err
 	}
-	prop := &Property{
-		ID:         p.ID,
-		EntryPath:  p.EntryPath,
-		Name:       p.Name,
-		Type:       p.Type,
-		Value:      p.Value,
-		RawValue:   p.RawValue,
-		ValueError: p.ValueError,
-		UpdatedAt:  p.UpdatedAt,
-	}
-	return prop, nil
+	return p, nil
 }
 
 func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value string) error {
@@ -509,7 +431,7 @@ func (s *Server) UpdateProperty(ctx context.Context, path string, name, value st
 	if name == "" {
 		return fmt.Errorf("property name not specified")
 	}
-	err := s.svc.UpdateProperty(ctx, service.PropertyUpdater{
+	err := s.svc.UpdateProperty(ctx, PropertyUpdater{
 		EntryPath: path,
 		Name:      name,
 		Value:     &value,
@@ -520,8 +442,8 @@ func (s *Server) UpdateProperty(ctx context.Context, path string, name, value st
 	return nil
 }
 
-func (s *Server) BulkUpdateProperties(ctx context.Context, upds []service.PropertyUpdater) error {
-	// Note it directly uses service.UpdateProperty unlike others methods here.
+func (s *Server) BulkUpdateProperties(ctx context.Context, upds []PropertyUpdater) error {
+	// Note it directly uses UpdateProperty unlike others methods here.
 	// I will change to use service instead of Server in the future.
 	return s.svc.BulkUpdateProperties(ctx, upds)
 }
@@ -544,25 +466,11 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	if path == "" {
 		return nil, fmt.Errorf("environ path not specified")
 	}
-	ps, err := s.svc.EntryEnvirons(ctx, path)
+	envs, err := s.svc.EntryEnvirons(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	props := make([]*Property, 0)
-	for _, p := range ps {
-		prop := &Property{
-			ID:         p.ID,
-			EntryPath:  p.EntryPath,
-			Name:       p.Name,
-			Type:       p.Type,
-			Value:      p.Value,
-			RawValue:   p.RawValue,
-			ValueError: p.ValueError,
-			UpdatedAt:  p.UpdatedAt,
-		}
-		props = append(props, prop)
-	}
-	return props, nil
+	return envs, nil
 }
 
 func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, error) {
@@ -576,17 +484,7 @@ func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, 
 	if err != nil {
 		return nil, err
 	}
-	env := &Property{
-		ID:         e.ID,
-		EntryPath:  e.EntryPath,
-		Name:       e.Name,
-		Type:       e.Type,
-		Value:      e.Value,
-		RawValue:   e.RawValue,
-		ValueError: e.ValueError,
-		UpdatedAt:  e.UpdatedAt,
-	}
-	return env, nil
+	return e, nil
 }
 
 func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value string) error {
@@ -619,7 +517,7 @@ func (s *Server) UpdateEnviron(ctx context.Context, path string, name, value str
 	if name == "" {
 		return fmt.Errorf("environ name not specified")
 	}
-	err := s.svc.UpdateEnviron(ctx, service.PropertyUpdater{
+	err := s.svc.UpdateEnviron(ctx, PropertyUpdater{
 		EntryPath: path,
 		Name:      name,
 		Value:     &value,
@@ -648,23 +546,11 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 	if path == "" {
 		return nil, fmt.Errorf("access control path not specified")
 	}
-	as, err := s.svc.EntryAccessControls(ctx, path)
+	acls, err := s.svc.EntryAccessControls(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	acs := make([]*AccessControl, 0, len(as))
-	for _, a := range as {
-		ac := &AccessControl{
-			ID:           a.ID,
-			EntryPath:    a.EntryPath,
-			Accessor:     a.Accessor,
-			AccessorType: a.AccessorType,
-			Mode:         a.Mode,
-			UpdatedAt:    a.UpdatedAt,
-		}
-		acs = append(acs, ac)
-	}
-	return acs, nil
+	return acls, nil
 }
 
 func (s *Server) GetAccessControl(ctx context.Context, path string, accessor string) (*AccessControl, error) {
@@ -674,16 +560,9 @@ func (s *Server) GetAccessControl(ctx context.Context, path string, accessor str
 	if accessor == "" {
 		return nil, fmt.Errorf("accessor not specified")
 	}
-	sACL, err := s.svc.GetAccessControl(ctx, path, accessor)
+	acl, err := s.svc.GetAccessControl(ctx, path, accessor)
 	if err != nil {
 		return nil, err
-	}
-	acl := &AccessControl{
-		EntryPath:    sACL.EntryPath,
-		Accessor:     sACL.Accessor,
-		AccessorType: sACL.AccessorType,
-		Mode:         sACL.Mode,
-		UpdatedAt:    sACL.UpdatedAt,
 	}
 	return acl, nil
 }
@@ -713,7 +592,7 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 	default:
 		return fmt.Errorf("unknown access type")
 	}
-	ac := &service.AccessControl{
+	ac := &AccessControl{
 		EntryPath:    path,
 		Accessor:     accessor,
 		AccessorType: accessor_type,
@@ -742,7 +621,7 @@ func (s *Server) UpdateAccessControl(ctx context.Context, path, accessor, mode s
 	default:
 		return fmt.Errorf("unknown access type")
 	}
-	ac := service.AccessControlUpdater{
+	ac := AccessControlUpdater{
 		EntryPath: path,
 		Accessor:  accessor,
 		Mode:      &mode,
@@ -772,26 +651,11 @@ func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {
 	if path == "" {
 		return nil, fmt.Errorf("log path not specified")
 	}
-	ls, err := s.svc.FindLogs(ctx, service.LogFinder{
+	logs, err := s.svc.FindLogs(ctx, LogFinder{
 		EntryPath: &path,
 	})
 	if err != nil {
 		return nil, err
-	}
-	logs := make([]*Log, 0)
-	for _, l := range ls {
-		log := &Log{
-			ID:        l.ID,
-			EntryPath: l.EntryPath,
-			User:      l.User,
-			Action:    l.Action,
-			Category:  l.Category,
-			Name:      l.Name,
-			Type:      l.Type,
-			Value:     l.Value,
-			When:      l.When,
-		}
-		logs = append(logs, log)
 	}
 	return logs, nil
 }
@@ -806,41 +670,17 @@ func (s *Server) GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, e
 	if name == "" {
 		return nil, fmt.Errorf("log name not specified")
 	}
-	ls, err := s.svc.GetLogs(ctx, path, ctg, name)
+	logs, err := s.svc.GetLogs(ctx, path, ctg, name)
 	if err != nil {
 		return nil, err
-	}
-	logs := make([]*Log, 0)
-	for _, l := range ls {
-		log := &Log{
-			ID:        l.ID,
-			EntryPath: l.EntryPath,
-			User:      l.User,
-			Action:    l.Action,
-			Category:  l.Category,
-			Name:      l.Name,
-			Type:      l.Type,
-			Value:     l.Value,
-			When:      l.When,
-		}
-		logs = append(logs, log)
 	}
 	return logs, nil
 }
 
 func (s *Server) Users(ctx context.Context) ([]*User, error) {
-	svcUsers, err := s.svc.FindUsers(ctx, service.UserFinder{})
+	users, err := s.svc.FindUsers(ctx, UserFinder{})
 	if err != nil {
 		return nil, err
-	}
-	users := make([]*User, 0)
-	for _, su := range svcUsers {
-		u := &User{
-			ID:     su.ID,
-			Name:   su.Name,
-			Called: su.Called,
-		}
-		users = append(users, u)
 	}
 	return users, nil
 }
@@ -849,14 +689,9 @@ func (s *Server) GetUser(ctx context.Context, user string) (*User, error) {
 	if user == "" {
 		return nil, fmt.Errorf("user not specified")
 	}
-	su, err := s.svc.GetUser(ctx, user)
+	u, err := s.svc.GetUser(ctx, user)
 	if err != nil {
 		return nil, err
-	}
-	u := &User{
-		ID:     su.ID,
-		Name:   su.Name,
-		Called: su.Called,
 	}
 	return u, nil
 }
@@ -868,11 +703,7 @@ func (s *Server) AddUser(ctx context.Context, u *User) error {
 	if u.Name == "" {
 		return fmt.Errorf("user not specified")
 	}
-	su := &service.User{
-		Name:   u.Name,
-		Called: u.Called,
-	}
-	err := s.svc.AddUser(ctx, su)
+	err := s.svc.AddUser(ctx, u)
 	if err != nil {
 		return err
 	}
@@ -883,23 +714,15 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 	if user == "" {
 		return nil, fmt.Errorf("user not specified")
 	}
-	ss, err := s.svc.GetUserSetting(ctx, user)
+	us, err := s.svc.GetUserSetting(ctx, user)
 	if err != nil {
 		return nil, err
-	}
-	us := &UserSetting{
-		User:                     ss.User,
-		EntryPagePropertyFilter:  ss.EntryPagePropertyFilter,
-		EntryPageSearchEntryType: ss.EntryPageSearchEntryType,
-		EntryPageSortProperty:    ss.EntryPageSortProperty,
-		QuickSearches:            ss.QuickSearches,
-		PinnedPaths:              ss.PinnedPaths,
 	}
 	return us, nil
 }
 
 func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value interface{}) error {
-	upd := service.UserSettingUpdater{
+	upd := UserSettingUpdater{
 		User:  user,
 		Key:   key,
 		Value: value,
@@ -912,17 +735,9 @@ func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value 
 }
 
 func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
-	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{})
+	groups, err := s.svc.FindGroups(ctx, GroupFinder{})
 	if err != nil {
 		return nil, err
-	}
-	groups := make([]*Group, 0, len(sgroups))
-	for _, sg := range sgroups {
-		g := &Group{
-			ID:   sg.ID,
-			Name: sg.Name,
-		}
-		groups = append(groups, g)
 	}
 	return groups, nil
 }
@@ -931,18 +746,14 @@ func (s *Server) GetGroup(ctx context.Context, group string) (*Group, error) {
 	if group == "" {
 		return nil, fmt.Errorf("group not specified")
 	}
-	sgroups, err := s.svc.FindGroups(ctx, service.GroupFinder{Name: &group})
+	groups, err := s.svc.FindGroups(ctx, GroupFinder{Name: &group})
 	if err != nil {
 		return nil, err
 	}
-	if len(sgroups) == 0 {
+	if len(groups) == 0 {
 		return nil, fmt.Errorf("group not exist: %v", group)
 	}
-	sg := sgroups[0]
-	g := &Group{
-		ID:   sg.ID,
-		Name: sg.Name,
-	}
+	g := groups[0]
 	return g, nil
 }
 
@@ -953,7 +764,7 @@ func (s *Server) AddGroup(ctx context.Context, g *Group) error {
 	if g.Name == "" {
 		return fmt.Errorf("group not specified")
 	}
-	sg := &service.Group{
+	sg := &Group{
 		Name:   g.Name,
 		Called: g.Called,
 	}
@@ -971,7 +782,7 @@ func (s *Server) RenameGroup(ctx context.Context, name string, newName string) e
 	if newName == "" {
 		return fmt.Errorf("new name of group not specified")
 	}
-	g := service.GroupUpdater{Name: name, NewName: &newName}
+	g := GroupUpdater{Name: name, NewName: &newName}
 	err := s.svc.UpdateGroup(ctx, g)
 	if err != nil {
 		return err
@@ -983,17 +794,9 @@ func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member,
 	if group == "" {
 		return nil, fmt.Errorf("group not specified")
 	}
-	svcMembers, err := s.svc.FindGroupMembers(ctx, service.MemberFinder{Group: group})
+	members, err := s.svc.FindGroupMembers(ctx, MemberFinder{Group: group})
 	if err != nil {
 		return nil, err
-	}
-	members := make([]*Member, 0, len(svcMembers))
-	for _, sm := range svcMembers {
-		m := &Member{
-			Group:  sm.Group,
-			Member: sm.Member,
-		}
-		members = append(members, m)
 	}
 	return members, nil
 }
@@ -1005,7 +808,7 @@ func (s *Server) AddGroupMember(ctx context.Context, group, member string) error
 	if member == "" {
 		return fmt.Errorf("member not specified")
 	}
-	m := &service.Member{Group: group, Member: member}
+	m := &Member{Group: group, Member: member}
 	err := s.svc.AddGroupMember(ctx, m)
 	if err != nil {
 		return err
@@ -1032,14 +835,9 @@ func (s *Server) GetThumbnail(ctx context.Context, path string) (*Thumbnail, err
 	if path == "" {
 		return nil, fmt.Errorf("thumbnail path not specified")
 	}
-	svcThumb, err := s.svc.GetThumbnail(ctx, path)
+	thumb, err := s.svc.GetThumbnail(ctx, path)
 	if err != nil {
 		return nil, err
-	}
-	thumb := &Thumbnail{
-		ID:        svcThumb.ID,
-		Data:      svcThumb.Data,
-		EntryPath: svcThumb.EntryPath,
 	}
 	return thumb, nil
 }
@@ -1080,7 +878,7 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image)
 	if err != nil {
 		return err
 	}
-	err = s.svc.AddThumbnail(ctx, &service.Thumbnail{
+	err = s.svc.AddThumbnail(ctx, &Thumbnail{
 		EntryPath: path,
 		Data:      buf.Bytes(),
 	})
@@ -1103,7 +901,7 @@ func (s *Server) UpdateThumbnail(ctx context.Context, path string, img image.Ima
 	if err != nil {
 		return err
 	}
-	err = s.svc.UpdateThumbnail(ctx, service.ThumbnailUpdater{
+	err = s.svc.UpdateThumbnail(ctx, ThumbnailUpdater{
 		EntryPath: path,
 		Data:      buf.Bytes(),
 	})

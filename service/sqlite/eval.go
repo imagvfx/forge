@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 // evalProperty evaluates a value in db to a value for user.
@@ -151,7 +151,7 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (str
 			// Internally it saves with entry type id. Get the type name.
 			typ, err := getEntryTypeByID(tx, ctx, id)
 			if err != nil {
-				var e *service.NotFoundError
+				var e *forge.NotFoundError
 				if !errors.As(err, &e) {
 					return "", err
 				}

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createAccessControlsTable(tx *sql.Tx) error {
@@ -36,7 +36,7 @@ func createAccessControlsTable(tx *sql.Tx) error {
 	return err
 }
 
-func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*service.AccessControl, error) {
+func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*forge.AccessControl, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -53,14 +53,14 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*servi
 	return accs, nil
 }
 
-func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*service.AccessControl, error) {
-	acm := make(map[string]*service.AccessControl)
+func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*forge.AccessControl, error) {
+	acm := make(map[string]*forge.AccessControl)
 	for {
 		ent, err := getEntry(tx, ctx, path)
 		if err != nil {
 			return nil, err
 		}
-		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryPath: &path})
+		as, err := findAccessControls(tx, ctx, forge.AccessControlFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*servi
 		}
 		path = filepath.Dir(path)
 	}
-	acs := make([]*service.AccessControl, 0)
+	acs := make([]*forge.AccessControl, 0)
 	for _, a := range acm {
 		acs = append(acs, a)
 	}
@@ -85,7 +85,7 @@ func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*servi
 }
 
 // when id is empty, it will find access controls of root.
-func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessControlFinder) ([]*service.AccessControl, error) {
+func findAccessControls(tx *sql.Tx, ctx context.Context, find forge.AccessControlFinder) ([]*forge.AccessControl, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryPath != nil {
@@ -118,10 +118,10 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 		return nil, err
 	}
 	defer rows.Close()
-	acss := make([]*service.AccessControl, 0)
+	acss := make([]*forge.AccessControl, 0)
 	for rows.Next() {
 		var isGroup bool
-		a := &service.AccessControl{}
+		a := &forge.AccessControl{}
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryPath,
@@ -147,7 +147,7 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find service.AccessCont
 }
 
 // userRead returns an error if the user cannot read the entry.
-// It returns service.NotFound error when the context user doesn't have read permission.
+// It returns forge.NotFound error when the context user doesn't have read permission.
 func userRead(tx *sql.Tx, ctx context.Context, path string) error {
 	if path == "/" {
 		// Everyone should be able to access root.
@@ -159,14 +159,14 @@ func userRead(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	if mode == nil {
 		// The entry should invisible to the user.
-		return service.NotFound("cannot access to entry")
+		return forge.NotFound("cannot access to entry")
 	}
 	return nil
 }
 
 // userWrite returns an error if the user cannot write the entry.
-// It returns service.NotFound error when the context user doesn't have read permission or
-// returns service.Unauthorized error when the context user doesn't have write permission.
+// It returns forge.NotFound error when the context user doesn't have read permission or
+// returns forge.Unauthorized error when the context user doesn't have write permission.
 func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 	mode, err := userAccessMode(tx, ctx, path)
 	if err != nil {
@@ -174,10 +174,10 @@ func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	if mode == nil {
 		// The entry should invisible to the user.
-		return service.NotFound("cannot access to entry")
+		return forge.NotFound("cannot access to entry")
 	}
 	if *mode == "r" {
-		return service.Unauthorized("entry modification not allowed")
+		return forge.Unauthorized("entry modification not allowed")
 	}
 	return nil
 }
@@ -189,7 +189,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 	if path == "" {
 		return nil, fmt.Errorf("path should be specified for access check")
 	}
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return nil, err
@@ -200,7 +200,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 		return &rwMode, nil
 	}
 	for {
-		as, err := findAccessControls(tx, ctx, service.AccessControlFinder{EntryPath: &path})
+		as, err := findAccessControls(tx, ctx, forge.AccessControlFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
@@ -240,7 +240,7 @@ func isAdmin(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
 	return isGroupMember(tx, ctx, "admin", user)
 }
 
-func GetAccessControl(db *sql.DB, ctx context.Context, path, name string) (*service.AccessControl, error) {
+func GetAccessControl(db *sql.DB, ctx context.Context, path, name string) (*forge.AccessControl, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -257,8 +257,8 @@ func GetAccessControl(db *sql.DB, ctx context.Context, path, name string) (*serv
 	return acl, nil
 }
 
-func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*service.AccessControl, error) {
-	as, err := findAccessControls(tx, ctx, service.AccessControlFinder{
+func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*forge.AccessControl, error) {
+	as, err := findAccessControls(tx, ctx, forge.AccessControlFinder{
 		EntryPath: &path,
 		Accessor:  &name,
 	})
@@ -266,13 +266,13 @@ func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*serv
 		return nil, err
 	}
 	if len(as) == 0 {
-		return nil, service.NotFound("access control not found")
+		return nil, forge.NotFound("access control not found")
 	}
 	a := as[0]
 	return a, nil
 }
 
-func AddAccessControl(db *sql.DB, ctx context.Context, a *service.AccessControl) error {
+func AddAccessControl(db *sql.DB, ctx context.Context, a *forge.AccessControl) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -289,7 +289,7 @@ func AddAccessControl(db *sql.DB, ctx context.Context, a *service.AccessControl)
 	return nil
 }
 
-func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl) error {
+func addAccessControl(tx *sql.Tx, ctx context.Context, a *forge.AccessControl) error {
 	err := userWrite(tx, ctx, a.EntryPath)
 	if err != nil {
 		return err
@@ -335,8 +335,8 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 		return err
 	}
 	a.ID = int(id)
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: a.EntryPath,
 		User:      user,
 		Action:    "create",
@@ -351,7 +351,7 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *service.AccessControl)
 	return nil
 }
 
-func UpdateAccessControl(db *sql.DB, ctx context.Context, upd service.AccessControlUpdater) error {
+func UpdateAccessControl(db *sql.DB, ctx context.Context, upd forge.AccessControlUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -368,7 +368,7 @@ func UpdateAccessControl(db *sql.DB, ctx context.Context, upd service.AccessCont
 	return nil
 }
 
-func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessControlUpdater) error {
+func updateAccessControl(tx *sql.Tx, ctx context.Context, upd forge.AccessControlUpdater) error {
 	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
@@ -413,8 +413,8 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd service.AccessCont
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: a.EntryPath,
 		User:      user,
 		Action:    "update",
@@ -460,7 +460,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 		return fmt.Errorf("cannot delete default access of %q: %v", ent.Type, name)
 	}
 	if err != nil {
-		var e *service.NotFoundError
+		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
@@ -485,8 +485,8 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 	if n != 1 {
 		return fmt.Errorf("want 1 access_control affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: path,
 		User:      user,
 		Action:    "delete",

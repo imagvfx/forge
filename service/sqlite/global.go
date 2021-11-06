@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createGlobalsTable(tx *sql.Tx) error {
@@ -28,7 +28,7 @@ func createGlobalsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindGlobals(db *sql.DB, ctx context.Context, find service.GlobalFinder) ([]*service.Global, error) {
+func FindGlobals(db *sql.DB, ctx context.Context, find forge.GlobalFinder) ([]*forge.Global, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func FindGlobals(db *sql.DB, ctx context.Context, find service.GlobalFinder) ([]
 	return gls, nil
 }
 
-func findGlobals(tx *sql.Tx, ctx context.Context, find service.GlobalFinder) ([]*service.Global, error) {
+func findGlobals(tx *sql.Tx, ctx context.Context, find forge.GlobalFinder) ([]*forge.Global, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryType != nil {
@@ -71,9 +71,9 @@ func findGlobals(tx *sql.Tx, ctx context.Context, find service.GlobalFinder) ([]
 		return nil, err
 	}
 	defer rows.Close()
-	globals := make([]*service.Global, 0)
+	globals := make([]*forge.Global, 0)
 	for rows.Next() {
-		g := &service.Global{}
+		g := &forge.Global{}
 		err := rows.Scan(
 			&g.EntryType,
 			&g.Name,
@@ -88,7 +88,7 @@ func findGlobals(tx *sql.Tx, ctx context.Context, find service.GlobalFinder) ([]
 	return globals, nil
 }
 
-func GetGlobal(db *sql.DB, ctx context.Context, entryType, name string) (*service.Global, error) {
+func GetGlobal(db *sql.DB, ctx context.Context, entryType, name string) (*forge.Global, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -101,31 +101,31 @@ func GetGlobal(db *sql.DB, ctx context.Context, entryType, name string) (*servic
 	return g, nil
 }
 
-func getGlobal(tx *sql.Tx, ctx context.Context, entryType, name string) (*service.Global, error) {
-	find := service.GlobalFinder{
+func getGlobal(tx *sql.Tx, ctx context.Context, entryType, name string) (*forge.Global, error) {
+	find := forge.GlobalFinder{
 		EntryType: &entryType,
 		Name:      &name,
 	}
 	globals, err := findGlobals(tx, ctx, find)
 	if len(globals) == 0 {
-		return nil, service.NotFound("global not found on %v: %v", entryType, name)
+		return nil, forge.NotFound("global not found on %v: %v", entryType, name)
 	}
 	return globals[0], err
 }
 
-func AddGlobal(db *sql.DB, ctx context.Context, g *service.Global) error {
+func AddGlobal(db *sql.DB, ctx context.Context, g *forge.Global) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to add global: %v", user)
+		return forge.Unauthorized("user doesn't have permission to add global: %v", user)
 	}
 	err = addGlobal(tx, ctx, g)
 	if err != nil {
@@ -138,7 +138,7 @@ func AddGlobal(db *sql.DB, ctx context.Context, g *service.Global) error {
 	return nil
 }
 
-func addGlobal(tx *sql.Tx, ctx context.Context, g *service.Global) error {
+func addGlobal(tx *sql.Tx, ctx context.Context, g *forge.Global) error {
 	typeID, err := getEntryTypeID(tx, ctx, g.EntryType)
 	if err != nil {
 		return err
@@ -168,19 +168,19 @@ func addGlobal(tx *sql.Tx, ctx context.Context, g *service.Global) error {
 	return nil
 }
 
-func UpdateGlobal(db *sql.DB, ctx context.Context, upd service.GlobalUpdater) error {
+func UpdateGlobal(db *sql.DB, ctx context.Context, upd forge.GlobalUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to update global: %v", user)
+		return forge.Unauthorized("user doesn't have permission to update global: %v", user)
 	}
 	updateGlobal(tx, ctx, upd)
 	err = tx.Commit()
@@ -190,7 +190,7 @@ func UpdateGlobal(db *sql.DB, ctx context.Context, upd service.GlobalUpdater) er
 	return nil
 }
 
-func updateGlobal(tx *sql.Tx, ctx context.Context, upd service.GlobalUpdater) error {
+func updateGlobal(tx *sql.Tx, ctx context.Context, upd forge.GlobalUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Type != nil {
@@ -228,13 +228,13 @@ func DeleteGlobal(db *sql.DB, ctx context.Context, entryType, name string) error
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to delete default: %v", user)
+		return forge.Unauthorized("user doesn't have permission to delete default: %v", user)
 	}
 	err = deleteGlobal(tx, ctx, entryType, name)
 	if err != nil {
@@ -267,7 +267,7 @@ func deleteGlobal(tx *sql.Tx, ctx context.Context, entryType, name string) error
 		return err
 	}
 	if n == 0 {
-		return service.NotFound("no such global for entry type %v: %v", entryType, name)
+		return forge.NotFound("no such global for entry type %v: %v", entryType, name)
 	}
 	return nil
 }

@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/imagvfx/forge"
-	"github.com/imagvfx/forge/service"
 )
 
 type loginHandler struct {
@@ -115,10 +114,10 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		}
 		user := op.Email
 		called := op.Name
-		ctx := service.ContextWithUserName(r.Context(), user)
+		ctx := forge.ContextWithUserName(r.Context(), user)
 		_, err = h.server.GetUser(ctx, user)
 		if err != nil {
-			var e *service.NotFoundError
+			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
 				return err
 			}

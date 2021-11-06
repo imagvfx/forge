@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createThumbnailsTable(tx *sql.Tx) error {
@@ -25,7 +25,7 @@ func createThumbnailsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindThumbnails(db *sql.DB, ctx context.Context, find service.ThumbnailFinder) ([]*service.Thumbnail, error) {
+func FindThumbnails(db *sql.DB, ctx context.Context, find forge.ThumbnailFinder) ([]*forge.Thumbnail, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func FindThumbnails(db *sql.DB, ctx context.Context, find service.ThumbnailFinde
 	return users, nil
 }
 
-func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinder) ([]*service.Thumbnail, error) {
+func findThumbnails(tx *sql.Tx, ctx context.Context, find forge.ThumbnailFinder) ([]*forge.Thumbnail, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryPath != nil {
@@ -67,9 +67,9 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 		return nil, err
 	}
 	defer rows.Close()
-	thumbs := make([]*service.Thumbnail, 0)
+	thumbs := make([]*forge.Thumbnail, 0)
 	for rows.Next() {
-		thumb := &service.Thumbnail{}
+		thumb := &forge.Thumbnail{}
 		err := rows.Scan(
 			&thumb.ID,
 			&thumb.Data,
@@ -83,7 +83,7 @@ func findThumbnails(tx *sql.Tx, ctx context.Context, find service.ThumbnailFinde
 	return thumbs, nil
 }
 
-func GetThumbnail(db *sql.DB, ctx context.Context, path string) (*service.Thumbnail, error) {
+func GetThumbnail(db *sql.DB, ctx context.Context, path string) (*forge.Thumbnail, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -100,18 +100,18 @@ func GetThumbnail(db *sql.DB, ctx context.Context, path string) (*service.Thumbn
 	return thumb, nil
 }
 
-func getThumbnail(tx *sql.Tx, ctx context.Context, path string) (*service.Thumbnail, error) {
-	thumbs, err := findThumbnails(tx, ctx, service.ThumbnailFinder{EntryPath: &path})
+func getThumbnail(tx *sql.Tx, ctx context.Context, path string) (*forge.Thumbnail, error) {
+	thumbs, err := findThumbnails(tx, ctx, forge.ThumbnailFinder{EntryPath: &path})
 	if err != nil {
 		return nil, err
 	}
 	if len(thumbs) == 0 {
-		return nil, service.NotFound("thumbnail not found")
+		return nil, forge.NotFound("thumbnail not found")
 	}
 	return thumbs[0], nil
 }
 
-func AddThumbnail(db *sql.DB, ctx context.Context, thumb *service.Thumbnail) error {
+func AddThumbnail(db *sql.DB, ctx context.Context, thumb *forge.Thumbnail) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -128,7 +128,7 @@ func AddThumbnail(db *sql.DB, ctx context.Context, thumb *service.Thumbnail) err
 	return nil
 }
 
-func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) error {
+func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *forge.Thumbnail) error {
 	err := userWrite(tx, ctx, thumb.EntryPath)
 	if err != nil {
 		return err
@@ -155,8 +155,8 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 		return err
 	}
 	thumb.ID = int(id)
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: thumb.EntryPath,
 		User:      user,
 		Action:    "add",
@@ -168,7 +168,7 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *service.Thumbnail) err
 	return nil
 }
 
-func UpdateThumbnail(db *sql.DB, ctx context.Context, upd service.ThumbnailUpdater) error {
+func UpdateThumbnail(db *sql.DB, ctx context.Context, upd forge.ThumbnailUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -185,7 +185,7 @@ func UpdateThumbnail(db *sql.DB, ctx context.Context, upd service.ThumbnailUpdat
 	return nil
 }
 
-func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdater) error {
+func updateThumbnail(tx *sql.Tx, ctx context.Context, upd forge.ThumbnailUpdater) error {
 	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
@@ -221,8 +221,8 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd service.ThumbnailUpdat
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: upd.EntryPath,
 		User:      user,
 		Action:    "update",
@@ -276,8 +276,8 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 thumbnail affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: path,
 		User:      user,
 		Action:    "delete",

@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/imagvfx/forge"
-	"github.com/imagvfx/forge/service"
 )
 
 type pageHandler struct {
@@ -141,11 +140,11 @@ func httpStatusFromError(err error) int {
 	if err == nil {
 		return http.StatusOK
 	}
-	var notFound *service.NotFoundError
+	var notFound *forge.NotFoundError
 	if errors.As(err, &notFound) {
 		return http.StatusNotFound
 	}
-	var unauthorized *service.UnauthorizedError
+	var unauthorized *forge.UnauthorizedError
 	if errors.As(err, &unauthorized) {
 		return http.StatusUnauthorized
 	}
@@ -179,7 +178,7 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return nil
 			}
-			ctx := service.ContextWithUserName(r.Context(), user)
+			ctx := forge.ContextWithUserName(r.Context(), user)
 			return handleFunc(ctx, w, r)
 		}()
 		handleError(w, err)
@@ -187,7 +186,7 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 }
 
 func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	setting, err := h.server.GetUserSetting(ctx, user)
 	if err != nil {
 		return err
@@ -367,7 +366,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		// global property filter
 		g, err := h.server.GetGlobal(ctx, typ, "property_filter")
 		if err != nil {
-			var e *service.NotFoundError
+			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
 				return err
 			}
@@ -382,7 +381,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		status := make([]forge.Status, 0)
 		p, err := h.server.GetGlobal(ctx, typ, "possible_status")
 		if err != nil {
-			var e *service.NotFoundError
+			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
 				return err
 			}
@@ -488,7 +487,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 }
 
 func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	path := r.FormValue("path")
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
@@ -579,7 +578,7 @@ func (h *pageHandler) handleThumbnail(ctx context.Context, w http.ResponseWriter
 }
 
 func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	users, err := h.server.Users(ctx)
 	if err != nil {
 		return err
@@ -600,7 +599,7 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 }
 
 func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	groups, err := h.server.FindAllGroups(ctx)
 	if err != nil {
 		return err
@@ -630,7 +629,7 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 }
 
 func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	typeNames, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
 		return err
@@ -650,7 +649,7 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	toks := strings.Split(r.URL.Path, "/")
 	tname := toks[2]
 	if tname == "" {

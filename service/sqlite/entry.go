@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createEntriesTable(tx *sql.Tx) error {
@@ -44,7 +44,7 @@ func addRootEntry(tx *sql.Tx) error {
 	return nil
 }
 
-func FindEntries(db *sql.DB, ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
+func FindEntries(db *sql.DB, ctx context.Context, find forge.EntryFinder) ([]*forge.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func FindEntries(db *sql.DB, ctx context.Context, find service.EntryFinder) ([]*
 }
 
 // when id is empty, it will find entries of root.
-func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*service.Entry, error) {
+func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*forge.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.ID != nil {
@@ -100,9 +100,9 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		return nil, err
 	}
 	defer rows.Close()
-	ents := make([]*service.Entry, 0)
+	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
-		e := &service.Entry{}
+		e := &forge.Entry{}
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
@@ -118,11 +118,11 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 		}
 		err = userRead(tx, ctx, e.Path)
 		if err != nil {
-			var e *service.NotFoundError
+			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
 				return nil, err
 			}
-			// userRead returns service.NotFoundError
+			// userRead returns forge.NotFoundError
 			// because of the user doesn't have permission to see the entry.
 			continue
 		}
@@ -131,7 +131,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find service.EntryFinder) ([]*
 	return ents, nil
 }
 
-func SearchEntries(db *sql.DB, ctx context.Context, search service.EntrySearcher) ([]*service.Entry, error) {
+func SearchEntries(db *sql.DB, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func SearchEntries(db *sql.DB, ctx context.Context, search service.EntrySearcher
 	return ents, nil
 }
 
-func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher) ([]*service.Entry, error) {
+func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if search.SearchRoot == "/" {
@@ -257,9 +257,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		return nil, err
 	}
 	defer rows.Close()
-	ents := make([]*service.Entry, 0)
+	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
-		e := &service.Entry{}
+		e := &forge.Entry{}
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
@@ -275,11 +275,11 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search service.EntrySearcher
 		}
 		err = userRead(tx, ctx, e.Path)
 		if err != nil {
-			var e *service.NotFoundError
+			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
 				return nil, err
 			}
-			// userRead returns service.NotFoundError
+			// userRead returns forge.NotFoundError
 			// because of the user doesn't have permission to see the entry.
 			continue
 		}
@@ -330,7 +330,7 @@ func countAllSubEntries(tx *sql.Tx, ctx context.Context, path string) (int, erro
 	return n, nil
 }
 
-func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, error) {
+func GetEntry(db *sql.DB, ctx context.Context, path string) (*forge.Entry, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -347,24 +347,24 @@ func GetEntry(db *sql.DB, ctx context.Context, path string) (*service.Entry, err
 	return ent, nil
 }
 
-func getEntry(tx *sql.Tx, ctx context.Context, path string) (*service.Entry, error) {
-	ents, err := findEntries(tx, ctx, service.EntryFinder{Path: &path})
+func getEntry(tx *sql.Tx, ctx context.Context, path string) (*forge.Entry, error) {
+	ents, err := findEntries(tx, ctx, forge.EntryFinder{Path: &path})
 	if err != nil {
 		return nil, err
 	}
 	if len(ents) == 0 {
-		return nil, service.NotFound("entry not found: %v", path)
+		return nil, forge.NotFound("entry not found: %v", path)
 	}
 	return ents[0], nil
 }
 
-func getEntryByID(tx *sql.Tx, ctx context.Context, id int) (*service.Entry, error) {
-	ents, err := findEntries(tx, ctx, service.EntryFinder{ID: &id})
+func getEntryByID(tx *sql.Tx, ctx context.Context, id int) (*forge.Entry, error) {
+	ents, err := findEntries(tx, ctx, forge.EntryFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
 	if len(ents) == 0 {
-		return nil, service.NotFound("entry not found: %v", id)
+		return nil, forge.NotFound("entry not found: %v", id)
 	}
 	return ents[0], nil
 }
@@ -376,7 +376,7 @@ func getEntryID(tx *sql.Tx, ctx context.Context, path string) (int, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return -1, service.NotFound("entry not found: %v", path)
+		return -1, forge.NotFound("entry not found: %v", path)
 	}
 	var id int
 	err = rows.Scan(&id)
@@ -386,7 +386,7 @@ func getEntryID(tx *sql.Tx, ctx context.Context, path string) (int, error) {
 	return id, nil
 }
 
-func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
+func AddEntry(db *sql.DB, ctx context.Context, e *forge.Entry) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -403,7 +403,7 @@ func AddEntry(db *sql.DB, ctx context.Context, e *service.Entry) error {
 	return nil
 }
 
-func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
+func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 	if e.Path == "/" {
 		return fmt.Errorf("root entry cannot be created or deleted by user")
 	}
@@ -414,7 +414,7 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 		// '.sub_entry_types' property should have only one sub entry type to fill the type.
 		subTypes, err := getProperty(tx, ctx, parentPath, ".sub_entry_types")
 		if err != nil {
-			var e *service.NotFoundError
+			var e *forge.NotFoundError
 			if errors.As(err, &e) {
 				return fmt.Errorf("cannot guess entry type: '.sub_entry_types' property not exist on entry: %v", parentPath)
 			} else {
@@ -433,7 +433,7 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	}
 	predefined, err := getProperty(tx, ctx, parentPath, ".predefined_sub_entries")
 	if err != nil {
-		var e *service.NotFoundError
+		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
@@ -478,13 +478,13 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	seenEnv := make(map[string]bool)
 	seenAcc := make(map[string]bool)
 	for _, entType := range entTypes {
-		defProps, err := findDefaultProperties(tx, ctx, service.DefaultFinder{EntryType: &entType})
+		defProps, err := findDefaultProperties(tx, ctx, forge.DefaultFinder{EntryType: &entType})
 		if err != nil {
 			return err
 		}
 		for _, d := range defProps {
 			if !seenProp[d.Name] {
-				dp := &service.Property{
+				dp := &forge.Property{
 					EntryPath: e.Path,
 					Name:      d.Name,
 					Type:      d.Type,
@@ -496,7 +496,7 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 				}
 				seenProp[d.Name] = true
 			} else {
-				upd := service.PropertyUpdater{
+				upd := forge.PropertyUpdater{
 					EntryPath: e.Path,
 					Name:      d.Name,
 					Value:     &d.Value,
@@ -507,13 +507,13 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 				}
 			}
 		}
-		defEnvs, err := findDefaultEnvirons(tx, ctx, service.DefaultFinder{EntryType: &entType})
+		defEnvs, err := findDefaultEnvirons(tx, ctx, forge.DefaultFinder{EntryType: &entType})
 		if err != nil {
 			return err
 		}
 		for _, d := range defEnvs {
 			if !seenEnv[d.Name] {
-				denv := &service.Property{
+				denv := &forge.Property{
 					EntryPath: e.Path,
 					Name:      d.Name,
 					Type:      d.Type,
@@ -525,7 +525,7 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 				}
 				seenEnv[d.Name] = true
 			} else {
-				upd := service.PropertyUpdater{
+				upd := forge.PropertyUpdater{
 					EntryPath: e.Path,
 					Name:      d.Name,
 					Value:     &d.Value,
@@ -536,13 +536,13 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 				}
 			}
 		}
-		defAccs, err := findDefaultAccesses(tx, ctx, service.DefaultFinder{EntryType: &entType})
+		defAccs, err := findDefaultAccesses(tx, ctx, forge.DefaultFinder{EntryType: &entType})
 		if err != nil {
 			return err
 		}
 		for _, d := range defAccs {
 			if !seenAcc[d.Name] {
-				dacc := &service.AccessControl{
+				dacc := &forge.AccessControl{
 					EntryPath:    e.Path,
 					Accessor:     d.Name,
 					AccessorType: d.Type,
@@ -554,7 +554,7 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 				}
 				seenAcc[d.Name] = true
 			} else {
-				upd := service.AccessControlUpdater{
+				upd := forge.AccessControlUpdater{
 					EntryPath: e.Path,
 					Accessor:  d.Name,
 					Mode:      &d.Value,
@@ -566,12 +566,12 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 			}
 		}
 	}
-	defSubs, err := findDefaultSubEntries(tx, ctx, service.DefaultFinder{EntryType: &e.Type})
+	defSubs, err := findDefaultSubEntries(tx, ctx, forge.DefaultFinder{EntryType: &e.Type})
 	if err != nil {
 		return err
 	}
 	for _, d := range defSubs {
-		de := &service.Entry{
+		de := &forge.Entry{
 			Path: filepath.Join(e.Path, d.Name),
 			Type: d.Type,
 		}
@@ -583,7 +583,7 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 	return nil
 }
 
-func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
+func addEntry(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 	if e.Path == "" {
 		return fmt.Errorf("path unspecified")
 	}
@@ -627,8 +627,8 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *service.Entry) error {
 		return err
 	}
 	e.ID = int(id)
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: e.Path,
 		User:      user,
 		Action:    "create",
@@ -700,8 +700,8 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	}
 	// Let's log only for the entry (not for sub entries).
 	// This might be changed in the future.
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: newPath,
 		User:      user,
 		Action:    "rename",
@@ -876,7 +876,7 @@ func DeleteEntryRecursive(db *sql.DB, ctx context.Context, path string) error {
 }
 
 func deleteEntryR(tx *sql.Tx, ctx context.Context, path string) error {
-	subEnts, err := findEntries(tx, ctx, service.EntryFinder{ParentPath: &path})
+	subEnts, err := findEntries(tx, ctx, forge.EntryFinder{ParentPath: &path})
 	if err != nil {
 		return err
 	}

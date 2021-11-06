@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createPropertiesTable(tx *sql.Tx) error {
@@ -35,7 +35,7 @@ func createPropertiesTable(tx *sql.Tx) error {
 	return err
 }
 
-func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*service.Property, error) {
+func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*forge.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -52,12 +52,12 @@ func EntryProperties(db *sql.DB, ctx context.Context, path string) ([]*service.P
 	return props, nil
 }
 
-func entryProperties(tx *sql.Tx, ctx context.Context, path string) ([]*service.Property, error) {
-	return findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path})
+func entryProperties(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Property, error) {
+	return findProperties(tx, ctx, forge.PropertyFinder{EntryPath: &path})
 }
 
 // when id is empty, it will find properties of root.
-func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([]*forge.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.Name != nil {
@@ -89,9 +89,9 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 		return nil, err
 	}
 	defer rows.Close()
-	props := make([]*service.Property, 0)
+	props := make([]*forge.Property, 0)
 	for rows.Next() {
-		p := &service.Property{}
+		p := &forge.Property{}
 		err := rows.Scan(
 			&p.ID,
 			&p.Name,
@@ -113,7 +113,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find service.PropertyFinder
 	return props, nil
 }
 
-func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*service.Property, error) {
+func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*forge.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -130,19 +130,19 @@ func GetProperty(db *sql.DB, ctx context.Context, path, name string) (*service.P
 	return p, nil
 }
 
-func getProperty(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
-	props, err := findProperties(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
+func getProperty(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Property, error) {
+	props, err := findProperties(tx, ctx, forge.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
 		return nil, err
 	}
 	if len(props) == 0 {
-		return nil, service.NotFound("property not found")
+		return nil, forge.NotFound("property not found")
 	}
 	p := props[0]
 	return p, nil
 }
 
-func AddProperty(db *sql.DB, ctx context.Context, p *service.Property) error {
+func AddProperty(db *sql.DB, ctx context.Context, p *forge.Property) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -159,7 +159,7 @@ func AddProperty(db *sql.DB, ctx context.Context, p *service.Property) error {
 	return nil
 }
 
-func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
+func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	err := userWrite(tx, ctx, p.EntryPath)
 	if err != nil {
 		return err
@@ -203,8 +203,8 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 		return err
 	}
 	p.ID = int(id)
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: p.EntryPath,
 		User:      user,
 		Action:    "create",
@@ -221,7 +221,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *service.Property) error {
 
 // BulkUpdateProperties is an efficient way of update properties of an entry, by group them in a transaction.
 // If there's an error, all changes will be reverted.
-func BulkUpdateProperties(db *sql.DB, ctx context.Context, upds []service.PropertyUpdater) error {
+func BulkUpdateProperties(db *sql.DB, ctx context.Context, upds []forge.PropertyUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -251,7 +251,7 @@ func BulkUpdateProperties(db *sql.DB, ctx context.Context, upds []service.Proper
 	return nil
 }
 
-func UpdateProperty(db *sql.DB, ctx context.Context, upd service.PropertyUpdater) error {
+func UpdateProperty(db *sql.DB, ctx context.Context, upd forge.PropertyUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -268,7 +268,7 @@ func UpdateProperty(db *sql.DB, ctx context.Context, upd service.PropertyUpdater
 	return nil
 }
 
-func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
+func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) error {
 	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
@@ -320,8 +320,8 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: p.EntryPath,
 		User:      user,
 		Action:    "update",
@@ -367,7 +367,7 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 		return fmt.Errorf("cannot delete default property of %q: %v", ent.Type, name)
 	}
 	if err != nil {
-		var e *service.NotFoundError
+		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
@@ -392,8 +392,8 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: p.EntryPath,
 		User:      user,
 		Action:    "delete",

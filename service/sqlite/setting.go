@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createUserSettingsTable(tx *sql.Tx) error {
@@ -28,7 +28,7 @@ func createUserSettingsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindUserSettings(db *sql.DB, ctx context.Context, find service.UserSettingFinder) ([]*service.UserSetting, error) {
+func FindUserSettings(db *sql.DB, ctx context.Context, find forge.UserSettingFinder) ([]*forge.UserSetting, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func FindUserSettings(db *sql.DB, ctx context.Context, find service.UserSettingF
 	return settings, nil
 }
 
-func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingFinder) ([]*service.UserSetting, error) {
+func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFinder) ([]*forge.UserSetting, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.User != nil {
@@ -70,7 +70,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		return nil, err
 	}
 	defer rows.Close()
-	setting := make(map[string]*service.UserSetting)
+	setting := make(map[string]*forge.UserSetting)
 	for rows.Next() {
 		var user, key, value string
 		err := rows.Scan(
@@ -83,7 +83,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		}
 		s := setting[user]
 		if s == nil {
-			s = &service.UserSetting{
+			s = &forge.UserSetting{
 				User: user,
 			}
 		}
@@ -104,7 +104,7 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 				for _, entID := range pinnedEntIDs {
 					ent, err := getEntryByID(tx, ctx, entID)
 					if err != nil {
-						var e *service.NotFoundError
+						var e *forge.NotFoundError
 						if !errors.As(err, &e) {
 							return nil, err
 						}
@@ -123,14 +123,14 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find service.UserSettingF
 		}
 		setting[user] = s
 	}
-	settings := make([]*service.UserSetting, 0, len(setting))
+	settings := make([]*forge.UserSetting, 0, len(setting))
 	for _, s := range setting {
 		settings = append(settings, s)
 	}
 	return settings, nil
 }
 
-func GetUserSetting(db *sql.DB, ctx context.Context, user string) (*service.UserSetting, error) {
+func GetUserSetting(db *sql.DB, ctx context.Context, user string) (*forge.UserSetting, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -151,18 +151,18 @@ func GetUserSetting(db *sql.DB, ctx context.Context, user string) (*service.User
 	return s, nil
 }
 
-func getUserSetting(tx *sql.Tx, ctx context.Context, user string) (*service.UserSetting, error) {
-	settings, err := findUserSettings(tx, ctx, service.UserSettingFinder{User: &user})
+func getUserSetting(tx *sql.Tx, ctx context.Context, user string) (*forge.UserSetting, error) {
+	settings, err := findUserSettings(tx, ctx, forge.UserSettingFinder{User: &user})
 	if err != nil {
 		return nil, err
 	}
 	if len(settings) == 0 {
-		return &service.UserSetting{User: user}, nil
+		return &forge.UserSetting{User: user}, nil
 	}
 	return settings[0], nil
 }
 
-func UpdateUserSetting(db *sql.DB, ctx context.Context, upd service.UserSettingUpdater) error {
+func UpdateUserSetting(db *sql.DB, ctx context.Context, upd forge.UserSettingUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -179,7 +179,7 @@ func UpdateUserSetting(db *sql.DB, ctx context.Context, upd service.UserSettingU
 	return nil
 }
 
-func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingUpdater) error {
+func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpdater) error {
 	setting, err := getUserSetting(tx, ctx, upd.User)
 	if err != nil {
 		return err
@@ -241,11 +241,11 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		}
 	case "quick_searches":
 		switch val := upd.Value.(type) {
-		case []service.StringKV:
+		case []forge.StringKV:
 			updateQuickSearch := val
 			quickSearches := setting.QuickSearches
 			if quickSearches == nil {
-				quickSearches = make([]service.StringKV, 0)
+				quickSearches = make([]forge.StringKV, 0)
 			}
 			for _, updQs := range updateQuickSearch {
 				if updQs.K == "" {
@@ -283,17 +283,17 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 			if err != nil {
 				return err
 			}
-		case service.QuickSearchArranger:
+		case forge.QuickSearchArranger:
 			arr := val
 			if arr.Name == "" {
 				return fmt.Errorf("%v: name empty", upd.Key)
 			}
 			oldSearches := setting.QuickSearches
 			if oldSearches == nil {
-				oldSearches = make([]service.StringKV, 0)
+				oldSearches = make([]forge.StringKV, 0)
 			}
-			searches := make([]service.StringKV, 0, len(oldSearches)+1)
-			search := service.StringKV{}
+			searches := make([]forge.StringKV, 0, len(oldSearches)+1)
+			search := forge.StringKV{}
 			for _, s := range oldSearches {
 				if s.K == arr.Name {
 					search = s
@@ -309,7 +309,7 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 				// remove: already done
 			case n < len(oldSearches):
 				// insert el at n
-				searches = append(searches, service.StringKV{})
+				searches = append(searches, forge.StringKV{})
 				copy(searches[n+1:], searches[n:])
 				searches[n] = search
 			default:
@@ -325,7 +325,7 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 	case "pinned_paths":
 		// Correct the key with internal represetation version.
 		upd.Key = "pinned_paths_v2"
-		updatePinnedPath, ok := upd.Value.(service.PinnedPathArranger)
+		updatePinnedPath, ok := upd.Value.(forge.PinnedPathArranger)
 		if !ok {
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
@@ -372,7 +372,7 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd service.UserSettingU
 		for _, p := range pinned {
 			id, err := getEntryID(tx, ctx, p)
 			if err != nil {
-				var e *service.NotFoundError
+				var e *forge.NotFoundError
 				if !errors.As(err, &e) {
 					return err
 				}

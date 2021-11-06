@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createLogsTable(tx *sql.Tx) error {
@@ -34,7 +34,7 @@ func createLogsTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
+func FindLogs(db *sql.DB, ctx context.Context, find forge.LogFinder) ([]*forge.Log, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func FindLogs(db *sql.DB, ctx context.Context, find service.LogFinder) ([]*servi
 }
 
 // when id is empty, it will find logs of root.
-func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*service.Log, error) {
+func findLogs(tx *sql.Tx, ctx context.Context, find forge.LogFinder) ([]*forge.Log, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryPath != nil {
@@ -91,9 +91,9 @@ func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*servi
 		return nil, err
 	}
 	defer rows.Close()
-	logs := make([]*service.Log, 0)
+	logs := make([]*forge.Log, 0)
 	for rows.Next() {
-		l := &service.Log{}
+		l := &forge.Log{}
 		err := rows.Scan(
 			&l.ID,
 			&l.EntryPath,
@@ -113,7 +113,7 @@ func findLogs(tx *sql.Tx, ctx context.Context, find service.LogFinder) ([]*servi
 	return logs, nil
 }
 
-func GetLogs(db *sql.DB, ctx context.Context, path, ctg, name string) ([]*service.Log, error) {
+func GetLogs(db *sql.DB, ctx context.Context, path, ctg, name string) ([]*forge.Log, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -130,8 +130,8 @@ func GetLogs(db *sql.DB, ctx context.Context, path, ctg, name string) ([]*servic
 	return log, nil
 }
 
-func getLogs(tx *sql.Tx, ctx context.Context, path, ctg, name string) ([]*service.Log, error) {
-	logs, err := findLogs(tx, ctx, service.LogFinder{
+func getLogs(tx *sql.Tx, ctx context.Context, path, ctg, name string) ([]*forge.Log, error) {
+	logs, err := findLogs(tx, ctx, forge.LogFinder{
 		EntryPath: &path,
 		Category:  &ctg,
 		Name:      &name,
@@ -140,12 +140,12 @@ func getLogs(tx *sql.Tx, ctx context.Context, path, ctg, name string) ([]*servic
 		return nil, err
 	}
 	if len(logs) == 0 {
-		return nil, service.NotFound("log not found")
+		return nil, forge.NotFound("log not found")
 	}
 	return logs, nil
 }
 
-func addLog(tx *sql.Tx, ctx context.Context, l *service.Log) error {
+func addLog(tx *sql.Tx, ctx context.Context, l *forge.Log) error {
 	entryID, err := getEntryID(tx, ctx, l.EntryPath)
 	if err != nil {
 		return err

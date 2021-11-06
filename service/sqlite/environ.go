@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createEnvironsTable(tx *sql.Tx) error {
@@ -36,7 +36,7 @@ func createEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
-func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Property, error) {
+func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*forge.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -53,10 +53,10 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*service.Pro
 	return envs, nil
 }
 
-func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*service.Property, error) {
-	envmap := make(map[string]*service.Property)
+func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Property, error) {
+	envmap := make(map[string]*forge.Property)
 	for {
-		envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path})
+		envs, err := findEnvirons(tx, ctx, forge.PropertyFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +70,7 @@ func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*service.Pro
 		}
 		path = filepath.Dir(path)
 	}
-	envs := make([]*service.Property, 0, len(envmap))
+	envs := make([]*forge.Property, 0, len(envmap))
 	for _, e := range envmap {
 		envs = append(envs, e)
 	}
@@ -79,7 +79,7 @@ func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*service.Pro
 
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
-func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) ([]*service.Property, error) {
+func findEnvirons(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([]*forge.Property, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.Name != nil {
@@ -111,9 +111,9 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 		return nil, err
 	}
 	defer rows.Close()
-	envs := make([]*service.Property, 0)
+	envs := make([]*forge.Property, 0)
 	for rows.Next() {
-		e := &service.Property{}
+		e := &forge.Property{}
 		err := rows.Scan(
 			&e.ID,
 			&e.Name,
@@ -134,7 +134,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find service.PropertyFinder) 
 	return envs, nil
 }
 
-func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Property, error) {
+func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*forge.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -151,18 +151,18 @@ func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*service.Pr
 	return p, nil
 }
 
-func getEnviron(tx *sql.Tx, ctx context.Context, path, name string) (*service.Property, error) {
-	envs, err := findEnvirons(tx, ctx, service.PropertyFinder{EntryPath: &path, Name: &name})
+func getEnviron(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Property, error) {
+	envs, err := findEnvirons(tx, ctx, forge.PropertyFinder{EntryPath: &path, Name: &name})
 	if err != nil {
 		return nil, err
 	}
 	if len(envs) == 0 {
-		return nil, service.NotFound("environ not found")
+		return nil, forge.NotFound("environ not found")
 	}
 	return envs[0], nil
 }
 
-func AddEnviron(db *sql.DB, ctx context.Context, e *service.Property) error {
+func AddEnviron(db *sql.DB, ctx context.Context, e *forge.Property) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -179,7 +179,7 @@ func AddEnviron(db *sql.DB, ctx context.Context, e *service.Property) error {
 	return nil
 }
 
-func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
+func addEnviron(tx *sql.Tx, ctx context.Context, e *forge.Property) error {
 	err := userWrite(tx, ctx, e.EntryPath)
 	if err != nil {
 		return err
@@ -216,8 +216,8 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
 		return err
 	}
 	e.ID = int(id)
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: e.EntryPath,
 		User:      user,
 		Action:    "create",
@@ -232,7 +232,7 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *service.Property) error {
 	return nil
 }
 
-func UpdateEnviron(db *sql.DB, ctx context.Context, upd service.PropertyUpdater) error {
+func UpdateEnviron(db *sql.DB, ctx context.Context, upd forge.PropertyUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -249,7 +249,7 @@ func UpdateEnviron(db *sql.DB, ctx context.Context, upd service.PropertyUpdater)
 	return nil
 }
 
-func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater) error {
+func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) error {
 	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
@@ -294,8 +294,8 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd service.PropertyUpdater)
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: e.EntryPath,
 		User:      user,
 		Action:    "update",
@@ -341,7 +341,7 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 		return fmt.Errorf("cannot delete default environ of %q: %v", ent.Type, name)
 	}
 	if err != nil {
-		var e *service.NotFoundError
+		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
@@ -366,8 +366,8 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if n != 1 {
 		return fmt.Errorf("want 1 environ affected, got %v", n)
 	}
-	user := service.UserNameFromContext(ctx)
-	err = addLog(tx, ctx, &service.Log{
+	user := forge.UserNameFromContext(ctx)
+	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: path,
 		User:      user,
 		Action:    "delete",

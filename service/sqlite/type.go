@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createEntryTypesTable(tx *sql.Tx) error {
@@ -149,7 +149,7 @@ func getEntryTypeByID(tx *sql.Tx, ctx context.Context, id int) (string, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return "", service.NotFound("entry type not found with id: %v", id)
+		return "", forge.NotFound("entry type not found with id: %v", id)
 	}
 	var name string
 	err = rows.Scan(&name)
@@ -166,7 +166,7 @@ func getEntryTypeID(tx *sql.Tx, ctx context.Context, name string) (int, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return -1, service.NotFound("entry type not found: %v", name)
+		return -1, forge.NotFound("entry type not found: %v", name)
 	}
 	var id int
 	err = rows.Scan(&id)

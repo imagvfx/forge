@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createAccessorsTable(tx *sql.Tx) error {
@@ -24,7 +24,7 @@ func createAccessorsTable(tx *sql.Tx) error {
 	return err
 }
 
-func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*service.Accessor, error) {
+func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*forge.Accessor, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "name=?")
@@ -49,9 +49,9 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*service.Accesso
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, service.NotFound("accessor not found: %v", name)
+		return nil, forge.NotFound("accessor not found: %v", name)
 	}
-	a := &service.Accessor{}
+	a := &forge.Accessor{}
 	err = rows.Scan(
 		&a.ID,
 		&a.IsGroup,
@@ -64,7 +64,7 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*service.Accesso
 	return a, nil
 }
 
-func getAccessorByID(tx *sql.Tx, ctx context.Context, id int) (*service.Accessor, error) {
+func getAccessorByID(tx *sql.Tx, ctx context.Context, id int) (*forge.Accessor, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "id=?")
@@ -89,9 +89,9 @@ func getAccessorByID(tx *sql.Tx, ctx context.Context, id int) (*service.Accessor
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, service.NotFound("accessor not found: %v", id)
+		return nil, forge.NotFound("accessor not found: %v", id)
 	}
-	a := &service.Accessor{}
+	a := &forge.Accessor{}
 	err = rows.Scan(
 		&a.ID,
 		&a.IsGroup,

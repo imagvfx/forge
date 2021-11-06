@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 // see createAccessorTable for table creation.
 
-func FindUsers(db *sql.DB, ctx context.Context, find service.UserFinder) ([]*service.User, error) {
+func FindUsers(db *sql.DB, ctx context.Context, find forge.UserFinder) ([]*forge.User, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func FindUsers(db *sql.DB, ctx context.Context, find service.UserFinder) ([]*ser
 	return users, nil
 }
 
-func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*service.User, error) {
+func findUsers(tx *sql.Tx, ctx context.Context, find forge.UserFinder) ([]*forge.User, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "is_group=?")
@@ -61,9 +61,9 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 		return nil, err
 	}
 	defer rows.Close()
-	users := make([]*service.User, 0)
+	users := make([]*forge.User, 0)
 	for rows.Next() {
-		u := &service.User{}
+		u := &forge.User{}
 		err := rows.Scan(
 			&u.ID,
 			&u.Name,
@@ -77,7 +77,7 @@ func findUsers(tx *sql.Tx, ctx context.Context, find service.UserFinder) ([]*ser
 	return users, nil
 }
 
-func GetUser(db *sql.DB, ctx context.Context, user string) (*service.User, error) {
+func GetUser(db *sql.DB, ctx context.Context, user string) (*forge.User, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -95,24 +95,24 @@ func GetUser(db *sql.DB, ctx context.Context, user string) (*service.User, error
 	return u, nil
 }
 
-func getUser(tx *sql.Tx, ctx context.Context, user string) (*service.User, error) {
-	users, err := findUsers(tx, ctx, service.UserFinder{Name: &user})
+func getUser(tx *sql.Tx, ctx context.Context, user string) (*forge.User, error) {
+	users, err := findUsers(tx, ctx, forge.UserFinder{Name: &user})
 	if err != nil {
 		return nil, err
 	}
 	if len(users) == 0 {
-		return nil, service.NotFound("user not found")
+		return nil, forge.NotFound("user not found")
 	}
 	return users[0], nil
 }
 
-func getUserByID(tx *sql.Tx, ctx context.Context, id int) (*service.User, error) {
-	users, err := findUsers(tx, ctx, service.UserFinder{ID: &id})
+func getUserByID(tx *sql.Tx, ctx context.Context, id int) (*forge.User, error) {
+	users, err := findUsers(tx, ctx, forge.UserFinder{ID: &id})
 	if err != nil {
 		return nil, err
 	}
 	if len(users) == 0 {
-		return nil, service.NotFound("user not found")
+		return nil, forge.NotFound("user not found")
 	}
 	return users[0], nil
 }
@@ -129,7 +129,7 @@ func getUserID(tx *sql.Tx, ctx context.Context, user string) (int, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return -1, service.NotFound("user not found: %v", user)
+		return -1, forge.NotFound("user not found: %v", user)
 	}
 	var id int
 	err = rows.Scan(&id)
@@ -139,7 +139,7 @@ func getUserID(tx *sql.Tx, ctx context.Context, user string) (int, error) {
 	return id, nil
 }
 
-func AddUser(db *sql.DB, ctx context.Context, u *service.User) error {
+func AddUser(db *sql.DB, ctx context.Context, u *forge.User) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -173,8 +173,8 @@ func splitUserName(username string) (string, string, error) {
 	return name, domain, nil
 }
 
-func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
-	users, err := findUsers(tx, ctx, service.UserFinder{})
+func addUser(tx *sql.Tx, ctx context.Context, u *forge.User) error {
+	users, err := findUsers(tx, ctx, forge.UserFinder{})
 	if err != nil {
 		return err
 	}
@@ -203,8 +203,8 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	}
 	if firstUser {
 		// first user created, make the user admin
-		ctx = service.ContextWithUserName(ctx, "system")
-		err = addGroupMember(tx, ctx, &service.Member{
+		ctx = forge.ContextWithUserName(ctx, "system")
+		err = addGroupMember(tx, ctx, &forge.Member{
 			Group:  "admin",
 			Member: u.Name,
 		})
@@ -216,11 +216,11 @@ func addUser(tx *sql.Tx, ctx context.Context, u *service.User) error {
 	everyone := "everyone@" + domain
 	_, err = getGroup(tx, ctx, everyone)
 	if err != nil {
-		var e *service.NotFoundError
+		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
-		err := addGroup(tx, ctx, &service.Group{Name: everyone})
+		err := addGroup(tx, ctx, &forge.Group{Name: everyone})
 		if err != nil {
 			return err
 		}

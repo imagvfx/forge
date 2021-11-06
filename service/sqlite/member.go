@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createGroupMembersTable(tx *sql.Tx) error {
@@ -27,7 +27,7 @@ func createGroupMembersTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindGroupMembers(db *sql.DB, ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
+func FindGroupMembers(db *sql.DB, ctx context.Context, find forge.MemberFinder) ([]*forge.Member, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func FindGroupMembers(db *sql.DB, ctx context.Context, find service.MemberFinder
 	return groups, nil
 }
 
-func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder) ([]*service.Member, error) {
+func findGroupMembers(tx *sql.Tx, ctx context.Context, find forge.MemberFinder) ([]*forge.Member, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "groups.name=?")
@@ -71,9 +71,9 @@ func findGroupMembers(tx *sql.Tx, ctx context.Context, find service.MemberFinder
 		return nil, err
 	}
 	defer rows.Close()
-	members := make([]*service.Member, 0)
+	members := make([]*forge.Member, 0)
 	for rows.Next() {
-		m := &service.Member{}
+		m := &forge.Member{}
 		err := rows.Scan(
 			&m.Group,
 			&m.Member,
@@ -109,7 +109,7 @@ func isGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (bool,
 		return true, nil
 	}
 	// time to check db
-	mems, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: group, Member: &member})
+	mems, err := findGroupMembers(tx, ctx, forge.MemberFinder{Group: group, Member: &member})
 	if err != nil {
 		return false, err
 	}
@@ -119,19 +119,19 @@ func isGroupMember(tx *sql.Tx, ctx context.Context, group, member string) (bool,
 	return true, nil
 }
 
-func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
+func AddGroupMember(db *sql.DB, ctx context.Context, m *forge.Member) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to add group member: %v", user)
+		return forge.Unauthorized("user doesn't have permission to add group member: %v", user)
 	}
 	err = addGroupMember(tx, ctx, m)
 	if err != nil {
@@ -144,7 +144,7 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *service.Member) error {
 	return nil
 }
 
-func addGroupMember(tx *sql.Tx, ctx context.Context, m *service.Member) error {
+func addGroupMember(tx *sql.Tx, ctx context.Context, m *forge.Member) error {
 	if m.Group == "everyone" {
 		return fmt.Errorf("everyone group doesn't take any explicit member")
 	}
@@ -181,13 +181,13 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) er
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to delete group member: %v", user)
+		return forge.Unauthorized("user doesn't have permission to delete group member: %v", user)
 	}
 	err = deleteGroupMember(tx, ctx, group, member)
 	if err != nil {
@@ -208,7 +208,7 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) er
 		return fmt.Errorf("everyone@{domain} group doesn't have any explicit member")
 	}
 	if group == "admin" {
-		members, err := findGroupMembers(tx, ctx, service.MemberFinder{Group: group})
+		members, err := findGroupMembers(tx, ctx, forge.MemberFinder{Group: group})
 		if err != nil {
 			return err
 		}
@@ -239,7 +239,7 @@ func deleteGroupMember(tx *sql.Tx, ctx context.Context, group, member string) er
 		return err
 	}
 	if n != 1 {
-		return service.NotFound("%q is not a member of group %q", member, group)
+		return forge.NotFound("%q is not a member of group %q", member, group)
 	}
 	return nil
 }

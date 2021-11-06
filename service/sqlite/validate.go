@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func validateProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (string, error) {
@@ -174,7 +174,7 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) 
 			// Save the type id, instead.
 			id, err := getEntryTypeID(tx, ctx, typ)
 			if err != nil {
-				var e *service.NotFoundError
+				var e *forge.NotFoundError
 				if !errors.As(err, &e) {
 					return "", err
 				}

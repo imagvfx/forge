@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/imagvfx/forge"
-	"github.com/imagvfx/forge/service"
 	"github.com/xuri/excelize/v2"
 )
 
@@ -34,7 +33,7 @@ func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.Respons
 				return err
 			}
 			user := session["user"]
-			ctx := service.ContextWithUserName(r.Context(), user)
+			ctx := forge.ContextWithUserName(r.Context(), user)
 			return handleFunc(ctx, w, r)
 		}()
 		handleError(w, err)
@@ -377,7 +376,7 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 	mode = strings.TrimSpace(mode)
 	acl, err := h.server.GetAccessControl(ctx, entPath, accessor)
 	if err != nil {
-		var e *service.NotFoundError
+		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
@@ -542,7 +541,7 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		propertyFilter := map[string]string{
 			entryType: filter,
 		}
-		user := service.UserNameFromContext(ctx)
+		user := forge.UserNameFromContext(ctx)
 		err := h.server.UpdateUserSetting(ctx, user, "entry_page_property_filter", propertyFilter)
 		if err != nil {
 			return err
@@ -558,7 +557,7 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		sortProperty := map[string]string{
 			entryType: sortPrefix + sortProp,
 		}
-		user := service.UserNameFromContext(ctx)
+		user := forge.UserNameFromContext(ctx)
 		err := h.server.UpdateUserSetting(ctx, user, "entry_page_sort_property", sortProperty)
 		if err != nil {
 			return err
@@ -567,10 +566,10 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 	if r.FormValue("update_quick_search") != "" {
 		name := r.FormValue("quick_search_name")
 		val := r.FormValue("quick_search_value")
-		quickSearch := []service.StringKV{
+		quickSearch := []forge.StringKV{
 			{K: name, V: val},
 		}
-		user := service.UserNameFromContext(ctx)
+		user := forge.UserNameFromContext(ctx)
 		err := h.server.UpdateUserSetting(ctx, user, "quick_searches", quickSearch)
 		if err != nil {
 			return err
@@ -583,8 +582,8 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		if err != nil {
 			return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
 		}
-		arr := service.QuickSearchArranger{Name: name, Index: n}
-		user := service.UserNameFromContext(ctx)
+		arr := forge.QuickSearchArranger{Name: name, Index: n}
+		user := forge.UserNameFromContext(ctx)
 		err = h.server.UpdateUserSetting(ctx, user, "quick_searches", arr)
 		if err != nil {
 			return err
@@ -600,11 +599,11 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		if err != nil {
 			return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
 		}
-		pinnedPath := service.PinnedPathArranger{
+		pinnedPath := forge.PinnedPathArranger{
 			Path:  path,
 			Index: n,
 		}
-		user := service.UserNameFromContext(ctx)
+		user := forge.UserNameFromContext(ctx)
 		err = h.server.UpdateUserSetting(ctx, user, "pinned_paths", pinnedPath)
 		if err != nil {
 			return err
@@ -734,7 +733,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			}
 			_, err = h.server.GetEntry(ctx, anc)
 			if err != nil {
-				e := &service.NotFoundError{}
+				e := &forge.NotFoundError{}
 				if !errors.As(err, &e) {
 					return err
 				}
@@ -757,7 +756,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		entPath := path.Clean(path.Join(parent, name))
 		ent, err := h.server.GetEntry(ctx, entPath)
 		if err != nil {
-			e := &service.NotFoundError{}
+			e := &forge.NotFoundError{}
 			if !errors.As(err, &e) {
 				return err
 			}
@@ -813,7 +812,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		}
 		props := make([]string, 0)
 		propValue := make(map[string]string)
-		upds := make([]service.PropertyUpdater, 0)
+		upds := make([]forge.PropertyUpdater, 0)
 		for i, val := range cols {
 			p := propFor[i]
 			if p == "" {
@@ -846,7 +845,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		}
 		for _, p := range props {
 			v := propValue[p]
-			upds = append(upds, service.PropertyUpdater{
+			upds = append(upds, forge.PropertyUpdater{
 				EntryPath: entPath,
 				Name:      p,
 				Value:     &v,

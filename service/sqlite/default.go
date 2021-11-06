@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 func createDefaultPropertiesTable(tx *sql.Tx) error {
@@ -87,13 +87,13 @@ func createDefaultSubEntriesTable(tx *sql.Tx) error {
 	return err
 }
 
-func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+func FindDefaults(db *sql.DB, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	defaults := make([]*service.Default, 0)
+	defaults := make([]*forge.Default, 0)
 	props, err := findDefaultProperties(tx, ctx, find)
 	if err != nil {
 		return nil, err
@@ -121,7 +121,7 @@ func FindDefaults(db *sql.DB, ctx context.Context, find service.DefaultFinder) (
 	return defaults, nil
 }
 
-func findDefaultProperties(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+func findDefaultProperties(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryType != nil {
@@ -151,9 +151,9 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find service.Default
 		return nil, err
 	}
 	defer rows.Close()
-	defaults := make([]*service.Default, 0)
+	defaults := make([]*forge.Default, 0)
 	for rows.Next() {
-		d := &service.Default{
+		d := &forge.Default{
 			Category: "property",
 		}
 		err := rows.Scan(
@@ -174,19 +174,19 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find service.Default
 	return defaults, nil
 }
 
-func getDefaultProperty(tx *sql.Tx, ctx context.Context, entry_type, name string) (*service.Default, error) {
-	find := service.DefaultFinder{
+func getDefaultProperty(tx *sql.Tx, ctx context.Context, entry_type, name string) (*forge.Default, error) {
+	find := forge.DefaultFinder{
 		EntryType: &entry_type,
 		Name:      &name,
 	}
 	defaults, err := findDefaultProperties(tx, ctx, find)
 	if len(defaults) == 0 {
-		return nil, service.NotFound("default not found")
+		return nil, forge.NotFound("default not found")
 	}
 	return defaults[0], err
 }
 
-func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryType != nil {
@@ -216,9 +216,9 @@ func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find service.DefaultFi
 		return nil, err
 	}
 	defer rows.Close()
-	defaults := make([]*service.Default, 0)
+	defaults := make([]*forge.Default, 0)
 	for rows.Next() {
-		d := &service.Default{
+		d := &forge.Default{
 			Category: "environ",
 		}
 		err := rows.Scan(
@@ -235,19 +235,19 @@ func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find service.DefaultFi
 	return defaults, nil
 }
 
-func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string) (*service.Default, error) {
-	find := service.DefaultFinder{
+func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string) (*forge.Default, error) {
+	find := forge.DefaultFinder{
 		EntryType: &entry_type,
 		Name:      &name,
 	}
 	defaults, err := findDefaultEnvirons(tx, ctx, find)
 	if len(defaults) == 0 {
-		return nil, service.NotFound("default not found")
+		return nil, forge.NotFound("default not found")
 	}
 	return defaults[0], err
 }
 
-func findDefaultAccesses(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+func findDefaultAccesses(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryType != nil {
@@ -276,11 +276,11 @@ func findDefaultAccesses(tx *sql.Tx, ctx context.Context, find service.DefaultFi
 		return nil, err
 	}
 	defer rows.Close()
-	defaults := make([]*service.Default, 0)
+	defaults := make([]*forge.Default, 0)
 	for rows.Next() {
 		var acID int
 		var mode int
-		d := &service.Default{
+		d := &forge.Default{
 			Category: "access",
 		}
 		err := rows.Scan(
@@ -309,19 +309,19 @@ func findDefaultAccesses(tx *sql.Tx, ctx context.Context, find service.DefaultFi
 	return defaults, nil
 }
 
-func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) (*service.Default, error) {
-	find := service.DefaultFinder{
+func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) (*forge.Default, error) {
+	find := forge.DefaultFinder{
 		EntryType: &entry_type,
 		Name:      &name,
 	}
 	defaults, err := findDefaultAccesses(tx, ctx, find)
 	if len(defaults) == 0 {
-		return nil, service.NotFound("default not found")
+		return nil, forge.NotFound("default not found")
 	}
 	return defaults[0], err
 }
 
-func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.DefaultFinder) ([]*service.Default, error) {
+func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryType != nil {
@@ -352,9 +352,9 @@ func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.Default
 		return nil, err
 	}
 	defer rows.Close()
-	defaults := make([]*service.Default, 0)
+	defaults := make([]*forge.Default, 0)
 	for rows.Next() {
-		d := &service.Default{
+		d := &forge.Default{
 			Category: "sub_entry",
 		}
 		err := rows.Scan(
@@ -371,19 +371,19 @@ func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find service.Default
 	return defaults, nil
 }
 
-func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
+func AddDefault(db *sql.DB, ctx context.Context, d *forge.Default) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to add default: %v", user)
+		return forge.Unauthorized("user doesn't have permission to add default: %v", user)
 	}
 	switch d.Category {
 	case "property":
@@ -416,7 +416,7 @@ func AddDefault(db *sql.DB, ctx context.Context, d *service.Default) error {
 	return nil
 }
 
-func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *service.Default) error {
+func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -467,7 +467,7 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *service.Default) err
 	return nil
 }
 
-func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *service.Default) error {
+func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -512,7 +512,7 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *service.Default) erro
 	return nil
 }
 
-func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *service.Default) error {
+func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -563,7 +563,7 @@ func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *service.Default) error
 	return nil
 }
 
-func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) error {
+func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -598,19 +598,19 @@ func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *service.Default) err
 	return nil
 }
 
-func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) error {
+func UpdateDefault(db *sql.DB, ctx context.Context, upd forge.DefaultUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to update default: %v", user)
+		return forge.Unauthorized("user doesn't have permission to update default: %v", user)
 	}
 	switch upd.Category {
 	case "property":
@@ -643,7 +643,7 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd service.DefaultUpdater) 
 	return nil
 }
 
-func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
+func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Type != nil {
@@ -723,7 +723,7 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd service.DefaultU
 	return nil
 }
 
-func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
+func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Type != nil {
@@ -796,7 +796,7 @@ func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd service.DefaultUp
 	return nil
 }
 
-func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
+func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Type != nil {
@@ -836,7 +836,7 @@ func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd service.DefaultUpd
 	return nil
 }
 
-func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd service.DefaultUpdater) error {
+func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Type != nil {
@@ -880,13 +880,13 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to delete default: %v", user)
+		return forge.Unauthorized("user doesn't have permission to delete default: %v", user)
 	}
 	switch ctg {
 	case "property":
@@ -939,7 +939,7 @@ func deleteDefaultProperty(tx *sql.Tx, ctx context.Context, entryType, name stri
 		return err
 	}
 	if n == 0 {
-		return service.NotFound("no such default for entry type %v: %v %v", entryType, "property", name)
+		return forge.NotFound("no such default for entry type %v: %v %v", entryType, "property", name)
 	}
 	return nil
 }
@@ -964,7 +964,7 @@ func deleteDefaultEnviron(tx *sql.Tx, ctx context.Context, entryType, name strin
 		return err
 	}
 	if n == 0 {
-		return service.NotFound("no such default for entry type %v: %v %v", entryType, "environ", name)
+		return forge.NotFound("no such default for entry type %v: %v %v", entryType, "environ", name)
 	}
 	return nil
 }
@@ -993,7 +993,7 @@ func deleteDefaultAccess(tx *sql.Tx, ctx context.Context, entryType, name string
 		return err
 	}
 	if n == 0 {
-		return service.NotFound("no such default for entry type %v: %v %v", entryType, "access", name)
+		return forge.NotFound("no such default for entry type %v: %v %v", entryType, "access", name)
 	}
 	return nil
 }
@@ -1018,7 +1018,7 @@ func deleteDefaultSubEntry(tx *sql.Tx, ctx context.Context, entryType, name stri
 		return err
 	}
 	if n == 0 {
-		return service.NotFound("no such default for entry type %v: %v %v", entryType, "sub_entry", name)
+		return forge.NotFound("no such default for entry type %v: %v %v", entryType, "sub_entry", name)
 	}
 	return nil
 }

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/imagvfx/forge/service"
+	"github.com/imagvfx/forge"
 )
 
 // see createAccessorTable for table creation.
@@ -50,7 +50,7 @@ func addAdminGroup(tx *sql.Tx) error {
 	return nil
 }
 
-func FindGroups(db *sql.DB, ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
+func FindGroups(db *sql.DB, ctx context.Context, find forge.GroupFinder) ([]*forge.Group, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func FindGroups(db *sql.DB, ctx context.Context, find service.GroupFinder) ([]*s
 	return groups, nil
 }
 
-func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*service.Group, error) {
+func findGroups(tx *sql.Tx, ctx context.Context, find forge.GroupFinder) ([]*forge.Group, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	keys = append(keys, "is_group=?")
@@ -99,9 +99,9 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 		return nil, err
 	}
 	defer rows.Close()
-	groups := make([]*service.Group, 0)
+	groups := make([]*forge.Group, 0)
 	for rows.Next() {
-		u := &service.Group{}
+		u := &forge.Group{}
 		err := rows.Scan(
 			&u.ID,
 			&u.Name,
@@ -115,7 +115,7 @@ func findGroups(tx *sql.Tx, ctx context.Context, find service.GroupFinder) ([]*s
 	return groups, nil
 }
 
-func GetGroup(db *sql.DB, ctx context.Context, name string) (*service.Group, error) {
+func GetGroup(db *sql.DB, ctx context.Context, name string) (*forge.Group, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -133,30 +133,30 @@ func GetGroup(db *sql.DB, ctx context.Context, name string) (*service.Group, err
 	return u, nil
 }
 
-func getGroup(tx *sql.Tx, ctx context.Context, name string) (*service.Group, error) {
-	groups, err := findGroups(tx, ctx, service.GroupFinder{Name: &name})
+func getGroup(tx *sql.Tx, ctx context.Context, name string) (*forge.Group, error) {
+	groups, err := findGroups(tx, ctx, forge.GroupFinder{Name: &name})
 	if err != nil {
 		return nil, err
 	}
 	if len(groups) == 0 {
-		return nil, service.NotFound("group not found")
+		return nil, forge.NotFound("group not found")
 	}
 	return groups[0], nil
 }
 
-func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
+func AddGroup(db *sql.DB, ctx context.Context, g *forge.Group) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to add group: %v", user)
+		return forge.Unauthorized("user doesn't have permission to add group: %v", user)
 	}
 	if strings.Split(g.Name, "@")[0] == "everyone" {
 		return fmt.Errorf("'everyone[@host]' group will be created automatically and cannot be created by a user")
@@ -172,7 +172,7 @@ func AddGroup(db *sql.DB, ctx context.Context, g *service.Group) error {
 	return nil
 }
 
-func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
+func addGroup(tx *sql.Tx, ctx context.Context, g *forge.Group) error {
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO accessors (
 			is_group,
@@ -196,19 +196,19 @@ func addGroup(tx *sql.Tx, ctx context.Context, g *service.Group) error {
 	return nil
 }
 
-func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) error {
+func UpdateGroup(db *sql.DB, ctx context.Context, upd forge.GroupUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	user := service.UserNameFromContext(ctx)
+	user := forge.UserNameFromContext(ctx)
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
 	}
 	if !yes {
-		return service.Unauthorized("user doesn't have permission to update group: %v", user)
+		return forge.Unauthorized("user doesn't have permission to update group: %v", user)
 	}
 	err = updateGroup(tx, ctx, upd)
 	if err != nil {
@@ -221,7 +221,7 @@ func UpdateGroup(db *sql.DB, ctx context.Context, upd service.GroupUpdater) erro
 	return nil
 }
 
-func updateGroup(tx *sql.Tx, ctx context.Context, upd service.GroupUpdater) error {
+func updateGroup(tx *sql.Tx, ctx context.Context, upd forge.GroupUpdater) error {
 	g, err := getGroup(tx, ctx, upd.Name)
 	if err != nil {
 		return err

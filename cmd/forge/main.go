@@ -12,7 +12,6 @@ import (
 
 	"github.com/gorilla/securecookie"
 	"github.com/imagvfx/forge"
-	"github.com/imagvfx/forge/service"
 	"github.com/imagvfx/forge/service/sqlite"
 	"github.com/kybin/bml"
 )
@@ -131,7 +130,7 @@ func main() {
 		// remaining code will not be called even if we re-run the program,
 		// as the db has already created.
 		// how to handle this better?
-		ctx := service.ContextWithUserName(context.Background(), "system")
+		ctx := forge.ContextWithUserName(context.Background(), "system")
 		for _, t := range cfg.EntryType.Types {
 			if t.Name == "root" {
 				// root entry type should be already created.

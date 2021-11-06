@@ -6,8 +6,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/imagvfx/forge/service"
 )
 
 type Entry struct {
@@ -31,6 +29,23 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+type EntryFinder struct {
+	ID         *int
+	ParentPath *string
+	Path       *string
+}
+
+type EntrySearcher struct {
+	SearchRoot string
+	EntryType  string
+	Keywords   []string
+}
+
+type EntryTypeUpdater struct {
+	ID   int
+	Name *string
+}
+
 // Status indicates a status in an entry type.
 // It should have css complient color information.
 type Status struct {
@@ -41,6 +56,7 @@ type Status struct {
 // Default is property, environ or sub-entry defined for entry type,
 // So it will be automatically created while creation of an entry of the entry type.
 type Default struct {
+	ID        int
 	EntryType string
 	Category  string
 	Name      string
@@ -48,17 +64,53 @@ type Default struct {
 	Value     string
 }
 
+type DefaultFinder struct {
+	EntryType *string
+	Category  *string
+	Name      *string
+}
+
+type DefaultUpdater struct {
+	EntryType string
+	Category  string
+	Name      string
+	Type      *string
+	Value     *string
+}
+
 // Global is similar with Default in a sense that it is tied to an EntryType.
 // But it won't be created for each entry. So it cannot be overrided as well.
 type Global struct {
+	ID        int
 	EntryType string
 	Name      string
 	Type      string
 	Value     string
 }
 
+type GlobalFinder struct {
+	EntryType *string
+	Name      *string
+}
+
+type GlobalUpdater struct {
+	EntryType string
+	Name      string
+	Type      *string
+	Value     *string
+}
+
 type Thumbnail struct {
 	ID        int
+	EntryPath string
+	Data      []byte
+}
+
+type ThumbnailFinder struct {
+	EntryPath *string
+}
+
+type ThumbnailUpdater struct {
 	EntryPath string
 	Data      []byte
 }
@@ -111,6 +163,17 @@ func LessProperty(t, a, b string) bool {
 	return a < b
 }
 
+type PropertyFinder struct {
+	EntryPath *string
+	Name      *string
+}
+
+type PropertyUpdater struct {
+	EntryPath string
+	Name      string
+	Value     *string
+}
+
 func PropertyTypes() []string {
 	return []string{
 		"text",
@@ -124,8 +187,8 @@ func PropertyTypes() []string {
 	}
 }
 
-func (p *Property) ServiceProperty() *service.Property {
-	sp := &service.Property{
+func (p *Property) ServiceProperty() *Property {
+	sp := &Property{
 		EntryPath: p.EntryPath,
 		Name:      p.Name,
 		Type:      p.Type,
@@ -143,12 +206,21 @@ func AccessorTypes() []string {
 	}
 }
 
+// Accessor is either a user or a group, that can be specified in entry access control list.
+type Accessor struct {
+	ID      int
+	IsGroup bool
+	Name    string
+	Called  string
+}
+
 type AccessControl struct {
 	ID           int
 	EntryPath    string
 	Accessor     string
 	AccessorType string
 	Mode         string
+	RawMode      int
 	UpdatedAt    time.Time
 }
 
@@ -171,6 +243,17 @@ func (p *AccessControl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
+type AccessControlFinder struct {
+	EntryPath *string
+	Accessor  *string
+}
+
+type AccessControlUpdater struct {
+	EntryPath string
+	Accessor  string
+	Mode      *string
+}
+
 type Log struct {
 	ID        int
 	EntryPath string
@@ -191,10 +274,28 @@ func (l *Log) String() string {
 	return s
 }
 
+type LogFinder struct {
+	EntryPath *string
+	Category  *string
+	Name      *string
+}
+
 type User struct {
 	ID     int
 	Name   string
 	Called string
+}
+
+type UserFinder struct {
+	ID     *int
+	Name   *string
+	Called *string
+}
+
+type UserUpdater struct {
+	ID     int
+	Name   *string
+	Called *string
 }
 
 type UserSetting struct {
@@ -203,8 +304,18 @@ type UserSetting struct {
 	EntryPageSearchEntryType string
 	EntryPagePropertyFilter  map[string]string
 	EntryPageSortProperty    map[string]string
-	QuickSearches            []service.StringKV
+	QuickSearches            []StringKV
 	PinnedPaths              []string
+}
+
+type UserSettingFinder struct {
+	User *string
+}
+
+type UserSettingUpdater struct {
+	User  string
+	Key   string
+	Value interface{}
 }
 
 type StringKV struct {
@@ -218,7 +329,42 @@ type Group struct {
 	Called string
 }
 
+type GroupFinder struct {
+	Name   *string
+	Called *string
+}
+
+type GroupUpdater struct {
+	Name    string
+	NewName *string
+	Called  *string
+}
+
 type Member struct {
 	Group  string
 	Member string
+}
+
+type MemberFinder struct {
+	Group  string
+	Member *string
+}
+
+type QuickSearchArranger struct {
+	Name  string
+	Index int
+}
+
+// PinnedPathArranger add/move/remove the path from UserSetting.PinnedPaths.
+// The index system in Arranger is a little different than the others, so please read below.
+//
+// The path will be removed when Index is under 0.
+// Otherwise the path will be moved to the index.
+// The path will be added when it doesn't already exist in the PinnedPaths.
+// It will just be appeneded to the end, when Index is equal or greater than len(PinnedPaths).
+//
+// TODO: It could be changed to SliceItemArranger when generics come in Go.
+type PinnedPathArranger struct {
+	Path  string
+	Index int
 }
