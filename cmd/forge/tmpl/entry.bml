@@ -4,7 +4,7 @@
 <html> [
 	<head> [
 		{{template "style"}}
-		{{template "entry_css.bml" .}}
+		{{template "entry.bml.css" .}}
 	]
 	<body> [
 		{{template "nav" $}}
@@ -383,5 +383,5 @@
 	]
 ]
 
-{{template "entry_js.bml" .}}
+{{template "entry.bml.js" .}}
 
