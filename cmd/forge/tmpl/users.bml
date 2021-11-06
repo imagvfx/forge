@@ -1,10 +1,10 @@
 <!doctype html>
 <html> [
 	<head> [
-		{{template "style"}}
+		<style> [`{{template "style.css"}}`]
 	]
 	<body> [
-		{{template "nav" $}}
+		{{template "nav.bml" $}}
 		<div class="main"> [
 			<div class="one"> [
 				<h1> [

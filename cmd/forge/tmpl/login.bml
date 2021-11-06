@@ -1,7 +1,7 @@
 <!doctype html>
 <html> [
 	<head> [
-		{{template "style"}}
+		<style> [`{{template "style.css"}}`]
 	]
 	<body> [
 		<div class="main"> [

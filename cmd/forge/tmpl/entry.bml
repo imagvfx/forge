@@ -3,11 +3,11 @@
 
 <html> [
 	<head> [
-		{{template "style"}}
-		{{template "entry.bml.css" .}}
+		<style> [`{{template "style.css"}}`]
+		<style> [`{{template "entry.bml.css" .}}`]
 	]
 	<body> [
-		{{template "nav" $}}
+		{{template "nav.bml" $}}
 		<div class="main"> [
 			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
 				<!-- Pinned Path -->
@@ -383,5 +383,5 @@
 	]
 ]
 
-{{template "entry.bml.js" .}}
+<script> [```{{template "entry.bml.js" .}}```]
 

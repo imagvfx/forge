@@ -1,4 +1,3 @@
-<script> [```
 "use strict";
 
 window.onload = function() {
@@ -1100,4 +1099,3 @@ function autoComplete(input, labels, vals, oncomplete) {
 		items[focus].classList.add("active");
 	}
 }
-```]
