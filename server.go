@@ -55,7 +55,7 @@ func (s *Server) SearchEntries(ctx context.Context, path, entryType, query strin
 	}
 	if entryType == "" && query == "" {
 		// Even though it's possible technically, it will show too many.
-		return nil, fmt.Errorf("both entry type and query message not specified. need one at least.")
+		return nil, fmt.Errorf("need search query")
 	}
 	if entryType != "" {
 		found := false

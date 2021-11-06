@@ -69,10 +69,7 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		order := p[0]
 		// '+' means ascending, '-' means descending order
-		if order == '-' {
-			return true
-		}
-		return false
+		return order == '-'
 	},
 	"marshalJS": func(v interface{}) (template.JS, error) {
 		b, err := json.Marshal(v)
@@ -376,7 +373,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		propFilters[typ] = strings.Fields(g.Value)
 	}
-	possibleStatus := make(map[string][]forge.Status, 0)
+	possibleStatus := make(map[string][]forge.Status)
 	for typ := range subEntsByTypeByParent {
 		status := make([]forge.Status, 0)
 		p, err := h.server.GetGlobal(ctx, typ, "possible_status")
