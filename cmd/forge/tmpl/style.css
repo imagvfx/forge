@@ -95,3 +95,11 @@ a:hover {
 #sort_desc_cb:checked {
 	background-image: url("/asset/up-arrow.svg");
 }
+
+.invisible {
+	visibility: hidden !important
+}
+
+.nodisplay {
+	display: none !important
+}
