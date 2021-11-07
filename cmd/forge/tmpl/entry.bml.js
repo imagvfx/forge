@@ -92,7 +92,7 @@ window.onload = function() {
 				updatePinnedPath(pp.innerText, at);
 			}
 			let del = document.getElementById("pinnedPathDeleteButton");
-			del.style.display = "inline-block";
+			del.classList.remove("nodisplay");
 			del.ondragenter = function(ev) {
 				ev.preventDefault();
 				ev.dataTransfer.dropEffect = "move";
@@ -119,7 +119,7 @@ window.onload = function() {
 			removeDragDropEvents(zone);
 			let del = document.getElementById("pinnedPathDeleteButton");
 			removeDragDropEvents(del);
-			del.style.display = "none";
+			del.classList.add("nodisplay");
 			if (event.dataTransfer.dropEffect == "none") {
 				let curIdx = -1;
 				let paths = document.getElementsByClassName("pinnedPathLink");
@@ -212,7 +212,7 @@ window.onload = function() {
 				updateQuickSearch(qs.innerText, at);
 			}
 			let del = document.getElementById("quickSearchDeleteButton");
-			del.style.display = "inline-block";
+			del.classList.remove("nodisplay");
 			del.ondragenter = function(ev) {
 				ev.preventDefault();
 				ev.dataTransfer.dropEffect = "move";
@@ -239,7 +239,7 @@ window.onload = function() {
 			removeDragDropEvents(zone);
 			let del = document.getElementById("quickSearchDeleteButton");
 			removeDragDropEvents(del);
-			del.style.display = "none";
+			del.classList.add("nodisplay");
 			if (event.dataTransfer.dropEffect == "none") {
 				let curIdx = -1;
 				let searches = document.getElementsByClassName("quickSearchLink");
@@ -552,13 +552,13 @@ function updateQuickSearch(path, at) {
 
 function toggleRenameInput() {
 	let input = document.getElementById("renameInput");
-	if (input.style.display == "none") {
-		input.style.display = "block";
+	if (input.classList.contains("nodisplay")) {
+		input.classList.remove("nodisplay");
 		let end = input.value.length;
 		input.setSelectionRange(0, end);
 		input.focus();
 	} else {
-		input.style.display = "none";
+		input.classList.add("nodisplay");
 	}
 }
 
@@ -735,17 +735,17 @@ function hideAllItems() {
 	document.getElementById("property-box").classList.remove("selected");
 	let props = items.getElementsByClassName("property-items");
 	for (let p of props) {
-		p.style.display = "none";
+		p.classList.add("nodisplay");
 	}
 	document.getElementById("environ-box").classList.remove("selected");
 	let envs = items.getElementsByClassName("environ-items");
 	for (let e of envs) {
-		e.style.display = "none";
+		e.classList.add("nodisplay");
 	}
 	document.getElementById("access-box").classList.remove("selected");
 	let accesses = items.getElementsByClassName("access-items");
 	for (let a of accesses) {
-		a.style.display = "none";
+		a.classList.add("nodisplay");
 	}
 }
 
@@ -760,7 +760,7 @@ function showItems(ctg) {
 	let items = document.getElementById("entry-items");
 	let props = items.getElementsByClassName(ctg + "-items");
 	for (let p of props) {
-		p.style.display = "block";
+		p.classList.remove("nodisplay");
 	}
 }
 
@@ -769,7 +769,7 @@ function showItemUpdater(entry, ctg, name, type, value) {
 	hideItemAdder();
 
 	let updater = document.getElementById("itemUpdater");
-	updater.style.display = "block";
+	updater.classList.remove("nodisplay");
 	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
 	updater.getElementsByClassName("entryInput")[0].value = entry;
 	updater.getElementsByClassName("categoryInput")[0].value = ctg;
@@ -789,7 +789,7 @@ function showItemUpdater(entry, ctg, name, type, value) {
 
 function hideItemUpdater() {
 	let updater = document.getElementById("itemUpdater");
-	updater.style.display = "none";
+	updater.classList.add("nodisplay");
 }
 
 let PropertyTypes = {{marshalJS $.PropertyTypes}}
@@ -801,7 +801,7 @@ function showItemAdder(entry, ctg) {
 	hideItemUpdater();
 
 	let adder = document.getElementById("itemAdder");
-	adder.style.display = "block";
+	adder.classList.remove("nodisplay");
 	adder.getElementsByClassName("entryLabel")[0].innerText = entry;
 	adder.getElementsByClassName("entryInput")[0].value = entry;
 	adder.getElementsByClassName("categoryInput")[0].value = ctg;
@@ -834,7 +834,7 @@ function showItemAdder(entry, ctg) {
 
 function hideItemAdder() {
 	let adder = document.getElementById("itemAdder");
-	adder.style.display = "none";
+	adder.classList.add("nodisplay");
 }
 
 // showStatusBarOnly shows statusBar and hide other elements in footer. (need for eg. update thumbnail failed.)
@@ -869,7 +869,7 @@ function clearStatus() {
 
 function toggleFooter() {
 	let footer = document.getElementById("footer");
-	if (footer.style.display == "block") {
+	if (!footer.classList.contains("nodisplay")) {
 		hideFooter();
 	} else {
 		showFooter();
@@ -878,21 +878,21 @@ function toggleFooter() {
 
 function showFooter() {
 	let footer = document.getElementById("footer");
-	footer.style.display = "block";
+	footer.classList.remove("nodisplay");
 }
 
 function hideFooter() {
 	let footer = document.getElementById("footer");
-	footer.style.display = "none";
+	footer.classList.add("nodisplay");
 }
 
 function toggleCollapse() {
 	let collapsible = this.parentElement;
 	let content = collapsible.getElementsByClassName("content")[0];
-	if (content.style.display == "none") {
-		content.style.display = "block";
+	if (content.classList.contains("nodisplay")) {
+		content.classList.remove("nodisplay");
 	} else {
-		content.style.display = "none";
+		content.classList.add("nodisplay");
 	}
 }
 
@@ -925,12 +925,12 @@ function openDeleteEntryDialog(path) {
 		}
 		numSubEntries = j.Msg;
 		if (numSubEntries != 0) {
-			document.getElementById("deleteEntryDialogNoSub").style.display = "none";
-			document.getElementById("deleteEntryDialogHasSub").style.display = "block";
+			document.getElementById("deleteEntryDialogNoSub").classList.add("nodisplay");
+			document.getElementById("deleteEntryDialogHasSub").classList.remove("nodisplay");
 			document.getElementById("deleteEntryDialogTotalSub").innerText = String(numSubEntries);
 		} else {
-			document.getElementById("deleteEntryDialogNoSub").style.display = "block";
-			document.getElementById("deleteEntryDialogHasSub").style.display = "none";
+			document.getElementById("deleteEntryDialogNoSub").classList.remove("nodisplay");
+			document.getElementById("deleteEntryDialogHasSub").classList.add("nodisplay");
 			document.getElementById("deleteEntryDialogTotalSub").innerText = "";
 		}
 		document.getElementById("deleteEntryDialogEntry").innerText = path;

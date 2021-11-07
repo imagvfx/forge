@@ -13,7 +13,7 @@
 				<!-- Pinned Path -->
 				<div style="display:flex;padding:1.5rem;align-items:center;"> [
 					<div style="font-size:1rem;color:#555;margin-right:0.5rem;"> [Pinned]
-					<div id="pinnedPathDeleteButton" style="display:none;border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
+					<div id="pinnedPathDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
 				]
 				<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
 					{{range $i, $p := $.UserSetting.PinnedPaths}}
@@ -32,7 +32,7 @@
 					<div id="quickSearch"> [
 						<div style="display:flex;margin-bottom:0.5rem;"> [
 							<div id="quickSearchLabel" style="font-size:0.8rem;color:#AAA;margin-right:1rem;"> [quick search]
-							<div id="quickSearchDeleteButton" style="display:none;border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
+							<div id="quickSearchDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
 						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 						{{range $i, $search := $.UserSetting.QuickSearches -}}
@@ -78,7 +78,7 @@
 						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;font-size:0.75rem;"> [
 							<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input id="uploadExcelInput" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none"> []
+								<input id="uploadExcelInput" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
 								<label for="uploadExcelInput" class="uploadExcelButton" style="cursor:pointer;"> [Update With Excel]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
@@ -91,7 +91,7 @@
 							]
 							<form action="/api/rename-entry" method="post"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input id="renameInput" name="new-name" type="text" style="display:none" value="{{$.Entry.Name}}"> []
+								<input id="renameInput" class="nodisplay" name="new-name" type="text" value="{{$.Entry.Name}}"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
@@ -109,7 +109,7 @@
 									<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 										<label class="updateThumbnailButton thumbnailButton"> [+
-											<input class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none"> []
+											<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 										]
 										<input readonly name="back_to_referer" type="hidden" value="1"> []
 									]
@@ -140,7 +140,7 @@
 							<!-- Property / Environ / Access Items -->
 							<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 								{{range $p := $.Properties}}
-								<div class="property-items info" data-info-id="{{$p.EntryPath}}.property.{{$p.Name}}" data-entry="{{$p.EntryPath}}" data-info-type="property" data-info-name="{{$p.Name}}" style="display:none"> [
+								<div class="property-items info nodisplay" data-info-id="{{$p.EntryPath}}.property.{{$p.Name}}" data-entry="{{$p.EntryPath}}" data-info-type="property" data-info-name="{{$p.Name}}"> [
 									<div style="display:flex;gap:1rem;"> [
 										<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
 											<div> [{{$p.Name}}]
@@ -154,7 +154,7 @@
 								]
 								{{end}}
 								{{range $e := $.Environs}}
-								<div class="environ-items info" data-info-id="{{$e.EntryPath}}.environ.{{$e.Name}}" data-entry="{{$e.EntryPath}}" data-info-type="environ" data-info-name="{{$e.Name}}" style="display:none"> [
+								<div class="environ-items info nodisplay" data-info-id="{{$e.EntryPath}}.environ.{{$e.Name}}" data-entry="{{$e.EntryPath}}" data-info-type="environ" data-info-name="{{$e.Name}}"> [
 									<div style="display:flex;gap:1rem;"> [
 										<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $e}}onclick="showItemUpdater('{{$e.EntryPath}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"{{end}}> [
 											<div> [{{$e.Name}}]
@@ -168,7 +168,7 @@
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
-								<div class="access-items info" data-info-id="{{$a.EntryPath}}.access.{{$a.Accessor}}" data-entry="{{$a.EntryPath}}" data-info-type="access" data-info-name="{{$a.Accessor}}" style="display:none"> [
+								<div class="access-items info nodisplay" data-info-id="{{$a.EntryPath}}.access.{{$a.Accessor}}" data-entry="{{$a.EntryPath}}" data-info-type="access" data-info-name="{{$a.Accessor}}"> [
 									<div style="display:flex;gap:1rem;"> [
 										<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $a}}onclick="showItemUpdater('{{$a.EntryPath}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"{{end}}> [
 											<div> [{{$a.Accessor}}]
@@ -211,7 +211,7 @@
 							<form action="/api/update-user-setting" style="flex:1;display:flex" method="POST"> [
 								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
 								<input name="entry_page_property_filter" type="text" style="flex:1;border:1px solid #DDD;border-radius:2px;width:20rem" value="{{index $.UserSetting.EntryPagePropertyFilter $entType}}" placeholder="filter"> []
-								<button style="display:none" name="update_filter" value="1"> []
+								<button class="nodisplay" name="update_filter" value="1"> []
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<!-- Sort -->
@@ -263,7 +263,7 @@
 													<form class="updateThumbnailForm" action="/api/{{if $ent.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 														<input name="path" type="hidden" value="{{$ent.Path}}"> []
 														<label class="updateThumbnailButton thumbnailButton"> [+
-															<input class="updateThumbnailInput" name="file" type="file" accept="image/jpeg, image/png" style="display:none"> []
+															<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 														]
 														<input readonly name="back_to_referer" type="hidden" value="1"> []
 													]
@@ -305,8 +305,8 @@
 				{{$i = inc $i}}
 				{{end}}
 				]
-				<div id="footer" style="display:none;position:fixed;left:0;bottom:0;width:100%;"> [
-					<div id="itemUpdater" style="display:none;background-color:#F9F9F9;border-top:1px solid #BBB;"> [
+				<div id="footer" class="nodisplay" style="position:fixed;left:0;bottom:0;width:100%;"> [
+					<div id="itemUpdater" class="nodisplay" style="background-color:#F9F9F9;border-top:1px solid #BBB;"> [
 						<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#E0EEEE"> [
 							<div class="entryLabel" style=""> []
 							<div style="border-radius:3px;background-color:#BDD;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideFooter()"> [&#x2715]
@@ -325,7 +325,7 @@
 							]
 						]
 					]
-					<div id="itemAdder" style="display:none;box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB;"> [
+					<div id="itemAdder" class="nodisplay" style="box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB;"> [
 						<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#F5E0E0;"> [
 							<div class="entryLabel" style=""> []
 							<div style="border-radius:3px;background-color:#ECC;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideFooter()"> [&#x2715]
@@ -347,7 +347,7 @@
 				]
 				<div id="infoContextMenu" style="position:absolute;visibility:hidden;display:flex;flex-direction:column;width:4rem;padding:0.3rem 0.6rem;gap:0.3rem;border:1px solid #AAA;border-radius:2px;background-color:#F4F4F4;font-size:0.75rem;"> [
 					<a class="infoHistory" style="color:black;"> [History]
-					<a class="infoDelete" style="display:none;color:#A22;cursor:pointer;"> [Delete <!-- temporarily hidden -->]
+					<a class="infoDelete nodisplay" style="color:#A22;cursor:pointer;"> [Delete <!-- temporarily hidden -->]
 				]
 				<div id="userAutoCompleteMenu"> []
 				{{range $entType, $ps := $.PossibleStatus}}
