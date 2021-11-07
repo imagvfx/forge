@@ -315,10 +315,12 @@ window.onload = function() {
 							sel.dataset.value = item.dataset.value;
 							menu.classList.add("invisible");
 						} else {
+							showStatusBarOnly();
 							printErrorStatus(req.responseText);
 						}
 					}
 					req.onerror = function(err) {
+						showStatusBarOnly();
 						printErrorStatus("network error occurred. please check whether the server is down.");
 					}
 				}
@@ -386,10 +388,12 @@ window.onload = function() {
 			req.open("post", "/api/update-property");
 			req.send(formData);
 			req.onerror = function() {
+				showStatusBarOnly();
 				printErrorStatus("network error occurred. please check whether the server is down.");
 			}
 			req.onload = function() {
 				if (req.status != 200) {
+					showStatusBarOnly();
 					printErrorStatus(req.responseText);
 					return;
 				}
@@ -400,6 +404,7 @@ window.onload = function() {
 				input.value = called;
 				input.dataset.oldValue = called;
 				if (!called) {
+					showStatusBarOnly();
 					printStatus("done");
 					return;
 				}
@@ -413,9 +418,11 @@ window.onload = function() {
 				r.open("post", "/api/add-or-update-access");
 				r.send(data);
 				r.onerror = function() {
+					showStatusBarOnly();
 					printErrorStatus("network error occurred. please check whether the server is down.");
 				}
 				r.onload = function() {
+					showStatusBarOnly();
 					if (r.status != 200) {
 						printErrorStatus(r.responseText);
 						return;
@@ -458,10 +465,12 @@ window.onload = function() {
 					if (req.status == 200) {
 						location.reload();
 					} else {
+						showStatusBarOnly();
 						printErrorStatus(req.responseText);
 					}
 				}
 				req.onerror = function(err) {
+					showStatusBarOnly();
 					printErrorStatus("network error occurred. please check whether the server is down.");
 				}
 			}
@@ -522,10 +531,12 @@ function updatePinnedPath(path, at) {
 		if (req.status == 200) {
 			location.reload();
 		} else {
+			showStatusBarOnly();
 			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
+		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
@@ -542,10 +553,12 @@ function updateQuickSearch(path, at) {
 		if (req.status == 200) {
 			location.reload();
 		} else {
+			showStatusBarOnly();
 			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
+		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
@@ -565,6 +578,7 @@ function toggleRenameInput() {
 function updateThumbnail(thumb) {
 	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("updateThumbnailForm")[0];
+	showStatusBarOnly();
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
 		// Prevent Safari from firing this event twice.
@@ -598,6 +612,7 @@ function updateThumbnail(thumb) {
 	}
 	req.onerror = function(err) {
 		img.parentElement.style.border = "1px solid #D72";
+		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
@@ -605,6 +620,7 @@ function updateThumbnail(thumb) {
 function deleteThumbnail(thumb) {
 	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("deleteThumbnailForm")[0];
+	showStatusBarOnly();
 	let req = new XMLHttpRequest();
 	req.open(form.method, form.action);
 	req.send(new FormData(form));
@@ -848,23 +864,19 @@ function showStatusBarOnly() {
 }
 
 function printStatus(s) {
-	showStatusBarOnly();
 	let statusBar = document.getElementById("statusBar");
 	statusBar.classList.remove("error");
 	statusBar.innerHTML = s;
 }
 
 function printErrorStatus(e) {
-	showStatusBarOnly();
 	let statusBar = document.getElementById("statusBar");
 	statusBar.classList.add("error");
 	statusBar.innerHTML = e;
 }
 
 function clearStatus() {
-	let statusBar = document.getElementById("statusBar");
-	statusBar.classList.remove("error");
-	statusBar.innerHTML = "";
+	printStatus("");
 }
 
 function toggleFooter() {
@@ -911,15 +923,18 @@ function openDeleteEntryDialog(path) {
 	req.open("post", "/api/count-all-sub-entries");
 	req.send(formData);
 	req.onerror = function(err) {
+		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	req.onload = function() {
 		if (req.status != 200) {
+			showStatusBarOnly();
 			printErrorStatus(req.responseText);
 			return;
 		}
 		let j = JSON.parse(req.responseText);
 		if (j.Err != null) {
+			showStatusBarOnly();
 			printErrorStatus(j.Err);
 			return;
 		}
@@ -950,11 +965,13 @@ function openDeleteEntryDialog(path) {
 		req.open("post", "/api/delete-entry");
 		req.send(formData);
 		req.onerror = function(err) {
+			showStatusBarOnly();
 			printErrorStatus("network error occurred. please check whether the server is down.");
 			dialogBg.classList.add("invisible");
 		}
 		req.onload = function() {
 			if (req.status != 200) {
+				showStatusBarOnly();
 				printErrorStatus(req.responseText);
 				dialogBg.classList.add("invisible");
 				return;
