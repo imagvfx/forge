@@ -363,6 +363,7 @@
 					]
 					{{end}}
 				]
+				<div id="statusLabel" class="nodisplay"> []
 				{{end}}
 			]
 		]

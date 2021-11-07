@@ -326,6 +326,20 @@ window.onload = function() {
 				}
 			}
 		}
+		let label = document.getElementById("statusLabel");
+		sel.onmouseenter = function(event) {
+			let status = sel.dataset.value;
+			if (status == "") {
+				status = "(none)"
+			}
+			label.innerText = status;
+			label.classList.remove("nodisplay");
+			label.style.left = String(sel.offsetLeft - 4) + "px";
+			label.style.top = String(sel.offsetTop - label.offsetHeight - 3) + "px";
+		}
+		sel.onmouseleave = function(event) {
+			label.classList.add("nodisplay");
+		}
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
 	for (let thumb of thumbs) {

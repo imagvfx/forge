@@ -396,11 +396,21 @@
 	border-radius: 0 0 3px 3px;
 }
 
-
 .selectStatusMenuItemDot {
 	margin: 0.3rem;
 }
 
 .selectStatusMenuItemValue {
 	margin: 0.35rem 0.3rem 0.3rem 0.3rem;
+}
+
+#statusLabel {
+	position: absolute;
+	border: 1px solid #AAAAAA;
+	border-radius: 4px;
+	color: #222222;
+	background-color: #FAFAFA;
+	padding: 0.2rem 0.4rem;
+	font-size: 0.8rem;
+	opacity: 0.8;
 }
