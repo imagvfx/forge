@@ -5,14 +5,14 @@ window.onload = function() {
 	document.onclick = function(event) {
 		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
 		for (let menu of selectStatusMenus) {
-			menu.style.visibility = "hidden";
+			menu.classList.add("invisible");
 		}
 		let userMenu = document.getElementById("userAutoCompleteMenu");
 		userMenu.replaceChildren();
-		userMenu.style.visibility = "hidden";
+		userMenu.classList.add("invisible");
 		let infoMenu = document.getElementById("infoContextMenu");
 		if (currentContextMenuLoader != null) {
-			infoMenu.style.visibility = "hidden"
+			infoMenu.classList.add("invisible");
 			currentContextMenuLoader = null;
 			return;
 		}
@@ -285,14 +285,14 @@ window.onload = function() {
 		sel.onclick = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			if (currentStatusSelect == sel && menu.style.visibility == "visible") {
-				menu.style.visibility = "hidden";
+			if (currentStatusSelect == sel && !menu.classList.contains("invisible")) {
+				menu.classList.add("invisible");
 				currentStatusSelect = null;
 				return;
 			}
 			currentStatusSelect = sel;
 			// slight adjust of the menu position to make statusDots aligned.
-			menu.style.visibility = "visible";
+			menu.classList.remove("invisible");
 			menu.style.left = String(sel.offsetLeft - 6) + "px";
 			menu.style.top = String(sel.offsetTop + sel.offsetHeight + 4) + "px";
 			let items = menu.getElementsByClassName("selectStatusMenuItem");
@@ -313,7 +313,7 @@ window.onload = function() {
 							let newClass = "statusDot-" + sel.dataset.entryType + "-" + item.dataset.value;
 							sel.classList.replace(oldClass, newClass);
 							sel.dataset.value = item.dataset.value;
-							menu.style.visibility = "hidden";
+							menu.classList.add("invisible");
 						} else {
 							printErrorStatus(req.responseText);
 						}
@@ -439,7 +439,7 @@ window.onload = function() {
 			let menu = document.getElementById("infoContextMenu");
 			if (currentContextMenuLoader == loader) {
 				currentContextMenuLoader = null;
-				menu.style.visibility = "hidden";
+				menu.classList.add("invisible");
 				return;
 			}
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
@@ -467,7 +467,7 @@ window.onload = function() {
 			}
 			let x = loader.offsetLeft;
 			let y = loader.offsetTop + loader.offsetHeight;
-			menu.style.visibility = "visible";
+			menu.classList.remove("invisible");
 			menu.style.left = x + "px";
 			menu.style.top = y + "px";
 			currentContextMenuLoader = loader;
@@ -643,7 +643,7 @@ function submitUpdaterOrAdder(ev, input) {
 	let prop = formData.get("name");
 	let marker = form.getElementsByClassName("updatingMarker")[0];
 	req.onload = function() {
-		marker.style.visibility = "hidden";
+		marker.classList.add("invisible");
 		if (req.status == 200) {
 			// we know the value we just send,
 			// but let's get the corrected value from server.
@@ -690,12 +690,12 @@ function submitUpdaterOrAdder(ev, input) {
 		}
 	}
 	req.onerror = function(err) {
-		marker.style.visibility = "hidden";
+		marker.classList.add("invisible");
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	req.open(form.method, form.action);
 	req.send(formData);
-	marker.style.visibility = "visible";
+	marker.classList.remove("invisible");
 }
 
 document.onkeydown = keyPressed;
@@ -706,20 +706,20 @@ function keyPressed(ev) {
 		let closed = false;
 		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
 		for (let menu of selectStatusMenus) {
-			if (menu.style.visibility != "hidden") {
-				menu.style.visibility = "hidden";
+			if (!menu.classList.contains("invisible")) {
+				menu.classList.add("invisible");
 				closed = true;
 			}
 		}
 		let userMenu = document.getElementById("userAutoCompleteMenu");
-		if (userMenu.style.visibility != "hidden") {
+		if (!userMenu.classList.contains("invisible")) {
 			userMenu.replaceChildren();
-			userMenu.style.visibility = "hidden";
+			userMenu.classList.add("invisible");
 			closed = true;
 		}
 		let infoMenu = document.getElementById("infoContextMenu");
-		if (infoMenu.style.visibility != "hidden") {
-			infoMenu.style.visibility = "hidden";
+		if (!infoMenu.classList.contains("invisible")) {
+			infoMenu.classList.add("invisible");
 			closed = true;
 		}
 		if (closed) {
@@ -934,11 +934,11 @@ function openDeleteEntryDialog(path) {
 			document.getElementById("deleteEntryDialogTotalSub").innerText = "";
 		}
 		document.getElementById("deleteEntryDialogEntry").innerText = path;
-		dialogBg.style.visibility = "visible";
+		dialogBg.classList.remove("invisible");
 	}
 	// cancel or confirm delete
 	document.getElementById("cancelDeleteEntryButton").onclick = function() {
-		dialogBg.style.visibility = "hidden";
+		dialogBg.classList.add("invisible");
 	}
 	document.getElementById("confirmDeleteEntryButton").onclick = function() {
 		let req = new XMLHttpRequest();
@@ -951,12 +951,12 @@ function openDeleteEntryDialog(path) {
 		req.send(formData);
 		req.onerror = function(err) {
 			printErrorStatus("network error occurred. please check whether the server is down.");
-			dialogBg.style.visibility = "hidden";
+			dialogBg.classList.add("invisible");
 		}
 		req.onload = function() {
 			if (req.status != 200) {
 				printErrorStatus(req.responseText);
-				dialogBg.style.visibility = "hidden";
+				dialogBg.classList.add("invisible");
 				return;
 			}
 			let toks = path.split("/");
@@ -1002,7 +1002,7 @@ function autoComplete(input, labels, vals, oncomplete) {
 		// reset focus on further input.
 		focus = -1;
 		let menu = document.getElementById("userAutoCompleteMenu");
-		menu.style.visibility = "hidden";
+		menu.classList.add("invisible");
 		menu.style.left = String(input.offsetLeft) + "px";
 		menu.style.top = String(input.offsetTop + input.offsetHeight) + "px";
 		menu.replaceChildren();
@@ -1025,13 +1025,13 @@ function autoComplete(input, labels, vals, oncomplete) {
 			item.onclick = function(ev) {
 				oncomplete(item.dataset.value);
 				menu.replaceChildren();
-				menu.style.visibility = "hidden";
+				menu.classList.add("invisible");
 				focus = -1;
 			}
 			menu.appendChild(item);
 		}
 		if (menu.children.length != 0) {
-			menu.style.visibility = "visible";
+			menu.classList.remove("invisible");
 		}
 	}
 	// Don't set input.onkeydown, it will swipe default (typing characters) behavior of input.
@@ -1041,7 +1041,7 @@ function autoComplete(input, labels, vals, oncomplete) {
 		if (event.key == "Tab") {
 			// Let the cursor move to another input.
 			menu.replaceChildren();
-			menu.style.visibility = "hidden";
+			menu.classList.add("invisible");
 			return;
 		}
 		deactivate(items);
@@ -1068,7 +1068,7 @@ function autoComplete(input, labels, vals, oncomplete) {
 				if (items.length == 0) {
 					oncomplete(input.value);
 					menu.replaceChildren();
-					menu.style.visibility = "hidden";
+					menu.classList.add("invisible");
 					focus = -1;
 					return;
 				}
@@ -1081,7 +1081,7 @@ function autoComplete(input, labels, vals, oncomplete) {
 		let menu = document.getElementById("userAutoCompleteMenu");
 		if (input.value == "") {
 			menu.replaceChildren();
-			menu.style.visibility = "hidden";
+			menu.classList.add("invisible");
 		}
 	}
 	function deactivate(items) {
