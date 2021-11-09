@@ -103,21 +103,34 @@
 .subEntryList {
 	display: flex;
 	flex-direction: column;
-	border: 1px solid #DDD;
+	border: 1px solid #DDDDDD;
 	border-radius: 4px;
+	background-color: #DDDDDD;
+	gap: 1px;
 }
 
 .subEntry {
 	display: flex;
 	flex-direction: column;
 	justify-content: start;
-	padding: 0.6rem 0.6rem 0.9rem 0.6rem;
 	gap: 0.6rem;
-	border-top:1px solid #DDD
+	padding: 0.6rem 0.6rem 0.9rem 0.6rem;
+	background-color: #FAFAFA;
+}
+
+.subEntry.selected {
+	outline: 1px solid #88AADD;
+	background-color: #EEFAFF;
 }
 
 .subEntry:first-child {
-	border-top: 0;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+}
+
+.subEntry:last-child {
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
 }
 
 .subEntryTop {
