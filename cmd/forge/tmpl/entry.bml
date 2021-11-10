@@ -249,7 +249,7 @@
 									<div class="subEntry entry" data-entry-path="{{$ent.Path}}"> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
-											<div class="statusSelect statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
+											<div class="statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 											{{end}}
 											<a class="subEntryName" href="{{$ent.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
 										]

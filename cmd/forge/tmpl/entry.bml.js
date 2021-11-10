@@ -283,34 +283,34 @@ window.onload = function() {
 			}
 		}
 	}
-	let currentStatusSelect = null;
-	let statusSelects = document.getElementsByClassName("statusSelect");
-	for (let sel of statusSelects) {
-		let entType = sel.dataset.entryType;
+	let currentStatusDot = null;
+	let statusDots = document.getElementsByClassName("statusDot");
+	for (let dot of statusDots) {
+		let entType = dot.dataset.entryType;
 		let menu = document.getElementById("selectStatusMenu-" + entType);
 		if (menu == null) {
 			// It can be null, if possible_status global for the entry type is not exists.
 			continue
 		}
-		sel.onclick = function(event) {
+		dot.onclick = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			if (currentStatusSelect == sel && !menu.classList.contains("invisible")) {
+			if (currentStatusDot == dot && !menu.classList.contains("invisible")) {
 				menu.classList.add("invisible");
-				currentStatusSelect = null;
+				currentStatusDot = null;
 				return;
 			}
-			currentStatusSelect = sel;
+			currentStatusDot = dot;
 			// slight adjust of the menu position to make statusDots aligned.
 			menu.classList.remove("invisible");
-			menu.style.left = String(sel.offsetLeft - 6) + "px";
-			menu.style.top = String(sel.offsetTop + sel.offsetHeight + 4) + "px";
+			menu.style.left = String(dot.offsetLeft - 6) + "px";
+			menu.style.top = String(dot.offsetTop + dot.offsetHeight + 4) + "px";
 			let items = menu.getElementsByClassName("selectStatusMenuItem");
 			for (let item of items) {
 				item.onclick = function(ev) {
 					ev.stopPropagation();
 					ev.preventDefault();
-					let thisEnt = parentWithClass(sel, "subEntry");
+					let thisEnt = parentWithClass(dot, "subEntry");
 					let entPath = thisEnt.dataset.entryPath;
 					let selectedEnts = document.querySelectorAll(".subEntry.selected");
 					if (selectedEnts.length != 0) {
@@ -343,11 +343,11 @@ window.onload = function() {
 					req.onload = function() {
 						if (req.status == 200) {
 							for (let ent of selectedEnts) {
-								let entSel = ent.getElementsByClassName("statusSelect")[0];
-								let oldClass = "statusDot-" + entSel.dataset.entryType + "-" + entSel.dataset.value;
-								let newClass = "statusDot-" + entSel.dataset.entryType + "-" + item.dataset.value;
-								entSel.classList.replace(oldClass, newClass);
-								entSel.dataset.value = item.dataset.value;
+								let entDot = ent.getElementsByClassName("statusDot")[0];
+								let oldClass = "statusDot-" + entDot.dataset.entryType + "-" + entDot.dataset.value;
+								let newClass = "statusDot-" + entDot.dataset.entryType + "-" + item.dataset.value;
+								entDot.classList.replace(oldClass, newClass);
+								entDot.dataset.value = item.dataset.value;
 							}
 							menu.classList.add("invisible");
 						} else {
@@ -363,17 +363,17 @@ window.onload = function() {
 			}
 		}
 		let label = document.getElementById("statusLabel");
-		sel.onmouseenter = function(event) {
-			let status = sel.dataset.value;
+		dot.onmouseenter = function(event) {
+			let status = dot.dataset.value;
 			if (status == "") {
 				status = "(none)"
 			}
 			label.innerText = status;
 			label.classList.remove("nodisplay");
-			label.style.left = String(sel.offsetLeft - 4) + "px";
-			label.style.top = String(sel.offsetTop - label.offsetHeight - 3) + "px";
+			label.style.left = String(dot.offsetLeft - 4) + "px";
+			label.style.top = String(dot.offsetTop - label.offsetHeight - 3) + "px";
 		}
-		sel.onmouseleave = function(event) {
+		dot.onmouseleave = function(event) {
 			label.classList.add("nodisplay");
 		}
 	}

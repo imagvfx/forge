@@ -175,6 +175,7 @@
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
 	border: 1px solid #DDD;
+	cursor: pointer;
 }
 
 .item-category {
@@ -370,10 +371,6 @@
 
 .userAutoCompleteItem.active {
 	background-color: #D0D0D0;
-}
-
-.statusSelect {
-	cursor: pointer;
 }
 
 .selectStatusMenu {
