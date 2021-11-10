@@ -375,31 +375,37 @@ func (h *apiHandler) handleUpdateAccess(ctx context.Context, w http.ResponseWrit
 }
 
 func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	accessor := r.FormValue("name")
 	accessor_type := r.FormValue("type")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
-	acl, err := h.server.GetAccessControl(ctx, entPath, accessor)
-	if err != nil {
-		var e *forge.NotFoundError
-		if !errors.As(err, &e) {
-			return err
-		}
-	}
-	if acl != nil {
-		if accessor_type != "" && accessor_type != acl.AccessorType {
-			return fmt.Errorf("accessor exists, but with different type: %v", acl.AccessorType)
-		}
-		err := h.server.UpdateAccessControl(ctx, entPath, accessor, mode)
+	for _, pth := range entPaths {
+		acl, err := h.server.GetAccessControl(ctx, pth, accessor)
 		if err != nil {
-			return err
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
 		}
-		return nil
-	}
-	err = h.server.AddAccessControl(ctx, entPath, accessor, accessor_type, mode)
-	if err != nil {
-		return err
+		if acl != nil {
+			if accessor_type != "" && accessor_type != acl.AccessorType {
+				return fmt.Errorf("accessor exists, but with different type: %v", acl.AccessorType)
+			}
+			err := h.server.UpdateAccessControl(ctx, pth, accessor, mode)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = h.server.AddAccessControl(ctx, pth, accessor, accessor_type, mode)
+			if err != nil {
+				return err
+			}
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)

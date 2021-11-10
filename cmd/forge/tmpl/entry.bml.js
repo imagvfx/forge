@@ -427,6 +427,10 @@ window.onload = function() {
 	}
 	let assigneeInputs = document.getElementsByClassName("assigneeInput")
 	for (let input of assigneeInputs) {
+		input.onclick = function(event) {
+			event.stopPropagation();
+			event.preventDefault();
+		}
 		let called = CalledByName[input.dataset.assignee];
 		if (!called) {
 			called = "";
@@ -434,12 +438,34 @@ window.onload = function() {
 		input.value = called;
 		input.dataset.oldValue = called;
 		let oncomplete = function(value) {
-			if (value == input.dataset.oldValue) {
-				return;
+			let thisEnt = parentWithClass(input, "subEntry");
+			let entPath = thisEnt.dataset.entryPath;
+			let selectedEnts = document.querySelectorAll(".subEntry.selected");
+			if (selectedEnts.length != 0) {
+				let inSel = false;
+				for (let ent of selectedEnts) {
+					if (entPath == ent.dataset.entryPath) {
+						inSel = true;
+						break;
+					}
+				}
+				if (!inSel) {
+					showStatusBarOnly();
+					printErrorStatus("entry not in selection: " + entPath);
+					return;
+				}
+			}
+			if (selectedEnts.length == 0) {
+				if (value == input.dataset.oldValue) {
+					return;
+				}
+				selectedEnts = [thisEnt];
 			}
 			let req = new XMLHttpRequest();
 			let formData = new FormData();
-			formData.append("path", input.dataset.path);
+			for (let ent of selectedEnts) {
+				formData.append("path", ent.dataset.entryPath);
+			}
 			formData.append("name", "assignee");
 			formData.append("ctg", "property");
 			formData.append("value", value);
@@ -469,7 +495,9 @@ window.onload = function() {
 				// Give the assignee write permission of the entry.
 				let r = new XMLHttpRequest();
 				let data = new FormData();
-				data.append("path", input.dataset.path);
+				for (let ent of selectedEnts) {
+					data.append("path", ent.dataset.entryPath);
+				}
 				data.append("name", value);
 				data.append("type", "user");
 				data.append("value", "rw");
@@ -482,8 +510,13 @@ window.onload = function() {
 				r.onload = function() {
 					showStatusBarOnly();
 					if (r.status != 200) {
-						printErrorStatus(r.responseText);
+						printErrorStatus("cannot update access: " + r.responseText);
 						return;
+					}
+					for (let ent of selectedEnts) {
+						let input = ent.getElementsByClassName("assigneeInput")[0];
+						input.dataset.oldValue = called;
+						input.value = called;
 					}
 					printStatus("done");
 				}
