@@ -276,6 +276,14 @@ window.onload = function() {
 	let subEntries = document.getElementsByClassName("subEntry");
 	for (let ent of subEntries) {
 		ent.onclick = function() {
+			let selEnt = document.querySelector(".subEntry.selected");
+			if (selEnt) {
+				if (ent.dataset.entryType != selEnt.dataset.entryType) {
+					showStatusBarOnly();
+					printErrorStatus("entry type is different from selected entries");
+					return;
+				}
+			}
 			if (ent.classList.contains("selected")) {
 				ent.classList.remove("selected");
 			} else {
