@@ -250,13 +250,19 @@ func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *apiHandler) handleUpdateProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.UpdateProperty(ctx, entPath, name, value)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.UpdateProperty(ctx, pth, name, value)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)

@@ -310,19 +310,45 @@ window.onload = function() {
 				item.onclick = function(ev) {
 					ev.stopPropagation();
 					ev.preventDefault();
+					let thisEnt = parentWithClass(sel, "subEntry");
+					let entPath = thisEnt.dataset.entryPath;
+					let selectedEnts = document.querySelectorAll(".subEntry.selected");
+					if (selectedEnts.length != 0) {
+						let inSel = false;
+						for (let ent of selectedEnts) {
+							if (entPath == ent.dataset.entryPath) {
+								inSel = true;
+								break;
+							}
+						}
+						if (!inSel) {
+							menu.classList.add("invisible");
+							showStatusBarOnly();
+							printErrorStatus("entry not in selection: " + entPath);
+							return;
+						}
+					}
+					if (selectedEnts.length == 0) {
+						selectedEnts = [thisEnt];
+					}
 					let req = new XMLHttpRequest();
 					let formData = new FormData();
-					formData.append("path", sel.dataset.path);
+					for (let ent of selectedEnts) {
+						formData.append("path", ent.dataset.entryPath);
+					}
 					formData.append("name", "status");
 					formData.append("value", item.dataset.value);
 					req.open("post", "/api/update-property");
 					req.send(formData);
 					req.onload = function() {
 						if (req.status == 200) {
-							let oldClass = "statusDot-" + sel.dataset.entryType + "-" + sel.dataset.value;
-							let newClass = "statusDot-" + sel.dataset.entryType + "-" + item.dataset.value;
-							sel.classList.replace(oldClass, newClass);
-							sel.dataset.value = item.dataset.value;
+							for (let ent of selectedEnts) {
+								let entSel = ent.getElementsByClassName("statusSelect")[0];
+								let oldClass = "statusDot-" + entSel.dataset.entryType + "-" + entSel.dataset.value;
+								let newClass = "statusDot-" + entSel.dataset.entryType + "-" + item.dataset.value;
+								entSel.classList.replace(oldClass, newClass);
+								entSel.dataset.value = item.dataset.value;
+							}
 							menu.classList.add("invisible");
 						} else {
 							showStatusBarOnly();
