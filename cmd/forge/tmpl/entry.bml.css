@@ -87,6 +87,17 @@
 {{end}}
 
 
+.propertyTitle {
+	display: flex;
+	font-size: 0.75rem;
+	color: #AAAAAA;
+	cursor: pointer;
+}
+
+.propertyTitle.invalid {
+	color: #AA6666;
+}
+
 .subEntryArea {
 	flex: 1;
 	background-color: #FAFAFA;

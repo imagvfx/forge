@@ -142,7 +142,7 @@
 								{{range $p := $.Properties}}
 								<div class="property-items info nodisplay" data-info-id="{{$p.EntryPath}}.property.{{$p.Name}}" data-entry="{{$p.EntryPath}}" data-info-type="property" data-info-name="{{$p.Name}}"> [
 									<div style="display:flex;gap:1rem;"> [
-										<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
+										<div class="propertyTitle {{if not $p}}invalid{{end}}" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
 											<div> [{{$p.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 										]
@@ -282,16 +282,16 @@
 												{{range $name := $propFilters}}
 													{{$p := index $props $name}}
 													<div class="property" data-info-id="{{$ent.Path}}.property.{{$name}}" style="width:12rem;"> [
-														<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
-															<div> [{{$p.Name}}]
-															<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+														<div class="propertyTitle {{if not $p}}invalid{{end}}" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
+															<div> [{{$name}}]
+															{{if $p}}<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []{{end}}
 															<div style="flex:1;"> []
 														]
 														{{if $p}}
 														<div style="height:0.2rem"> []
 														<div class="{{if $p.ValueError}}invalid{{end}} itemValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{brLines $p.Value}}{{$p.ValueError}}]
+														{{end}}
 													]
-													{{end}}
 												{{end}}
 											]
 										]
