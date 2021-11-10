@@ -524,6 +524,13 @@ window.onload = function() {
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
 	}
+	let subEntProps = document.getElementsByClassName("subEntryProperties");
+	for (let props of subEntProps) {
+		props.onclick = function() {
+			event.stopPropagation();
+			event.preventDefault();
+		}
+	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
 	for (let loader of infoContextMenuLoaders) {
 		loader.onclick = function(event) {
