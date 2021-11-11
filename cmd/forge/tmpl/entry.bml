@@ -70,7 +70,7 @@
 				]
 				{{if not $.ResultsFromSearch}}
 				<!-- This Entry -->
-				<div class="entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
+				<div class="mainEntry entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 						<div style="flex:3;font-size:1.2rem"> [
 							<b> [{{pathLinks $.Entry.Path}}]
@@ -140,9 +140,9 @@
 							<!-- Property / Environ / Access Items -->
 							<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
 								{{range $p := $.Properties}}
-								<div class="property-items info nodisplay" data-info-id="{{$p.EntryPath}}.property.{{$p.Name}}" data-entry="{{$p.EntryPath}}" data-info-type="property" data-info-name="{{$p.Name}}"> [
+								<div class="mainEntryInfo info nodisplay {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
 									<div style="display:flex;gap:1rem;"> [
-										<div class="propertyTitle {{if not $p}}invalid{{end}}" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
+										<div class="infoTitle"> [
 											<div> [{{$p.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 										]
@@ -154,9 +154,9 @@
 								]
 								{{end}}
 								{{range $e := $.Environs}}
-								<div class="environ-items info nodisplay" data-info-id="{{$e.EntryPath}}.environ.{{$e.Name}}" data-entry="{{$e.EntryPath}}" data-info-type="environ" data-info-name="{{$e.Name}}"> [
+								<div class="mainEntryInfo info nodisplay" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
 									<div style="display:flex;gap:1rem;"> [
-										<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $e}}onclick="showItemUpdater('{{$e.EntryPath}}', 'environ', '{{$e.Name}}', '{{$e.Type}}', '{{$e.Value}}')"{{end}}> [
+										<div class="infoTitle"> [
 											<div> [{{$e.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $e)}}invisible{{end}}"> []
 										]
@@ -168,9 +168,9 @@
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
-								<div class="access-items info nodisplay" data-info-id="{{$a.EntryPath}}.access.{{$a.Accessor}}" data-entry="{{$a.EntryPath}}" data-info-type="access" data-info-name="{{$a.Accessor}}"> [
+								<div class="mainEntryInfo info nodisplay" data-category="access" {{if $a}}data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"{{end}}> [
 									<div style="display:flex;gap:1rem;"> [
-										<div style="display:flex;font-size:0.75rem;color:#AAA;cursor:pointer;" {{if $a}}onclick="showItemUpdater('{{$a.EntryPath}}', 'access', '{{$a.Accessor}}', '{{$a.AccessorType}}', '{{$a.Mode}}')"{{end}}> [
+										<div class="infoTitle"> [
 											<div> [{{$a.Accessor}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $a)}}invisible{{end}}"> []
 										]
@@ -281,8 +281,8 @@
 											<div class="subEntryProperties"> [
 												{{range $name := $propFilters}}
 													{{$p := index $props $name}}
-													<div class="property" data-info-id="{{$ent.Path}}.property.{{$name}}" style="width:12rem;"> [
-														<div class="propertyTitle {{if not $p}}invalid{{end}}" {{if $p}}onclick="showItemUpdater('{{$p.EntryPath}}', 'property', '{{$p.Name}}', '{{$p.Type}}', '{{$p.Value}}')"{{end}}> [
+													<div class="subEntryInfo info {{if not $p}}invalid{{end}}" data-category="property" data-name="{{$name}}" data-type="{{if $p}}{{$p.Type}}{{end}}" data-value="{{if $p}}{{$p.Value}}{{end}}" style="width:12rem;"> [
+														<div class="infoTitle"> [
 															<div> [{{$name}}]
 															{{if $p}}<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []{{end}}
 															<div style="flex:1;"> []

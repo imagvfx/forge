@@ -87,15 +87,11 @@
 {{end}}
 
 
-.propertyTitle {
+.infoTitle {
 	display: flex;
 	font-size: 0.75rem;
 	color: #AAAAAA;
 	cursor: pointer;
-}
-
-.propertyTitle.invalid {
-	color: #AA6666;
 }
 
 .subEntryArea {
@@ -223,7 +219,7 @@
 	color: #555;
 }
 
-.property-items, .environ-items, .access-items {
+.mainEntryInfo {
 	width: 12rem;
 	height: 4rem;
 	padding: 0.3rem;

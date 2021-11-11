@@ -531,11 +531,20 @@ window.onload = function() {
 			event.preventDefault();
 		}
 	}
+	let infoTitles = document.getElementsByClassName("infoTitle");
+	for (let t of infoTitles) {
+		let ent = parentWithClass(t, "entry");
+		let info = parentWithClass(t, "info");
+		t.onclick = function() {
+			showItemUpdater(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
+		}
+	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
 	for (let loader of infoContextMenuLoaders) {
 		loader.onclick = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
+			let ent = parentWithClass(loader, "entry");
 			let info = parentWithClass(loader, "info");
 			if (info == null) {
 				console.log("info not found");
@@ -548,7 +557,7 @@ window.onload = function() {
 				return;
 			}
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
-			infoHistory.href = "/logs?path=" + info.dataset.entry + "&category=" + info.dataset.infoType + "&name=" + info.dataset.infoName;
+			infoHistory.href = "/logs?path=" + ent.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
 			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
 			infoDelete.onclick = function(ev) {
 				ev.stopPropagation();
@@ -773,7 +782,7 @@ function submitUpdaterOrAdder(ev, input) {
 						printErrorStatus(j.Err);
 						return;
 					}
-					let infoElem = document.querySelector(`[data-info-id="${entPath}.${ctg}.${prop}"]`);
+					let infoElem = document.querySelector(`.entry[data-entry-path='${entPath}'] .info[data-category='${ctg}'][data-name='${prop}']`);
 					if (infoElem != null) {
 						let valueElem = infoElem.querySelector(".itemValue");
 						valueElem.innerText = j.Msg.Value;
@@ -788,7 +797,7 @@ function submitUpdaterOrAdder(ev, input) {
 						let day = 24 * 60 * 60 * 100;
 						if (delta <= day) {
 							let dotElem = infoElem.querySelector(".recentlyUpdatedDot");
-							dotElem.classList.add("unhide");
+							dotElem.classList.remove("invisible");
 						}
 					}
 					printStatus("done");
@@ -844,44 +853,33 @@ function keyPressed(ev) {
 	}
 }
 
-function hideAllItems() {
-	let items = document.getElementById("entry-items");
-	document.getElementById("property-box").classList.remove("selected");
-	let props = items.getElementsByClassName("property-items");
-	for (let p of props) {
-		p.classList.add("nodisplay");
-	}
-	document.getElementById("environ-box").classList.remove("selected");
-	let envs = items.getElementsByClassName("environ-items");
-	for (let e of envs) {
-		e.classList.add("nodisplay");
-	}
-	document.getElementById("access-box").classList.remove("selected");
-	let accesses = items.getElementsByClassName("access-items");
-	for (let a of accesses) {
-		a.classList.add("nodisplay");
-	}
-}
-
 function showItems(ctg) {
-	let cls = document.getElementById(ctg + "-box").classList;
-	let selected = cls.contains("selected")
-	hideAllItems();
-	if (selected) {
-		return;
+	let ent = document.querySelector(".mainEntry");
+	let allBtns = document.getElementsByClassName("item-box");
+	for (let btn of allBtns) {
+		btn.classList.remove("selected");
 	}
-	cls.add("selected");
-	let items = document.getElementById("entry-items");
-	let props = items.getElementsByClassName(ctg + "-items");
-	for (let p of props) {
-		p.classList.remove("nodisplay");
+	let ctgBtn = document.getElementById(ctg + "-box");
+	ctgBtn.classList.add("selected");
+	let allInfos = ent.getElementsByClassName("info");
+	for (let i of allInfos) {
+		i.classList.add("nodisplay");
+	}
+	let ctgInfos = ent.querySelectorAll(".info[data-category='" + ctg + "']");
+	for (let i of ctgInfos) {
+		i.classList.remove("nodisplay");
 	}
 }
 
 function showItemUpdater(entry, ctg, name, type, value) {
 	showFooter();
 	hideItemAdder();
-
+	let info = document.querySelector(`.entry[data-entry-path='${entry}'] .info[data-category='${ctg}'][data-name='${name}']`);
+	if (info.classList.contains("invalid")) {
+		showStatusBarOnly();
+		printErrorStatus(ctg + " not exists: " + name);
+		return;
+	}
 	let updater = document.getElementById("itemUpdater");
 	updater.classList.remove("nodisplay");
 	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
