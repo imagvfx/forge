@@ -49,6 +49,18 @@
 	display: flex;
 }
 
+.mainEntryInfoCategoryToggles {
+	font-size: 0.75rem;
+	color: #555;
+	min-width: 8rem;
+}
+
+.mainEntryInfos {
+	display: flex;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
 .thumbnailContainer {
 	display: flex;
 	border: 1px dashed #CCCCCC;

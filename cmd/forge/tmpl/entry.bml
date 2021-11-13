@@ -121,7 +121,7 @@
 						]
 						<div id="entry-items" class="mainEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
-							<div style="font-size:0.75rem;color:#555;min-width:8rem;"> [
+							<div class="mainEntryInfoCategoryToggles"> [
 								<div id="property-box" class="item-box" style="display:flex"> [
 									<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
 									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
@@ -136,7 +136,7 @@
 								]
 							]
 							<!-- Property / Environ / Access Items -->
-							<div style="display:flex;gap:1rem;flex-wrap:wrap"> [
+							<div class="mainEntryInfos"> [
 								{{range $p := $.Properties}}
 								<div class="mainEntryInfo info nodisplay {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
 									<div style="display:flex;gap:1rem;"> [
