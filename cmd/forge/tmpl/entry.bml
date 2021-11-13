@@ -71,7 +71,7 @@
 				{{if not $.ResultsFromSearch}}
 				<!-- This Entry -->
 				<div class="mainEntry entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
-					<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
+					<div class="mainEntryTop"> [
 						<div style="flex:3;font-size:1.2rem"> [
 							<b> [{{pathLinks $.Entry.Path}}]
 						]
@@ -98,7 +98,7 @@
 							<label class="item-box" style="color:#A22;cursor:pointer" onclick="openDeleteEntryDialog('{{$.Entry.Path}}')"> [Delete]
 						]
 					]
-					<div style="display:flex;"> [
+					<div class="mainEntryBottom"> [
 						<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
 							<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
 								{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}

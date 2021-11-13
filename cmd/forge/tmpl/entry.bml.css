@@ -10,6 +10,18 @@
 	color: rgba(150, 15, 15, 0.7);
 }
 
+.mainEntryTop {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	align-items: start;
+	margin-bottom: 1rem;
+}
+
+.mainEntryBottom {
+	display: flex;
+}
+
 .thumbnailContainer {
 	display: flex;
 	border: 1px dashed #CCCCCC;
