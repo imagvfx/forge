@@ -122,17 +122,17 @@
 						<div id="entry-items" class="mainEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
-								<div id="property-box" class="item-box" style="display:flex"> [
-									<div id="property-category" class="item-category" onclick="showItems('property')"> [Property ({{len $.Properties}})]
-									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
+								<div class="infoCategoryToggle" data-category="property"> [
+									<div class="infoSelector" onclick="showItems('property')"> [Property ({{len $.Properties}})]
+									<div class="infoAdder" onclick="showItemAdder('{{$.Entry.Path}}', 'property')"> [+]
 								]
-								<div id="environ-box" class="item-box" style="display:flex"> [
-									<div id="environ-category" class="item-category" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
-									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'environ')"> [+]
+								<div class="infoCategoryToggle" data-category="environ"> [
+									<div class="infoSelector" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
+									<div class="infoAdder" onclick="showItemAdder('{{$.Entry.Path}}', 'environ')"> [+]
 								]
-								<div id="access-box" class="item-box" style="display:flex"> [
-									<div id="access-category" class="item-category" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
-									<div class="item-adder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
+								<div class="infoCategoryToggle" data-category="access"> [
+									<div class="infoSelector" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
+									<div class="infoAdder" onclick="showItemAdder('{{$.Entry.Path}}', 'access')"> [+]
 								]
 							]
 							<!-- Property / Environ / Access Items -->

@@ -240,37 +240,33 @@
 	cursor: pointer;
 }
 
-.item-category {
-	padding: 0.3rem;
-	border-radius: 2px 0 0 2px;
+.infoCategoryToggle {
+	width: fit-content;
+	display: flex;
+	border-radius: 2px;
 	cursor: pointer;
 }
 
-.item-box:hover .item-category {
+.infoCategoryToggle:hover {
 	background-color: #EEE;
 }
 
-.item-box.selected .item-category {
+.infoCategoryToggle.selected {
 	background-color:#E0EEEE;
 }
 
-.item-adder {
+.infoSelector {
+	padding: 0.3rem;
+	border-radius: 2px 0 0 2px;
+}
+
+.infoAdder {
 	padding: 0.3rem;
 	border-radius: 0 2px 2px 0;
 	color: #999;
-	cursor: pointer;
 }
 
-.item-box:hover .item-adder {
-	background-color: #EEE;
-}
-
-.item-box.selected .item-adder {
-	background-color:#E0EEEE;
-
-}
-
-.item-adder:hover {
+.infoAdder:hover {
 	color: #555;
 }
 

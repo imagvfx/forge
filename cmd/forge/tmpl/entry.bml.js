@@ -855,19 +855,21 @@ function keyPressed(ev) {
 
 function showItems(ctg) {
 	let ent = document.querySelector(".mainEntry");
-	let allBtns = document.getElementsByClassName("item-box");
-	for (let btn of allBtns) {
-		btn.classList.remove("selected");
+	let tgls = ent.getElementsByClassName("infoCategoryToggle");
+	for (let tgl of tgls) {
+		if (tgl.dataset.category == ctg) {
+			tgl.classList.add("selected");
+		} else {
+			tgl.classList.remove("selected");
+		}
 	}
-	let ctgBtn = document.getElementById(ctg + "-box");
-	ctgBtn.classList.add("selected");
-	let allInfos = ent.getElementsByClassName("info");
-	for (let i of allInfos) {
-		i.classList.add("nodisplay");
-	}
-	let ctgInfos = ent.querySelectorAll(".info[data-category='" + ctg + "']");
-	for (let i of ctgInfos) {
-		i.classList.remove("nodisplay");
+	let infos = ent.getElementsByClassName("info");
+	for (let info of infos) {
+		if (info.dataset.category == ctg) {
+			info.classList.remove("nodisplay");
+		} else {
+			info.classList.add("nodisplay");
+		}
 	}
 }
 
