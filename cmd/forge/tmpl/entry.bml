@@ -99,29 +99,27 @@
 						]
 					]
 					<div class="mainEntryBottom"> [
-						<div style="display:flex;align-items:center;flex-wrap:wrap;align-items:start;margin-bottom:1rem;"> [
-							<div style="margin-right:1rem;display:flex;flex-wrap:wrap;align-items:start"> [
-								{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
-								<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex"> [
-									<div class="thumbnailContainer"> [
-										<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px"> []
+						<div class="mainEntryThumbnailContainer"> [
+							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
+							<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex"> [
+								<div class="thumbnailContainer"> [
+									<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px"> []
+								]
+								<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
+									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+									<label class="updateThumbnailButton thumbnailButton"> [+
+										<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 									]
-									<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
-										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-										<label class="updateThumbnailButton thumbnailButton"> [+
-											<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
-										]
-										<input readonly name="back_to_referer" type="hidden" value="1"> []
-									]
-									<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
-										<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-										<label class="deleteThumbnailButton thumbnailButton"> [-]
-										<input readonly name="back_to_referer" type="hidden" value="1"> []
-									]
+									<input readonly name="back_to_referer" type="hidden" value="1"> []
+								]
+								<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
+									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+									<label class="deleteThumbnailButton thumbnailButton"> [-]
+									<input readonly name="back_to_referer" type="hidden" value="1"> []
 								]
 							]
 						]
-						<div id="entry-items" style="flex:1;display:flex;"> [
+						<div id="entry-items" class="mainEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
 							<div style="margin-bottom:1.5rem;font-size:0.75rem;color:#555;min-width:8rem;"> [
 								<div id="property-box" class="item-box" style="display:flex"> [

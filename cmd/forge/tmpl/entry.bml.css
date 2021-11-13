@@ -35,6 +35,20 @@
 	display: flex;
 }
 
+.mainEntryThumbnailContainer {
+	margin-right: 1rem;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	align-items: start;
+	margin-bottom: 1rem;
+}
+
+.mainEntryInfoContainer {
+	flex: 1;
+	display: flex;
+}
+
 .thumbnailContainer {
 	display: flex;
 	border: 1px dashed #CCCCCC;
