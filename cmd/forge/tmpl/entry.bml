@@ -139,7 +139,7 @@
 							<div class="mainEntryInfos"> [
 								{{range $p := $.Properties}}
 								<div class="mainEntryInfo info nodisplay {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
-									<div style="display:flex;gap:1rem;"> [
+									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$p.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
@@ -153,7 +153,7 @@
 								{{end}}
 								{{range $e := $.Environs}}
 								<div class="mainEntryInfo info nodisplay" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
-									<div style="display:flex;gap:1rem;"> [
+									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$e.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $e)}}invisible{{end}}"> []
@@ -167,7 +167,7 @@
 								{{end}}
 								{{range $a := $.AccessControls}}
 								<div class="mainEntryInfo info nodisplay" data-category="access" {{if $a}}data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"{{end}}> [
-									<div style="display:flex;gap:1rem;"> [
+									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$a.Accessor}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $a)}}invisible{{end}}"> []

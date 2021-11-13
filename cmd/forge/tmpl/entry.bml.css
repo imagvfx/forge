@@ -137,6 +137,10 @@
 {{end}}
 {{end}}
 
+.infoTop {
+	display: flex;
+	gap: 1rem;
+}
 
 .infoTitle {
 	display: flex;
