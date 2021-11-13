@@ -536,7 +536,7 @@ window.onload = function() {
 		let ent = parentWithClass(t, "entry");
 		let info = parentWithClass(t, "info");
 		t.onclick = function() {
-			showItemUpdater(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
+			showInfoUpdater(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
 		}
 	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
@@ -871,7 +871,7 @@ function showItems(ctg) {
 	}
 }
 
-function showItemUpdater(entry, ctg, name, type, value) {
+function showInfoUpdater(entry, ctg, name, type, value) {
 	showFooter();
 	hideItemAdder();
 	let info = document.querySelector(`.entry[data-entry-path='${entry}'] .info[data-category='${ctg}'][data-name='${name}']`);
