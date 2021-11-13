@@ -33,6 +33,7 @@
 
 .mainEntryBottom {
 	display: flex;
+	min-height: 6rem;
 }
 
 .mainEntryThumbnailContainer {
@@ -41,7 +42,6 @@
 	align-items: center;
 	flex-wrap: wrap;
 	align-items: start;
-	margin-bottom: 1rem;
 }
 
 .mainEntryInfoContainer {
