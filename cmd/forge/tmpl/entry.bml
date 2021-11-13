@@ -72,10 +72,10 @@
 				<!-- This Entry -->
 				<div class="mainEntry entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div class="mainEntryTop"> [
-						<div style="flex:3;font-size:1.2rem"> [
-							<b> [{{pathLinks $.Entry.Path}}]
+						<div class="mainEntryTitle"> [
+							{{pathLinks $.Entry.Path}}
 						]
-						<div style="display:flex;flex-wrap:wrap;gap:1.2rem;font-size:0.75rem;"> [
+						<div class="mainEntryFunctions"> [
 							<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 								<input id="uploadExcelInput" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
