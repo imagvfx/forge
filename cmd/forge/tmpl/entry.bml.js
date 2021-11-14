@@ -539,6 +539,13 @@ window.onload = function() {
 			showInfoUpdater(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
 		}
 	}
+	let infoSelectors = document.getElementsByClassName("infoSelector");
+	for (let s of infoSelectors) {
+		let tgl = parentWithClass(s, "infoCategoryToggle");
+		s.onclick = function() {
+			showCategoryInfos(tgl.dataset.category);
+		}
+	}
 	let infoAdders = document.getElementsByClassName("infoAdder");
 	for (let a of infoAdders) {
 		let ent = parentWithClass(a, "entry");
@@ -861,7 +868,7 @@ function keyPressed(ev) {
 	}
 }
 
-function showItems(ctg) {
+function showCategoryInfos(ctg) {
 	let ent = document.querySelector(".mainEntry");
 	let tgls = ent.getElementsByClassName("infoCategoryToggle");
 	for (let tgl of tgls) {

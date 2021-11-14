@@ -123,15 +123,15 @@
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
-									<div class="infoSelector" onclick="showItems('property')"> [Property ({{len $.Properties}})]
+									<div class="infoSelector"> [Property ({{len $.Properties}})]
 									<div class="infoAdder"> [+]
 								]
 								<div class="infoCategoryToggle" data-category="environ"> [
-									<div class="infoSelector" onclick="showItems('environ')"> [Environ ({{len $.Environs}})]
+									<div class="infoSelector"> [Environ ({{len $.Environs}})]
 									<div class="infoAdder"> [+]
 								]
 								<div class="infoCategoryToggle" data-category="access"> [
-									<div class="infoSelector" onclick="showItems('access')"> [Access ({{len $.AccessControls}})]
+									<div class="infoSelector"> [Access ({{len $.AccessControls}})]
 									<div class="infoAdder"> [+]
 								]
 							]
