@@ -234,14 +234,20 @@ func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.AddProperty(ctx, entPath, name, typ, value)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.AddProperty(ctx, pth, name, typ, value)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -279,11 +285,17 @@ func (h *apiHandler) handleGetProperty(ctx context.Context, w http.ResponseWrite
 }
 
 func (h *apiHandler) handleDeleteProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
-	err := h.server.DeleteProperty(ctx, entPath, name)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.DeleteProperty(ctx, pth, name)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -292,14 +304,20 @@ func (h *apiHandler) handleDeleteProperty(ctx context.Context, w http.ResponseWr
 }
 
 func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.AddEnviron(ctx, entPath, name, typ, value)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.AddEnviron(ctx, pth, name, typ, value)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -308,13 +326,19 @@ func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter
 }
 
 func (h *apiHandler) handleUpdateEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
 	value := r.FormValue("value")
 	value = strings.TrimSpace(value)
-	err := h.server.UpdateEnviron(ctx, entPath, name, value)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.UpdateEnviron(ctx, pth, name, value)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -331,11 +355,17 @@ func (h *apiHandler) handleGetEnviron(ctx context.Context, w http.ResponseWriter
 }
 
 func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
-	err := h.server.DeleteEnviron(ctx, entPath, name)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.DeleteEnviron(ctx, pth, name)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -344,14 +374,20 @@ func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWri
 }
 
 func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	accessor := r.FormValue("name")
 	accessor_type := r.FormValue("type")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
-	err := h.server.AddAccessControl(ctx, entPath, accessor, accessor_type, mode)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.AddAccessControl(ctx, pth, accessor, accessor_type, mode)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -360,13 +396,19 @@ func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter,
 }
 
 func (h *apiHandler) handleUpdateAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	accessor := r.FormValue("name")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
-	err := h.server.UpdateAccessControl(ctx, entPath, accessor, mode)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.UpdateAccessControl(ctx, pth, accessor, mode)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
@@ -423,11 +465,17 @@ func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter,
 }
 
 func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	name := r.FormValue("name")
-	err := h.server.DeleteAccessControl(ctx, entPath, name)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := h.server.DeleteAccessControl(ctx, pth, name)
+		if err != nil {
+			return err
+		}
 	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
