@@ -539,6 +539,14 @@ window.onload = function() {
 			showInfoUpdater(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
 		}
 	}
+	let infoAdders = document.getElementsByClassName("infoAdder");
+	for (let a of infoAdders) {
+		let ent = parentWithClass(a, "entry");
+		let tgl = parentWithClass(a, "infoCategoryToggle");
+		a.onclick = function() {
+			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category);
+		}
+	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
 	for (let loader of infoContextMenuLoaders) {
 		loader.onclick = function(event) {
@@ -909,7 +917,7 @@ function hideItemUpdater() {
 let PropertyTypes = {{marshalJS $.PropertyTypes}}
 let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
-function showItemAdder(entry, ctg) {
+function showInfoAdder(entry, ctg) {
 	// TODO: Add the item inplace?
 	showFooter();
 	hideItemUpdater();
