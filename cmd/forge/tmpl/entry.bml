@@ -119,7 +119,7 @@
 								]
 							]
 						]
-						<div id="entry-items" class="mainEntryInfoContainer"> [
+						<div class="mainEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
