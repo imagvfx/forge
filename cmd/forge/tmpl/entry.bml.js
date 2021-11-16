@@ -273,21 +273,75 @@ window.onload = function() {
 			}
 		}
 	}
+	let selectionMode = false;
+	let alreadyHandled = false;
+	let mousedownId = 0;
+	function onselect(ent) {
+		let selEnt = document.querySelector(".subEntry.selected");
+		if (selEnt) {
+			if (ent.dataset.entryType != selEnt.dataset.entryType) {
+				showStatusBarOnly();
+				printErrorStatus("entry type is different from selected entries");
+				return;
+			}
+		}
+		if (ent.classList.contains("selected")) {
+			ent.classList.remove("selected");
+		} else {
+			ent.classList.add("selected");
+		}
+	}
 	let subEntries = document.getElementsByClassName("subEntry");
 	for (let ent of subEntries) {
-		ent.onclick = function() {
-			let selEnt = document.querySelector(".subEntry.selected");
-			if (selEnt) {
-				if (ent.dataset.entryType != selEnt.dataset.entryType) {
-					showStatusBarOnly();
-					printErrorStatus("entry type is different from selected entries");
+		ent.onmousedown = function(event) {
+			alreadyHandled = false;
+			if (selectionMode) {
+				return;
+			}
+			// Two conditions should met to turn on selectionMode.
+			// User holding mouse down for reasonable duration,
+			// and mouse movement should be relatively small. (to distinguish it from text selection)
+			function matchMousedownId(n) {
+				// Do not merge this function into setTimeout function,
+				// It will not working correctly because of mousedownId variable scope.
+				return mousedownId == n
+			}
+			function distance(dx, dy) {
+				return Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))
+			}
+			// ids aren't usually typed as float, but it's ok here.
+			mousedownId = Math.random();
+			let id = mousedownId;
+			let x1 = event.clientX;
+			let y1 = event.clientY;
+			let x2 = x1;
+			let y2 = y1;
+			ent.onmousemove = function(ev) {
+				x2 = ev.clientX;
+				y2 = ev.clientY;
+			}
+			setTimeout(function() {
+				ent.onmousemove = function() {}
+				if (!matchMousedownId(id)) {
+					return;
+				};
+				alreadyHandled = true;
+				if (distance(x2-x1, y2-y1) > 5) {
 					return;
 				}
-			}
-			if (ent.classList.contains("selected")) {
-				ent.classList.remove("selected");
-			} else {
-				ent.classList.add("selected");
+				selectionMode = true;
+				onselect(ent);
+			}, 500)
+		}
+		ent.onmouseup = function(event) {
+			mousedownId = 0;
+		}
+		ent.onclick = function(event) {
+			if (!alreadyHandled && selectionMode) {
+				onselect(ent);
+				if (document.querySelector(".subEntry.selected") == null) {
+					selectionMode = false;
+				}
 			}
 		}
 	}
@@ -524,16 +578,10 @@ window.onload = function() {
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
 	}
-	let subEntProps = document.getElementsByClassName("subEntryProperties");
-	for (let props of subEntProps) {
-		props.onclick = function() {
-			event.stopPropagation();
-			event.preventDefault();
-		}
-	}
 	let infoTitles = document.getElementsByClassName("infoTitle");
 	for (let t of infoTitles) {
-		t.onclick = function() {
+		t.onclick = function(event) {
+			event.stopPropagation();
 			let info = parentWithClass(t, "info");
 			showInfoUpdater(info);
 		}
