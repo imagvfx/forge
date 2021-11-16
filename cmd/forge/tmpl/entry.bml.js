@@ -533,10 +533,9 @@ window.onload = function() {
 	}
 	let infoTitles = document.getElementsByClassName("infoTitle");
 	for (let t of infoTitles) {
-		let ent = parentWithClass(t, "entry");
-		let info = parentWithClass(t, "info");
 		t.onclick = function() {
-			showInfoUpdater(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
+			let info = parentWithClass(t, "info");
+			showInfoUpdater(info);
 		}
 	}
 	let infoSelectors = document.getElementsByClassName("infoSelector");
@@ -777,9 +776,35 @@ function submitUpdaterOrAdder(ev, input) {
 	let form = input.parentElement;
 	let formData = new FormData(input.parentElement);
 	let entPath = formData.get("path");
+	formData.delete("path"); // will be refilled
+	let selectedEnts = document.querySelectorAll(".subEntry.selected");
+	if (selectedEnts.length != 0) {
+		let inSel = false;
+		for (let ent of selectedEnts) {
+			if (entPath == ent.dataset.entryPath) {
+				inSel = true;
+				break;
+			}
+		}
+		if (!inSel) {
+			showStatusBarOnly();
+			printErrorStatus("entry not in selection: " + entPath);
+			return;
+		}
+	}
+	if (selectedEnts.length == 0) {
+		selectedEnts = [thisEntry];
+	}
+	for (let ent of selectedEnts) {
+		formData.append("path", ent.dataset.entryPath);
+	}
 	let ctg = formData.get("ctg");
-	let prop = formData.get("name");
+	let name = formData.get("name");
 	let marker = form.getElementsByClassName("updatingMarker")[0];
+	req.onerror = function(err) {
+		marker.classList.add("invisible");
+		printErrorStatus("network error occurred. please check whether the server is down.");
+	}
 	req.onload = function() {
 		marker.classList.add("invisible");
 		if (req.status == 200) {
@@ -787,9 +812,13 @@ function submitUpdaterOrAdder(ev, input) {
 			// but let's get the corrected value from server.
 			let get = new XMLHttpRequest();
 			let getFormData = new FormData();
-			getFormData.append("path", entPath);
-			getFormData.append("name", prop);
-			get.open("post", "/api/get-" + ctg);
+			for (let ent of selectedEnts) {
+				getFormData.append("path", ent.dataset.entryPath);
+			}
+			getFormData.append("name", name);
+			get.onerror = function(err) {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
 			get.onload = function() {
 				if (get.status == 200) {
 					let j = JSON.parse(get.responseText);
@@ -797,39 +826,36 @@ function submitUpdaterOrAdder(ev, input) {
 						printErrorStatus(j.Err);
 						return;
 					}
-					let infoElem = document.querySelector(`.entry[data-entry-path='${entPath}'] .info[data-category='${ctg}'][data-name='${prop}']`);
-					if (infoElem != null) {
-						let valueElem = infoElem.querySelector(".itemValue");
-						valueElem.innerText = j.Msg.Value;
-						// remove possible 'invalid' class
-						valueElem.classList.remove("invalid");
+					for (let ent of selectedEnts) {
+						let infoElem = ent.querySelector(`.info[data-category='${ctg}'][data-name='${name}']`);
+						if (infoElem != null) {
+							let valueElem = infoElem.querySelector(".itemValue");
+							valueElem.innerText = j.Msg.Value;
+							// remove possible 'invalid' class
+							valueElem.classList.remove("invalid");
 
-						// Look UpdatedAt to check it was actually updated.
-						// It might not, if new value is same as the old one.
-						let updated = new Date(j.Msg.UpdatedAt);
-						let now = Date.now();
-						let delta = (now - updated);
-						let day = 24 * 60 * 60 * 100;
-						if (delta <= day) {
-							let dotElem = infoElem.querySelector(".recentlyUpdatedDot");
-							dotElem.classList.remove("invisible");
+							// Look UpdatedAt to check it was actually updated.
+							// It might not, if new value is same as the old one.
+							let updated = new Date(j.Msg.UpdatedAt);
+							let now = Date.now();
+							let delta = (now - updated);
+							let day = 24 * 60 * 60 * 100;
+							if (delta <= day) {
+								let dotElem = infoElem.querySelector(".recentlyUpdatedDot");
+								dotElem.classList.remove("invisible");
+							}
 						}
 					}
 					printStatus("done");
-					return;
 				} else {
 					printErrorStatus("update done, but failed to get the new value:" + get.responseText);
-					return;
 				}
 			}
+			get.open("post", "/api/get-" + ctg);
 			get.send(getFormData);
 		} else {
 			printErrorStatus(req.responseText);
 		}
-	}
-	req.onerror = function(err) {
-		marker.classList.add("invisible");
-		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	req.open(form.method, form.action);
 	req.send(formData);
@@ -888,10 +914,31 @@ function showCategoryInfos(ctg) {
 	}
 }
 
-function showInfoUpdater(entry, ctg, name, type, value) {
+function showInfoUpdater(info) {
 	showFooter();
 	hideItemAdder();
-	let info = document.querySelector(`.entry[data-entry-path='${entry}'] .info[data-category='${ctg}'][data-name='${name}']`);
+
+	let thisEnt = parentWithClass(info, "entry");
+	let entPath = thisEnt.dataset.entryPath;
+	let ctg = info.dataset.category;
+	let name = info.dataset.name;
+	let type = info.dataset.type;
+	let value = info.dataset.value;
+	let selectedEnts = document.querySelectorAll(".subEntry.selected");
+	if (selectedEnts.length != 0) {
+		let inSel = false;
+		for (let ent of selectedEnts) {
+			if (entPath == ent.dataset.entryPath) {
+				inSel = true;
+				break;
+			}
+		}
+		if (!inSel) {
+			showStatusBarOnly();
+			printErrorStatus("entry not in selection: " + entPath);
+			return;
+		}
+	}
 	if (info.classList.contains("invalid")) {
 		showStatusBarOnly();
 		printErrorStatus(ctg + " not exists: " + name);
@@ -899,8 +946,14 @@ function showInfoUpdater(entry, ctg, name, type, value) {
 	}
 	let updater = document.getElementById("itemUpdater");
 	updater.classList.remove("nodisplay");
-	updater.getElementsByClassName("entryLabel")[0].innerText = entry;
-	updater.getElementsByClassName("entryInput")[0].value = entry;
+	let label = String(selectedEnts.length) + " entries selected";
+	if (selectedEnts.length == 1) {
+		label = entPath + " selected";
+	} else if (selectedEnts.length == 0) {
+		label = entPath;
+	}
+	updater.getElementsByClassName("entryLabel")[0].innerText = label;
+	updater.getElementsByClassName("entryInput")[0].value = entPath;
 	updater.getElementsByClassName("categoryInput")[0].value = ctg;
 	updater.getElementsByClassName("nameLabel")[0].innerText = name;
 	updater.getElementsByClassName("nameInput")[0].value = name;
