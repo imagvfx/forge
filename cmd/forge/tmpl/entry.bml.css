@@ -180,7 +180,11 @@
 	background-color: #FAFAFA;
 }
 
-.subEntry.selected {
+.subEntryArea.selectionMode .subEntry {
+	background-color: #F4F4F4;
+}
+
+.subEntryArea.selectionMode .subEntry.selected {
 	outline: 1px solid #88AADD;
 	background-color: #EEFAFF;
 }
