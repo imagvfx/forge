@@ -14,7 +14,14 @@ window.onload = function() {
 		if (currentContextMenuLoader != null) {
 			infoMenu.classList.add("invisible");
 			currentContextMenuLoader = null;
-			return;
+		}
+		let subEntArea = document.querySelector(".subEntryArea");
+		if (subEntArea.classList.contains("selectionMode")) {
+			let selEnts = document.querySelectorAll(".subEntry.selected");
+			for (let ent of selEnts) {
+				ent.classList.remove("selected");
+			}
+			subEntArea.classList.remove("selectionMode");
 		}
 	}
 	let allInputs = document.getElementsByTagName("input");
@@ -337,6 +344,7 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
+			event.stopPropagation();
 			if (!alreadyHandled && subEntArea.classList.contains("selectionMode")) {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
