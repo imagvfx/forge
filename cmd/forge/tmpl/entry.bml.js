@@ -273,7 +273,7 @@ window.onload = function() {
 			}
 		}
 	}
-	let selectionMode = false;
+	let subEntArea = document.querySelector(".subEntryArea");
 	let alreadyHandled = false;
 	let mousedownId = 0;
 	function onselect(ent) {
@@ -295,7 +295,7 @@ window.onload = function() {
 	for (let ent of subEntries) {
 		ent.onmousedown = function(event) {
 			alreadyHandled = false;
-			if (selectionMode) {
+			if (subEntArea.classList.contains("selectionMode")) {
 				return;
 			}
 			// Two conditions should met to turn on selectionMode.
@@ -329,7 +329,7 @@ window.onload = function() {
 				if (distance(x2-x1, y2-y1) > 5) {
 					return;
 				}
-				selectionMode = true;
+				subEntArea.classList.add("selectionMode");
 				onselect(ent);
 			}, 500)
 		}
@@ -337,10 +337,10 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
-			if (!alreadyHandled && selectionMode) {
+			if (!alreadyHandled && subEntArea.classList.contains("selectionMode")) {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
-					selectionMode = false;
+					subEntArea.classList.remove("selectionMode");
 				}
 			}
 		}
@@ -935,6 +935,15 @@ function keyPressed(ev) {
 			closed = true;
 		}
 		if (closed) {
+			return;
+		}
+		let subEntArea = document.querySelector(".subEntryArea");
+		if (subEntArea.classList.contains("selectionMode")) {
+			let selEnts = document.querySelectorAll(".subEntry.selected");
+			for (let ent of selEnts) {
+				ent.classList.remove("selected");
+			}
+			subEntArea.classList.remove("selectionMode");
 			return;
 		}
 		// No float UIs were there. Do default job.
