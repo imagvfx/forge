@@ -24,6 +24,10 @@ window.onload = function() {
 			subEntArea.classList.remove("selectionMode");
 		}
 	}
+	let footer = document.getElementById("footer");
+	footer.onclick = function(event) {
+		event.stopPropagation();
+	}
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
 		input.autocomplete = "off";
