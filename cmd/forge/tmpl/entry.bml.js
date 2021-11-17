@@ -22,6 +22,7 @@ window.onload = function() {
 				ent.classList.remove("selected");
 			}
 			subEntArea.classList.remove("selectionMode");
+			hideFooter();
 		}
 	}
 	let footer = document.getElementById("footer");
@@ -957,6 +958,7 @@ function keyPressed(ev) {
 				ent.classList.remove("selected");
 			}
 			subEntArea.classList.remove("selectionMode");
+			hideFooter();
 			return;
 		}
 		// No float UIs were there. Do default job.
