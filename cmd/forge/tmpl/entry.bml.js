@@ -833,6 +833,7 @@ function submitUpdaterOrAdder(ev, input) {
 	let formData = new FormData(input.parentElement);
 	let entPath = formData.get("path");
 	formData.delete("path"); // will be refilled
+	let thisEntry = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`);
 	let selectedEnts = document.querySelectorAll(".subEntry.selected");
 	if (selectedEnts.length != 0) {
 		let inSel = false;
