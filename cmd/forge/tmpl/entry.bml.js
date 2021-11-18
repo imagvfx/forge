@@ -354,6 +354,7 @@ window.onload = function() {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
 					subEntArea.classList.remove("selectionMode");
+					hideFooter();
 				}
 			}
 		}
