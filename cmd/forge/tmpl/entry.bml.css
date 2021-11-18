@@ -234,6 +234,22 @@
 	gap:0.5rem;
 }
 
+.subEntryInfo {
+	width: 12rem;
+}
+
+.infoTitle {
+	padding: 1px;
+	border: 1px solid transparent;
+	margin-bottom: 2px;
+}
+
+.subEntryArea.selectionMode .infoTitle {
+	background-color: #FAFAFA;
+	border: 1px solid #EEEEEE;
+	border-radius: 2px;
+}
+
 .statusDot {
 	width: 0.75rem;
 	height: 0.75rem;
