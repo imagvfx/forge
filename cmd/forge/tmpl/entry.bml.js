@@ -891,7 +891,7 @@ function submitUpdaterOrAdder(ev, input) {
 					for (let ent of selectedEnts) {
 						let infoElem = ent.querySelector(`.info[data-category='${ctg}'][data-name='${name}']`);
 						if (infoElem != null) {
-							let valueElem = infoElem.querySelector(".itemValue");
+							let valueElem = infoElem.querySelector(".infoValue");
 							valueElem.innerText = j.Msg.Value;
 							// remove possible 'invalid' class
 							valueElem.classList.remove("invalid");

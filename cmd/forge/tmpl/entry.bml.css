@@ -6,7 +6,7 @@
 	text-decoration: underline;
 }
 
-.itemValue.invalid {
+.infoValue.invalid {
 	color: rgba(150, 15, 15, 0.7);
 }
 
