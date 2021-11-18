@@ -175,7 +175,6 @@
 										<div style="flex:1;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
-									<div style="height:0.2rem"> []
 									<div class="infoValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
 								]
 								{{end}}
