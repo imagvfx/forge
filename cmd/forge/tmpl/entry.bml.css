@@ -142,15 +142,19 @@
 	display: flex;
 	font-size: 0.75rem;
 	color: #AAAAAA;
-	cursor: pointer;
 	padding: 1px;
 	border: 1px solid transparent;
+}
+
+.mainEntry .infoTitle {
+	cursor: pointer;
 }
 
 .subEntryArea.editMode .infoTitle {
 	background-color: #FAFAFA;
 	border: 1px solid #EEEEEE;
 	border-radius: 2px;
+	cursor: pointer;
 }
 
 .infoValue {

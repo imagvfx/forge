@@ -596,6 +596,9 @@ window.onload = function() {
 	let infoTitles = document.getElementsByClassName("infoTitle");
 	for (let t of infoTitles) {
 		t.onclick = function(event) {
+			if (subEntArea.contains(t) && !subEntArea.classList.contains("editMode")) {
+				return;
+			}
 			event.stopPropagation();
 			let info = parentWithClass(t, "info");
 			showInfoUpdater(info);
