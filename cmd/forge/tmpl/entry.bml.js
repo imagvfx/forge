@@ -2,29 +2,54 @@
 
 window.onload = function() {
 	document.onclick = function(event) {
-		let hide = hideFloatingMenus();
+		let hide = false;
+		if (event.target.closest(".statusDot") == null) {
+			let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
+			for (let menu of selectStatusMenus) {
+				if (!menu.classList.contains("invisible")) {
+					menu.classList.add("invisible");
+					hide = true;
+				}
+			}
+		}
+		if (event.target.closest(".assigneeInput") == null) {
+			let userMenu = document.getElementById("userAutoCompleteMenu");
+			if (!userMenu.classList.contains("invisible")) {
+				userMenu.replaceChildren();
+				userMenu.classList.add("invisible");
+				hide = true;
+			}
+		}
+		if (event.target.closest(".infoContextMenuLoader") == null) {
+			let infoMenu = document.getElementById("infoContextMenu");
+			if (currentContextMenuLoader != null) {
+				infoMenu.classList.add("invisible");
+				currentContextMenuLoader = null;
+				hide = true;
+			}
+		}
 		if (hide) {
 			return;
 		}
-		hide = hideFooter();
+		if (event.target.closest(".infoAdder, .infoTitle, #footer") == null) {
+			hide = hideFooter();
+		}
 		if (hide) {
 			return;
 		}
-		let subEntArea = document.querySelector(".subEntryArea");
-		if (subEntArea.classList.contains("editMode")) {
-			let selEnts = document.querySelectorAll(".subEntry.selected");
-			if (selEnts.length == 0) {
-				subEntArea.classList.remove("editMode");
-				return;
-			}
-			for (let ent of selEnts) {
-				ent.classList.remove("selected");
+		if (event.target.closest(".subEntry, #footer") == null) {
+			let subEntArea = document.querySelector(".subEntryArea");
+			if (subEntArea.classList.contains("editMode")) {
+				let selEnts = document.querySelectorAll(".subEntry.selected");
+				if (selEnts.length == 0) {
+					subEntArea.classList.remove("editMode");
+					return;
+				}
+				for (let ent of selEnts) {
+					ent.classList.remove("selected");
+				}
 			}
 		}
-	}
-	let footer = document.getElementById("footer");
-	footer.onclick = function(event) {
-		event.stopPropagation();
 	}
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
@@ -345,15 +370,8 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
-			event.stopPropagation();
-			if (true) {
-				// I'm doing a bit of cheating.
-				// But this is only way to handle floating menus when user clicked subEntry.
-				// TODO: find better way
-				let hide = hideFloatingMenus();
-				if (hide) {
-					return;
-				}
+			if (event.target.closest(".statusDot, .infoTitle") != null) {
+				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
 				onselect(ent);
@@ -373,8 +391,6 @@ window.onload = function() {
 			continue
 		}
 		dot.onclick = function(event) {
-			event.stopPropagation();
-			event.preventDefault();
 			if (currentStatusDot == dot && !menu.classList.contains("invisible")) {
 				menu.classList.add("invisible");
 				currentStatusDot = null;
@@ -602,7 +618,6 @@ window.onload = function() {
 			if (subEntArea.contains(t) && !subEntArea.classList.contains("editMode")) {
 				return;
 			}
-			event.stopPropagation();
 			let info = parentWithClass(t, "info");
 			showInfoUpdater(info);
 		}
@@ -937,7 +952,26 @@ document.onkeydown = keyPressed;
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
 		// Will close floating UIs first, if any exists.
-		let hide = hideFloatingMenus();
+		let hide = false;
+		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
+		for (let menu of selectStatusMenus) {
+			if (!menu.classList.contains("invisible")) {
+				menu.classList.add("invisible");
+				hide = true;
+			}
+		}
+		let userMenu = document.getElementById("userAutoCompleteMenu");
+		if (!userMenu.classList.contains("invisible")) {
+			userMenu.replaceChildren();
+			userMenu.classList.add("invisible");
+			hide = true;
+		}
+		let infoMenu = document.getElementById("infoContextMenu");
+		if (currentContextMenuLoader != null) {
+			infoMenu.classList.add("invisible");
+			currentContextMenuLoader = null;
+			hide = true;
+		}
 		if (hide) {
 			return;
 		}
@@ -1086,30 +1120,6 @@ function hideInfoAdder() {
 }
 
 let currentContextMenuLoader = null;
-
-function hideFloatingMenus() {
-	let hide = false;
-	let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
-	for (let menu of selectStatusMenus) {
-		if (!menu.classList.contains("invisible")) {
-			menu.classList.add("invisible");
-			hide = true;
-		}
-	}
-	let userMenu = document.getElementById("userAutoCompleteMenu");
-	if (!userMenu.classList.contains("invisible")) {
-		userMenu.replaceChildren();
-		userMenu.classList.add("invisible");
-		hide = true;
-	}
-	let infoMenu = document.getElementById("infoContextMenu");
-	if (currentContextMenuLoader != null) {
-		infoMenu.classList.add("invisible");
-		currentContextMenuLoader = null;
-		hide = true;
-	}
-	return hide
-}
 
 // showStatusBarOnly shows statusBar and hide other elements in footer. (need for eg. update thumbnail failed.)
 // statusBar will be cleaned before it is shown.
