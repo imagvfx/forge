@@ -6,12 +6,15 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
+		hide = hideFooter();
+		if (hide) {
+			return;
+		}
 		let subEntArea = document.querySelector(".subEntryArea");
 		if (subEntArea.classList.contains("editMode")) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (selEnts.length == 0) {
 				subEntArea.classList.remove("editMode");
-				hideFooter();
 				return;
 			}
 			for (let ent of selEnts) {
@@ -938,12 +941,15 @@ function keyPressed(ev) {
 		if (hide) {
 			return;
 		}
+		hide = hideFooter();
+		if (hide) {
+			return;
+		}
 		let subEntArea = document.querySelector(".subEntryArea");
 		if (subEntArea.classList.contains("editMode")) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (selEnts.length == 0) {
 				subEntArea.classList.remove("editMode");
-				hideFooter();
 				return;
 			}
 			for (let ent of selEnts) {
@@ -951,8 +957,6 @@ function keyPressed(ev) {
 			}
 			return;
 		}
-		// No float UIs were there. Do default job.
-		toggleFooter();
 	}
 }
 
@@ -1144,12 +1148,20 @@ function toggleFooter() {
 
 function showFooter() {
 	let footer = document.getElementById("footer");
-	footer.classList.remove("nodisplay");
+	if (footer.classList.contains("nodisplay")) {
+		footer.classList.remove("nodisplay");
+		return true;
+	}
+	return false;
 }
 
 function hideFooter() {
 	let footer = document.getElementById("footer");
-	footer.classList.add("nodisplay");
+	if (!footer.classList.contains("nodisplay")) {
+		footer.classList.add("nodisplay");
+		return true;
+	}
+	return false;
 }
 
 function toggleCollapse() {
