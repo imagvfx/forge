@@ -1,19 +1,10 @@
 "use strict";
 
 window.onload = function() {
-	let currentContextMenuLoader = null;
 	document.onclick = function(event) {
-		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
-		for (let menu of selectStatusMenus) {
-			menu.classList.add("invisible");
-		}
-		let userMenu = document.getElementById("userAutoCompleteMenu");
-		userMenu.replaceChildren();
-		userMenu.classList.add("invisible");
-		let infoMenu = document.getElementById("infoContextMenu");
-		if (currentContextMenuLoader != null) {
-			infoMenu.classList.add("invisible");
-			currentContextMenuLoader = null;
+		let hide = hideFloatingMenus();
+		if (hide) {
+			return;
 		}
 		let subEntArea = document.querySelector(".subEntryArea");
 		if (subEntArea.classList.contains("editMode")) {
@@ -352,6 +343,15 @@ window.onload = function() {
 		}
 		ent.onclick = function(event) {
 			event.stopPropagation();
+			if (true) {
+				// I'm doing a bit of cheating.
+				// But this is only way to handle floating menus when user clicked subEntry.
+				// TODO: find better way
+				let hide = hideFloatingMenus();
+				if (hide) {
+					return;
+				}
+			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
@@ -934,26 +934,8 @@ document.onkeydown = keyPressed;
 function keyPressed(ev) {
 	if (ev.code == "Escape") {
 		// Will close floating UIs first, if any exists.
-		let closed = false;
-		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
-		for (let menu of selectStatusMenus) {
-			if (!menu.classList.contains("invisible")) {
-				menu.classList.add("invisible");
-				closed = true;
-			}
-		}
-		let userMenu = document.getElementById("userAutoCompleteMenu");
-		if (!userMenu.classList.contains("invisible")) {
-			userMenu.replaceChildren();
-			userMenu.classList.add("invisible");
-			closed = true;
-		}
-		let infoMenu = document.getElementById("infoContextMenu");
-		if (!infoMenu.classList.contains("invisible")) {
-			infoMenu.classList.add("invisible");
-			closed = true;
-		}
-		if (closed) {
+		let hide = hideFloatingMenus();
+		if (hide) {
 			return;
 		}
 		let subEntArea = document.querySelector(".subEntryArea");
@@ -1097,6 +1079,32 @@ function showInfoAdder(entry, ctg) {
 function hideItemAdder() {
 	let adder = document.getElementById("itemAdder");
 	adder.classList.add("nodisplay");
+}
+
+let currentContextMenuLoader = null;
+
+function hideFloatingMenus() {
+	let hide = false;
+	let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
+	for (let menu of selectStatusMenus) {
+		if (!menu.classList.contains("invisible")) {
+			menu.classList.add("invisible");
+			hide = true;
+		}
+	}
+	let userMenu = document.getElementById("userAutoCompleteMenu");
+	if (!userMenu.classList.contains("invisible")) {
+		userMenu.replaceChildren();
+		userMenu.classList.add("invisible");
+		hide = true;
+	}
+	let infoMenu = document.getElementById("infoContextMenu");
+	if (currentContextMenuLoader != null) {
+		infoMenu.classList.add("invisible");
+		currentContextMenuLoader = null;
+		hide = true;
+	}
+	return hide
 }
 
 // showStatusBarOnly shows statusBar and hide other elements in footer. (need for eg. update thumbnail failed.)
