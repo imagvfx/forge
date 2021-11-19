@@ -342,7 +342,6 @@ window.onload = function() {
 					return;
 				}
 				subEntArea.classList.add("editMode");
-				onselect(ent);
 			}, 500)
 		}
 		ent.onmouseup = function(event) {
