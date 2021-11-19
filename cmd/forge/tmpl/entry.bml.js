@@ -16,12 +16,12 @@ window.onload = function() {
 			currentContextMenuLoader = null;
 		}
 		let subEntArea = document.querySelector(".subEntryArea");
-		if (subEntArea.classList.contains("selectionMode")) {
+		if (subEntArea.classList.contains("editMode")) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			for (let ent of selEnts) {
 				ent.classList.remove("selected");
 			}
-			subEntArea.classList.remove("selectionMode");
+			subEntArea.classList.remove("editMode");
 			hideFooter();
 		}
 	}
@@ -307,10 +307,10 @@ window.onload = function() {
 	for (let ent of subEntries) {
 		ent.onmousedown = function(event) {
 			alreadyHandled = false;
-			if (subEntArea.classList.contains("selectionMode")) {
+			if (subEntArea.classList.contains("editMode")) {
 				return;
 			}
-			// Two conditions should met to turn on selectionMode.
+			// Two conditions should met to turn on editMode.
 			// User holding mouse down for reasonable duration,
 			// and mouse movement should be relatively small. (to distinguish it from text selection)
 			function matchMousedownId(n) {
@@ -341,7 +341,7 @@ window.onload = function() {
 				if (distance(x2-x1, y2-y1) > 5) {
 					return;
 				}
-				subEntArea.classList.add("selectionMode");
+				subEntArea.classList.add("editMode");
 				onselect(ent);
 			}, 500)
 		}
@@ -350,10 +350,10 @@ window.onload = function() {
 		}
 		ent.onclick = function(event) {
 			event.stopPropagation();
-			if (!alreadyHandled && subEntArea.classList.contains("selectionMode")) {
+			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
-					subEntArea.classList.remove("selectionMode");
+					subEntArea.classList.remove("editMode");
 					hideFooter();
 				}
 			}
@@ -953,12 +953,12 @@ function keyPressed(ev) {
 			return;
 		}
 		let subEntArea = document.querySelector(".subEntryArea");
-		if (subEntArea.classList.contains("selectionMode")) {
+		if (subEntArea.classList.contains("editMode")) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			for (let ent of selEnts) {
 				ent.classList.remove("selected");
 			}
-			subEntArea.classList.remove("selectionMode");
+			subEntArea.classList.remove("editMode");
 			hideFooter();
 			return;
 		}

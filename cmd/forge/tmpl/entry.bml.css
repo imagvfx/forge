@@ -147,7 +147,7 @@
 	border: 1px solid transparent;
 }
 
-.subEntryArea.selectionMode .infoTitle {
+.subEntryArea.editMode .infoTitle {
 	background-color: #FAFAFA;
 	border: 1px solid #EEEEEE;
 	border-radius: 2px;
@@ -192,11 +192,11 @@
 	background-color: #FAFAFA;
 }
 
-.subEntryArea.selectionMode .subEntry {
+.subEntryArea.editMode .subEntry {
 	background-color: #F4F4F4;
 }
 
-.subEntryArea.selectionMode .subEntry.selected {
+.subEntryArea.editMode .subEntry.selected {
 	outline: 1px solid #88AADD;
 	background-color: #EEFAFF;
 }
