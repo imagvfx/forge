@@ -506,3 +506,14 @@
 	font-size: 0.8rem;
 	opacity: 0.8;
 }
+
+.infoModifier {
+	background-color: #F9F9F9;
+	border-top: 1px solid #BBB;
+}
+
+.infoModifierTopBar {
+	display: flex;
+	justify-content: space-between;
+	padding: 0.5rem;
+}

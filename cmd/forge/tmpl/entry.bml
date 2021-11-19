@@ -302,8 +302,8 @@
 				{{end}}
 				]
 				<div id="footer" class="nodisplay" style="position:fixed;left:0;bottom:0;width:100%;"> [
-					<div id="itemUpdater" class="nodisplay" style="background-color:#F9F9F9;border-top:1px solid #BBB;"> [
-						<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#E0EEEE"> [
+					<div id="itemUpdater" class="infoModifier nodisplay"> [
+						<div class="infoModifierTopBar" style="background-color:#E0EEEE;"> [
 							<div class="entryLabel" style=""> []
 							<div style="border-radius:3px;background-color:#BDD;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideFooter()"> [&#x2715]
 						]
@@ -321,8 +321,8 @@
 							]
 						]
 					]
-					<div id="itemAdder" class="nodisplay" style="box-sizing:border-box;background-color:#F9F9F9;border-top:1px solid #BBB;"> [
-						<div style="display:flex;justify-content:space-between;padding:0.5rem;background-color:#F5E0E0;"> [
+					<div id="itemAdder" class="infoModifier nodisplay"> [
+						<div class="infoModifierTopBar" style="background-color:#F5E0E0;"> [
 							<div class="entryLabel" style=""> []
 							<div style="border-radius:3px;background-color:#ECC;width:1rem;height:1rem;display:flex;justify-content:center;align-items:center;font-size:0.5rem;cursor:pointer" onclick="hideFooter()"> [&#x2715]
 						]
