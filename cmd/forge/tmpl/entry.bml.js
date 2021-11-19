@@ -982,7 +982,7 @@ function showCategoryInfos(ctg) {
 
 function showInfoUpdater(info) {
 	showFooter();
-	hideItemAdder();
+	hideInfoAdder();
 
 	let thisEnt = parentWithClass(info, "entry");
 	let entPath = thisEnt.dataset.entryPath;
@@ -1010,7 +1010,7 @@ function showInfoUpdater(info) {
 		printErrorStatus(ctg + " not exists: " + name);
 		return;
 	}
-	let updater = document.getElementById("itemUpdater");
+	let updater = document.getElementById("infoUpdater");
 	updater.classList.remove("nodisplay");
 	let label = String(selectedEnts.length) + " entries selected";
 	if (selectedEnts.length == 1) {
@@ -1035,8 +1035,8 @@ function showInfoUpdater(info) {
 	valueInput.focus();
 }
 
-function hideItemUpdater() {
-	let updater = document.getElementById("itemUpdater");
+function hideInfoUpdater() {
+	let updater = document.getElementById("infoUpdater");
 	updater.classList.add("nodisplay");
 }
 
@@ -1046,9 +1046,9 @@ let AccessorTypes = {{marshalJS $.AccessorTypes}}
 function showInfoAdder(entry, ctg) {
 	// TODO: Add the item inplace?
 	showFooter();
-	hideItemUpdater();
+	hideInfoUpdater();
 
-	let adder = document.getElementById("itemAdder");
+	let adder = document.getElementById("infoAdder");
 	adder.classList.remove("nodisplay");
 	adder.getElementsByClassName("entryLabel")[0].innerText = entry;
 	adder.getElementsByClassName("entryInput")[0].value = entry;
@@ -1080,8 +1080,8 @@ function showInfoAdder(entry, ctg) {
 	nameInput.focus();
 }
 
-function hideItemAdder() {
-	let adder = document.getElementById("itemAdder");
+function hideInfoAdder() {
+	let adder = document.getElementById("infoAdder");
 	adder.classList.add("nodisplay");
 }
 
@@ -1115,8 +1115,8 @@ function hideFloatingMenus() {
 // statusBar will be cleaned before it is shown.
 function showStatusBarOnly() {
 	showFooter();
-	hideItemAdder();
-	hideItemUpdater();
+	hideInfoAdder();
+	hideInfoUpdater();
 	let statusBar = document.getElementById("statusBar");
 	statusBar.innerHTML = "";
 }
