@@ -18,11 +18,14 @@ window.onload = function() {
 		let subEntArea = document.querySelector(".subEntryArea");
 		if (subEntArea.classList.contains("editMode")) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
+			if (selEnts.length == 0) {
+				subEntArea.classList.remove("editMode");
+				hideFooter();
+				return;
+			}
 			for (let ent of selEnts) {
 				ent.classList.remove("selected");
 			}
-			subEntArea.classList.remove("editMode");
-			hideFooter();
 		}
 	}
 	let footer = document.getElementById("footer");
@@ -352,7 +355,6 @@ window.onload = function() {
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
-					subEntArea.classList.remove("editMode");
 					hideFooter();
 				}
 			}
@@ -954,11 +956,14 @@ function keyPressed(ev) {
 		let subEntArea = document.querySelector(".subEntryArea");
 		if (subEntArea.classList.contains("editMode")) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
+			if (selEnts.length == 0) {
+				subEntArea.classList.remove("editMode");
+				hideFooter();
+				return;
+			}
 			for (let ent of selEnts) {
 				ent.classList.remove("selected");
 			}
-			subEntArea.classList.remove("editMode");
-			hideFooter();
 			return;
 		}
 		// No float UIs were there. Do default job.
