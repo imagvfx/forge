@@ -1,5 +1,8 @@
 "use strict";
 
+let lastClickedSubEntry = null;
+let lastClickedSubEntrySelected = false;
+
 window.onload = function() {
 	document.onclick = function(event) {
 		let hide = false;
@@ -312,25 +315,12 @@ window.onload = function() {
 	let subEntArea = document.querySelector(".subEntryArea");
 	let alreadyHandled = false;
 	let mousedownId = 0;
-	function onselect(ent) {
-		let selEnt = document.querySelector(".subEntry.selected");
-		if (selEnt) {
-			if (ent.dataset.entryType != selEnt.dataset.entryType) {
-				printErrorStatus("entry type is different from selected entries");
-				return;
-			}
-		}
-		if (ent.classList.contains("selected")) {
-			ent.classList.remove("selected");
-		} else {
-			ent.classList.add("selected");
-		}
-	}
 	let subEntries = document.getElementsByClassName("subEntry");
 	for (let ent of subEntries) {
 		ent.onmousedown = function(event) {
 			alreadyHandled = false;
 			if (subEntArea.classList.contains("editMode")) {
+				event.preventDefault(); // prevent shift selection
 				return;
 			}
 			// Two conditions should met to turn on editMode.
@@ -376,10 +366,52 @@ window.onload = function() {
 				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
-				onselect(ent);
-				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let selEnt = document.querySelector(".subEntry.selected");
+				if ((selEnt != null) && (ent.dataset.entryType != selEnt.dataset.entryType)) {
+					printErrorStatus("entry type is different from selected entries");
+					return;
+				}
+				if (!event.shiftKey || lastClickedSubEntry == null) {
+					if (ent.classList.contains("selected")) {
+						ent.classList.remove("selected");
+						lastClickedSubEntrySelected = false;
+					} else {
+						ent.classList.add("selected");
+						lastClickedSubEntrySelected = true;
+					}
+				} else {
+					let range = [];
+					for (let i in subEntries) {
+						let e = subEntries[i];
+						if (e == ent || e == lastClickedSubEntry) {
+							range.push(Number(i)); // wierd, but i is string
+							if (range.length == 2) {
+								break;
+							}
+						}
+					}
+					if (range.length == 1) {
+						// When clicked and last clicked entries are same;
+						return;
+					}
+					if (range.length != 2) {
+						printErrorStatus("could not find selection range");
+						return;
+					}
+					let [from, to] = range;
+					for (let i = from; i <= to; i++) {
+						let e = subEntries[i];
+						if (lastClickedSubEntrySelected) {
+							e.classList.add("selected");
+						} else {
+							e.classList.remove("selected");
+						}
+					}
+				}
+				lastClickedSubEntry = ent;
 				let what = "";
 				let entry = "entry"
+				let selEnts = document.querySelectorAll(".subEntry.selected");
 				if (selEnts.length == 0) {
 					what = "no entry";
 				} else if (selEnts.length == 1) {
