@@ -2,6 +2,7 @@
 
 let lastClickedSubEntry = null;
 let lastClickedSubEntrySelected = false;
+let lastShiftClickedSubEntry = null;
 
 window.onload = function() {
 	document.onclick = function(event) {
@@ -46,6 +47,9 @@ window.onload = function() {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
 				if (selEnts.length == 0) {
 					subEntArea.classList.remove("editMode");
+					lastClickedSubEntry = null;
+					lastClickedSubEntrySelected = false;
+					lastShiftClickedSubEntry = null;
 					printStatus("normal mode");
 					return;
 				}
@@ -379,20 +383,22 @@ window.onload = function() {
 						ent.classList.add("selected");
 						lastClickedSubEntrySelected = true;
 					}
+					lastClickedSubEntry = ent;
+					lastShiftClickedSubEntry = null;
 				} else {
 					let range = [];
+					let shiftIdx = -1;
 					for (let i in subEntries) {
 						let e = subEntries[i];
 						if (e == ent || e == lastClickedSubEntry) {
 							range.push(Number(i)); // wierd, but i is string
-							if (range.length == 2) {
-								break;
-							}
+						}
+						if (e == lastShiftClickedSubEntry) {
+							shiftIdx = Number(i);
 						}
 					}
 					if (range.length == 1) {
-						// When clicked and last clicked entries are same;
-						return;
+						range.push(range[0]);
 					}
 					if (range.length != 2) {
 						printErrorStatus("could not find selection range");
@@ -407,8 +413,27 @@ window.onload = function() {
 							e.classList.remove("selected");
 						}
 					}
+					if (shiftIdx != -1) {
+						let invertRange = []
+						if (shiftIdx < from) {
+							invertRange = [shiftIdx, from-1];
+						} else if (shiftIdx > to) {
+							invertRange = [to + 1, shiftIdx];
+						}
+						if (invertRange.length != 0) {
+							let [invertFrom, invertTo] = invertRange;
+							for (let i = invertFrom; i <= invertTo; i++) {
+								let e = subEntries[i];
+								if (!lastClickedSubEntrySelected) {
+									e.classList.add("selected");
+								} else {
+									e.classList.remove("selected");
+								}
+							}
+						}
+					}
+					lastShiftClickedSubEntry = ent;
 				}
-				lastClickedSubEntry = ent;
 				let what = "";
 				let entry = "entry"
 				let selEnts = document.querySelectorAll(".subEntry.selected");
@@ -1010,6 +1035,9 @@ function keyPressed(ev) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (selEnts.length == 0) {
 				subEntArea.classList.remove("editMode");
+				lastClickedSubEntry = null;
+				lastClickedSubEntrySelected = false;
+				lastShiftClickedSubEntry = null;
 				printStatus("normal mode");
 				return;
 			}
