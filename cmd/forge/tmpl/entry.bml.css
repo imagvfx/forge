@@ -152,7 +152,7 @@
 
 .subEntryArea.editMode .infoTitle:hover {
 	background-color: #FAFAFA;
-	border: 1px solid #EEEEEE;
+	border: 1px solid #D0D0D0;
 	border-radius: 2px;
 	cursor: pointer;
 }
@@ -187,6 +187,11 @@
 	gap: 1px;
 }
 
+.subEntryArea.editMode .subEntryList {
+	border: 1px solid #D0D0D0;
+	background-color: #D0D0D0;
+}
+
 .subEntry {
 	display: flex;
 	flex-direction: column;
@@ -197,7 +202,7 @@
 }
 
 .subEntryArea.editMode .subEntry {
-	background-color: #F4F4F4;
+	background-color: #EEEEEE;
 }
 
 .subEntryArea.editMode .subEntry.selected {
