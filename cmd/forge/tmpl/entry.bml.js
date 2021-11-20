@@ -1012,9 +1012,7 @@ function showCategoryInfos(ctg) {
 }
 
 function showInfoUpdater(info) {
-	document.getElementById("infoUpdater").classList.remove("nodisplay");
 	document.getElementById("infoAdder").classList.add("nodisplay");
-
 	let thisEnt = parentWithClass(info, "entry");
 	let entPath = thisEnt.dataset.entryPath;
 	let ctg = info.dataset.category;
@@ -1039,6 +1037,7 @@ function showInfoUpdater(info) {
 		printErrorStatus(ctg + " not exists: " + name);
 		return;
 	}
+	document.getElementById("infoUpdater").classList.remove("nodisplay");
 	let updater = document.getElementById("infoUpdater");
 	updater.classList.remove("nodisplay");
 	let label = String(selectedEnts.length) + " entries selected";
