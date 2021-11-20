@@ -43,11 +43,13 @@ window.onload = function() {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
 				if (selEnts.length == 0) {
 					subEntArea.classList.remove("editMode");
+					printStatus("normal mode");
 					return;
 				}
 				for (let ent of selEnts) {
 					ent.classList.remove("selected");
 				}
+				printStatus("no entry selected");
 			}
 		}
 	}
@@ -363,6 +365,7 @@ window.onload = function() {
 					return;
 				}
 				subEntArea.classList.add("editMode");
+				printStatus("edit mode");
 			}, 500)
 		}
 		ent.onmouseup = function(event) {
@@ -374,6 +377,17 @@ window.onload = function() {
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
 				onselect(ent);
+				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let what = "";
+				let entry = "entry"
+				if (selEnts.length == 0) {
+					what = "no entry";
+				} else if (selEnts.length == 1) {
+					what = "1 entry";
+				} else {
+					what = String(selEnts.length) + " entries";
+				}
+				printStatus(what + " selected");
 				if (document.querySelector(".subEntry.selected") == null) {
 					hideInfoModifier();
 				}
@@ -964,11 +978,13 @@ function keyPressed(ev) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (selEnts.length == 0) {
 				subEntArea.classList.remove("editMode");
+				printStatus("normal mode");
 				return;
 			}
 			for (let ent of selEnts) {
 				ent.classList.remove("selected");
 			}
+			printStatus("no entry selected");
 			return;
 		}
 		return;
@@ -987,6 +1003,16 @@ function keyPressed(ev) {
 		for (let ent of selEnts) {
 			ent.classList.add("selected");
 		}
+		let what = "";
+		let entry = "entry"
+		if (selEnts.length == 0) {
+			what = "no entry";
+		} else if (selEnts.length == 1) {
+			what = "1 entry";
+		} else {
+			what = String(selEnts.length) + " entries";
+		}
+		printStatus(what + " selected");
 		return;
 	}
 }
