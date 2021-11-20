@@ -1,3 +1,5 @@
+// html { filter: grayscale(100%) }
+
 .pinnedPathLink:hover {
 	text-decoration: underline;
 }
