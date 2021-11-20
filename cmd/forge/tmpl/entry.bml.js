@@ -991,6 +991,23 @@ function keyPressed(ev) {
 			}
 			return;
 		}
+		return;
+	}
+	if (ev.code == "KeyA") {
+		let ctrlLike = ev.ctrlKey || ev.metaKey;
+		if (!ctrlLike) {
+			return;
+		}
+		let subEntArea = document.querySelector(".subEntryArea");
+		if (!subEntArea.classList.contains("editMode")) {
+			return;
+		}
+		ev.preventDefault();
+		let selEnts = document.querySelectorAll(".subEntry");
+		for (let ent of selEnts) {
+			ent.classList.add("selected");
+		}
+		return;
 	}
 }
 
