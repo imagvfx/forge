@@ -32,7 +32,7 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.closest(".infoAdder, .infoTitle, #footer") == null) {
-			hide = hideFooter();
+			hide = hideInfoModifier();
 		}
 		if (hide) {
 			return;
@@ -314,7 +314,6 @@ window.onload = function() {
 		let selEnt = document.querySelector(".subEntry.selected");
 		if (selEnt) {
 			if (ent.dataset.entryType != selEnt.dataset.entryType) {
-				showStatusBarOnly();
 				printErrorStatus("entry type is different from selected entries");
 				return;
 			}
@@ -376,7 +375,7 @@ window.onload = function() {
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
 				onselect(ent);
 				if (document.querySelector(".subEntry.selected") == null) {
-					hideFooter();
+					hideInfoModifier();
 				}
 			}
 		}
@@ -419,7 +418,6 @@ window.onload = function() {
 						}
 						if (!inSel) {
 							menu.classList.add("invisible");
-							showStatusBarOnly();
 							printErrorStatus("entry not in selection: " + entPath);
 							return;
 						}
@@ -447,12 +445,10 @@ window.onload = function() {
 							}
 							menu.classList.add("invisible");
 						} else {
-							showStatusBarOnly();
 							printErrorStatus(req.responseText);
 						}
 					}
 					req.onerror = function(err) {
-						showStatusBarOnly();
 						printErrorStatus("network error occurred. please check whether the server is down.");
 					}
 				}
@@ -538,7 +534,6 @@ window.onload = function() {
 					}
 				}
 				if (!inSel) {
-					showStatusBarOnly();
 					printErrorStatus("entry not in selection: " + entPath);
 					return;
 				}
@@ -560,12 +555,10 @@ window.onload = function() {
 			req.open("post", "/api/update-property");
 			req.send(formData);
 			req.onerror = function() {
-				showStatusBarOnly();
 				printErrorStatus("network error occurred. please check whether the server is down.");
 			}
 			req.onload = function() {
 				if (req.status != 200) {
-					showStatusBarOnly();
 					printErrorStatus(req.responseText);
 					return;
 				}
@@ -576,7 +569,6 @@ window.onload = function() {
 				input.value = called;
 				input.dataset.oldValue = called;
 				if (!called) {
-					showStatusBarOnly();
 					printStatus("done");
 					return;
 				}
@@ -592,11 +584,9 @@ window.onload = function() {
 				r.open("post", "/api/add-or-update-access");
 				r.send(data);
 				r.onerror = function() {
-					showStatusBarOnly();
 					printErrorStatus("network error occurred. please check whether the server is down.");
 				}
 				r.onload = function() {
-					showStatusBarOnly();
 					if (r.status != 200) {
 						printErrorStatus("cannot update access: " + r.responseText);
 						return;
@@ -670,12 +660,10 @@ window.onload = function() {
 					if (req.status == 200) {
 						location.reload();
 					} else {
-						showStatusBarOnly();
 						printErrorStatus(req.responseText);
 					}
 				}
 				req.onerror = function(err) {
-					showStatusBarOnly();
 					printErrorStatus("network error occurred. please check whether the server is down.");
 				}
 			}
@@ -736,12 +724,10 @@ function updatePinnedPath(path, at) {
 		if (req.status == 200) {
 			location.reload();
 		} else {
-			showStatusBarOnly();
 			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
-		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
@@ -758,12 +744,10 @@ function updateQuickSearch(path, at) {
 		if (req.status == 200) {
 			location.reload();
 		} else {
-			showStatusBarOnly();
 			printErrorStatus(req.responseText);
 		}
 	}
 	req.onerror = function(err) {
-		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
@@ -783,7 +767,6 @@ function toggleRenameInput() {
 function updateThumbnail(thumb) {
 	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("updateThumbnailForm")[0];
-	showStatusBarOnly();
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
 		// Prevent Safari from firing this event twice.
@@ -817,7 +800,6 @@ function updateThumbnail(thumb) {
 	}
 	req.onerror = function(err) {
 		img.parentElement.style.border = "1px solid #D72";
-		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
@@ -825,7 +807,6 @@ function updateThumbnail(thumb) {
 function deleteThumbnail(thumb) {
 	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("deleteThumbnailForm")[0];
-	showStatusBarOnly();
 	let req = new XMLHttpRequest();
 	req.open(form.method, form.action);
 	req.send(new FormData(form));
@@ -872,7 +853,6 @@ function submitUpdaterOrAdder(ev, input) {
 			}
 		}
 		if (!inSel) {
-			showStatusBarOnly();
 			printErrorStatus("entry not in selection: " + entPath);
 			return;
 		}
@@ -975,7 +955,7 @@ function keyPressed(ev) {
 		if (hide) {
 			return;
 		}
-		hide = hideFooter();
+		hide = hideInfoModifier();
 		if (hide) {
 			return;
 		}
@@ -1032,8 +1012,8 @@ function showCategoryInfos(ctg) {
 }
 
 function showInfoUpdater(info) {
-	showFooter();
-	hideInfoAdder();
+	document.getElementById("infoUpdater").classList.remove("nodisplay");
+	document.getElementById("infoAdder").classList.add("nodisplay");
 
 	let thisEnt = parentWithClass(info, "entry");
 	let entPath = thisEnt.dataset.entryPath;
@@ -1051,13 +1031,11 @@ function showInfoUpdater(info) {
 			}
 		}
 		if (!inSel) {
-			showStatusBarOnly();
 			printErrorStatus("entry not in selection: " + entPath);
 			return;
 		}
 	}
 	if (info.classList.contains("invalid")) {
-		showStatusBarOnly();
 		printErrorStatus(ctg + " not exists: " + name);
 		return;
 	}
@@ -1096,8 +1074,8 @@ let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
 function showInfoAdder(entry, ctg) {
 	// TODO: Add the item inplace?
-	showFooter();
-	hideInfoUpdater();
+	document.getElementById("infoAdder").classList.remove("nodisplay");
+	document.getElementById("infoUpdater").classList.add("nodisplay");
 
 	let adder = document.getElementById("infoAdder");
 	adder.classList.remove("nodisplay");
@@ -1138,16 +1116,6 @@ function hideInfoAdder() {
 
 let currentContextMenuLoader = null;
 
-// showStatusBarOnly shows statusBar and hide other elements in footer. (need for eg. update thumbnail failed.)
-// statusBar will be cleaned before it is shown.
-function showStatusBarOnly() {
-	showFooter();
-	hideInfoAdder();
-	hideInfoUpdater();
-	let statusBar = document.getElementById("statusBar");
-	statusBar.innerHTML = "";
-}
-
 function printStatus(s) {
 	let statusBar = document.getElementById("statusBar");
 	statusBar.classList.remove("error");
@@ -1164,17 +1132,8 @@ function clearStatus() {
 	printStatus("");
 }
 
-function toggleFooter() {
-	let footer = document.getElementById("footer");
-	if (!footer.classList.contains("nodisplay")) {
-		hideFooter();
-	} else {
-		showFooter();
-	}
-}
-
-function showFooter() {
-	let footer = document.getElementById("footer");
+function showInfoModifier() {
+	let footer = document.querySelectorAll("infoModifier");
 	if (footer.classList.contains("nodisplay")) {
 		footer.classList.remove("nodisplay");
 		return true;
@@ -1182,13 +1141,16 @@ function showFooter() {
 	return false;
 }
 
-function hideFooter() {
-	let footer = document.getElementById("footer");
-	if (!footer.classList.contains("nodisplay")) {
-		footer.classList.add("nodisplay");
-		return true;
+function hideInfoModifier() {
+	let hide = false;
+	let modifiers = document.querySelectorAll(".infoModifier");
+	for (let mod of modifiers) {
+		if (!mod.classList.contains("nodisplay")) {
+			mod.classList.add("nodisplay");
+			hide = true;
+		}
 	}
-	return false;
+	return hide;
 }
 
 function toggleCollapse() {
@@ -1216,18 +1178,15 @@ function openDeleteEntryDialog(path) {
 	req.open("post", "/api/count-all-sub-entries");
 	req.send(formData);
 	req.onerror = function(err) {
-		showStatusBarOnly();
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	req.onload = function() {
 		if (req.status != 200) {
-			showStatusBarOnly();
 			printErrorStatus(req.responseText);
 			return;
 		}
 		let j = JSON.parse(req.responseText);
 		if (j.Err != null) {
-			showStatusBarOnly();
 			printErrorStatus(j.Err);
 			return;
 		}
@@ -1258,13 +1217,11 @@ function openDeleteEntryDialog(path) {
 		req.open("post", "/api/delete-entry");
 		req.send(formData);
 		req.onerror = function(err) {
-			showStatusBarOnly();
 			printErrorStatus("network error occurred. please check whether the server is down.");
 			dialogBg.classList.add("invisible");
 		}
 		req.onload = function() {
 			if (req.status != 200) {
-				showStatusBarOnly();
 				printErrorStatus(req.responseText);
 				dialogBg.classList.add("invisible");
 				return;
