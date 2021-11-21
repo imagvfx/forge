@@ -51,6 +51,8 @@ window.onload = function() {
 				for (let ent of selEnts) {
 					ent.classList.remove("selected");
 				}
+				removeClass(subEntArea, "lastClicked");
+				removeClass(subEntArea, "lastShiftClicked");
 				printStatus("no entry selected");
 			}
 		}
@@ -1047,6 +1049,8 @@ function keyPressed(ev) {
 			for (let ent of selEnts) {
 				ent.classList.remove("selected");
 			}
+			removeClass(subEntArea, "lastClicked");
+			removeClass(subEntArea, "lastShiftClicked");
 			printStatus("no entry selected");
 			return;
 		}
