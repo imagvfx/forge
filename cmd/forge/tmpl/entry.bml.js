@@ -44,7 +44,7 @@ window.onload = function() {
 				if (selEnts.length == 0) {
 					subEntArea.classList.remove("editMode");
 					removeClass(subEntArea, "lastClicked");
-					removeClass(subEntArea, "lastShiftClicked");
+					removeClass(subEntArea, "temporary");
 					printStatus("normal mode");
 					return;
 				}
@@ -52,7 +52,7 @@ window.onload = function() {
 					ent.classList.remove("selected");
 				}
 				removeClass(subEntArea, "lastClicked");
-				removeClass(subEntArea, "lastShiftClicked");
+				removeClass(subEntArea, "temporary");
 				printStatus("no entry selected");
 			}
 		}
@@ -378,21 +378,29 @@ window.onload = function() {
 					} else {
 						ent.classList.add("selected");
 					}
+					for (let temp of subEntArea.querySelectorAll(".temporary")) {
+						temp.classList.remove("temporary");
+					}
 					removeClass(subEntArea, "lastClicked");
 					ent.classList.add("lastClicked");
-					removeClass(subEntArea, "lastShiftClicked");
 				} else {
 					let lastClicked = subEntArea.querySelector(".lastClicked");
-					let lastShiftClicked = subEntArea.querySelector(".lastShiftClicked");
+					for (let temp of subEntArea.querySelectorAll(".temporary")) {
+						temp.classList.remove("temporary");
+						if (temp == lastClicked) {
+							continue;
+						}
+						if (temp.classList.contains("selected")) {
+							temp.classList.remove("selected");
+						} else {
+							temp.classList.add("selected");
+						}
+					}
 					let range = [];
-					let shiftIdx = -1;
 					for (let i in subEntries) {
 						let e = subEntries[i];
 						if (e == ent || e == lastClicked) {
 							range.push(Number(i)); // wierd, but i is string
-						}
-						if (e == lastShiftClicked) {
-							shiftIdx = Number(i);
 						}
 					}
 					if (range.length == 1) {
@@ -406,32 +414,17 @@ window.onload = function() {
 					for (let i = from; i <= to; i++) {
 						let e = subEntries[i];
 						if (lastClicked.classList.contains("selected")) {
-							e.classList.add("selected");
+							if (!e.classList.contains("selected")) {
+								e.classList.add("selected");
+								e.classList.add("temporary");
+							}
 						} else {
-							e.classList.remove("selected");
-						}
-					}
-					if (shiftIdx != -1) {
-						let invertRange = []
-						if (shiftIdx < from) {
-							invertRange = [shiftIdx, from-1];
-						} else if (shiftIdx > to) {
-							invertRange = [to + 1, shiftIdx];
-						}
-						if (invertRange.length != 0) {
-							let [invertFrom, invertTo] = invertRange;
-							for (let i = invertFrom; i <= invertTo; i++) {
-								let e = subEntries[i];
-								if (!lastClicked.classList.contains("selected")) {
-									e.classList.add("selected");
-								} else {
-									e.classList.remove("selected");
-								}
+							if (e.classList.contains("selected")) {
+								e.classList.remove("selected");
+								e.classList.add("temporary");
 							}
 						}
 					}
-					removeClass(subEntArea, "lastShiftClicked");
-					ent.classList.add("lastShiftClicked");
 				}
 				let what = "";
 				let entry = "entry"
@@ -1042,7 +1035,7 @@ function keyPressed(ev) {
 			if (selEnts.length == 0) {
 				subEntArea.classList.remove("editMode");
 				removeClass(subEntArea, "lastClicked");
-				removeClass(subEntArea, "lastShiftClicked");
+				removeClass(subEntArea, "temporary");
 				printStatus("normal mode");
 				return;
 			}
@@ -1050,7 +1043,7 @@ function keyPressed(ev) {
 				ent.classList.remove("selected");
 			}
 			removeClass(subEntArea, "lastClicked");
-			removeClass(subEntArea, "lastShiftClicked");
+			removeClass(subEntArea, "temporary");
 			printStatus("no entry selected");
 			return;
 		}
@@ -1070,6 +1063,8 @@ function keyPressed(ev) {
 		for (let ent of selEnts) {
 			ent.classList.add("selected");
 		}
+		removeClass(subEntArea, "lastClicked");
+		removeClass(subEntArea, "temporary");
 		let what = "";
 		let entry = "entry"
 		if (selEnts.length == 0) {
