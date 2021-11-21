@@ -1,9 +1,5 @@
 "use strict";
 
-let lastClickedSubEntry = null;
-let lastClickedSubEntrySelected = false;
-let lastShiftClickedSubEntry = null;
-
 window.onload = function() {
 	document.onclick = function(event) {
 		let hide = false;
@@ -47,9 +43,8 @@ window.onload = function() {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
 				if (selEnts.length == 0) {
 					subEntArea.classList.remove("editMode");
-					lastClickedSubEntry = null;
-					lastClickedSubEntrySelected = false;
-					lastShiftClickedSubEntry = null;
+					removeClass(subEntArea, "lastClicked");
+					removeClass(subEntArea, "lastShiftClicked");
 					printStatus("normal mode");
 					return;
 				}
@@ -375,25 +370,26 @@ window.onload = function() {
 					printErrorStatus("entry type is different from selected entries");
 					return;
 				}
-				if (!event.shiftKey || lastClickedSubEntry == null) {
+				if (!event.shiftKey || subEntArea.querySelector(".lastClicked") == null) {
 					if (ent.classList.contains("selected")) {
 						ent.classList.remove("selected");
-						lastClickedSubEntrySelected = false;
 					} else {
 						ent.classList.add("selected");
-						lastClickedSubEntrySelected = true;
 					}
-					lastClickedSubEntry = ent;
-					lastShiftClickedSubEntry = null;
+					removeClass(subEntArea, "lastClicked");
+					ent.classList.add("lastClicked");
+					removeClass(subEntArea, "lastShiftClicked");
 				} else {
+					let lastClicked = subEntArea.querySelector(".lastClicked");
+					let lastShiftClicked = subEntArea.querySelector(".lastShiftClicked");
 					let range = [];
 					let shiftIdx = -1;
 					for (let i in subEntries) {
 						let e = subEntries[i];
-						if (e == ent || e == lastClickedSubEntry) {
+						if (e == ent || e == lastClicked) {
 							range.push(Number(i)); // wierd, but i is string
 						}
-						if (e == lastShiftClickedSubEntry) {
+						if (e == lastShiftClicked) {
 							shiftIdx = Number(i);
 						}
 					}
@@ -407,7 +403,7 @@ window.onload = function() {
 					let [from, to] = range;
 					for (let i = from; i <= to; i++) {
 						let e = subEntries[i];
-						if (lastClickedSubEntrySelected) {
+						if (lastClicked.classList.contains("selected")) {
 							e.classList.add("selected");
 						} else {
 							e.classList.remove("selected");
@@ -424,7 +420,7 @@ window.onload = function() {
 							let [invertFrom, invertTo] = invertRange;
 							for (let i = invertFrom; i <= invertTo; i++) {
 								let e = subEntries[i];
-								if (!lastClickedSubEntrySelected) {
+								if (!lastClicked.classList.contains("selected")) {
 									e.classList.add("selected");
 								} else {
 									e.classList.remove("selected");
@@ -432,7 +428,8 @@ window.onload = function() {
 							}
 						}
 					}
-					lastShiftClickedSubEntry = ent;
+					removeClass(subEntArea, "lastShiftClicked");
+					ent.classList.add("lastShiftClicked");
 				}
 				let what = "";
 				let entry = "entry"
@@ -763,6 +760,13 @@ window.onpageshow = function() {
 	}
 }
 
+function removeClass(parent, clsName) {
+	let elems = parent.getElementsByClassName(clsName);
+	for (let e of elems) {
+		e.classList.remove(clsName);
+	}
+}
+
 function parentWithClass(from, clsName) {
 	while (true) {
 		let parent = from.parentElement;
@@ -1035,9 +1039,8 @@ function keyPressed(ev) {
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (selEnts.length == 0) {
 				subEntArea.classList.remove("editMode");
-				lastClickedSubEntry = null;
-				lastClickedSubEntrySelected = false;
-				lastShiftClickedSubEntry = null;
+				removeClass(subEntArea, "lastClicked");
+				removeClass(subEntArea, "lastShiftClicked");
 				printStatus("normal mode");
 				return;
 			}
