@@ -15,6 +15,7 @@ import (
 
 	"github.com/imagvfx/forge"
 	"github.com/xuri/excelize/v2"
+	_ "golang.org/x/image/tiff"
 )
 
 type apiHandler struct {
