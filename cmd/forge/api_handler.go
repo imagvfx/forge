@@ -15,6 +15,10 @@ import (
 
 	"github.com/imagvfx/forge"
 	"github.com/xuri/excelize/v2"
+
+	_ "image/jpeg"
+	_ "image/png"
+
 	_ "golang.org/x/image/tiff"
 )
 

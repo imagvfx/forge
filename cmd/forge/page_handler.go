@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	_ "image/jpeg"
 	"io"
 	"log"
 	"net/http"
