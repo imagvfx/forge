@@ -841,20 +841,28 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			if err != nil {
 				return err
 			}
-			thumbReader := bytes.NewBuffer(thumb)
-			img, _, err := image.Decode(thumbReader)
-			if err != nil {
-				return err
-			}
-			if ent.HasThumbnail {
-				err = h.server.UpdateThumbnail(ctx, entPath, img)
+			// If the cell isn't containing an image, thumb will get empty []byte.
+			if len(thumb) != 0 {
+				thumbReader := bytes.NewBuffer(thumb)
+				img, _, err := image.Decode(thumbReader)
 				if err != nil {
-					return err
+					// Error on thumbnail parsing shouldn't interrupt whole update process.
+					// This is an TEMPORARY fix.
+					// TODO: think better way to handle these errors
+					log.Printf("failed to decode image on %v/%v: %v\n", parent, name, err)
 				}
-			} else {
-				err = h.server.AddThumbnail(ctx, entPath, img)
-				if err != nil {
-					return err
+				if err == nil {
+					if ent.HasThumbnail {
+						err = h.server.UpdateThumbnail(ctx, entPath, img)
+						if err != nil {
+							return err
+						}
+					} else {
+						err = h.server.AddThumbnail(ctx, entPath, img)
+						if err != nil {
+							return err
+						}
+					}
 				}
 			}
 		}
