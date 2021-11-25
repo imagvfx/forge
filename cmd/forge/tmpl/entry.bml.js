@@ -453,6 +453,10 @@ window.onload = function() {
 			continue
 		}
 		dot.onclick = function(event) {
+			let editMode = subEntArea.classList.contains("editMode");
+			if (!editMode) {
+				return;
+			}
 			if (currentStatusDot == dot && !menu.classList.contains("invisible")) {
 				menu.classList.add("invisible");
 				currentStatusDot = null;

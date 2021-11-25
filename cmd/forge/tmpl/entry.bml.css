@@ -280,6 +280,9 @@
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
 	border: 1px solid #DDD;
+}
+
+.subEntryArea.editMode .statusDot {
 	cursor: pointer;
 }
 
