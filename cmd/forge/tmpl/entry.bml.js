@@ -319,10 +319,17 @@ window.onload = function() {
 	let subEntries = document.getElementsByClassName("subEntry");
 	for (let ent of subEntries) {
 		ent.onmousedown = function(event) {
+			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput") != null) {
+				return;
+			}
 			alreadyHandled = false;
 			if (subEntArea.classList.contains("editMode")) {
-				event.preventDefault(); // prevent shift selection
-				return;
+				// prevent text selection
+				// TODO: mouse dragging should be prevented as well
+				if (event.shiftKey) {
+					event.preventDefault();
+					return;
+				}
 			}
 			// Two conditions should met to turn on editMode.
 			// User holding mouse down for reasonable duration,
@@ -360,10 +367,11 @@ window.onload = function() {
 			}, 500)
 		}
 		ent.onmouseup = function(event) {
+			// Mouse would be up-ed inside of ".statusDot, .infoTitle, .assigneeInput". It is ok.
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
-			if (event.target.closest(".statusDot, .infoTitle") != null) {
+			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput") != null) {
 				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
@@ -578,10 +586,6 @@ window.onload = function() {
 	}
 	let assigneeInputs = document.getElementsByClassName("assigneeInput")
 	for (let input of assigneeInputs) {
-		input.onclick = function(event) {
-			event.stopPropagation();
-			event.preventDefault();
-		}
 		let called = CalledByName[input.dataset.assignee];
 		if (!called) {
 			called = "";
