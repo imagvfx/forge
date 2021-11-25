@@ -125,6 +125,10 @@
 	visibility: hidden !important;
 }
 
+.subEntryArea:not(.editMode) .thumbnailButton {
+	display: none;
+}
+
 
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
