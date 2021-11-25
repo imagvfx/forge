@@ -1396,8 +1396,25 @@ function autoComplete(input, labels, vals, oncomplete) {
 			menu.classList.remove("invisible");
 		}
 	}
+	// TODO: want to override input.onmousedown so it won't be focused at all,
+	// but it also makes the input text not selectable
+
 	// Don't set input.onkeydown, it will swipe default (typing characters) behavior of input.
 	input.addEventListener("keydown", function(event) {
+		let temporaryCode = true;
+		if (temporaryCode) {
+			// TODO: put it in a right place
+			let subEntArea = document.querySelector(".subEntryArea");
+			let editMode = subEntArea.classList.contains("editMode");
+			if (!editMode) {
+				// don't allow editing
+				// not perfect conditional, but enough I guess
+				if (!event.ctrlKey && !event.altKey && !event.metaKey) {
+					event.preventDefault();
+					return;
+				}
+			}
+		}
 		let menu = document.getElementById("userAutoCompleteMenu");
 		let items = menu.getElementsByClassName("userAutoCompleteItem");
 		if (event.key == "Tab") {
