@@ -1384,12 +1384,6 @@ function autoComplete(input, labels, vals, oncomplete) {
 			item.innerHTML = pre + "<strong>" + match + "</strong>" + post;
 			item.dataset.label = labels[i];
 			item.dataset.value = vals[i];
-			item.onclick = function(ev) {
-				oncomplete(item.dataset.value);
-				menu.replaceChildren();
-				menu.classList.add("invisible");
-				focus = -1;
-			}
 			menu.appendChild(item);
 		}
 		if (menu.children.length != 0) {
@@ -1453,7 +1447,10 @@ function autoComplete(input, labels, vals, oncomplete) {
 				}
 				focus = 0;
 			}
-			items[focus].click();
+			oncomplete(items[focus].dataset.value);
+			menu.replaceChildren();
+			menu.classList.add("invisible");
+			focus = -1;
 		}
 	})
 	input.onkeyup = function(event) {
