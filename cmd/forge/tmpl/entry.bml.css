@@ -443,6 +443,10 @@
 	border: 1px solid rgba(0, 0, 0, 0);
 }
 
+.subEntryArea.editMode .assigneeInput:focus {
+	background-color: #FFFFFF;
+}
+
 .assigneeInput::placeholder {
 	color: #BBB;
 }
