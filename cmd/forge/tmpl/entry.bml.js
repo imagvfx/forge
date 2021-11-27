@@ -37,7 +37,7 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
-		if (event.target.closest(".subEntry, #footer") == null) {
+		if (event.target.closest(".subEntryList, #footer") == null) {
 			let subEntArea = document.querySelector(".subEntryArea");
 			if (subEntArea.classList.contains("editMode")) {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
