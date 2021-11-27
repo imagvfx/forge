@@ -447,6 +447,10 @@
 	background-color: #FFFFFF;
 }
 
+.subEntryArea:not(.editMode) .assigneeInput:focus {
+	outline: none;
+}
+
 .assigneeInput::placeholder {
 	color: #BBB;
 }
