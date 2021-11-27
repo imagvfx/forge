@@ -149,28 +149,53 @@ func SearchEntries(db *sql.DB, ctx context.Context, search forge.EntrySearcher) 
 }
 
 func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
-	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
 	if search.SearchRoot == "/" {
 		// Prevent search root become two slashes by adding slash again.
 		search.SearchRoot = ""
 	}
-	keys = append(keys, "entries.path LIKE ?")
-	vals = append(vals, search.SearchRoot+`/%`)
-	if search.EntryType != "" {
-		keys = append(keys, "entry_types.name=?")
-		vals = append(vals, search.EntryType)
-	}
-	for _, p := range search.Keywords {
-		p = strings.TrimSpace(p)
-		if p == "" {
+	keywords := make([]string, 0, len(search.Keywords))
+	for _, kwd := range search.Keywords {
+		kwd = strings.TrimSpace(kwd)
+		if kwd == "" {
 			continue
 		}
-		idxColon := strings.Index(p, ":")
-		idxEqual := strings.Index(p, "=")
-		if idxColon == -1 && idxEqual == -1 {
-			// generic search; not tied to a property
-			keys = append(keys, `
+		keywords = append(keywords, kwd)
+	}
+	if len(keywords) == 0 {
+		// at least one loop needed
+		keywords = append(keywords, "")
+	}
+	queries := make([]string, 0)
+	queryTmpl := `
+		SELECT
+			entries.id,
+			entries.path,
+			entry_types.name,
+			thumbnails.id
+		FROM properties
+		LEFT JOIN entries ON entries.id = properties.entry_id
+		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
+		LEFT JOIN entry_types ON entries.type_id = entry_types.id
+		%s
+		GROUP BY entries.id
+	`
+	// vals will contain info for entire queries.
+	vals := make([]interface{}, 0)
+	for _, kwd := range keywords {
+		keys := make([]string, 0)
+		// redundant, but needed in every loop for INTERSECT
+		keys = append(keys, "entries.path LIKE ?")
+		vals = append(vals, search.SearchRoot+`/%`)
+		if search.EntryType != "" {
+			keys = append(keys, "entry_types.name=?")
+			vals = append(vals, search.EntryType)
+		}
+		if kwd != "" {
+			idxColon := strings.Index(kwd, ":")
+			idxEqual := strings.Index(kwd, "=")
+			if idxColon == -1 && idxEqual == -1 {
+				// generic search; not tied to a property
+				keys = append(keys, `
 				(entries.path LIKE ? OR
 					(properties.name NOT LIKE '.%' AND
 						(
@@ -184,27 +209,26 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					)
 				)
 			`)
-			pl := `%` + p + `%`
-			vals = append(vals, search.SearchRoot+`/%`+p, pl, pl, pl)
-			continue
-		}
-		// Check which is appeared earlier.
-		if idxColon == -1 {
-			idxColon = len(p)
-		}
-		if idxEqual == -1 {
-			idxEqual = len(p)
-		}
-		idx := idxColon
-		exactSearch := false
-		if idxEqual < idxColon {
-			idx = idxEqual
-			exactSearch = true
-		}
-		k := p[:idx]
-		v := p[idx+1:] // exclude colon or equal
-		if exactSearch {
-			keys = append(keys, `
+				kwdl := `%` + kwd + `%`
+				vals = append(vals, search.SearchRoot+`/%`+kwd, kwdl, kwdl, kwdl)
+			} else {
+				// Check which is appeared earlier.
+				if idxColon == -1 {
+					idxColon = len(kwd)
+				}
+				if idxEqual == -1 {
+					idxEqual = len(kwd)
+				}
+				idx := idxColon
+				exactSearch := false
+				if idxEqual < idxColon {
+					idx = idxEqual
+					exactSearch = true
+				}
+				k := kwd[:idx]
+				v := kwd[idx+1:] // exclude colon or equal
+				if exactSearch {
+					keys = append(keys, `
 				(properties.name=? AND
 					(
 						(properties.typ!='user' AND properties.val=?) OR
@@ -216,9 +240,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					)
 				)
 			`)
-			vals = append(vals, k, v, v, v)
-		} else {
-			keys = append(keys, `
+					vals = append(vals, k, v, v, v)
+				} else {
+					keys = append(keys, `
 				(properties.name=? AND
 					(
 						(properties.typ!='user' AND properties.val LIKE ?) OR
@@ -230,29 +254,19 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					)
 				)
 			`)
-			vl := `%` + v + `%`
-			vals = append(vals, k, vl, vl, vl)
+					vl := `%` + v + `%`
+					vals = append(vals, k, vl, vl, vl)
+				}
+			}
 		}
+		where := ""
+		if len(keys) != 0 {
+			where = "WHERE " + strings.Join(keys, " AND ")
+		}
+		query := fmt.Sprintf(queryTmpl, where)
+		queries = append(queries, query)
 	}
-	where := ""
-	if len(keys) != 0 {
-		where = "WHERE " + strings.Join(keys, " AND ")
-	}
-	rows, err := tx.QueryContext(ctx, `
-		SELECT
-			entries.id,
-			entries.path,
-			entry_types.name,
-			thumbnails.id
-		FROM entries
-		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
-		LEFT JOIN properties ON entries.id = properties.entry_id
-		LEFT JOIN entry_types ON entries.type_id = entry_types.id
-		`+where+`
-		GROUP BY entries.id
-	`,
-		vals...,
-	)
+	rows, err := tx.QueryContext(ctx, strings.Join(queries, " INTERSECT "), vals...)
 	if err != nil {
 		return nil, err
 	}
