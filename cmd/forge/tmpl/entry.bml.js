@@ -331,6 +331,7 @@ window.onload = function() {
 					event.preventDefault();
 					return;
 				}
+				return;
 			}
 			// Two conditions should met to turn on editMode.
 			// User holding mouse down for reasonable duration,
