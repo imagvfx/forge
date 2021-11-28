@@ -323,9 +323,6 @@ window.onload = function() {
 				// not a left mouse button
 				return;
 			}
-			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput") != null) {
-				return;
-			}
 			alreadyHandled = false;
 			if (subEntArea.classList.contains("editMode")) {
 				// prevent text selection
