@@ -1066,6 +1066,10 @@ function keyPressed(ev) {
 		if (!ctrlLike) {
 			return;
 		}
+		let userEditables = ["textarea", "input"];
+		if (userEditables.includes(ev.target.tagName.toLowerCase())) {
+			return;
+		}
 		let subEntArea = document.querySelector(".subEntryArea");
 		if (!subEntArea.classList.contains("editMode")) {
 			return;
