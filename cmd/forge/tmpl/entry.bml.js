@@ -319,6 +319,10 @@ window.onload = function() {
 	let subEntries = document.getElementsByClassName("subEntry");
 	for (let ent of subEntries) {
 		ent.onmousedown = function(event) {
+			if (event.button != 0) {
+				// not a left mouse button
+				return;
+			}
 			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput") != null) {
 				return;
 			}
