@@ -937,25 +937,31 @@ function submitUpdaterOrAdder(ev, input) {
 	let formData = new FormData(input.parentElement);
 	let entPath = formData.get("path");
 	formData.delete("path"); // will be refilled
-	let thisEntry = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`);
-	let selectedEnts = document.querySelectorAll(".subEntry.selected");
-	if (selectedEnts.length != 0) {
-		let inSel = false;
-		for (let ent of selectedEnts) {
-			if (entPath == ent.dataset.entryPath) {
-				inSel = true;
-				break;
+	let thisEntry = document.querySelector(`.entry[data-entry-path="${entPath}"]`);
+	let submitEnts = [];
+	if (thisEntry.classList.contains("mainEntry")) {
+		submitEnts = [thisEntry];
+	} else {
+		// subEntry
+		submitEnts = document.querySelectorAll(".subEntry.selected");
+		if (submitEnts.length != 0) {
+			let inSel = false;
+			for (let ent of submitEnts) {
+				if (entPath == ent.dataset.entryPath) {
+					inSel = true;
+					break;
+				}
+			}
+			if (!inSel) {
+				printErrorStatus("entry not in selection: " + entPath);
+				return;
 			}
 		}
-		if (!inSel) {
-			printErrorStatus("entry not in selection: " + entPath);
-			return;
+		if (submitEnts.length == 0) {
+			submitEnts = [thisEntry];
 		}
 	}
-	if (selectedEnts.length == 0) {
-		selectedEnts = [thisEntry];
-	}
-	for (let ent of selectedEnts) {
+	for (let ent of submitEnts) {
 		formData.append("path", ent.dataset.entryPath);
 	}
 	let ctg = formData.get("ctg");
@@ -972,7 +978,7 @@ function submitUpdaterOrAdder(ev, input) {
 			// but let's get the corrected value from server.
 			let get = new XMLHttpRequest();
 			let getFormData = new FormData();
-			for (let ent of selectedEnts) {
+			for (let ent of submitEnts) {
 				getFormData.append("path", ent.dataset.entryPath);
 			}
 			getFormData.append("name", name);
@@ -986,7 +992,7 @@ function submitUpdaterOrAdder(ev, input) {
 						printErrorStatus(j.Err);
 						return;
 					}
-					for (let ent of selectedEnts) {
+					for (let ent of submitEnts) {
 						let infoElem = ent.querySelector(`.info[data-category='${ctg}'][data-name='${name}']`);
 						if (infoElem != null) {
 							let valueElem = infoElem.querySelector(".infoValue");
