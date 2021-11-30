@@ -1136,38 +1136,38 @@ function showCategoryInfos(ctg) {
 
 function showInfoUpdater(info) {
 	document.getElementById("infoAdder").classList.add("nodisplay");
+	let updater = document.getElementById("infoUpdater");
+	updater.classList.remove("nodisplay");
 	let thisEnt = parentWithClass(info, "entry");
 	let entPath = thisEnt.dataset.entryPath;
 	let ctg = info.dataset.category;
 	let name = info.dataset.name;
 	let type = info.dataset.type;
 	let value = info.dataset.value;
-	let selectedEnts = document.querySelectorAll(".subEntry.selected");
-	if (selectedEnts.length != 0) {
-		let inSel = false;
-		for (let ent of selectedEnts) {
-			if (entPath == ent.dataset.entryPath) {
-				inSel = true;
-				break;
+	let label = entPath;
+	if (thisEnt.classList.contains("subEntry")) {
+		let selectedEnts = document.querySelectorAll(".subEntry.selected");
+		if (selectedEnts.length != 0) {
+			let inSel = false;
+			for (let ent of selectedEnts) {
+				if (entPath == ent.dataset.entryPath) {
+					inSel = true;
+					break;
+				}
+			}
+			if (!inSel) {
+				printErrorStatus("entry not in selection: " + entPath);
+				return;
 			}
 		}
-		if (!inSel) {
-			printErrorStatus("entry not in selection: " + entPath);
+		if (info.classList.contains("invalid")) {
+			printErrorStatus(ctg + " not exists: " + name);
 			return;
 		}
-	}
-	if (info.classList.contains("invalid")) {
-		printErrorStatus(ctg + " not exists: " + name);
-		return;
-	}
-	document.getElementById("infoUpdater").classList.remove("nodisplay");
-	let updater = document.getElementById("infoUpdater");
-	updater.classList.remove("nodisplay");
-	let label = String(selectedEnts.length) + " entries selected";
-	if (selectedEnts.length == 1) {
-		label = entPath + " selected";
-	} else if (selectedEnts.length == 0) {
-		label = entPath;
+		label = String(selectedEnts.length) + " entries selected";
+		if (selectedEnts.length == 1) {
+			label = entPath + " selected";
+		}
 	}
 	updater.getElementsByClassName("entryLabel")[0].innerText = label;
 	updater.getElementsByClassName("entryInput")[0].value = entPath;
