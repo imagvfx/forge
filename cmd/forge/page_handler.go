@@ -78,13 +78,21 @@ var pageHandlerFuncs = template.FuncMap{
 		return template.JS(string(b)), nil
 	},
 	"brLines": func(s string) template.HTML {
+		// Similar code is in tmpl/entry.bml.js for in-place update.
+		// Modify both, if needed.
 		t := ""
 		lines := strings.Split(s, "\n")
-		for i, line := range lines {
-			if i != 0 {
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" {
 				t += "<br>"
+				continue
 			}
-			t += line
+			if strings.HasPrefix(line, "/") {
+				t += "<div class='pathText'>" + line + "</div>"
+			} else {
+				t += "<div>" + line + "</div>"
+			}
 		}
 		return template.HTML(t)
 	},

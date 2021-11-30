@@ -273,6 +273,15 @@
 	width: 12rem;
 }
 
+.pathText {
+	white-space: break-spaces;
+}
+
+.pathText:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 .statusDot {
 	width: 0.75rem;
 	height: 0.75rem;

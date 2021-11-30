@@ -2,6 +2,17 @@
 
 window.onload = function() {
 	document.onclick = function(event) {
+		if (event.target.classList.contains("pathText")) {
+			let ptxt = event.target;
+			let succeeded = function() {
+				printStatus("path copied: " + ptxt.textContent);
+			}
+			let failed = function() {
+				printStatus("failed to copy path");
+			}
+			navigator.clipboard.writeText(ptxt.innerText).then(succeeded, failed);
+			return;
+		}
 		let hide = false;
 		if (event.target.closest(".statusDot") == null) {
 			let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
@@ -373,7 +384,7 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
-			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput") != null) {
+			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput, .pathText") != null) {
 				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
@@ -996,7 +1007,23 @@ function submitUpdaterOrAdder(ev, input) {
 						let infoElem = ent.querySelector(`.info[data-category='${ctg}'][data-name='${name}']`);
 						if (infoElem != null) {
 							let valueElem = infoElem.querySelector(".infoValue");
-							valueElem.innerText = j.Msg.Value;
+							// Update the value.
+							//
+							// Similar code is registered as a template function in page_handler.go
+							// Modify both, if needed.
+							valueElem.innerHTML = "";
+							for (let line of j.Msg.Value.split("\n")) {
+								line = line.trim();
+								if (line == "") {
+									valueElem.innerHTML += "<br>"
+									continue
+								}
+								if (line.startsWith("/")) {
+									valueElem.innerHTML += "<div class='pathText'>" + line + "</div>";
+								} else {
+									valueElem.innerHTML += "<div>" + line + "</div>";
+								}
+							}
 							// remove possible 'invalid' class
 							valueElem.classList.remove("invalid");
 
