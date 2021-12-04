@@ -344,6 +344,12 @@ window.onload = function() {
 				}
 				return;
 			}
+			// Treat alt+click as a command to turn on editMode immediately.
+			if (event.altKey) {
+				subEntArea.classList.add("editMode");
+				printStatus("edit mode");
+				return;
+			}
 			// Two conditions should met to turn on editMode.
 			// User holding mouse down for reasonable duration,
 			// and mouse movement should be relatively small. (to distinguish it from text selection)
