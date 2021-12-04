@@ -1199,7 +1199,10 @@ function showInfoUpdater(info) {
 		}
 		label = String(selectedEnts.length) + " entries selected";
 		if (selectedEnts.length == 1) {
-			label = entPath + " selected";
+			label = entPath;
+		} else if (selectedEnts.length == 0) {
+			// implicit selection
+			label = entPath;
 		}
 	}
 	updater.getElementsByClassName("entryLabel")[0].innerText = label;
