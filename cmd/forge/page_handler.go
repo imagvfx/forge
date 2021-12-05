@@ -380,8 +380,69 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		propFilters[typ] = strings.Fields(g.Value)
 	}
-	possibleStatus := make(map[string][]forge.Status)
+	type entStatus struct {
+		Name   string
+		Type   string
+		Status string
+	}
+	grandSubTypes := make(map[string]bool, 0)
+	grandSubStatus := make(map[string][]entStatus)
+	showGrandSub := make(map[string]bool)
+	for _, sub := range subEnts {
+		show, ok := showGrandSub[sub.Type]
+		if !ok {
+			g, err := h.server.GetGlobal(ctx, sub.Type, "expose_sub_entries")
+			if err != nil {
+				var e *forge.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+			}
+			// show == false
+			if g != nil {
+				show = true
+			}
+			showGrandSub[sub.Type] = show
+		}
+		if !show {
+			continue
+		}
+		gsubEnts, err := h.server.SubEntries(ctx, sub.Path)
+		if err != nil {
+			return err
+		}
+		sort.Slice(gsubEnts, func(i, j int) bool {
+			// TODO: sort by the property defined in user preference
+			return gsubEnts[i].Name() < gsubEnts[j].Name()
+		})
+		gsubStatus := make([]entStatus, 0)
+		for _, gs := range gsubEnts {
+			grandSubTypes[gs.Type] = true
+			p, err := h.server.GetProperty(ctx, gs.Path, "status")
+			if err != nil {
+				var e *forge.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+			}
+			stat := ""
+			if p != nil {
+				stat = p.Value
+			}
+			gsubStatus = append(gsubStatus, entStatus{Name: gs.Name(), Type: gs.Type, Status: stat})
+		}
+		grandSubStatus[sub.Path] = gsubStatus
+	}
+	// TODO: maybe do it with allTypes?
+	possibleTypes := make([]string, 0)
 	for typ := range subEntsByTypeByParent {
+		possibleTypes = append(possibleTypes, typ)
+	}
+	for typ := range grandSubTypes {
+		possibleTypes = append(possibleTypes, typ)
+	}
+	possibleStatus := make(map[string][]forge.Status)
+	for _, typ := range possibleTypes {
 		status := make([]forge.Status, 0)
 		p, err := h.server.GetGlobal(ctx, typ, "possible_status")
 		if err != nil {
@@ -450,6 +511,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch        bool
 		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 		SubEntryProperties       map[string]map[string]*forge.Property
+		GrandSubStatus           map[string][]entStatus
 		PropertyTypes            []string
 		DefaultProperties        map[string][]string
 		PropertyFilters          map[string][]string
@@ -471,6 +533,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:        resultsFromSearch,
 		SubEntriesByTypeByParent: subEntsByTypeByParent,
 		SubEntryProperties:       subEntProps,
+		GrandSubStatus:           grandSubStatus,
 		PropertyTypes:            forge.PropertyTypes(),
 		DefaultProperties:        defaultProps,
 		PropertyFilters:          propFilters,

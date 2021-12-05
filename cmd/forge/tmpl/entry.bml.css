@@ -136,6 +136,11 @@
 	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
 	border: 1px solid {{$s.Color}} !important;
 }
+
+.statusDot-{{$entType}}-{{$s.Name}}.mini {
+	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
+	border: none !important;
+}
 {{end}}
 {{end}}
 
@@ -262,6 +267,17 @@
 	width: 98px;
 }
 
+.grandSubEntries {
+	width: 12rem;
+	gap: 1.2rem;
+	display: flex;
+	align-items: stretch;
+	border: 1px dashed #E0E0E0;
+	border-radius: 6px;
+}
+
+
+
 .subEntryProperties {
 	flex:1;
 	display:flex;
@@ -288,10 +304,25 @@
 	border-radius: 0.6rem;
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
+}
+
+.statusDot:not(.mini) {
 	border: 1px solid #DDD;
 }
 
-.subEntryArea.editMode .statusDot {
+.statusDot.mini {
+	width: auto;
+	height: auto;
+	border-radius: 7px;
+	// padding:0.05rem 0.2rem 0.15rem 0.2rem;
+	padding: 0.05rem 0.3rem 0.15rem 0.3rem;
+	font-size: 0.6rem;
+	color: #444;
+	cursor: default;
+	word-wrap: anywhere;
+}
+
+.subEntryArea.editMode .statusDot:not(.mini) {
 	cursor: pointer;
 }
 

@@ -563,6 +563,8 @@ window.onload = function() {
 				}
 			}
 		}
+	}
+	for (let dot of statusDots) {
 		let label = document.getElementById("statusLabel");
 		dot.onmouseenter = function(event) {
 			let status = dot.dataset.value;
