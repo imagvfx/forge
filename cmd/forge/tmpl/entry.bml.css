@@ -321,6 +321,26 @@
 	word-wrap: anywhere;
 }
 
+.subEntryArea:not(.editMode) .statusDot.mini.adder {
+	visibility: hidden;
+}
+
+.grandSubArea:not(:hover) .statusDot.mini.adder {
+	visibility: hidden;
+}
+
+.statusDot.mini.adder:not(:hover) {
+	cursor: pointer;
+	background-color: transparent;
+	outline: 1px solid #E0E0E0;
+	outline-offset: -1px;
+	color: #DDD;
+}
+
+.statusDot.mini.adder:hover {
+	cursor: pointer;
+}
+
 .subEntryArea.editMode .statusDot:not(.mini) {
 	cursor: pointer;
 }

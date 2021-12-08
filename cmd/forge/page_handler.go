@@ -523,6 +523,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch        bool
 		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 		SubEntryProperties       map[string]map[string]*forge.Property
+		ShowGrandSub             map[string]bool
 		GrandSubSummary          map[string][]entSummary
 		PropertyTypes            []string
 		DefaultProperties        map[string][]string
@@ -545,6 +546,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:        resultsFromSearch,
 		SubEntriesByTypeByParent: subEntsByTypeByParent,
 		SubEntryProperties:       subEntProps,
+		ShowGrandSub:             showGrandSub,
 		GrandSubSummary:          grandSubSummary,
 		PropertyTypes:            forge.PropertyTypes(),
 		DefaultProperties:        defaultProps,

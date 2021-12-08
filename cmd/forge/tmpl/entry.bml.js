@@ -479,6 +479,9 @@ window.onload = function() {
 			// It can be null, if possible_status global for the entry type is not exists.
 			continue
 		}
+		if (dot.classList.contains("adder")) {
+			continue;
+		}
 		dot.onclick = function(event) {
 			let editMode = subEntArea.classList.contains("editMode");
 			if (!editMode) {
@@ -565,6 +568,9 @@ window.onload = function() {
 		}
 	}
 	for (let dot of statusDots) {
+		if (dot.classList.contains("adder")) {
+			continue;
+		}
 		let label = document.getElementById("statusLabel");
 		dot.onmouseenter = function(event) {
 			let status = dot.dataset.value;
