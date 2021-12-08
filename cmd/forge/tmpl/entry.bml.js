@@ -571,7 +571,7 @@ window.onload = function() {
 		}
 		let label = document.getElementById("statusLabel");
 		dot.onmouseenter = function(event) {
-			label.innerText = status;
+			label.innerText = "";
 			if (dot.classList.contains("mini")) {
 				let status = dot.dataset.value;
 				label.innerText = status;
@@ -588,6 +588,9 @@ window.onload = function() {
 				}
 				label.innerText = status;
 				label.style.fontSize = "0.8rem";
+			}
+			if (label.innerText == "") {
+				return;
 			}
 			label.classList.remove("nodisplay");
 			label.style.left = String(dot.offsetLeft - 4) + "px";
