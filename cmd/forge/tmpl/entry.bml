@@ -278,9 +278,9 @@
 													{{$gsubs := index $.GrandSubSummary $ent.Path}}
 													<div class="grandSubArea" style="display:flex;gap:0.1rem;margin:0.3rem 0.1rem;flex-wrap:wrap;"> [
 														{{range $gs := $gsubs}}
-															<div class="mini statusDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
+															<div class="summaryDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
 														{{end}}
-														<div class="mini statusDot adder"> [+]
+														<div class="summaryDot adder"> [+]
 													]
 												{{end}}
 											]

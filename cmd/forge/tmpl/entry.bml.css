@@ -262,8 +262,6 @@
 	border-radius: 6px;
 }
 
-
-
 .subEntryProperties {
 	flex:1;
 	display:flex;
@@ -287,10 +285,15 @@
 .statusDot {
 	width: 0.75rem;
 	height: 0.75rem;
+	border: 1px solid #DDD;
 	border-radius: 0.6rem;
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
 	user-select: none;
+}
+
+.subEntryArea.editMode .statusDot {
+	cursor: pointer;
 }
 
 {{range $entType, $status := $.PossibleStatus}}
@@ -299,38 +302,30 @@
 	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
 	border: 1px solid {{$s.Color}} !important;
 }
-
-.mini.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
-	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
-	border: none !important;
-}
 {{end}}
 {{end}}
 
-.statusDot:not(.mini) {
-	border: 1px solid #DDD;
-}
-
-.statusDot.mini {
+.summaryDot {
 	width: auto;
 	height: auto;
 	border-radius: 7px;
 	padding: 0.1rem 0.3rem;
 	font-size: 0.6rem;
 	color: #444;
+	background-color: {{setAlphaToColor "#DDD" 0.6}};
 	cursor: default;
 	word-wrap: anywhere;
 }
 
-.subEntryArea:not(.editMode) .statusDot.mini.adder {
+.subEntryArea:not(.editMode) .summaryDot.adder {
 	visibility: hidden;
 }
 
-.grandSubArea:not(:hover) .statusDot.mini.adder {
+.grandSubArea:not(:hover) .summaryDot.adder {
 	visibility: hidden;
 }
 
-.statusDot.mini.adder:not(:hover) {
+.summaryDot.adder:not(:hover) {
 	cursor: pointer;
 	background-color: transparent;
 	outline: 1px solid #E0E0E0;
@@ -338,13 +333,19 @@
 	color: #DDD;
 }
 
-.statusDot.mini.adder:hover {
+.summaryDot.adder:hover {
 	cursor: pointer;
 }
 
-.subEntryArea.editMode .statusDot:not(.mini) {
-	cursor: pointer;
+
+{{range $entType, $status := $.PossibleStatus}}
+{{range $s := $status}}
+.summaryDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
+	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
+	border: none !important;
 }
+{{end}}
+{{end}}
 
 .infoCategoryToggle {
 	width: fit-content;
