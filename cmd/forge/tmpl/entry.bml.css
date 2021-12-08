@@ -295,7 +295,7 @@
 
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
-.statusDot.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
+.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
 	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
 	border: 1px solid {{$s.Color}} !important;
 }
