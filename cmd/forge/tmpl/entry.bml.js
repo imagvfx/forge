@@ -564,39 +564,46 @@ window.onload = function() {
 			}
 		}
 	}
-	let statusDots = document.getElementsByClassName("statusDot");
-	for (let dot of statusDots) {
-		if (dot.classList.contains("adder")) {
-			continue;
-		}
+	let statusLabelers = document.getElementsByClassName("statusLabeler");
+	for (let labeler of statusLabelers) {
 		let label = document.getElementById("statusLabel");
-		dot.onmouseenter = function(event) {
-			label.innerText = "";
-			if (dot.classList.contains("mini")) {
-				let status = dot.dataset.value;
-				label.innerText = status;
-				let assignee = dot.dataset.assignee;
-				if (assignee != "") {
-					let called = CalledByName[assignee];
-					label.innerText += " / " + called;
-				}
-				label.style.fontSize = "0.6rem";
-			} else {
-				let status = dot.dataset.value;
-				if (status == "") {
-					status = "(none)"
-				}
-				label.innerText = status;
-				label.style.fontSize = "0.8rem";
+		labeler.onmouseenter = function(event) {
+			let status = labeler.dataset.value;
+			if (status == "") {
+				status = "(none)"
 			}
-			if (label.innerText == "") {
-				return;
-			}
+			label.innerText = status;
+			label.style.fontSize = "0.8rem";
 			label.classList.remove("nodisplay");
-			label.style.left = String(dot.offsetLeft - 4) + "px";
-			label.style.top = String(dot.offsetTop - label.offsetHeight - 3) + "px";
+			label.style.left = String(labeler.offsetLeft - 4) + "px";
+			label.style.top = String(labeler.offsetTop - label.offsetHeight - 3) + "px";
 		}
-		dot.onmouseleave = function(event) {
+		labeler.onmouseleave = function(event) {
+			label.classList.add("nodisplay");
+		}
+	}
+	let summaryLabelers = document.getElementsByClassName("summaryLabeler");
+	for (let labeler of summaryLabelers) {
+		let label = document.getElementById("statusLabel");
+		labeler.onmouseenter = function(event) {
+			label.innerText = "";
+			let assignee = labeler.dataset.assignee;
+			if (assignee != "") {
+				let called = CalledByName[assignee];
+				label.innerText += called;
+			}
+			let status = labeler.dataset.value;
+			if (status != "") {
+				// don't show '(none)' as it is too eye catch.
+				label.innerText += " / "
+				label.innerText += status;
+			}
+			label.style.fontSize = "0.6rem";
+			label.classList.remove("nodisplay");
+			label.style.left = String(labeler.offsetLeft - 4) + "px";
+			label.style.top = String(labeler.offsetTop - label.offsetHeight - 3) + "px";
+		}
+		labeler.onmouseleave = function(event) {
 			label.classList.add("nodisplay");
 		}
 	}
