@@ -470,24 +470,21 @@ window.onload = function() {
 			}
 		}
 	}
-	let currentStatusDot = null;
-	let statusDots = document.getElementsByClassName("statusDot");
-	for (let dot of statusDots) {
-		let entType = dot.dataset.entryType;
+	let currentStatusSel = null;
+	let statusSelector = document.getElementsByClassName("statusSelector");
+	for (let sel of statusSelector) {
+		let entType = sel.dataset.entryType;
 		let menu = document.getElementById("selectStatusMenu-" + entType);
 		if (menu == null) {
 			// It can be null, if possible_status global for the entry type is not exists.
 			continue
 		}
-		if (dot.classList.contains("adder")) {
-			continue;
-		}
-		dot.onclick = function(event) {
+		sel.onclick = function(event) {
 			let editMode = subEntArea.classList.contains("editMode");
 			if (!editMode) {
 				return;
 			}
-			let thisEnt = parentWithClass(dot, "subEntry");
+			let thisEnt = parentWithClass(sel, "subEntry");
 			let entPath = thisEnt.dataset.entryPath;
 			let selectedEnts = document.querySelectorAll(".subEntry.selected");
 			if (selectedEnts.length != 0) {
@@ -504,16 +501,16 @@ window.onload = function() {
 					return;
 				}
 			}
-			if (currentStatusDot == dot && !menu.classList.contains("invisible")) {
+			if (currentStatusSel == sel && !menu.classList.contains("invisible")) {
 				menu.classList.add("invisible");
-				currentStatusDot = null;
+				currentStatusSel = null;
 				return;
 			}
-			currentStatusDot = dot;
+			currentStatusSel = sel;
 			// slight adjust of the menu position to make statusDots aligned.
 			menu.classList.remove("invisible");
-			menu.style.left = String(dot.offsetLeft - 6) + "px";
-			menu.style.top = String(dot.offsetTop + dot.offsetHeight + 4) + "px";
+			menu.style.left = String(sel.offsetLeft - 6) + "px";
+			menu.style.top = String(sel.offsetTop + sel.offsetHeight + 4) + "px";
 			let items = menu.getElementsByClassName("selectStatusMenuItem");
 			for (let item of items) {
 				item.onclick = function(ev) {
@@ -567,6 +564,7 @@ window.onload = function() {
 			}
 		}
 	}
+	let statusDots = document.getElementsByClassName("statusDot");
 	for (let dot of statusDots) {
 		if (dot.classList.contains("adder")) {
 			continue;

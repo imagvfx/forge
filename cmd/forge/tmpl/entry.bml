@@ -246,7 +246,7 @@
 									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}"> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
-											<div class="statusDot statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
+											<div class="statusDot statusSelector statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 											{{end}}
 											<a class="subEntryName" href="{{$ent.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
 										]
