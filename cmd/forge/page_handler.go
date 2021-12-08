@@ -380,14 +380,14 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		propFilters[typ] = strings.Fields(g.Value)
 	}
-	type entStatus struct {
+	type entSummary struct {
 		Name     string
 		Type     string
 		Status   string
 		Assignee string
 	}
 	grandSubTypes := make(map[string]bool, 0)
-	grandSubStatus := make(map[string][]entStatus)
+	grandSubSummary := make(map[string][]entSummary)
 	showGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
 		show, ok := showGrandSub[sub.Type]
@@ -416,7 +416,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			// TODO: sort by the property defined in user preference
 			return gsubEnts[i].Name() < gsubEnts[j].Name()
 		})
-		gsubStatus := make([]entStatus, 0)
+		gsubSummary := make([]entSummary, 0)
 		for _, gs := range gsubEnts {
 			grandSubTypes[gs.Type] = true
 			p, err := h.server.GetProperty(ctx, gs.Path, "status")
@@ -441,9 +441,9 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			if p != nil {
 				assignee = p.Value
 			}
-			gsubStatus = append(gsubStatus, entStatus{Name: gs.Name(), Type: gs.Type, Status: stat, Assignee: assignee})
+			gsubSummary = append(gsubSummary, entSummary{Name: gs.Name(), Type: gs.Type, Status: stat, Assignee: assignee})
 		}
-		grandSubStatus[sub.Path] = gsubStatus
+		grandSubSummary[sub.Path] = gsubSummary
 	}
 	// TODO: maybe do it with allTypes?
 	possibleTypes := make([]string, 0)
@@ -523,7 +523,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch        bool
 		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 		SubEntryProperties       map[string]map[string]*forge.Property
-		GrandSubStatus           map[string][]entStatus
+		GrandSubSummary          map[string][]entSummary
 		PropertyTypes            []string
 		DefaultProperties        map[string][]string
 		PropertyFilters          map[string][]string
@@ -545,7 +545,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:        resultsFromSearch,
 		SubEntriesByTypeByParent: subEntsByTypeByParent,
 		SubEntryProperties:       subEntProps,
-		GrandSubStatus:           grandSubStatus,
+		GrandSubSummary:          grandSubSummary,
 		PropertyTypes:            forge.PropertyTypes(),
 		DefaultProperties:        defaultProps,
 		PropertyFilters:          propFilters,
