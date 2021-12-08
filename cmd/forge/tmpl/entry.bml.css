@@ -304,6 +304,7 @@
 	border-radius: 0.6rem;
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
+	user-select: none;
 }
 
 .statusDot:not(.mini) {
