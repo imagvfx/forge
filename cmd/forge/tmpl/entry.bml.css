@@ -130,20 +130,6 @@
 }
 
 
-{{range $entType, $status := $.PossibleStatus}}
-{{range $s := $status}}
-.statusDot.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
-	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
-	border: 1px solid {{$s.Color}} !important;
-}
-
-.mini.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
-	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
-	border: none !important;
-}
-{{end}}
-{{end}}
-
 .infoTop {
 	display: flex;
 	gap: 1rem;
@@ -306,6 +292,20 @@
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
 	user-select: none;
 }
+
+{{range $entType, $status := $.PossibleStatus}}
+{{range $s := $status}}
+.statusDot.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
+	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
+	border: 1px solid {{$s.Color}} !important;
+}
+
+.mini.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
+	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
+	border: none !important;
+}
+{{end}}
+{{end}}
 
 .statusDot:not(.mini) {
 	border: 1px solid #DDD;
