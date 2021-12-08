@@ -572,6 +572,18 @@ window.onload = function() {
 				status = "(none)"
 			}
 			label.innerText = status;
+			if (dot.classList.contains("mini")) {
+				let assignee = dot.dataset.assignee;
+				if (assignee != "") {
+					let called = CalledByName[assignee];
+					label.innerText += ", " + called;
+				}
+			}
+			if (dot.classList.contains("mini")) {
+				label.style.fontSize = "0.6rem";
+			} else {
+				label.style.fontSize = "0.8rem";
+			}
 			label.classList.remove("nodisplay");
 			label.style.left = String(dot.offsetLeft - 4) + "px";
 			label.style.top = String(dot.offsetTop - label.offsetHeight - 3) + "px";

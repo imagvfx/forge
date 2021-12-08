@@ -381,9 +381,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		propFilters[typ] = strings.Fields(g.Value)
 	}
 	type entStatus struct {
-		Name   string
-		Type   string
-		Status string
+		Name     string
+		Type     string
+		Status   string
+		Assignee string
 	}
 	grandSubTypes := make(map[string]bool, 0)
 	grandSubStatus := make(map[string][]entStatus)
@@ -429,7 +430,18 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			if p != nil {
 				stat = p.Value
 			}
-			gsubStatus = append(gsubStatus, entStatus{Name: gs.Name(), Type: gs.Type, Status: stat})
+			p, err = h.server.GetProperty(ctx, gs.Path, "assignee")
+			if err != nil {
+				var e *forge.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+			}
+			assignee := ""
+			if p != nil {
+				assignee = p.Value
+			}
+			gsubStatus = append(gsubStatus, entStatus{Name: gs.Name(), Type: gs.Type, Status: stat, Assignee: assignee})
 		}
 		grandSubStatus[sub.Path] = gsubStatus
 	}

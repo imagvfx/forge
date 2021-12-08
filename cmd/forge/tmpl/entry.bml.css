@@ -572,9 +572,9 @@
 	border-radius: 4px;
 	color: #222222;
 	background-color: #FAFAFA;
-	padding: 0.2rem 0.4rem;
+	padding: 0.2rem 0.4rem 0.1rem 0.4rem;
 	font-size: 0.8rem;
-	opacity: 0.8;
+	opacity: 0.9;
 }
 
 .infoModifier {

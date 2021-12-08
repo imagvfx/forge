@@ -277,7 +277,7 @@
 												{{with $gsubs := index $.GrandSubStatus $ent.Path}}
 													<div style="display:flex;gap:0.1rem;margin:0.3rem 0.1rem;flex-wrap:wrap;"> [
 													{{range $gs := $gsubs}}
-														<div class="mini statusDot statusDot-{{$gs.Type}}-{{$gs.Status}}" data-value="{{$gs.Status}}"> [{{$gs.Name}}]
+														<div class="mini statusDot statusDot-{{$gs.Type}}-{{$gs.Status}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
 													{{end}}
 													]
 												{{end}}
