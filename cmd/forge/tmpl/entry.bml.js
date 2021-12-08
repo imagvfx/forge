@@ -592,10 +592,10 @@ window.onload = function() {
 				let called = CalledByName[assignee];
 				label.innerText += called;
 			}
+			label.innerText += " / "
 			let status = labeler.dataset.value;
 			if (status != "") {
 				// don't show '(none)' as it is too eye catch.
-				label.innerText += " / "
 				label.innerText += status;
 			}
 			label.style.fontSize = "0.6rem";
