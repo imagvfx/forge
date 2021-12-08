@@ -571,21 +571,22 @@ window.onload = function() {
 		}
 		let label = document.getElementById("statusLabel");
 		dot.onmouseenter = function(event) {
-			let status = dot.dataset.value;
-			if (status == "") {
-				status = "(none)"
-			}
 			label.innerText = status;
 			if (dot.classList.contains("mini")) {
+				let status = dot.dataset.value;
+				label.innerText = status;
 				let assignee = dot.dataset.assignee;
 				if (assignee != "") {
 					let called = CalledByName[assignee];
-					label.innerText += ", " + called;
+					label.innerText += " / " + called;
 				}
-			}
-			if (dot.classList.contains("mini")) {
 				label.style.fontSize = "0.6rem";
 			} else {
+				let status = dot.dataset.value;
+				if (status == "") {
+					status = "(none)"
+				}
+				label.innerText = status;
 				label.style.fontSize = "0.8rem";
 			}
 			label.classList.remove("nodisplay");
