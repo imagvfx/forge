@@ -314,8 +314,7 @@
 	width: auto;
 	height: auto;
 	border-radius: 7px;
-	// padding:0.05rem 0.2rem 0.15rem 0.2rem;
-	padding: 0.05rem 0.3rem 0.15rem 0.3rem;
+	padding: 0.1rem 0.3rem;
 	font-size: 0.6rem;
 	color: #444;
 	cursor: default;
