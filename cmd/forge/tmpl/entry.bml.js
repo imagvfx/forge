@@ -390,7 +390,7 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
-			if (event.target.closest(".statusDot, .infoTitle, .assigneeInput, .pathText") != null) {
+			if (event.target.closest(".statusDot, .summaryDot, .infoTitle, .assigneeInput, .pathText") != null) {
 				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
