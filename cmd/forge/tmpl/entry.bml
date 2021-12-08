@@ -246,7 +246,7 @@
 									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}"> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
-											<div class="statusDot statusSelector statusLabeler statusDot-{{$entType}}-{{$s.Value}}" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
+											<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 											{{end}}
 											<a class="subEntryName" href="{{$ent.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
 										]
@@ -278,7 +278,7 @@
 													{{$gsubs := index $.GrandSubSummary $ent.Path}}
 													<div class="grandSubArea" style="display:flex;gap:0.1rem;margin:0.3rem 0.1rem;flex-wrap:wrap;"> [
 														{{range $gs := $gsubs}}
-															<div class="mini statusDot summaryLabeler statusDot-{{$gs.Type}}-{{$gs.Status}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
+															<div class="mini statusDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
 														{{end}}
 														<div class="mini statusDot adder"> [+]
 													]
@@ -363,7 +363,7 @@
 					]
 					{{range $s := $ps}}
 					<div class="selectStatusMenuItem" data-value="{{$s.Name}}"> [
-						<div class="selectStatusMenuItemDot statusDot statusDot-{{$entType}}-{{$s.Name}}"> []
+						<div class="selectStatusMenuItemDot statusDot" data-entry-type="{{$entType}}" data-value="{{$s.Name}}"> []
 						<div class="selectStatusMenuItemValue"> [{{$s.Name}}]
 					]
 					{{end}}

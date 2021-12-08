@@ -132,12 +132,12 @@
 
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
-.statusDot-{{$entType}}-{{$s.Name}} {
+.statusDot.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
 	background-color: {{setAlphaToColor $s.Color 0.8}} !important;
 	border: 1px solid {{$s.Color}} !important;
 }
 
-.statusDot-{{$entType}}-{{$s.Name}}.mini {
+.mini.statusDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
 	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
 	border: none !important;
 }
