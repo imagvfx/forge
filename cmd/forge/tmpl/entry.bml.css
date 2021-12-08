@@ -289,7 +289,6 @@
 	border-radius: 0.6rem;
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
-	user-select: none;
 }
 
 .subEntryArea.editMode .statusDot {
@@ -315,6 +314,7 @@
 	background-color: {{setAlphaToColor "#DDD" 0.6}};
 	cursor: default;
 	word-wrap: anywhere;
+	user-select: none;
 }
 
 .subEntryArea:not(.editMode) .summaryDot.adder {
