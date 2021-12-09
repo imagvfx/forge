@@ -317,6 +317,10 @@
 	user-select: none;
 }
 
+.summaryDot.adder {
+	display: none;
+}
+
 .subEntryArea:not(.editMode) .summaryDot.adder {
 	visibility: hidden;
 }
