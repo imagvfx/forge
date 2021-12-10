@@ -329,7 +329,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				} else if iv == jv {
 					less = ents[i].Name() < ents[j].Name()
 				} else {
-					less = forge.LessProperty(ip.Type, iv, jv)
+					cmp := forge.CompareProperty(ip.Type, iv, jv)
+					less = false
+					if cmp <= 0 {
+						less = true
+					}
 				}
 				if desc {
 					less = !less

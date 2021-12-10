@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -146,21 +147,32 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func LessProperty(t, a, b string) bool {
+func CompareProperty(t, a, b string) int {
 	switch t {
 	case "int":
 		ia, erra := strconv.Atoi(a)
 		ib, errb := strconv.Atoi(b)
 		// show the error value first
+		cmp := 0
 		if erra != nil {
-			return true
+			cmp--
 		}
 		if errb != nil {
-			return false
+			cmp++
 		}
-		return ia < ib
+		if cmp != 0 {
+			return cmp
+		}
+		if ia < ib {
+			return -1
+		}
+		if ia > ib {
+			return 1
+		}
+		return 0
+	default:
+		return strings.Compare(a, b)
 	}
-	return a < b
 }
 
 type PropertyFinder struct {
