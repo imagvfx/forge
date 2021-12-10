@@ -195,6 +195,27 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	entrySortProp := make(map[string]string)
+	entrySortDesc := make(map[string]bool)
+	for typ, prop := range setting.EntryPageSortProperty {
+		if prop == "" {
+			continue
+		}
+		desc := false
+		prefix := string(prop[0])
+		if prefix == "+" {
+		} else if prefix == "-" {
+			desc = true
+		} else {
+			continue
+		}
+		prop = prop[1:]
+		if prop == "" {
+			continue
+		}
+		entrySortProp[typ] = prop
+		entrySortDesc[typ] = desc
+	}
 	path := r.URL.Path
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
@@ -301,16 +322,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	// sort
 	for t, byParent := range subEntsByTypeByParent {
-		var prop string
-		var desc bool
-		sortProp := setting.EntryPageSortProperty[t]
-		if sortProp != "" {
-			prefix := sortProp[0]
-			prop = sortProp[1:]
-			if prefix == '-' {
-				desc = true
-			}
-		}
+		prop := entrySortProp[t]
+		desc := entrySortDesc[t]
 		for _, ents := range byParent {
 			sort.Slice(ents, func(i, j int) bool {
 				if prop == "" {
@@ -385,10 +398,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		propFilters[typ] = strings.Fields(g.Value)
 	}
 	type entSummary struct {
-		Name     string
-		Type     string
-		Status   string
-		Assignee string
+		Name      string
+		Type      string
+		Status    string
+		Assignee  string
+		SortValue string
+		SortType  string
 	}
 	grandSubTypes := make(map[string]bool, 0)
 	grandSubSummary := make(map[string][]entSummary)
@@ -416,10 +431,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		if err != nil {
 			return err
 		}
-		sort.Slice(gsubEnts, func(i, j int) bool {
-			// TODO: sort by the property defined in user preference
-			return gsubEnts[i].Name() < gsubEnts[j].Name()
-		})
 		gsubSummary := make([]entSummary, 0)
 		for _, gs := range gsubEnts {
 			grandSubTypes[gs.Type] = true
@@ -445,8 +456,72 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			if p != nil {
 				assignee = p.Value
 			}
-			gsubSummary = append(gsubSummary, entSummary{Name: gs.Name(), Type: gs.Type, Status: stat, Assignee: assignee})
+			sortVal := ""
+			sortType := ""
+			if entrySortProp[gs.Type] != "" {
+				p, err = h.server.GetProperty(ctx, gs.Path, entrySortProp[gs.Type])
+				if err != nil {
+					var e *forge.NotFoundError
+					if errors.As(err, &e) {
+						// It can happen in some cases. (eg. property definition removed from the entry type)
+						// Just disable sort by prop.
+						entrySortProp[gs.Type] = ""
+					} else {
+						return err
+					}
+				}
+				sortVal = p.Value
+				sortType = p.Type
+			}
+			gsubSummary = append(gsubSummary, entSummary{Name: gs.Name(), Type: gs.Type, Status: stat, Assignee: assignee, SortValue: sortVal, SortType: sortType})
 		}
+		grandSubSorters := []func(i, j int) int{
+			func(i, j int) int {
+				return strings.Compare(gsubSummary[i].Type, gsubSummary[j].Type)
+			},
+			func(i, j int) int {
+				// i and j's types are guaranteed to be same.
+				gsType := gsubSummary[i].Type
+				if entrySortProp[gsType] == "" {
+					// cannot compare
+					return 0
+				}
+				if gsubSummary[i].SortType != gsubSummary[j].SortType {
+					return strings.Compare(gsubSummary[i].SortType, gsubSummary[j].SortType)
+				}
+				sortType := gsubSummary[i].SortType
+				if gsubSummary[i].SortValue != gsubSummary[j].SortValue {
+					cmp := forge.CompareProperty(sortType, gsubSummary[i].SortValue, gsubSummary[j].SortValue)
+					if entrySortDesc[gsType] {
+						cmp *= -1
+					}
+					return cmp
+				}
+				return 0
+			},
+			func(i, j int) int {
+				cmp := strings.Compare(gsubSummary[i].Name, gsubSummary[j].Name)
+				// i and j's types are guaranteed to be same.
+				gsType := gsubSummary[i].Type
+				if entrySortDesc[gsType] {
+					cmp *= -1
+				}
+				return cmp
+			},
+		}
+		sort.Slice(gsubSummary, func(i, j int) bool {
+			for _, fn := range grandSubSorters {
+				cmp := fn(i, j)
+				if cmp < 0 {
+					return true
+				}
+				if cmp > 0 {
+					return false
+				}
+			}
+			// Every aspects were same. Keep the order.
+			return true
+		})
 		grandSubSummary[sub.Path] = gsubSummary
 	}
 	// TODO: maybe do it with allTypes?
