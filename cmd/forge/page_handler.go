@@ -322,48 +322,63 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	// sort
 	for t, byParent := range subEntsByTypeByParent {
-		prop := entrySortProp[t]
-		desc := entrySortDesc[t]
 		for _, ents := range byParent {
-			sort.Slice(ents, func(i, j int) bool {
-				if prop == "" {
-					if !desc {
-						return ents[i].Name() < ents[j].Name()
+			subSorters := []func(i, j int) int{
+				func(i, j int) int {
+					return strings.Compare(ents[i].Type, ents[j].Type)
+				},
+				func(i, j int) int {
+					ip := subEntProps[ents[i].Path][entrySortProp[t]]
+					jp := subEntProps[ents[j].Path][entrySortProp[t]]
+					if ip == nil || jp == nil {
+						// cannot compare
+						return 0
 					}
-					return ents[i].Name() > ents[j].Name()
-				}
-				ip := subEntProps[ents[i].Path][prop]
-				jp := subEntProps[ents[j].Path][prop]
-				iv := ip.Value
-				jv := jp.Value
-				var less bool
-				if ip.Type != jp.Type {
-					less = ip.Type < jp.Type
-				} else if iv == jv {
-					less = ents[i].Name() < ents[j].Name()
-				} else {
-					cmp := forge.CompareProperty(ip.Type, iv, jv)
-					less = false
-					if cmp <= 0 {
-						less = true
+					iv := ip.Value
+					jv := jp.Value
+					cmp := strings.Compare(ip.Type, jp.Type)
+					if cmp != 0 {
+						return cmp
 					}
-				}
-				if desc {
-					less = !less
-				}
-				if iv == "" || jv == "" {
 					// Entry with empty value should stand behind of non-empty value
-					// regardless of the order type.
+					// regardless of the sort order.
 					if iv == "" {
-						less = false
-					} else {
-						less = true
+						cmp++
+					}
+					if jv == "" {
+						cmp--
+					}
+					if cmp != 0 {
+						return cmp
+					}
+					cmp = forge.CompareProperty(ip.Type, ip.Value, jp.Value)
+					if entrySortDesc[ents[i].Type] {
+						cmp *= -1
+					}
+					return cmp
+				},
+				func(i, j int) int {
+					cmp := strings.Compare(ents[i].Name(), ents[j].Name())
+					if entrySortDesc[ents[i].Type] {
+						cmp *= -1
+					}
+					return cmp
+				},
+			}
+			sort.Slice(ents, func(i, j int) bool {
+				for _, fn := range subSorters {
+					cmp := fn(i, j)
+					if cmp < 0 {
+						return true
+					}
+					if cmp > 0 {
+						return false
 					}
 				}
-				return less
+				// Every aspects were same. Keep the order.
+				return true
 			})
 		}
-
 	}
 	// property filter
 	defaultProps := make(map[string][]string)
