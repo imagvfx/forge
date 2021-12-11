@@ -147,13 +147,25 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func CompareProperty(t, a, b string) int {
+func CompareProperty(t string, desc bool, a, b string) int {
+	// TODO: simplify the logic, so we don't need `desc` in here?
+	cmp := 0
+	// Entry with empty value should stand behind of non-empty value always,
+	// regardless of it's order type. Meaning `desc` is not affecting here.
+	if a == "" {
+		cmp++
+	}
+	if b == "" {
+		cmp--
+	}
+	if cmp != 0 {
+		return cmp
+	}
 	switch t {
 	case "int":
 		ia, erra := strconv.Atoi(a)
 		ib, errb := strconv.Atoi(b)
 		// show the error value first
-		cmp := 0
 		if erra != nil {
 			cmp--
 		}
@@ -164,15 +176,17 @@ func CompareProperty(t, a, b string) int {
 			return cmp
 		}
 		if ia < ib {
-			return -1
+			cmp = -1
+		} else if ia > ib {
+			cmp = 1
 		}
-		if ia > ib {
-			return 1
-		}
-		return 0
 	default:
-		return strings.Compare(a, b)
+		cmp = strings.Compare(a, b)
 	}
+	if desc {
+		cmp *= -1
+	}
+	return cmp
 }
 
 type PropertyFinder struct {

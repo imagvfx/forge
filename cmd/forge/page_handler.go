@@ -334,28 +334,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 						// cannot compare
 						return 0
 					}
-					iv := ip.Value
-					jv := jp.Value
 					cmp := strings.Compare(ip.Type, jp.Type)
 					if cmp != 0 {
 						return cmp
 					}
-					// Entry with empty value should stand behind of non-empty value
-					// regardless of the sort order.
-					if iv == "" {
-						cmp++
-					}
-					if jv == "" {
-						cmp--
-					}
-					if cmp != 0 {
-						return cmp
-					}
-					cmp = forge.CompareProperty(ip.Type, ip.Value, jp.Value)
-					if entrySortDesc[ents[i].Type] {
-						cmp *= -1
-					}
-					return cmp
+					return forge.CompareProperty(ip.Type, entrySortDesc[ents[i].Type], ip.Value, jp.Value)
 				},
 				func(i, j int) int {
 					cmp := strings.Compare(ents[i].Name(), ents[j].Name())
@@ -505,14 +488,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 					return strings.Compare(gsubSummary[i].SortType, gsubSummary[j].SortType)
 				}
 				sortType := gsubSummary[i].SortType
-				if gsubSummary[i].SortValue != gsubSummary[j].SortValue {
-					cmp := forge.CompareProperty(sortType, gsubSummary[i].SortValue, gsubSummary[j].SortValue)
-					if entrySortDesc[gsType] {
-						cmp *= -1
-					}
-					return cmp
-				}
-				return 0
+				return forge.CompareProperty(sortType, entrySortDesc[gsType], gsubSummary[i].SortValue, gsubSummary[j].SortValue)
 			},
 			func(i, j int) int {
 				cmp := strings.Compare(gsubSummary[i].Name, gsubSummary[j].Name)
