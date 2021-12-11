@@ -210,9 +210,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			continue
 		}
 		prop = prop[1:]
-		if prop == "" {
-			continue
-		}
 		entrySortProp[typ] = prop
 		entrySortDesc[typ] = desc
 	}
