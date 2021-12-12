@@ -196,8 +196,15 @@ func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, 
 	if len(entPaths) == 0 {
 		return fmt.Errorf("path not defined")
 	}
-	typ := r.FormValue("type")
-	for _, entPath := range entPaths {
+	entTypes := r.PostForm["type"]
+	if len(entTypes) == 0 {
+		return fmt.Errorf("type not defined")
+	}
+	if len(entTypes) != len(entPaths) {
+		return fmt.Errorf("number of types not matched to paths")
+	}
+	for i, entPath := range entPaths {
+		typ := entTypes[i]
 		err := h.server.AddEntry(ctx, entPath, typ)
 		if err != nil {
 			return err

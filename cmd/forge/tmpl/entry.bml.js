@@ -844,12 +844,11 @@ window.onload = function() {
 			let type = form.dataset.type;
 			let req = new XMLHttpRequest();
 			let formData = new FormData();
-			let paths = [];
 			for (let name of form.name.value.split(" ")) {
-				paths.push(parent + "/" + name);
+				let path = parent + "/" + name;
+				formData.append("path", path);
+				formData.append("type", type);
 			}
-			formData.append("path", paths);
-			formData.append("type", type);
 			req.open("post", "/api/add-entry");
 			req.onerror = function() {
 				printErrorStatus("network error occurred. please check whether the server is down.");
