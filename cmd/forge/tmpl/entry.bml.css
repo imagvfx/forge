@@ -339,6 +339,10 @@
 	display: none;
 }
 
+.grandSubEntries:not(.addable) .grandSubAdderLoader {
+	display: none;
+}
+
 .grandSubAdder {
 	flex: 1;
 	display: flex;
