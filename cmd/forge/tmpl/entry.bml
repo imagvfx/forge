@@ -274,8 +274,8 @@
 												{{end}}
 												{{if index $.ShowGrandSub $ent.Type}}
 													<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
-														{{$possibleTypes := (index (index $.SubEntryProperties $ent.Path) ".sub_entry_types").Value}}
-														<div class="grandSubEntries {{if not (has $possibleTypes ",")}}addable{{end}}" data-possible-types="{{$possibleTypes}}"> [
+														{{$possibleTypes := trim (index (index $.SubEntryProperties $ent.Path) ".sub_entry_types").Value}}
+														<div class="grandSubEntries {{if and $possibleTypes (not (has $possibleTypes ","))}}addable{{end}}" data-possible-types="{{$possibleTypes}}"> [
 															{{range $gs := (index $.GrandSubSummary $ent.Path)}}
 																<div class="summaryDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
 															{{end}}

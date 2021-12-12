@@ -38,6 +38,7 @@ var pageHandlerFuncs = template.FuncMap{
 	"has": func(s, tok string) bool {
 		return strings.Contains(s, tok)
 	},
+	"trim": strings.TrimSpace,
 	"pathLinks": func(path string) (template.HTML, error) {
 		if !strings.HasPrefix(path, "/") {
 			return "", fmt.Errorf("path should start with /")
