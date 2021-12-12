@@ -253,15 +253,6 @@
 	width: 98px;
 }
 
-.grandSubEntries {
-	width: 12rem;
-	gap: 1.2rem;
-	display: flex;
-	align-items: stretch;
-	border: 1px dashed #E0E0E0;
-	border-radius: 6px;
-}
-
 .subEntryProperties {
 	flex:1;
 	display:flex;
@@ -317,19 +308,22 @@
 	user-select: none;
 }
 
-.summaryDot.adder {
-	display: none;
+.grandSubEntries {
+	display: flex;
+	gap: 0.1rem;
+	margin: 0.3rem 0.1rem 0.1rem 0.1rem;
+	flex-wrap: wrap;
 }
 
-.subEntryArea:not(.editMode) .summaryDot.adder {
+.subEntryArea:not(.editMode) .summaryDot.grandSubAdderLoader {
 	visibility: hidden;
 }
 
-.grandSubArea:not(:hover) .summaryDot.adder {
+.grandSubArea:not(:hover) .summaryDot.grandSubAdderLoader {
 	visibility: hidden;
 }
 
-.summaryDot.adder:not(:hover) {
+.summaryDot.grandSubAdderLoader:not(:hover) {
 	cursor: pointer;
 	background-color: transparent;
 	outline: 1px solid #E0E0E0;
@@ -337,10 +331,23 @@
 	color: #DDD;
 }
 
-.summaryDot.adder:hover {
+.summaryDot.grandSubAdderLoader:hover {
 	cursor: pointer;
 }
 
+.grandSubArea.adding .grandSubAdderLoader {
+	display: none;
+}
+
+.grandSubAdder {
+	flex: 1;
+	display: flex;
+	gap: 0.2rem;
+}
+
+.grandSubArea:not(.adding) .grandSubAdder {
+	display: none;
+}
 
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}

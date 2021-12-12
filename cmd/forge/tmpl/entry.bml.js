@@ -45,6 +45,30 @@ window.onload = function() {
 		if (event.target.closest(".infoAdder, .infoTitle, #footer") == null) {
 			hide = hideInfoModifier();
 		}
+		if (event.target.closest(".grandSubAdderLoader")) {
+			let addingArea = document.querySelector(".grandSubArea.adding");
+			if (addingArea != null) {
+				addingArea.classList.remove("adding");
+			}
+			let subEnt = event.target.closest(".subEntry");
+			if (document.querySelectorAll(".subEntry.selected").length != 0 && !subEnt.classList.contains("selected")) {
+				printErrorStatus("entry not in selection: " + subEnt.dataset.entryPath);
+				return;
+			}
+			let area = event.target.closest(".grandSubArea");
+			area.classList.add("adding");
+			let input = area.querySelector(".grandSubAdderInput");
+			// move cursor to end of input content
+			let sel = window.getSelection();
+		    sel.selectAllChildren(input);
+		    sel.collapseToEnd();
+		} else if (event.target.closest(".grandSubAdder") == null) {
+			let addingArea = document.querySelector(".grandSubArea.adding");
+			if (addingArea != null) {
+				addingArea.classList.remove("adding");
+				hide = true;
+			}
+		}
 		if (hide) {
 			return;
 		}

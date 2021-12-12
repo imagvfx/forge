@@ -275,12 +275,18 @@
 												<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
 												{{end}}
 												{{if index $.ShowGrandSub $ent.Type}}
-													{{$gsubs := index $.GrandSubSummary $ent.Path}}
-													<div class="grandSubArea" style="display:flex;gap:0.1rem;margin:0.3rem 0.1rem;flex-wrap:wrap;"> [
-														{{range $gs := $gsubs}}
-															<div class="summaryDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
-														{{end}}
-														<div class="summaryDot adder"> [+]
+													<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
+														{{$gsubs := index $.GrandSubSummary $ent.Path}}
+														<div class="grandSubEntries"> [
+															{{range $gs := $gsubs}}
+																<div class="summaryDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
+															{{end}}
+															<div class="summaryDot grandSubAdderLoader"> [+]
+														]
+														<div class="summaryDot grandSubAdder"> [
+															<div class="grandSubAdderInput" contenteditable="true" style="flex:1;"> []
+															<div> [+]
+														]
 													]
 												{{end}}
 											]
