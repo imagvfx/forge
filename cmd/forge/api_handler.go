@@ -191,13 +191,13 @@ func (h *apiHandler) handleCountAllSubEntries(ctx context.Context, w http.Respon
 }
 
 func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	// parent, if suggested, will be used as prefix of the path.
-	parent := r.FormValue("parent")
-	name := r.FormValue("name")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	typ := r.FormValue("type")
-	for _, n := range strings.Fields(name) {
-		// treat seperate field a child name
-		entPath := path.Join(parent, n)
+	for _, entPath := range entPaths {
 		err := h.server.AddEntry(ctx, entPath, typ)
 		if err != nil {
 			return err

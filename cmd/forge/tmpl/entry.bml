@@ -197,9 +197,7 @@
 						<div style="display:flex;align-items:center;flex-wrap:wrap;gap:2rem;margin-top:1rem;margin-bottom:1rem;"> [
 							<div style="font-size:1.2rem"> [<b> [{{$entType}} ({{len (index $entsByParent $.Entry.Path)}})]]
 							<!-- Add SubEntry -->
-							<form action="/api/add-entry" style="display:flex" method="POST"> [
-								<input name="parent" type="hidden" value="{{$.Entry.Path}}"> []
-								<input name="type" type="hidden" value="{{$entType}}"> []
+							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="name" style="border:1px solid #DDD;border-right:0;border-radius:2px 0 0 2px" placeholder="name"> []
 								<button style="border:1px solid #DDD;border-radius:0 2px 2px 0"> [+]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []

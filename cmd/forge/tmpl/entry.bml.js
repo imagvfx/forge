@@ -833,6 +833,39 @@ window.onload = function() {
 			currentContextMenuLoader = loader;
 		}
 	}
+	let addSubEntForms = document.querySelectorAll(".addSubEntryForm");
+	for (let form of addSubEntForms) {
+		form.onsubmit = function() {
+			let parent = form.dataset.parent;
+			if (parent == "/") {
+				// prevent double slash on paths.
+				parent = "";
+			}
+			let type = form.dataset.type;
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			let paths = [];
+			for (let name of form.name.value.split(" ")) {
+				paths.push(parent + "/" + name);
+			}
+			formData.append("path", paths);
+			formData.append("type", type);
+			req.open("post", "/api/add-entry");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status == 200) {
+					location.reload(true);
+				} else {
+					printErrorStatus(req.responseText);
+				}
+			}
+			req.send(formData);
+			// Handled already, no need to submit again.
+			return false;
+		}
+	}
 }
 
 window.onpageshow = function() {
