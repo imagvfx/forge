@@ -241,7 +241,8 @@
 									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $ent := $subEntries}}
 									{{$props := index $.SubEntryProperties $ent.Path}}
-									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}"> [
+									{{$possibleSubTypes := trim (index (index $.SubEntryProperties $ent.Path) ".sub_entry_types").Value}}
+									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
 											<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
@@ -274,10 +275,9 @@
 												{{end}}
 												{{if index $.ShowGrandSub $ent.Type}}
 													<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
-														{{$possibleTypes := trim (index (index $.SubEntryProperties $ent.Path) ".sub_entry_types").Value}}
-														<div class="grandSubEntries {{if and $possibleTypes (not (has $possibleTypes ","))}}addable{{end}}" data-possible-types="{{$possibleTypes}}"> [
+														<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 															{{range $gs := (index $.GrandSubSummary $ent.Path)}}
-																<div class="summaryDot summaryLabeler" data-entry-type="{{$gs.Type}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
+																<div class="summaryDot summaryLabeler grandSubEntry" data-entry-type="{{$gs.Type}}" data-name="{{$gs.Name}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
 															{{end}}
 															<div class="summaryDot grandSubAdderLoader"> [+]
 														]

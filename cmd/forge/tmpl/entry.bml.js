@@ -760,6 +760,57 @@ window.onload = function() {
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
 	}
+	let grandSubAdderInputs = document.querySelectorAll(".grandSubAdderInput");
+	for (let input of grandSubAdderInputs) {
+		input.onkeydown = function() {
+			if (event.key == "Enter") {
+				event.preventDefault();
+				let creating = input.textContent;
+				let selected = document.querySelectorAll(".subEntry.selected");
+				if (selected.length == 0) {
+					let thisEnt = event.target.closest(".subEntry");
+					selected = [thisEnt];
+				}
+				let formData = new FormData();
+				let paths = [];
+				let types = [];
+				let nBypass = 0;
+				for (let sel of selected) {
+					if (sel.querySelector(`.grandSubEntry[data-name="${creating}"]`)) {
+						// The parent already has entry we want to create.
+						nBypass += 1;
+						continue;
+					}
+					let parent = sel.dataset.entryPath;
+					if (parent == "/") {
+						parent = "";
+					}
+					let path = parent + "/" + creating;
+					formData.append("path", path);
+					// possibleTypes actually should just a type here.
+					let type = sel.dataset.possibleSubTypes;
+					formData.append("type", type);
+				}
+				if (nBypass == selected.length) {
+					printStatus("nothing to do; all the entries already have '" + creating + "' entry");
+					return;
+				}
+				let req = new XMLHttpRequest();
+				req.open("post", "/api/add-entry");
+				req.onerror = function() {
+					printErrorStatus("network error occurred. please check whether the server is down.");
+				}
+				req.onload = function() {
+					if (req.status != 200) {
+						printErrorStatus("cannot add entry: " + req.responseText);
+						return;
+					}
+					location.reload();
+				}
+				req.send(formData);
+			}
+		}
+	}
 	let infoTitles = document.getElementsByClassName("infoTitle");
 	for (let t of infoTitles) {
 		t.onclick = function(event) {
