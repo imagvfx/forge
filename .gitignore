@@ -3,3 +3,4 @@ cmd/forge/forge
 *.pem
 cookie.*
 userdata/
+nohup.out
