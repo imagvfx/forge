@@ -34,6 +34,7 @@ func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
 func main() {
 	var (
 		addr        string
+		oidcHost    string
 		host        string
 		insecure    bool
 		cert        string
@@ -44,6 +45,7 @@ func main() {
 	)
 	flag.StringVar(&addr, "addr", "0.0.0.0:80:443", "address to bind. automatic port forwarding will be enabled, if two ports are specified")
 	flag.StringVar(&host, "host", "", "host name of the site let users access this program")
+	flag.StringVar(&oidcHost, "oidc-host", "", "oidc host name of the site let users access this program")
 	flag.BoolVar(&insecure, "insecure", false, "use http instead of https for testing")
 	flag.StringVar(&cert, "cert", "cert.pem", "https cert file")
 	flag.StringVar(&key, "key", "key.pem", "https key file")
@@ -61,6 +63,9 @@ func main() {
 	addr = toks[0]
 	if host == "" {
 		host = addr
+	}
+	if oidcHost == "" {
+		oidcHost = host
 	}
 	if n == 2 {
 		if insecure {
@@ -168,7 +173,7 @@ func main() {
 			ClientID:     os.Getenv("OIDC_CLIENT_ID"),
 			ClientSecret: os.Getenv("OIDC_CLIENT_SECRET"),
 			RedirectURI:  "https://" + host + "/login/callback/google",
-			HostDomain:   host,
+			HostDomain:   oidcHost,
 		},
 	}
 	page := &pageHandler{
