@@ -40,7 +40,6 @@ func Init(db *sql.DB) error {
 		return err
 	}
 	defer tx.Rollback()
-	fmt.Println("create entries table!")
 	err = createEntryTypesTable(tx)
 	if err != nil {
 		return err
