@@ -280,12 +280,13 @@
 	font-weight: bold;
 	border: 1px solid #FFF0;
 	font-size: 0.5rem;
-	padding: 0.13rem;
+	padding: 0.2rem 0.2rem 0.1rem 0.2rem; // manually matched to .subEntryInfo.infoTitle
 }
 
 .subEntryInfoHistoryLink:hover {
 	color: #AAA;
 	text-decoration: none !important;
+	border: 1px solid #EEE;
 }
 
 .subEntryArea.editMode .subEntryInfoHistoryLink:hover {
