@@ -21,7 +21,7 @@
 							<div style="font-size:0.7rem;color:#666"> [{{$log.When.Local.Format "2006/01/02 15:04:05"}}]
 						]
 						<div style="display:flex"> [
-							<pre style="flex:1;border:solid 1px grey;border-radius:5px;padding:8px;min-height:1rem;"> [{{$log.Value}}]
+							<pre style="flex:1;border:solid 1px grey;border-radius:5px;padding:8px;min-height:1rem;background-color:#FFFFFF;"> [{{$log.Value}}]
 						]
 					]
 					<div style="height:1rem"> []
