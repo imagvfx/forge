@@ -652,9 +652,6 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 		// history is selected set of logs of an item.
 		history := make([]*forge.Log, 0)
 		for _, l := range logs {
-			if l.Value == "" {
-				continue
-			}
 			l.When = l.When.Local()
 			history = append(history, l)
 		}
