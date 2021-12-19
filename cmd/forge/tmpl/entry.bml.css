@@ -280,7 +280,9 @@
 	font-weight: bold;
 	border: 1px solid #FFF0;
 	font-size: 0.5rem;
-	padding: 0.2rem 0.2rem 0.1rem 0.2rem; // manually matched to .subEntryInfo.infoTitle
+	// Due to the font-size difference, I had to manually match it's height to
+	// .subEntryInfo.infoTitle with padding.
+	padding: 0.2rem 0.2rem 0.1rem 0.2rem;
 }
 
 .subEntryInfoHistoryLink:hover {
