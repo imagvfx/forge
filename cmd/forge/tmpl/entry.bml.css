@@ -136,6 +136,7 @@
 }
 
 .infoTitle {
+	flex: 1;
 	display: flex;
 	font-size: 0.75rem;
 	color: #AAAAAA;
@@ -257,11 +258,43 @@
 	flex:1;
 	display:flex;
 	flex-wrap:wrap;
-	gap:0.5rem;
+	gap:1rem;
 }
 
 .subEntryInfo {
 	width: 12rem;
+}
+
+.subEntryInfoTop {
+	display: flex;
+	font-size: 0.75rem;
+	justify-content: center;
+	align-items: center;
+	color: #AAA;
+	gap: 0.5rem;
+}
+
+.subEntryInfoHistoryLink {
+	color: #DDD;
+	border-radius: 2px;
+	font-weight: bold;
+	border: 1px solid #FFF0;
+	font-size: 0.5rem;
+	padding: 0.13rem;
+}
+
+.subEntryInfoHistoryLink:hover {
+	color: #AAA;
+	text-decoration: none !important;
+}
+
+.subEntryArea.editMode .subEntryInfoHistoryLink:hover {
+	background-color: #FAFAFA;
+	border: 1px solid #D0D0D0;
+}
+
+.subEntryInfo:not(:hover) .subEntryInfoHistoryLink {
+	display: none;
 }
 
 .pathText {
