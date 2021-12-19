@@ -40,6 +40,7 @@ a:hover {
 .one {
 	padding: 1rem;
 	flex: 1;
+	background-color: #FAFAFA;
 }
 
 .search-box-left {
