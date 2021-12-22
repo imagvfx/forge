@@ -423,6 +423,10 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 	}
 	// Check and apply the type if it is predefined sub entry of the parent.
 	parentPath := filepath.Dir(e.Path)
+	parent, err := getEntry(tx, ctx, parentPath)
+	if err != nil {
+		return fmt.Errorf("cannot find parent entry: %v", err)
+	}
 	entName := filepath.Base(e.Path)
 	if e.Type == "" {
 		// '.sub_entry_types' property should have only one sub entry type to fill the type.
@@ -445,16 +449,29 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 		}
 		e.Type = firstType
 	}
-	predefined, err := getProperty(tx, ctx, parentPath, ".predefined_sub_entries")
+	predefinedValue := ""
+	predefined, err := getProperty(tx, ctx, parent.Path, ".predefined_sub_entries")
 	if err != nil {
 		var e *forge.NotFoundError
 		if !errors.As(err, &e) {
 			return err
 		}
+		// find in the globals
+		predefinedGlobal, err := getGlobal(tx, ctx, parent.Type, "predefined_sub_entries")
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+		} else {
+			predefinedValue = predefinedGlobal.Value
+		}
+	} else {
+		predefinedValue = predefined.Value
 	}
-	if predefined != nil {
+	if predefinedValue != "" {
 		predefinedType := ""
-		for _, sub := range strings.Split(predefined.Value, ",") {
+		for _, sub := range strings.Split(predefinedValue, ",") {
 			sub = strings.TrimSpace(sub)
 			toks := strings.Split(sub, ":")
 			if len(toks) != 2 {
