@@ -369,7 +369,9 @@ window.onload = function() {
 				return;
 			}
 			// Treat alt+click as a command to turn on editMode immediately.
-			if (event.altKey) {
+			// NOTE: ctrlKey and metaKey are also binded to see which is better key binding.
+			// I might eventually remove altKey binding.
+			if (event.altKey || event.ctrlKey || event.metaKey) {
 				subEntArea.classList.add("editMode");
 				printStatus("edit mode");
 				return;
