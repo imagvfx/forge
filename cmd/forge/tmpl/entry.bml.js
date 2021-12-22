@@ -99,7 +99,7 @@ window.onload = function() {
 	let inputs = document.getElementsByClassName("valueInput");
 	for (let input of inputs) {
 		input.onkeydown = function(ev) {
-			if ((ev.ctrlKey && ev.code == "Enter") || ev.code == "NumpadEnter") {
+			if (((ev.ctrlKey || ev.metaKey) && ev.code == "Enter") || ev.code == "NumpadEnter") {
 				submitUpdaterOrAdder(ev, input);
 			}
 		}
