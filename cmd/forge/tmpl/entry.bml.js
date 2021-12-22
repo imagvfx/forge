@@ -374,6 +374,7 @@ window.onload = function() {
 			if (event.altKey || event.ctrlKey || event.metaKey) {
 				subEntArea.classList.add("editMode");
 				printStatus("edit mode");
+				alreadyHandled = true;
 				return;
 			}
 			// Two conditions should met to turn on editMode.
