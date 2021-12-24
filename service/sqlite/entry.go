@@ -196,19 +196,19 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			if idxColon == -1 && idxEqual == -1 {
 				// generic search; not tied to a property
 				keys = append(keys, `
-				(entries.path LIKE ? OR
-					(properties.name NOT LIKE '.%' AND
-						(
-							(properties.typ!='user' AND properties.val LIKE ?) OR
-							(properties.typ='user' AND properties.id IN
-								(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-									WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+					(entries.path LIKE ? OR
+						(properties.name NOT LIKE '.%' AND
+							(
+								(properties.typ!='user' AND properties.val LIKE ?) OR
+								(properties.typ='user' AND properties.id IN
+									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+										WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+									)
 								)
 							)
 						)
 					)
-				)
-			`)
+				`)
 				kwdl := `%` + kwd + `%`
 				vals = append(vals, search.SearchRoot+`/%`+kwd, kwdl, kwdl, kwdl)
 			} else {
@@ -229,31 +229,31 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				v := kwd[idx+1:] // exclude colon or equal
 				if exactSearch {
 					keys = append(keys, `
-				(properties.name=? AND
-					(
-						(properties.typ!='user' AND properties.val=?) OR
-						(properties.typ='user' AND properties.id IN
-							(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-								WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
+						(properties.name=? AND
+							(
+								(properties.typ!='user' AND properties.val=?) OR
+								(properties.typ='user' AND properties.id IN
+									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+										WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
+									)
+								)
 							)
 						)
-					)
-				)
-			`)
+					`)
 					vals = append(vals, k, v, v, v)
 				} else {
 					keys = append(keys, `
-				(properties.name=? AND
-					(
-						(properties.typ!='user' AND properties.val LIKE ?) OR
-						(properties.typ='user' AND properties.id IN
-							(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-								WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+						(properties.name=? AND
+							(
+								(properties.typ!='user' AND properties.val LIKE ?) OR
+								(properties.typ='user' AND properties.id IN
+									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+										WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+									)
+								)
 							)
 						)
-					)
-				)
-			`)
+					`)
 					vl := `%` + v + `%`
 					vals = append(vals, k, vl, vl, vl)
 				}
