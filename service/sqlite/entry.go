@@ -210,7 +210,11 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					)
 				`)
 				kwdl := `%` + kwd + `%`
-				vals = append(vals, search.SearchRoot+`/%`+kwd, kwdl, kwdl, kwdl)
+				pathl := search.SearchRoot + `/%` + kwd
+				if strings.HasSuffix(kwd, "/") {
+					pathl += "%"
+				}
+				vals = append(vals, pathl, kwdl, kwdl, kwdl)
 			} else {
 				// Check which is appeared earlier.
 				if idxColon == -1 {
