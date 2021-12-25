@@ -837,9 +837,6 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if path == "/" {
 		return fmt.Errorf("cannot delete root entry")
 	}
-	if strings.HasSuffix(path, "/") {
-		return fmt.Errorf("entry path shouldn't end with /")
-	}
 	// The entry that will be deleted shouldn't have sub entries.
 	like := path + `/%`
 	rows, err := tx.QueryContext(ctx, `
