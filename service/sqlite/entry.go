@@ -434,6 +434,10 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 	if err != nil {
 		return fmt.Errorf("cannot find parent entry: %v", err)
 	}
+	_, err = getEntry(tx, ctx, e.Path)
+	if err == nil {
+		return fmt.Errorf("entry exists: %v", e.Path)
+	}
 	entName := filepath.Base(e.Path)
 	if e.Type == "" {
 		// '.sub_entry_types' property should have only one sub entry type to fill the type.

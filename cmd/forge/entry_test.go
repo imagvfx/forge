@@ -31,9 +31,9 @@ var testEntries = []testEntry{
 	{path: "/test/shot/cg/0010/ani", typ: "part"},
 	{path: "/test/shot/cg/0010/lgt", typ: "part"},
 	// Cannot create entry that is existing.
-	{path: "/test/shot/cg/0010/lgt", typ: "part", want: errors.New("UNIQUE constraint failed: entries.path")},
+	{path: "/test/shot/cg/0010/lgt", typ: "part", want: errors.New("entry exists: /test/shot/cg/0010/lgt")},
 	// Trailing slashes should be removed.
-	{path: "/test/shot/cg/0010/lgt//", typ: "part", want: errors.New("UNIQUE constraint failed: entries.path")},
+	{path: "/test/shot/cg/0010/lgt//", typ: "part", want: errors.New("entry exists: /test/shot/cg/0010/lgt")},
 }
 
 func TestAddEntries(t *testing.T) {
