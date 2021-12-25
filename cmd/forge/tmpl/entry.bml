@@ -241,7 +241,10 @@
 									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $ent := $subEntries}}
 									{{$props := index $.SubEntryProperties $ent.Path}}
-									{{$possibleSubTypes := trim (index (index $.SubEntryProperties $ent.Path) ".sub_entry_types").Value}}
+									{{$possibleSubTypes := ""}}
+									{{with $t := index (index $.SubEntryProperties $ent.Path) ".sub_entry_types"}}
+										{{$possibleSubTypes = trim $t.Value}}
+									{{end}}
 									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
 										<div class="subEntryTop"> [
 											{{with $s := index $props "status"}}
