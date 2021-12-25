@@ -271,7 +271,7 @@
 												]
 												{{$assignee := index $props "assignee"}}
 												{{if $assignee}}
-												<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assign"> []
+												<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 												{{end}}
 												{{if index $.ShowGrandSub $ent.Type}}
 													<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
