@@ -32,6 +32,8 @@ var testEntries = []testEntry{
 	{path: "/test/shot/cg/0010/lgt", typ: "part"},
 	// Cannot create entry that is existing.
 	{path: "/test/shot/cg/0010/lgt", typ: "part", want: errors.New("UNIQUE constraint failed: entries.path")},
+	// Trailing slashes should be removed.
+	{path: "/test/shot/cg/0010/lgt//", typ: "part", want: errors.New("UNIQUE constraint failed: entries.path")},
 }
 
 func TestAddEntries(t *testing.T) {
@@ -55,7 +57,7 @@ func TestAddEntries(t *testing.T) {
 	for _, ent := range testEntries {
 		got := server.AddEntry(ctx, ent.path, ent.typ)
 		if !equalError(ent.want, got) {
-			t.Fatalf("want err %q, got %q", ent.want, got)
+			t.Fatalf("want err %q, got %q", errorString(ent.want), errorString(got))
 		}
 	}
 }

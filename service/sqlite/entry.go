@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -422,9 +423,11 @@ func AddEntry(db *sql.DB, ctx context.Context, e *forge.Entry) error {
 }
 
 func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
+	e.Path = path.Clean(e.Path)
 	if e.Path == "/" {
 		return fmt.Errorf("root entry cannot be created or deleted by user")
 	}
+	e.Path = strings.TrimSuffix(e.Path, "/")
 	// Check and apply the type if it is predefined sub entry of the parent.
 	parentPath := filepath.Dir(e.Path)
 	parent, err := getEntry(tx, ctx, parentPath)
