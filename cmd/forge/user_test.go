@@ -33,15 +33,11 @@ func addAdmin(server *forge.Server, ctx context.Context) (*forge.User, error) {
 }
 
 func TestAddAdmin(t *testing.T) {
-	db, err := testDB(t)
+	db, server, err := testDB(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	server, err := testServer(t, db)
-	if err != nil {
-		t.Fatal(err)
-	}
 	ctx := context.Background()
 	_, err = addAdmin(server, ctx)
 	if err != nil {
