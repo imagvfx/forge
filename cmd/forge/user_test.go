@@ -9,17 +9,18 @@ import (
 	"github.com/imagvfx/forge"
 )
 
+var testAdmin string = "admin@imagvfx.com"
+
 func addAdmin(server *forge.Server, ctx context.Context) error {
-	admin := "admin@imagvfx.com"
 	u := &forge.User{
-		Name:   admin,
+		Name:   testAdmin,
 		Called: "admin of tests",
 	}
 	err := server.AddUser(ctx, u)
 	if err != nil {
 		return err
 	}
-	got, err := server.GetUser(ctx, admin)
+	got, err := server.GetUser(ctx, testAdmin)
 	if err != nil {
 		return err
 	}
