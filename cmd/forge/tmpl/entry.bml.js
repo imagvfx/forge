@@ -890,6 +890,11 @@ window.onload = function() {
 	let addSubEntForms = document.querySelectorAll(".addSubEntryForm");
 	for (let form of addSubEntForms) {
 		form.onsubmit = function() {
+			let value = form.name.value.trim();
+			if (value == "") {
+				printErrorStatus("nothing to submit");
+				return false;
+			}
 			let parent = form.dataset.parent;
 			if (parent == "/") {
 				// prevent double slash on paths.
