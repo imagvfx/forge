@@ -1168,11 +1168,13 @@ function submitUpdaterOrAdder(ev, input) {
 									valueElem.innerHTML += "<br>"
 									continue
 								}
+								let div = document.createElement("div");
+								let text = document.createTextNode(line);
+								div.appendChild(text);
 								if (line.startsWith("/")) {
-									valueElem.innerHTML += "<div class='pathText'>" + line + "</div>";
-								} else {
-									valueElem.innerHTML += "<div>" + line + "</div>";
+									div.classList.add("pathText");
 								}
+								valueElem.appendChild(div);
 							}
 							// remove possible 'invalid' class
 							valueElem.classList.remove("invalid");

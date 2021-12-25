@@ -47,7 +47,7 @@ var pageHandlerFuncs = template.FuncMap{
 		link := ""
 		ps := strings.Split(path[1:], "/")
 		for _, p := range ps {
-			p = "/" + p
+			p = template.HTMLEscapeString("/" + p)
 			link += p
 			full += fmt.Sprintf(`<a href="%v">%v</a>`, link, p)
 		}
@@ -89,6 +89,7 @@ var pageHandlerFuncs = template.FuncMap{
 				t += "<br>"
 				continue
 			}
+			line = template.HTMLEscapeString(line)
 			if strings.HasPrefix(line, "/") {
 				t += "<div class='pathText'>" + line + "</div>"
 			} else {
