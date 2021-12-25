@@ -778,6 +778,13 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			continue
 		}
 		row := n + 1 // Label row removed.
+		vis, err := xlr.GetRowVisible(sheet, row+1)
+		if err != nil {
+			return err
+		}
+		if !vis {
+			continue
+		}
 		// Create the entry.
 		parent := cols[parentIdx]
 		if parent == "" {
@@ -820,7 +827,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		if name == "" {
 			return fmt.Errorf("'name' field empty")
 		}
-		_, err := h.server.GetEntry(ctx, parent)
+		_, err = h.server.GetEntry(ctx, parent)
 		if err != nil {
 			// parent should exist already.
 			return err
