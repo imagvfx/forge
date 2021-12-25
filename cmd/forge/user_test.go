@@ -9,7 +9,7 @@ import (
 	"github.com/imagvfx/forge"
 )
 
-func addAdmin(server *forge.Server, ctx context.Context) (*forge.User, error) {
+func addAdmin(server *forge.Server, ctx context.Context) error {
 	admin := "admin@imagvfx.com"
 	u := &forge.User{
 		Name:   admin,
@@ -17,19 +17,19 @@ func addAdmin(server *forge.Server, ctx context.Context) (*forge.User, error) {
 	}
 	err := server.AddUser(ctx, u)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	got, err := server.GetUser(ctx, admin)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if got != nil {
 		u.ID = got.ID
 	}
 	if !reflect.DeepEqual(got, u) {
-		return nil, fmt.Errorf("got %v, want %v", got, u)
+		return fmt.Errorf("got %v, want %v", got, u)
 	}
-	return got, nil
+	return nil
 }
 
 func TestAddAdmin(t *testing.T) {
@@ -39,7 +39,7 @@ func TestAddAdmin(t *testing.T) {
 	}
 	defer db.Close()
 	ctx := context.Background()
-	_, err = addAdmin(server, ctx)
+	err = addAdmin(server, ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
