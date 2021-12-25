@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/imagvfx/forge"
@@ -18,6 +19,7 @@ var testEntryTypes = []string{
 type testEntry struct {
 	path string
 	typ  string
+	want error
 }
 
 var testEntries = []testEntry{
@@ -28,6 +30,8 @@ var testEntries = []testEntry{
 	{path: "/test/shot/cg/0010/mdl", typ: "part"},
 	{path: "/test/shot/cg/0010/ani", typ: "part"},
 	{path: "/test/shot/cg/0010/lgt", typ: "part"},
+	// Cannot create entry that is existing.
+	{path: "/test/shot/cg/0010/lgt", typ: "part", want: errors.New("UNIQUE constraint failed: entries.path")},
 }
 
 func TestAddEntries(t *testing.T) {
@@ -49,9 +53,9 @@ func TestAddEntries(t *testing.T) {
 		}
 	}
 	for _, ent := range testEntries {
-		err := server.AddEntry(ctx, ent.path, ent.typ)
-		if err != nil {
-			t.Fatal(err)
+		got := server.AddEntry(ctx, ent.path, ent.typ)
+		if !equalError(ent.want, got) {
+			t.Fatalf("want err %q, got %q", ent.want, got)
 		}
 	}
 }

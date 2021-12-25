@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/imagvfx/forge"
@@ -25,4 +26,17 @@ func testDB(t *testing.T) (*sql.DB, *forge.Server, error) {
 	cfg := &forge.Config{}
 	server := forge.NewServer(svc, cfg)
 	return db, server, nil
+}
+
+func equalError(e1, e2 error) bool {
+	if e1 == nil && e2 == nil {
+		return true
+	}
+	if e1 == nil && e2 != nil {
+		return false
+	}
+	if e1 != nil && e2 == nil {
+		return false
+	}
+	return strings.TrimSpace(e1.Error()) == strings.TrimSpace(e2.Error())
 }
