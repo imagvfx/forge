@@ -200,6 +200,9 @@ func addEntryType(tx *sql.Tx, ctx context.Context, name string) error {
 	if strings.Contains(name, " ") {
 		return fmt.Errorf("entry type name cannot have spaces")
 	}
+	if strings.Count(name, ".") > 1 {
+		return fmt.Errorf("entry type name is allowed only one dot for override type")
+	}
 	origType := strings.Split(name, ".")[0]
 	if name != origType {
 		allTypes, err := findEntryTypes(tx, ctx)

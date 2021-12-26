@@ -20,6 +20,8 @@ var testEntryTypes = []testEntryType{
 	{name: "shot"},
 	{name: "part"},
 	{name: "having space", want: errors.New("entry type name cannot have spaces")},
+	// TODO: case for override type
+	{name: "shot.double.dot", want: errors.New("entry type name is allowed only one dot for override type")},
 }
 
 type testDefault struct {
