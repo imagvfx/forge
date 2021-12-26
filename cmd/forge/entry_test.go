@@ -67,7 +67,7 @@ func TestAddEntries(t *testing.T) {
 	}
 	ctx = forge.ContextWithUserName(ctx, testAdmin)
 	for _, typ := range testEntryTypes {
-		err = server.AddEntryType(ctx, typ)
+		err := server.AddEntryType(ctx, typ)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -79,9 +79,9 @@ func TestAddEntries(t *testing.T) {
 		}
 	}
 	for _, ent := range testEntries {
-		got := server.AddEntry(ctx, ent.path, ent.typ)
-		if !equalError(ent.want, got) {
-			t.Fatalf("want err %q, got %q", errorString(ent.want), errorString(got))
+		err := server.AddEntry(ctx, ent.path, ent.typ)
+		if !equalError(ent.want, err) {
+			t.Fatalf("want err %q, got %q", errorString(ent.want), errorString(err))
 		}
 	}
 }
