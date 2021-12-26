@@ -19,8 +19,10 @@ var testEntryTypes = []testEntryType{
 	{name: "group"},
 	{name: "shot"},
 	{name: "part"},
+	{name: "part.mdl"},
+	{name: "part.ani"},
+	{name: "part.lgt"},
 	{name: "having space", want: errors.New("entry type name cannot have spaces")},
-	// TODO: case for override type
 	{name: "shot.double.dot", want: errors.New("entry type name is allowed only one dot for override type")},
 }
 
