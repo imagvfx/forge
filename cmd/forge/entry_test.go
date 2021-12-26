@@ -16,10 +16,26 @@ var testEntryTypes = []string{
 	"part",
 }
 
+type testDefault struct {
+	typ     string
+	ctg     string
+	k, t, v string
+	want    error
+}
+
+var testDefaults = []testDefault{
+	{typ: "show", ctg: "property", k: "sup", t: "user", v: ""},
+	{typ: "shot", ctg: "property", k: "cg", t: "text", v: ""},
+	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
+	{typ: "lol", ctg: "property", k: "assignee", t: "user", v: "", want: errors.New("entry type not found: lol")},
+	{typ: "", ctg: "property", k: "assignee", t: "user", v: "", want: errors.New("default entry type not specified")},
+}
+
 type testEntry struct {
-	path string
-	typ  string
-	want error
+	path  string
+	typ   string
+	props []forge.KeyTypeValue
+	want  error
 }
 
 var testEntries = []testEntry{
@@ -35,6 +51,8 @@ var testEntries = []testEntry{
 	// Trailing slashes should be removed.
 	{path: "/test/shot/cg/0010/lgt//", typ: "part", want: errors.New("entry exists: /test/shot/cg/0010/lgt")},
 }
+
+var testProps = []testEntry{}
 
 func TestAddEntries(t *testing.T) {
 	db, server, err := testDB(t)
@@ -52,6 +70,12 @@ func TestAddEntries(t *testing.T) {
 		err = server.AddEntryType(ctx, typ)
 		if err != nil {
 			t.Fatal(err)
+		}
+	}
+	for _, def := range testDefaults {
+		err := server.AddDefault(ctx, def.typ, def.ctg, def.k, def.t, def.v)
+		if !equalError(def.want, err) {
+			t.Fatalf("want err %q, got %q", errorString(def.want), errorString(err))
 		}
 	}
 	for _, ent := range testEntries {
