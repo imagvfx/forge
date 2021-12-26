@@ -235,7 +235,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if exactSearch {
 					// NOTE: The line with 'properties.val in (?)' is weird in a look, but it was the only query I can think of
 					// that checks empty 'user' properties when a user searches it. (eg. not assigned entries).
-					// Non-exact query doesn't need to handle this condition.
 					keys = append(keys, `
 						(properties.name=? AND
 							(
@@ -255,6 +254,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						(properties.name=? AND
 							(
 								(properties.typ!='user' AND properties.val LIKE ?) OR
+								(properties.typ='user' AND properties.val='' AND properties.val in (?)) OR
 								(properties.typ='user' AND properties.id IN
 									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
 										WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
@@ -264,7 +264,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						)
 					`)
 					vl := `%` + v + `%`
-					vals = append(vals, k, vl, vl, vl)
+					vals = append(vals, k, vl, v, vl, vl)
 				}
 			}
 		}
