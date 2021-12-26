@@ -62,7 +62,18 @@ var testEntries = []testEntry{
 	{path: "/test/shot/cg/0010/lgt//", typ: "part", want: errors.New("entry exists: /test/shot/cg/0010/lgt")},
 }
 
-var testProps = []testEntry{}
+type testProperty struct {
+	path    string
+	k, t, v string
+	want    error
+}
+
+var testUpdateProps = []testProperty{
+	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: ""},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: "not-exist@imagvfx.com", want: errors.New("user not found: not-exist@imagvfx.com")},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: "admin@imagvfx.com"},
+	{path: "/test/shot/cg/0010/lgt", k: "assignee", t: "user", v: "admin@imagvfx.com"},
+}
 
 func TestAddEntries(t *testing.T) {
 	db, server, err := testDB(t)
@@ -92,6 +103,12 @@ func TestAddEntries(t *testing.T) {
 		err := server.AddEntry(ctx, ent.path, ent.typ)
 		if !equalError(ent.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(ent.want), errorString(err))
+		}
+	}
+	for _, prop := range testUpdateProps {
+		err := server.UpdateProperty(ctx, prop.path, prop.k, prop.v)
+		if !equalError(prop.want, err) {
+			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
 		}
 	}
 }
