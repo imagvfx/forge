@@ -8,12 +8,18 @@ import (
 	"github.com/imagvfx/forge"
 )
 
-var testEntryTypes = []string{
-	"show",
-	"category",
-	"group",
-	"shot",
-	"part",
+type testEntryType struct {
+	name string
+	want error
+}
+
+var testEntryTypes = []testEntryType{
+	{name: "show"},
+	{name: "category"},
+	{name: "group"},
+	{name: "shot"},
+	{name: "part"},
+	{name: "having space", want: errors.New("entry type name cannot have spaces")},
 }
 
 type testDefault struct {
@@ -67,9 +73,9 @@ func TestAddEntries(t *testing.T) {
 	}
 	ctx = forge.ContextWithUserName(ctx, testAdmin)
 	for _, typ := range testEntryTypes {
-		err := server.AddEntryType(ctx, typ)
-		if err != nil {
-			t.Fatal(err)
+		err := server.AddEntryType(ctx, typ.name)
+		if !equalError(typ.want, err) {
+			t.Fatalf("want err %q, got %q", errorString(typ.want), errorString(err))
 		}
 	}
 	for _, def := range testDefaults {
