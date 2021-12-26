@@ -69,10 +69,35 @@ type testProperty struct {
 }
 
 var testUpdateProps = []testProperty{
+	{path: "/test", k: "sup", t: "user", v: "admin@imagvfx.com"},
 	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: ""},
 	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: "not-exist@imagvfx.com", want: errors.New("user not found: not-exist@imagvfx.com")},
 	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: "admin@imagvfx.com"},
 	{path: "/test/shot/cg/0010/lgt", k: "assignee", t: "user", v: "admin@imagvfx.com"},
+}
+
+type testSearch struct {
+	path    string
+	typ     string
+	query   string
+	wantRes []string
+	wantErr error
+}
+
+var testSearches = []testSearch{
+	{path: "/", typ: "", query: "admin", wantRes: []string{"/test", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", typ: "", query: "admin", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "show", query: "admin@imagvfx.com", wantRes: []string{"/test"}},
+	{path: "/", typ: "shot", query: "admin@imagvfx.com", wantRes: []string{}},
+	{path: "/", typ: "part", query: "admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "some random words", wantRes: []string{}},
+	{path: "/", typ: "", query: "cg/0010/", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "cg/ mdl", wantRes: []string{"/test/shot/cg/0010/mdl"}},
+	{path: "/", typ: "", query: "assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "assignee=", wantRes: []string{"/test/shot/cg/0010/mdl"}},
+	// Unexpected Result
+	// {path: "/", typ: "", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "", typ: "", query: "cg/ mdl", wantErr: errors.New("entry path not specified")},
 }
 
 func TestAddEntries(t *testing.T) {
@@ -109,6 +134,25 @@ func TestAddEntries(t *testing.T) {
 		err := server.UpdateProperty(ctx, prop.path, prop.k, prop.v)
 		if !equalError(prop.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
+		}
+	}
+	for i, search := range testSearches {
+		wantMap := make(map[string]bool)
+		for _, path := range search.wantRes {
+			wantMap[path] = true
+		}
+		ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
+		if !equalError(search.wantErr, err) {
+			t.Fatalf("search: %v: want err %q, got %q", i, errorString(search.wantErr), errorString(err))
+		}
+		for _, e := range ents {
+			if !wantMap[e.Path] {
+				t.Fatalf("search: %v: got unexpected entry: %v", i, e.Path)
+			}
+			delete(wantMap, e.Path)
+		}
+		if len(wantMap) != 0 {
+			t.Fatalf("search: %v: got unmatched entries: %v", i, wantMap)
 		}
 	}
 }
