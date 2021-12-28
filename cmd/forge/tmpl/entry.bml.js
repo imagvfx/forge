@@ -1302,10 +1302,9 @@ function keyPressed(ev) {
 function showCategoryInfos(ctg) {
 	let cont = document.querySelector(".mainEntryInfoContainer");
 	if (cont.dataset.selectedCategory == ctg) {
-		cont.dataset.selectedCategory = "";
-	} else {
-		cont.dataset.selectedCategory = ctg
+		ctg = ""
 	}
+	cont.dataset.selectedCategory = ctg;
 	let req = new XMLHttpRequest();
 	let formData = new FormData();
 	formData.append("update_entry_page_selected_category", "1")
