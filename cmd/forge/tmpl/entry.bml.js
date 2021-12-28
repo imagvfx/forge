@@ -1162,7 +1162,9 @@ function submitUpdaterOrAdder(ev, input) {
 							// Similar code is registered as a template function in page_handler.go
 							// Modify both, if needed.
 							valueElem.innerHTML = "";
-							for (let line of j.Msg.Value.split("\n")) {
+							let value = j.Msg.Value;
+							infoElem.dataset.value = value;
+							for (let line of value.split("\n")) {
 								line = line.trim();
 								if (line == "") {
 									valueElem.innerHTML += "<br>"
