@@ -88,6 +88,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 			}
 		}
 		switch key {
+		case "entry_page_selected_category":
+			err = json.Unmarshal([]byte(value), &s.EntryPageSelectedCategory)
 		case "entry_page_search_entry_type":
 			err = json.Unmarshal([]byte(value), &s.EntryPageSearchEntryType)
 		case "entry_page_property_filter":
@@ -190,6 +192,15 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 	}
 	var value []byte
 	switch upd.Key {
+	case "entry_page_selected_category":
+		selectedCategory, ok := upd.Value.(string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		value, err = json.Marshal(selectedCategory)
+		if err != nil {
+			return err
+		}
 	case "entry_page_search_entry_type":
 		updateSearchEntryType, ok := upd.Value.(string)
 		if !ok {

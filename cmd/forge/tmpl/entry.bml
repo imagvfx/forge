@@ -119,7 +119,7 @@
 								]
 							]
 						]
-						<div class="mainEntryInfoContainer" data-selected-category=""> [
+						<div class="mainEntryInfoContainer" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}"> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [

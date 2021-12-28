@@ -325,13 +325,14 @@ type UserUpdater struct {
 }
 
 type UserSetting struct {
-	ID                       int
-	User                     string
-	EntryPageSearchEntryType string
-	EntryPagePropertyFilter  map[string]string
-	EntryPageSortProperty    map[string]string
-	QuickSearches            []StringKV
-	PinnedPaths              []string
+	ID                        int
+	User                      string
+	EntryPageSelectedCategory string
+	EntryPageSearchEntryType  string
+	EntryPagePropertyFilter   map[string]string
+	EntryPageSortProperty     map[string]string
+	QuickSearches             []StringKV
+	PinnedPaths               []string
 }
 
 type UserSettingFinder struct {

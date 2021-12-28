@@ -607,6 +607,14 @@ func (h *apiHandler) handleDeleteThumbnail(ctx context.Context, w http.ResponseW
 
 func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// NOTE: don't use make, maps not for the update should be nil
+	if r.FormValue("update_entry_page_selected_category") != "" {
+		selCategory := r.FormValue("category")
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "entry_page_selected_category", selCategory)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_filter") != "" {
 		entryType := r.FormValue("entry_page_entry_type")
 		filter := r.FormValue("entry_page_property_filter")

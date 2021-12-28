@@ -1306,6 +1306,20 @@ function showCategoryInfos(ctg) {
 	} else {
 		cont.dataset.selectedCategory = ctg
 	}
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	formData.append("update_entry_page_selected_category", "1")
+	formData.append("category", ctg)
+	req.open("post", "/api/update-user-setting");
+	req.onerror = function() {
+		printErrorStatus("network error occurred. please check whether the server is down.");
+	}
+	req.onload = function() {
+		if (req.status != 200) {
+			printErrorStatus(req.responseText);
+		}
+	}
+	req.send(formData);
 }
 
 function showInfoUpdater(info) {
