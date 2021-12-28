@@ -414,8 +414,32 @@
 	background-color: #EEE;
 }
 
-.infoCategoryToggle.selected {
+.mainEntryInfoContainer[data-selected-category="property"] .infoCategoryToggle[data-category="property"] {
 	background-color:#E0EEEE;
+}
+
+.mainEntryInfoContainer[data-selected-category="environ"] .infoCategoryToggle[data-category="environ"] {
+	background-color:#E0EEEE;
+}
+
+.mainEntryInfoContainer[data-selected-category="access"] .infoCategoryToggle[data-category="access"] {
+	background-color:#E0EEEE;
+}
+
+.mainEntryInfoContainer[data-selected-category=""] .mainEntryInfo {
+	display: none;
+}
+
+.mainEntryInfoContainer[data-selected-category="property"] .mainEntryInfo:not([data-category="property"]) {
+	display: none;
+}
+
+.mainEntryInfoContainer[data-selected-category="environ"] .mainEntryInfo:not([data-category="environ"]) {
+	display: none;
+}
+
+.mainEntryInfoContainer[data-selected-category="access"] .mainEntryInfo:not([data-category="access"]) {
+	display: none;
 }
 
 .infoSelector {

@@ -119,7 +119,7 @@
 								]
 							]
 						]
-						<div class="mainEntryInfoContainer"> [
+						<div class="mainEntryInfoContainer" data-selected-category=""> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
@@ -138,7 +138,7 @@
 							<!-- Property / Environ / Access Items -->
 							<div class="mainEntryInfos"> [
 								{{range $p := $.Properties}}
-								<div class="mainEntryInfo info nodisplay {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
+								<div class="mainEntryInfo info {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$p.Name}}]
@@ -152,7 +152,7 @@
 								]
 								{{end}}
 								{{range $e := $.Environs}}
-								<div class="mainEntryInfo info nodisplay" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
+								<div class="mainEntryInfo info" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$e.Name}}]
@@ -166,7 +166,7 @@
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
-								<div class="mainEntryInfo info nodisplay" data-category="access" {{if $a}}data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"{{end}}> [
+								<div class="mainEntryInfo info" data-category="access" {{if $a}}data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"{{end}}> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$a.Accessor}}]

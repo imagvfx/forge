@@ -1300,22 +1300,11 @@ function keyPressed(ev) {
 }
 
 function showCategoryInfos(ctg) {
-	let ent = document.querySelector(".mainEntry");
-	let tgls = ent.getElementsByClassName("infoCategoryToggle");
-	for (let tgl of tgls) {
-		if (tgl.dataset.category == ctg && !tgl.classList.contains("selected")) {
-			tgl.classList.add("selected");
-		} else {
-			tgl.classList.remove("selected");
-		}
-	}
-	let infos = ent.getElementsByClassName("info");
-	for (let info of infos) {
-		if (info.dataset.category == ctg && info.classList.contains("nodisplay")) {
-			info.classList.remove("nodisplay");
-		} else {
-			info.classList.add("nodisplay");
-		}
+	let cont = document.querySelector(".mainEntryInfoContainer");
+	if (cont.dataset.selectedCategory == ctg) {
+		cont.dataset.selectedCategory = "";
+	} else {
+		cont.dataset.selectedCategory = ctg
 	}
 }
 
