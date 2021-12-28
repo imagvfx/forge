@@ -1322,7 +1322,7 @@ function showCategoryInfos(ctg) {
 function showInfoUpdater(info) {
 	document.getElementById("infoAdder").classList.add("nodisplay");
 	let updater = document.getElementById("infoUpdater");
-	updater.classList.remove("nodisplay");
+	updater.classList.add("nodisplay");
 	let active = document.querySelector(".infoTitle.active");
 	if (active) {
 		active.classList.remove("active");
@@ -1373,6 +1373,7 @@ function showInfoUpdater(info) {
 
 	let infoTitle = info.querySelector(".infoTitle");
 	infoTitle.classList.add("active");
+	updater.classList.remove("nodisplay");
 
 	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;
