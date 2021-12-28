@@ -50,13 +50,23 @@
 .mainEntryInfoCategoryToggles {
 	font-size: 0.75rem;
 	color: #555;
-	min-width: 8rem;
+	margin-right: 1.5rem;
+	user-select: none;
 }
 
 .mainEntryInfos {
+	flex: 1;
 	display: flex;
-	gap: 1rem;
+	gap: 1.2rem;;
 	flex-wrap: wrap;
+	height: min-content;
+	padding: 0.6rem;
+	border: 1px solid #EEE;
+	border-radius: 3px;
+}
+
+.mainEntryInfoContainer[data-selected-category=""] .mainEntryInfos {
+	display: none;
 }
 
 .thumbnailContainer {
@@ -459,29 +469,28 @@
 
 .mainEntryInfo {
 	width: 12rem;
-	height: 4rem;
-	padding: 0.3rem;
-	padding-right: 0.5rem;
-	padding-bottom: 0.5rem;
-	background-color: #FFF;
-	border-radius: 2px;
-	border: 1px solid #EEE;
 	overflow: auto;
 	overflow-wrap: break-word;
+	max-height: 8rem;
 }
 
 .infoContextMenuLoader {
 	user-select: none;
 	padding:0 2px;
 	font-size:0.75rem;
-	color:#AAA;
+	color:#DDD;
 	border-radius:2px;
 	opacity:0.5;
 	cursor:pointer;
-	border:1px solid #FFF;
+	border:1px solid #FFF0;
+}
+
+.mainEntryInfo:not(:hover) .infoContextMenuLoader {
+	visibility: hidden;
 }
 
 .infoContextMenuLoader:hover {
+	color:#AAA;
 	border:1px solid #DDD;
 }
 
