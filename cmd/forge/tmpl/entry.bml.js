@@ -1303,7 +1303,7 @@ function showCategoryInfos(ctg) {
 	let ent = document.querySelector(".mainEntry");
 	let tgls = ent.getElementsByClassName("infoCategoryToggle");
 	for (let tgl of tgls) {
-		if (tgl.dataset.category == ctg) {
+		if (tgl.dataset.category == ctg && !tgl.classList.contains("selected")) {
 			tgl.classList.add("selected");
 		} else {
 			tgl.classList.remove("selected");
@@ -1311,7 +1311,7 @@ function showCategoryInfos(ctg) {
 	}
 	let infos = ent.getElementsByClassName("info");
 	for (let info of infos) {
-		if (info.dataset.category == ctg) {
+		if (info.dataset.category == ctg && info.classList.contains("nodisplay")) {
 			info.classList.remove("nodisplay");
 		} else {
 			info.classList.add("nodisplay");
