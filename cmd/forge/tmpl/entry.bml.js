@@ -43,6 +43,10 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.closest(".infoAdder, .infoTitle, #footer") == null) {
+			let active = document.querySelector(".infoTitle.active");
+			if (active) {
+				active.classList.remove("active");
+			}
 			hide = hideInfoModifier();
 		}
 		if (event.target.closest(".grandSubAdderLoader")) {
@@ -1319,6 +1323,10 @@ function showInfoUpdater(info) {
 	document.getElementById("infoAdder").classList.add("nodisplay");
 	let updater = document.getElementById("infoUpdater");
 	updater.classList.remove("nodisplay");
+	let active = document.querySelector(".infoTitle.active");
+	if (active) {
+		active.classList.remove("active");
+	}
 	let thisEnt = parentWithClass(info, "entry");
 	let entPath = thisEnt.dataset.entryPath;
 	let ctg = info.dataset.category;
@@ -1362,6 +1370,9 @@ function showInfoUpdater(info) {
 	updater.getElementsByClassName("valueForm")[0].action = "/api/update-" + ctg;
 	updater.getElementsByTagName("button")[0].innerText = "Update";
 	clearStatus();
+
+	let infoTitle = info.querySelector(".infoTitle");
+	infoTitle.classList.add("active");
 
 	let valueInput = updater.getElementsByClassName("valueInput")[0];
 	valueInput.placeholder = type;

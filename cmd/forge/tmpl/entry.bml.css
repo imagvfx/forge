@@ -150,9 +150,14 @@
 }
 
 .subEntryArea.editMode .infoTitle:hover {
-	background-color: #FAFAFA;
+	background-color: #F4F4F4;
 	border: 1px solid #D0D0D0;
 	cursor: pointer;
+}
+
+.subEntryArea.editMode .infoTitle.active {
+	border: 1px solid #AAAAAA;
+	background-color: #FAFAFA;
 }
 
 .infoValue {
