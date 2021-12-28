@@ -141,6 +141,7 @@
 	font-size: 0.75rem;
 	color: #AAAAAA;
 	padding: 1px;
+	border-radius: 2px;
 	border: 1px solid transparent;
 }
 
@@ -151,7 +152,6 @@
 .subEntryArea.editMode .infoTitle:hover {
 	background-color: #FAFAFA;
 	border: 1px solid #D0D0D0;
-	border-radius: 2px;
 	cursor: pointer;
 }
 
@@ -297,7 +297,7 @@
 }
 
 .subEntryInfo:not(:hover) .subEntryInfoHistoryLink {
-	display: none;
+	visibility: hidden;
 }
 
 .pathText {
