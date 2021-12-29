@@ -50,7 +50,7 @@
 .mainEntryInfoCategoryToggles {
 	font-size: 0.75rem;
 	color: #555;
-	margin-right: 1.5rem;
+	margin-right: 0.8rem;
 	user-select: none;
 }
 
@@ -60,9 +60,9 @@
 	gap: 1.2rem;;
 	flex-wrap: wrap;
 	height: min-content;
-	padding: 0.6rem;
-	border: 1px solid #EEE;
-	border-radius: 3px;
+	padding-left: 0.8rem;
+	border-left: 1px solid #EEE;
+	min-height: 72px;
 }
 
 .mainEntryInfoContainer[data-selected-category=""] .mainEntryInfos {
@@ -143,6 +143,9 @@
 .infoTop {
 	display: flex;
 	gap: 1rem;
+	border: 1px solid #EEE;
+	border-radius: 4px;
+	background-color: #FEFEFE;
 }
 
 .infoTitle {
@@ -157,6 +160,7 @@
 
 .mainEntry .infoTitle {
 	cursor: pointer;
+	padding-left: 4px;
 }
 
 .subEntryArea.editMode .infoTitle:hover {
@@ -469,20 +473,16 @@
 
 .mainEntryInfo {
 	width: 12rem;
-	overflow: auto;
-	overflow-wrap: break-word;
-	max-height: 8rem;
 }
 
 .infoContextMenuLoader {
 	user-select: none;
-	padding:0 2px;
+	padding: 3px 4px 0 4px;
 	font-size:0.75rem;
 	color:#DDD;
 	border-radius:2px;
 	opacity:0.5;
 	cursor:pointer;
-	border:1px solid #FFF0;
 }
 
 .mainEntryInfo:not(:hover) .infoContextMenuLoader {
@@ -491,7 +491,6 @@
 
 .infoContextMenuLoader:hover {
 	color:#AAA;
-	border:1px solid #DDD;
 }
 
 .valueInput {
