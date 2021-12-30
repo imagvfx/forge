@@ -144,7 +144,6 @@
 											<div> [{{$p.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 										]
-										<div style="flex:1;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
