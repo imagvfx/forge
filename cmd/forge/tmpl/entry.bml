@@ -147,9 +147,10 @@
 												<div> [{{$p.Name}}]
 												<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 											]
+											<div style="width:1rem;"> []
 											<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 										]
-										<div style="height:0.2rem"> []
+										<div style="width:1rem"> []
 										<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
 									]
 									{{end}}
@@ -157,11 +158,12 @@
 								{{range $e := $.Environs}}
 								<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
 									<div class="infoTop"> [
+										{{if ne $e.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]{{end}}
 										<div class="infoTitle"> [
-											{{if ne $e.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]{{end}}
 											<div> [{{$e.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $e)}}invisible{{end}}"> []
 										]
+										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
@@ -171,11 +173,12 @@
 								{{range $a := $.AccessControls}}
 								<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"> [
 									<div class="infoTop"> [
+										{{if ne $a.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]{{end}}
 										<div class="infoTitle"> [
-											{{if ne $a.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]{{end}}
 											<div> [{{$a.Accessor}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $a)}}invisible{{end}}"> []
 										]
+										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div class="infoValue"> [{{$a.Mode}}]

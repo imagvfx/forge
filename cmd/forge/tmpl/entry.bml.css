@@ -71,7 +71,7 @@
 
 .inheritedInfoIcon {
 	filter: invert(60%) sepia(97%) hue-rotate(180deg);
-	padding-right: 4px;
+	padding: 0 2px;
 }
 
 .thumbnailContainer {
@@ -147,10 +147,10 @@
 
 .infoTop {
 	display: flex;
-	gap: 1rem;
 	border: 1px solid #EEE;
 	border-radius: 4px;
 	background-color: #FEFEFE;
+	padding: 0 1px;
 }
 
 .infoTitle {
@@ -165,7 +165,7 @@
 
 .mainEntry .infoTitle {
 	cursor: pointer;
-	padding-left: 4px;
+	padding: 2px 1px 1px 1px;
 }
 
 .subEntryArea.editMode .infoTitle:hover {
