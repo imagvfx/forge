@@ -1102,32 +1102,28 @@ function submitUpdaterOrAdder(ev, input) {
 	let formData = new FormData(input.parentElement);
 	let entPath = formData.get("path");
 	formData.delete("path"); // will be refilled
+	let submitEntPaths = [];
 	let thisEntry = document.querySelector(`.entry[data-entry-path="${entPath}"]`);
-	let submitEnts = [];
-	if (thisEntry.classList.contains("mainEntry")) {
-		submitEnts = [thisEntry];
+	if (!thisEntry || thisEntry.classList.contains("mainEntry")) {
+		// thisEntry can be null if it is an inherited info.
+		submitEntPaths = [entPath];
 	} else {
 		// subEntry
-		submitEnts = document.querySelectorAll(".subEntry.selected");
-		if (submitEnts.length != 0) {
-			let inSel = false;
-			for (let ent of submitEnts) {
-				if (entPath == ent.dataset.entryPath) {
-					inSel = true;
-					break;
-				}
+		let selectedEnts = document.querySelectorAll(".subEntry.selected");
+		if (selectedEnts.length == 0) {
+			submitEntPaths = [entPath];
+		} else {
+			for (let ent of selectedEnts) {
+				submitEntPaths.push(ent.dataset.entryPath);
 			}
-			if (!inSel) {
+			if (!submitEntPaths.includes(entPath)) {
 				printErrorStatus("entry not in selection: " + entPath);
 				return;
 			}
 		}
-		if (submitEnts.length == 0) {
-			submitEnts = [thisEntry];
-		}
 	}
-	for (let ent of submitEnts) {
-		formData.append("path", ent.dataset.entryPath);
+	for (let path of submitEntPaths) {
+		formData.append("path", path);
 	}
 	let ctg = formData.get("ctg");
 	let name = formData.get("name");
@@ -1143,8 +1139,8 @@ function submitUpdaterOrAdder(ev, input) {
 			// but let's get the corrected value from server.
 			let get = new XMLHttpRequest();
 			let getFormData = new FormData();
-			for (let ent of submitEnts) {
-				getFormData.append("path", ent.dataset.entryPath);
+			for (let path of submitEntPaths) {
+				getFormData.append("path", path);
 			}
 			getFormData.append("name", name);
 			get.onerror = function(err) {
@@ -1157,44 +1153,45 @@ function submitUpdaterOrAdder(ev, input) {
 						printErrorStatus(j.Err);
 						return;
 					}
-					for (let ent of submitEnts) {
-						let infoElem = ent.querySelector(`.info[data-category='${ctg}'][data-name='${name}']`);
-						if (infoElem != null) {
-							let valueElem = infoElem.querySelector(".infoValue");
-							// Update the value.
-							//
-							// Similar code is registered as a template function in page_handler.go
-							// Modify both, if needed.
-							valueElem.innerHTML = "";
-							let value = j.Msg.Value;
-							infoElem.dataset.value = value;
-							for (let line of value.split("\n")) {
-								line = line.trim();
-								if (line == "") {
-									valueElem.innerHTML += "<br>"
-									continue
-								}
-								let div = document.createElement("div");
-								let text = document.createTextNode(line);
-								div.appendChild(text);
-								if (line.startsWith("/")) {
-									div.classList.add("pathText");
-								}
-								valueElem.appendChild(div);
+					for (let path of submitEntPaths) {
+						let infoElem = document.querySelector(`.info[data-entry-path='${path}'][data-category='${ctg}'][data-name='${name}']`);
+						if (!infoElem) {
+							continue
+						}
+						let valueElem = infoElem.querySelector(".infoValue");
+						// Update the value.
+						//
+						// Similar code is registered as a template function in page_handler.go
+						// Modify both, if needed.
+						valueElem.innerHTML = "";
+						let value = j.Msg.Value;
+						infoElem.dataset.value = value;
+						for (let line of value.split("\n")) {
+							line = line.trim();
+							if (line == "") {
+								valueElem.innerHTML += "<br>"
+								continue
 							}
-							// remove possible 'invalid' class
-							valueElem.classList.remove("invalid");
+							let div = document.createElement("div");
+							let text = document.createTextNode(line);
+							div.appendChild(text);
+							if (line.startsWith("/")) {
+								div.classList.add("pathText");
+							}
+							valueElem.appendChild(div);
+						}
+						// remove possible 'invalid' class
+						valueElem.classList.remove("invalid");
 
-							// Look UpdatedAt to check it was actually updated.
-							// It might not, if new value is same as the old one.
-							let updated = new Date(j.Msg.UpdatedAt);
-							let now = Date.now();
-							let delta = (now - updated);
-							let day = 24 * 60 * 60 * 100;
-							if (delta <= day) {
-								let dotElem = infoElem.querySelector(".recentlyUpdatedDot");
-								dotElem.classList.remove("invisible");
-							}
+						// Look UpdatedAt to check it was actually updated.
+						// It might not, if new value is same as the old one.
+						let updated = new Date(j.Msg.UpdatedAt);
+						let now = Date.now();
+						let delta = (now - updated);
+						let day = 24 * 60 * 60 * 100;
+						if (delta <= day) {
+							let dotElem = infoElem.querySelector(".recentlyUpdatedDot");
+							dotElem.classList.remove("invisible");
 						}
 					}
 					printStatus("done");
@@ -1330,7 +1327,7 @@ function showInfoUpdater(info) {
 		active.classList.remove("active");
 	}
 	let thisEnt = parentWithClass(info, "entry");
-	let entPath = thisEnt.dataset.entryPath;
+	let entPath = info.dataset.entryPath;
 	let ctg = info.dataset.category;
 	let name = info.dataset.name;
 	let type = info.dataset.type;
