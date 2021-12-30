@@ -157,6 +157,7 @@
 								<div class="mainEntryInfo info" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
+											{{if ne $e.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]{{end}}
 											<div> [{{$e.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $e)}}invisible{{end}}"> []
 										]
@@ -171,6 +172,7 @@
 								<div class="mainEntryInfo info" data-category="access" {{if $a}}data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"{{end}}> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
+											{{if ne $a.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]{{end}}
 											<div> [{{$a.Accessor}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $a)}}invisible{{end}}"> []
 										]

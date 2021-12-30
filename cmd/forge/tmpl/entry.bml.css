@@ -69,6 +69,11 @@
 	display: none;
 }
 
+.inheritedInfoIcon {
+	filter: invert(60%) sepia(97%) hue-rotate(180deg);
+	padding-right: 4px;
+}
+
 .thumbnailContainer {
 	display: flex;
 	border: 1px dashed #CCCCCC;
