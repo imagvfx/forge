@@ -140,8 +140,8 @@
 								{{$props := index $.EntryProperties $.Entry.Path}}
 								{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 								{{range $name := $propFilters}}
-									{{$p := index $props $name}}
-									<div class="mainEntryInfo info {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
+									{{with $p := index $props $name}}
+									<div class="mainEntryInfo info" data-category="property" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 										<div class="infoTop"> [
 											<div class="infoTitle"> [
 												<div> [{{$p.Name}}]
@@ -152,9 +152,10 @@
 										<div style="height:0.2rem"> []
 										<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
 									]
+									{{end}}
 								{{end}}
 								{{range $e := $.Environs}}
-								<div class="mainEntryInfo info" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
+								<div class="mainEntryInfo info" data-category="environ" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											{{if ne $e.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]{{end}}
@@ -168,7 +169,7 @@
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
-								<div class="mainEntryInfo info" data-category="access" {{if $a}}data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"{{end}}> [
+								<div class="mainEntryInfo info" data-category="access" data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											{{if ne $a.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]{{end}}
@@ -295,20 +296,19 @@
 											]
 											<div class="subEntryProperties"> [
 												{{range $name := $propFilters}}
-													{{$p := index $props $name}}
-													<div class="subEntryInfo info {{if not $p}}invalid{{end}}" data-category="property" data-name="{{$name}}" data-type="{{if $p}}{{$p.Type}}{{end}}" data-value="{{if $p}}{{$p.Value}}{{end}}"> [
+													{{with $p := index $props $name}}
+													<div class="subEntryInfo info" data-category="property" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 														<div class="subEntryInfoTop"> [
 															<div class="infoTitle"> [
 																<div> [{{$name}}]
-																{{if $p}}<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []{{end}}
+																<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 																<div style="flex:1;"> []
 															]
 															<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
 														]
-														{{if $p}}
 														<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
-														{{end}}
 													]
+													{{end}}
 												{{end}}
 											]
 										]
