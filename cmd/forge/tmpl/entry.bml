@@ -137,18 +137,21 @@
 							]
 							<!-- Property / Environ / Access Items -->
 							<div class="mainEntryInfos"> [
-								{{range $p := $.Properties}}
-								<div class="mainEntryInfo info {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
-									<div class="infoTop"> [
-										<div class="infoTitle"> [
-											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+								{{$props := index $.EntryProperties $.Entry.Path}}
+								{{$propFilters := index $.PropertyFilters $.Entry.Type}}
+								{{range $name := $propFilters}}
+									{{$p := index $props $name}}
+									<div class="mainEntryInfo info {{if not $p}}invalid{{end}}" data-category="property" {{if $p}}data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"{{end}}> [
+										<div class="infoTop"> [
+											<div class="infoTitle"> [
+												<div> [{{$p.Name}}]
+												<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+											]
+											<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 										]
-										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+										<div style="height:0.2rem"> []
+										<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
 									]
-									<div style="height:0.2rem"> []
-									<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
-								]
 								{{end}}
 								{{range $e := $.Environs}}
 								<div class="mainEntryInfo info" data-category="environ" {{if $e}}data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"{{end}}> [
@@ -239,9 +242,9 @@
 								<div class="subEntryList"> [
 									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $ent := $subEntries}}
-									{{$props := index $.SubEntryProperties $ent.Path}}
+									{{$props := index $.EntryProperties $ent.Path}}
 									{{$possibleSubTypes := ""}}
-									{{with $t := index (index $.SubEntryProperties $ent.Path) ".sub_entry_types"}}
+									{{with $t := index (index $.EntryProperties $ent.Path) ".sub_entry_types"}}
 										{{$possibleSubTypes = trim $t.Value}}
 									{{end}}
 									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [

@@ -315,7 +315,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
 		}
 	}
-	subEntProps := make(map[string]map[string]*forge.Property)
+	entProps := make(map[string]map[string]*forge.Property)
+	entProps[path] = make(map[string]*forge.Property)
+	for _, p := range props {
+		entProps[path][p.Name] = p
+	}
 	for _, e := range subEnts {
 		if subEntsByTypeByParent[e.Type] == nil {
 			// This should come from search results.
@@ -336,11 +340,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		if err != nil {
 			return err
 		}
-		subProps := make(map[string]*forge.Property)
+		propmap := make(map[string]*forge.Property)
 		for _, p := range props {
-			subProps[p.Name] = p
+			propmap[p.Name] = p
 		}
-		subEntProps[e.Path] = subProps
+		entProps[e.Path] = propmap
 	}
 	// sort
 	for t, byParent := range subEntsByTypeByParent {
@@ -350,8 +354,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 					return strings.Compare(ents[i].Type, ents[j].Type)
 				},
 				func(i, j int) int {
-					ip := subEntProps[ents[i].Path][entrySortProp[t]]
-					jp := subEntProps[ents[j].Path][entrySortProp[t]]
+					ip := entProps[ents[i].Path][entrySortProp[t]]
+					jp := entProps[ents[j].Path][entrySortProp[t]]
 					if ip == nil || jp == nil {
 						// cannot compare
 						return 0
@@ -388,7 +392,13 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	// property filter
 	defaultProps := make(map[string][]string)
 	propFilters := make(map[string][]string)
+	entTypes := []string{ent.Type}
 	for typ := range subEntsByTypeByParent {
+		if typ != ent.Type {
+			entTypes = append(entTypes, typ)
+		}
+	}
+	for _, typ := range entTypes {
 		defaults, err := h.server.Defaults(ctx, typ)
 		if err != nil {
 			return err
@@ -614,7 +624,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SearchQuery              string
 		ResultsFromSearch        bool
 		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
-		SubEntryProperties       map[string]map[string]*forge.Property
+		EntryProperties          map[string]map[string]*forge.Property
 		ShowGrandSub             map[string]bool
 		GrandSubSummary          map[string][]entSummary
 		PropertyTypes            []string
@@ -637,7 +647,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SearchQuery:              searchQuery,
 		ResultsFromSearch:        resultsFromSearch,
 		SubEntriesByTypeByParent: subEntsByTypeByParent,
-		SubEntryProperties:       subEntProps,
+		EntryProperties:          entProps,
 		ShowGrandSub:             showGrandSub,
 		GrandSubSummary:          grandSubSummary,
 		PropertyTypes:            forge.PropertyTypes(),
