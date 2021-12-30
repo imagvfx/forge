@@ -176,6 +176,8 @@
 
 .infoValue {
 	padding: 1px;
+	font-size: 0.8rem;
+	overflow-wrap: break-word;
 }
 
 .infoValue.invalid {

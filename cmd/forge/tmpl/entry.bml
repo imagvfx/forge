@@ -147,7 +147,7 @@
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="{{if $p.ValueError}}invalid{{end}} infoValue" style="font-size:0.8rem"> [{{brLines $p.Value}}{{$p.ValueError}}]
+									<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
 								]
 								{{end}}
 								{{range $e := $.Environs}}
@@ -161,7 +161,7 @@
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
 									<div style="height:0.2rem"> []
-									<div class="{{if $e.ValueError}}invalid{{end}} infoValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{brLines $e.Value}}{{$e.ValueError}}]
+									<div class="{{if $e.ValueError}}invalid{{end}} infoValue"> [{{brLines $e.Value}}{{$e.ValueError}}]
 								]
 								{{end}}
 								{{range $a := $.AccessControls}}
@@ -174,7 +174,7 @@
 										<div style="flex:1;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
-									<div class="infoValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{$a.Mode}}]
+									<div class="infoValue"> [{{$a.Mode}}]
 								]
 								{{end}}
 							]
@@ -303,7 +303,7 @@
 															<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
 														]
 														{{if $p}}
-														<div class="{{if $p.ValueError}}invalid{{end}} infoValue" style="font-size:0.8rem;overflow-wrap:break-word"> [{{brLines $p.Value}}{{$p.ValueError}}]
+														<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
 														{{end}}
 													]
 												{{end}}
