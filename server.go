@@ -96,16 +96,11 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 		return fmt.Errorf("entry path not specified")
 	}
 	path = filepath.ToSlash(path)
-	parent := filepath.Dir(path)
-	_, err := s.svc.GetEntry(ctx, parent)
-	if err != nil {
-		return fmt.Errorf("error on parent check: %v", err)
-	}
 	e := &Entry{
 		Path: path,
 		Type: typ,
 	}
-	err = s.svc.AddEntry(ctx, e)
+	err := s.svc.AddEntry(ctx, e)
 	if err != nil {
 		return err
 	}

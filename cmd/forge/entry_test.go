@@ -61,6 +61,7 @@ var testEntries = []testEntry{
 	// Trailing slashes should be removed.
 	{path: "/test/shot/cg/0010/lgt//", typ: "part", want: errors.New("entry exists: /test/shot/cg/0010/lgt")},
 	{path: "/test/shot/cg/0010/a part", typ: "part", want: errors.New("entry name has space: /test/shot/cg/0010/a part")},
+	{path: "/test/shot/not-exist/0010/fx", typ: "part", want: errors.New("check parent: entry not found: /test/shot/not-exist/0010")},
 }
 
 type testProperty struct {
