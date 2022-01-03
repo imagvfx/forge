@@ -189,6 +189,10 @@
 	color: rgba(150, 15, 15, 0.7);
 }
 
+.infoValue > div {
+	padding-bottom: 0.3rem;
+}
+
 .subEntryArea {
 	flex: 1;
 	background-color: #FAFAFA;
