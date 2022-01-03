@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"path/filepath"
 	"strings"
 
 	"golang.org/x/image/draw"
@@ -95,7 +94,6 @@ func (s *Server) AddEntry(ctx context.Context, path, typ string) error {
 	if path == "" {
 		return fmt.Errorf("entry path not specified")
 	}
-	path = filepath.ToSlash(path)
 	e := &Entry{
 		Path: path,
 		Type: typ,

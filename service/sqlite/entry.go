@@ -435,8 +435,16 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 	// Check and apply the type if it is predefined sub entry of the parent.
 	parentPath := filepath.Dir(e.Path)
 	entName := filepath.Base(e.Path)
-	if strings.Contains(entName, " ") {
-		return fmt.Errorf("entry name has space: %v", e.Path)
+	validChars := strings.Join([]string{
+		"abcdefghijklmnopqrstuvwxyz",
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"0123456789",
+		"_-/",
+	}, "")
+	for _, r := range entName {
+		if !strings.ContainsRune(validChars, r) {
+			return fmt.Errorf("entry name has invalid character '%v': %v", string(r), e.Path)
+		}
 	}
 	parent, err := getEntry(tx, ctx, parentPath)
 	if err != nil {
