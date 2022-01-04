@@ -10,20 +10,20 @@
 
 .mainEntryTop {
 	display: flex;
-	align-items: center;
 	flex-wrap: wrap;
-	align-items: start;
+	align-items: center;
 	margin-bottom: 1rem;
+	gap: 0.5rem;
 }
 
 .mainEntryTitle {
-	flex: 3;
 	font-size: 1.2rem;
 	font-weight: bold;
 }
 
 .mainEntryFunctions {
 	display: flex;
+	align-self: start;
 	flex-wrap: wrap;
 	gap: 1.2rem;
 	font-size: 0.75rem;
@@ -346,6 +346,11 @@
 	border-radius: 0.6rem;
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
+}
+
+.mainEntry .statusDot {
+	padding: 0.05rem;
+	align-self: center;
 }
 
 .subEntryArea.editMode .statusDot {

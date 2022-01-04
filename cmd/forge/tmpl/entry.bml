@@ -72,9 +72,15 @@
 				<!-- This Entry -->
 				<div class="mainEntry entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div class="mainEntryTop"> [
+						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
+						{{$props := index $.EntryProperties $.Entry.Path}}
+						{{with $s := index $props "status"}}
+							<div class="statusDot statusLabeler" data-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
+						{{end}}
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
 						]
+						<div style="flex:1"> []
 						<div class="mainEntryFunctions"> [
 							<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []

@@ -548,7 +548,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		grandSubSummary[sub.Path] = gsubSummary
 	}
 	// TODO: maybe do it with allTypes?
-	possibleTypes := make([]string, 0)
+	possibleTypes := []string{ent.Type}
 	for typ := range subEntsByTypeByParent {
 		possibleTypes = append(possibleTypes, typ)
 	}
