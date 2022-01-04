@@ -220,6 +220,9 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	// TODO: entry currently just keep some entries info,
+	// but maybe it will contain all entries one day.
+	entries := make(map[string]*forge.Entry)
 	props, err := h.server.EntryProperties(ctx, path)
 	if err != nil {
 		return err
@@ -327,6 +330,26 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		byParent := subEntsByTypeByParent[e.Type]
 		parent := filepath.Dir(e.Path)
+		if _, ok := entries[parent]; !ok {
+			p, err := h.server.GetEntry(ctx, parent)
+			if err != nil {
+				return err
+			}
+			entries[parent] = p
+			if parent != ent.Path {
+				props, err := h.server.EntryProperties(ctx, parent)
+				if err != nil {
+					var e *forge.NotFoundError
+					if !errors.As(err, &e) {
+						return err
+					}
+				}
+				entProps[parent] = make(map[string]*forge.Property)
+				for _, p := range props {
+					entProps[parent][p.Name] = p
+				}
+			}
+		}
 		if e.Path == "/" {
 			parent = ""
 		}
@@ -547,16 +570,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		})
 		grandSubSummary[sub.Path] = gsubSummary
 	}
-	// TODO: maybe do it with allTypes?
-	possibleTypes := []string{ent.Type}
-	for typ := range subEntsByTypeByParent {
-		possibleTypes = append(possibleTypes, typ)
-	}
-	for typ := range grandSubTypes {
-		possibleTypes = append(possibleTypes, typ)
-	}
 	possibleStatus := make(map[string][]forge.Status)
-	for _, typ := range possibleTypes {
+	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
+	if err != nil {
+		return err
+	}
+	for _, typ := range baseTypes {
 		status := make([]forge.Status, 0)
 		p, err := h.server.GetGlobal(ctx, typ, "possible_status")
 		if err != nil {
@@ -607,10 +626,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			pth = filepath.Dir(pth)
 		}
 	}
-	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
-	if err != nil {
-		return err
-	}
 	allUsers, err := h.server.Users(ctx)
 	if err != nil {
 		return err
@@ -619,6 +634,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User                     string
 		UserSetting              *forge.UserSetting
 		Entry                    *forge.Entry
+		Entries                  map[string]*forge.Entry
 		EntryPinned              bool
 		SearchEntryType          string
 		SearchQuery              string
@@ -642,6 +658,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User:                     user,
 		UserSetting:              setting,
 		Entry:                    ent,
+		Entries:                  entries,
 		EntryPinned:              pinned,
 		SearchEntryType:          searchEntryType,
 		SearchQuery:              searchQuery,

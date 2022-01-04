@@ -246,7 +246,16 @@
 								<div style="height:1rem"> []
 								{{end}}
 								{{if $.ResultsFromSearch}}
-								<div class="subEntryListFrom"> [From <a href="{{$parent}}"> [{{$parent}}] ({{len $subEntries}})]
+									{{$ent := index $.Entries $parent}}
+									{{$props := index $.EntryProperties $parent}}
+									<div class="subEntryListFrom"> [
+										From
+										{{with $s := index $props "status"}}
+											<div class="statusDot statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
+										{{end}}
+										<a href="{{$parent}}"> [{{$parent}}]
+										({{len $subEntries}})
+									]
 								{{end}}
 								<!-- Sub Entries -->
 								<div class="subEntryList"> [

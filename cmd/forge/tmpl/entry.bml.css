@@ -204,6 +204,21 @@
 	margin: 1.3rem 0;
 	font-size: 0.83rem;
 	font-weight: bold;
+	display: flex;
+	align-items: center;
+}
+
+.subEntryListFrom .statusDot {
+	margin-left: 0.3rem;
+	width: 0.5rem;
+	height: 0.5rem;
+}
+
+.subEntryListFrom > a {
+	margin-left: 0.1rem;
+	margin-right: 0.2rem;
+	display: flex;
+	align-items: center;
 }
 
 .subEntryList {
