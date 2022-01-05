@@ -240,13 +240,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		return a.Accessor <= b.Accessor
 	})
-	pinned := false
-	for _, p := range setting.PinnedPaths {
-		if p == path {
-			pinned = true
-			break
-		}
-	}
 	resultsFromSearch := false
 	var subEnts []*forge.Entry
 	search := r.FormValue("search")
@@ -626,6 +619,13 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			pth = filepath.Dir(pth)
 		}
 	}
+	entryPinned := false
+	for _, p := range setting.PinnedPaths {
+		if p == path {
+			entryPinned = true
+			break
+		}
+	}
 	allUsers, err := h.server.Users(ctx)
 	if err != nil {
 		return err
@@ -659,7 +659,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		UserSetting:              setting,
 		Entry:                    ent,
 		Entries:                  entries,
-		EntryPinned:              pinned,
+		EntryPinned:              entryPinned,
 		SearchEntryType:          searchEntryType,
 		SearchQuery:              searchQuery,
 		ResultsFromSearch:        resultsFromSearch,
