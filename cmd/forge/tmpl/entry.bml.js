@@ -42,7 +42,7 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
-		if (event.target.closest(".infoAdder, .infoTitle, #footer") == null) {
+		if (!event.target.closest(".infoAdder, .infoTitle, #footer") || event.target.closest("#footer .closeButton")) {
 			let active = document.querySelector(".infoTitle.active");
 			if (active) {
 				active.classList.remove("active");
@@ -926,6 +926,13 @@ window.onload = function() {
 			req.send(formData);
 			// Handled already, no need to submit again.
 			return false;
+		}
+	}
+	let infoModifiers = document.querySelectorAll(".infoModifier");
+	for (let mod of infoModifiers) {
+		let closeBtn = mod.querySelector(".closeButton");
+		closeBtn.onclick = function() {
+			mod.classList.add("nodisplay");
 		}
 	}
 }

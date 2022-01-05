@@ -728,3 +728,14 @@
 	justify-content: space-between;
 	padding: 0.5rem;
 }
+
+.infoModifier .closeButton {
+	border-radius: 3px;
+	width: 1rem;
+	height: 1rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 0.5rem;
+	cursor: pointer;
+}
