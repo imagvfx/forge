@@ -147,7 +147,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func CompareProperty(t string, desc bool, a, b string) int {
+func CompareProperty(t string, a, b string) int {
 	// TODO: simplify the logic, so we don't need `desc` in here?
 	cmp := 0
 	// Entry with empty value should stand behind of non-empty value always,
@@ -182,9 +182,6 @@ func CompareProperty(t string, desc bool, a, b string) int {
 		}
 	default:
 		cmp = strings.Compare(a, b)
-	}
-	if desc {
-		cmp *= -1
 	}
 	return cmp
 }
