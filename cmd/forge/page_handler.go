@@ -197,24 +197,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
-	entrySortProp := make(map[string]string)
-	entrySortDesc := make(map[string]bool)
-	for typ, prop := range setting.EntryPageSortProperty {
-		if prop == "" {
-			continue
-		}
-		desc := false
-		prefix := string(prop[0])
-		if prefix == "+" {
-		} else if prefix == "-" {
-			desc = true
-		} else {
-			continue
-		}
-		prop = prop[1:]
-		entrySortProp[typ] = prop
-		entrySortDesc[typ] = desc
-	}
 	path := r.URL.Path
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
@@ -370,6 +352,24 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		entProps[e.Path] = propmap
 	}
 	// sort
+	entrySortProp := make(map[string]string)
+	entrySortDesc := make(map[string]bool)
+	for typ, prop := range setting.EntryPageSortProperty {
+		if prop == "" {
+			continue
+		}
+		desc := false
+		prefix := string(prop[0])
+		if prefix == "+" {
+		} else if prefix == "-" {
+			desc = true
+		} else {
+			continue
+		}
+		prop = prop[1:]
+		entrySortProp[typ] = prop
+		entrySortDesc[typ] = desc
+	}
 	for t, byParent := range subEntsByTypeByParent {
 		for _, ents := range byParent {
 			subSorters := []func(i, j int) int{
