@@ -456,7 +456,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SortValue string
 		SortType  string
 	}
-	grandSubSummary := make(map[string][]entSummary)
+	grandSubSummaries := make(map[string][]entSummary)
 	showGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
 		_, ok := showGrandSub[sub.Type]
@@ -556,7 +556,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			}
 			return true
 		})
-		grandSubSummary[sub.Path] = summaries
+		grandSubSummaries[sub.Path] = summaries
 	}
 	// Get possible status for entry types defines it.
 	possibleStatus := make(map[string][]forge.Status)
@@ -640,7 +640,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
 		EntryProperties          map[string]map[string]*forge.Property
 		ShowGrandSub             map[string]bool
-		GrandSubSummary          map[string][]entSummary
+		GrandSubSummaries        map[string][]entSummary
 		PropertyTypes            []string
 		DefaultProperties        map[string][]string
 		PropertyFilters          map[string][]string
@@ -664,7 +664,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SubEntriesByTypeByParent: subEntsByTypeByParent,
 		EntryProperties:          entProps,
 		ShowGrandSub:             showGrandSub,
-		GrandSubSummary:          grandSubSummary,
+		GrandSubSummaries:        grandSubSummaries,
 		PropertyTypes:            forge.PropertyTypes(),
 		DefaultProperties:        defaultProps,
 		PropertyFilters:          propFilters,
