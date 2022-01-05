@@ -563,6 +563,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		})
 		grandSubSummary[sub.Path] = gsubSummary
 	}
+	// Get possible status for entry types defines it.
 	possibleStatus := make(map[string][]forge.Status)
 	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
@@ -589,6 +590,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		possibleStatus[typ] = status
 	}
+	// Get thumbnail paths of entries.
 	hasThumbnail := make(map[string]bool)
 	thumbnailPath := make(map[string]string)
 	allEnts := append(subEnts, ent)
@@ -598,6 +600,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			thumbnailPath[ent.Path] = ent.Path
 			continue
 		}
+		// The entry doesn't have thumbnail, try inherit from the ancestor's.
 		pth := ent.Path
 		for {
 			if hasThumbnail[pth] {
