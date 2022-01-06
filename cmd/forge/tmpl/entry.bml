@@ -300,8 +300,9 @@
 												{{if index $.ShowGrandSub $ent.Type}}
 													<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
 														<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
-															{{range $gs := (index $.GrandSubSummaries $ent.Path)}}
-																<div class="summaryDot summaryLabeler grandSubEntry" data-entry-type="{{$gs.Type}}" data-name="{{$gs.Name}}" data-value="{{$gs.Status}}" data-assignee="{{$gs.Assignee}}"> [{{$gs.Name}}]
+															{{range $gs := (index $.GrandSubEntries $ent.Path)}}
+																{{$props := index $.EntryProperties $gs.Path}}
+																<div class="summaryDot summaryLabeler grandSubEntry" data-entry-type="{{$gs.Type}}" data-name="{{$gs.Name}}" data-value="{{with $p := index $props "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $props "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
 															{{end}}
 															<div class="summaryDot grandSubAdderLoader"> [+]
 														]
