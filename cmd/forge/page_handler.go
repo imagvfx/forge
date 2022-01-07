@@ -456,32 +456,17 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		for _, gs := range gsubEnts {
 			if _, ok := entProps[gs.Path]; !ok {
 				entProps[gs.Path] = make(map[string]*forge.Property)
-			}
-			if entrySortProp[gs.Type] != "" {
-				p, err := h.server.GetProperty(ctx, gs.Path, entrySortProp[gs.Type])
+				props, err := h.server.EntryProperties(ctx, gs.Path)
 				if err != nil {
-					var e *forge.NotFoundError
-					if !errors.As(err, &e) {
-						return err
-					}
-					// Temporarily disable sort by prop.
-					entrySortProp[gs.Type] = ""
-				} else {
+					return err
+				}
+				for _, p := range props {
 					entProps[gs.Path][p.Name] = p
 				}
 			}
-			for _, prop := range []string{"status", "assignee"} {
-				if _, ok := entProps[gs.Path][prop]; !ok {
-					p, err := h.server.GetProperty(ctx, gs.Path, prop)
-					if err != nil {
-						var e *forge.NotFoundError
-						if !errors.As(err, &e) {
-							return err
-						}
-					} else {
-						entProps[gs.Path][prop] = p
-					}
-				}
+			sortProp := entrySortProp[gs.Type]
+			if entProps[gs.Path][sortProp] == nil {
+				entrySortProp[gs.Type] = ""
 			}
 		}
 		sortEntries(gsubEnts)
