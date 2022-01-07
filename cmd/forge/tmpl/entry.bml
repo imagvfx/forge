@@ -246,7 +246,7 @@
 								<div style="height:1rem"> []
 								{{end}}
 								{{if $.ResultsFromSearch}}
-									{{$ent := index $.Entries $parent}}
+									{{$ent := index $.ParentEntries $parent}}
 									{{$props := index $.EntryProperties $parent}}
 									<div class="subEntryListFrom"> [
 										From

@@ -202,9 +202,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
-	// TODO: entry currently just keep some entries info,
-	// but maybe it will contain all entries one day.
-	entries := make(map[string]*forge.Entry)
 	props, err := h.server.EntryProperties(ctx, path)
 	if err != nil {
 		return err
@@ -270,6 +267,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			}
 		}
 	}
+	parentEnts := make(map[string]*forge.Entry)
 	for _, e := range subEnts {
 		if subEntsByTypeByParent[e.Type] == nil {
 			// This should come from search results.
@@ -277,12 +275,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		byParent := subEntsByTypeByParent[e.Type]
 		parent := filepath.Dir(e.Path)
-		if _, ok := entries[parent]; !ok {
+		if _, ok := parentEnts[parent]; !ok {
 			p, err := h.server.GetEntry(ctx, parent)
 			if err != nil {
 				return err
 			}
-			entries[parent] = p
+			parentEnts[parent] = p
 			if parent != ent.Path {
 				props, err := h.server.EntryProperties(ctx, parent)
 				if err != nil {
@@ -546,7 +544,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User                     string
 		UserSetting              *forge.UserSetting
 		Entry                    *forge.Entry
-		Entries                  map[string]*forge.Entry
+		ParentEntries            map[string]*forge.Entry
 		EntryPinned              bool
 		SearchEntryType          string
 		SearchQuery              string
@@ -570,7 +568,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User:                     user,
 		UserSetting:              setting,
 		Entry:                    ent,
-		Entries:                  entries,
+		ParentEntries:            parentEnts,
 		EntryPinned:              entryPinned,
 		SearchEntryType:          searchEntryType,
 		SearchQuery:              searchQuery,
