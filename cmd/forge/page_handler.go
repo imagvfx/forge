@@ -358,49 +358,44 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		entrySortProp[typ] = prop
 		entrySortDesc[typ] = desc
 	}
-	for t, byParent := range subEntsByTypeByParent {
+	for _, byParent := range subEntsByTypeByParent {
 		for _, ents := range byParent {
-			subSorters := []func(i, j int) int{
-				func(i, j int) int {
-					return strings.Compare(ents[i].Type, ents[j].Type)
-				},
-				func(i, j int) int {
-					ip := entProps[ents[i].Path][entrySortProp[t]]
-					jp := entProps[ents[j].Path][entrySortProp[t]]
-					if ip == nil || jp == nil {
-						// cannot compare
+			sort.Slice(ents, func(i, j int) bool {
+				a := ents[i]
+				b := ents[j]
+				cmp := strings.Compare(a.Type, b.Type)
+				if cmp != 0 {
+					return cmp < 0
+				}
+				typ := a.Type
+				k := 1
+				if entrySortDesc[typ] {
+					k = -1
+				}
+				cmp = func() int {
+					sortProp := entrySortProp[typ]
+					if sortProp == "" {
 						return 0
 					}
-					cmp := strings.Compare(ip.Type, jp.Type)
+					aProp := entProps[a.Path][sortProp]
+					if aProp == nil {
+						return -1
+					}
+					bProp := entProps[b.Path][sortProp]
+					if bProp == nil {
+						return 1
+					}
+					cmp := strings.Compare(aProp.Type, bProp.Type)
 					if cmp != 0 {
-						return cmp
+						return k * cmp
 					}
-					k := 1
-					if entrySortDesc[ents[i].Type] {
-						k = -1
-					}
-					return k * forge.CompareProperty(ip.Type, ip.Value, jp.Value)
-				},
-				func(i, j int) int {
-					cmp := strings.Compare(ents[i].Name(), ents[j].Name())
-					if entrySortDesc[ents[i].Type] {
-						cmp *= -1
-					}
-					return cmp
-				},
-			}
-			sort.Slice(ents, func(i, j int) bool {
-				for _, fn := range subSorters {
-					cmp := fn(i, j)
-					if cmp < 0 {
-						return true
-					}
-					if cmp > 0 {
-						return false
-					}
+					return k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
+				}()
+				if cmp != 0 {
+					return cmp < 0
 				}
-				// Every aspects were same. Keep the order.
-				return true
+				cmp = k * strings.Compare(a.Name(), b.Name())
+				return cmp <= 0
 			})
 		}
 	}
