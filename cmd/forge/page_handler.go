@@ -358,45 +358,49 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		entrySortProp[typ] = prop
 		entrySortDesc[typ] = desc
 	}
+	sortEntries := func(ents []*forge.Entry) {
+		sort.Slice(ents, func(i, j int) bool {
+			a := ents[i]
+			b := ents[j]
+			cmp := strings.Compare(a.Type, b.Type)
+			if cmp != 0 {
+				return cmp < 0
+			}
+			typ := a.Type
+			k := 1
+			if entrySortDesc[typ] {
+				k = -1
+			}
+			cmp = func() int {
+				sortProp := entrySortProp[typ]
+				if sortProp == "" {
+					return 0
+				}
+				aProp := entProps[a.Path][sortProp]
+				if aProp == nil {
+					return -1
+				}
+				bProp := entProps[b.Path][sortProp]
+				if bProp == nil {
+					return 1
+				}
+				// Even they are properties with same name, their types can be different.
+				cmp := strings.Compare(aProp.Type, bProp.Type)
+				if cmp != 0 {
+					return k * cmp
+				}
+				return k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
+			}()
+			if cmp != 0 {
+				return cmp < 0
+			}
+			cmp = k * strings.Compare(a.Name(), b.Name())
+			return cmp <= 0
+		})
+	}
 	for _, byParent := range subEntsByTypeByParent {
-		for _, ents := range byParent {
-			sort.Slice(ents, func(i, j int) bool {
-				a := ents[i]
-				b := ents[j]
-				cmp := strings.Compare(a.Type, b.Type)
-				if cmp != 0 {
-					return cmp < 0
-				}
-				typ := a.Type
-				k := 1
-				if entrySortDesc[typ] {
-					k = -1
-				}
-				cmp = func() int {
-					sortProp := entrySortProp[typ]
-					if sortProp == "" {
-						return 0
-					}
-					aProp := entProps[a.Path][sortProp]
-					if aProp == nil {
-						return -1
-					}
-					bProp := entProps[b.Path][sortProp]
-					if bProp == nil {
-						return 1
-					}
-					cmp := strings.Compare(aProp.Type, bProp.Type)
-					if cmp != 0 {
-						return k * cmp
-					}
-					return k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
-				}()
-				if cmp != 0 {
-					return cmp < 0
-				}
-				cmp = k * strings.Compare(a.Name(), b.Name())
-				return cmp <= 0
-			})
+		for _, subEnts := range byParent {
+			sortEntries(subEnts)
 		}
 	}
 	// Determine property filter for entry types
@@ -497,44 +501,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				}
 			}
 		}
-		sort.Slice(gsubEnts, func(i, j int) bool {
-			a := gsubEnts[i]
-			b := gsubEnts[j]
-			cmp := strings.Compare(a.Type, b.Type)
-			if cmp != 0 {
-				return cmp < 0
-			}
-			typ := a.Type
-			k := 1
-			if entrySortDesc[typ] {
-				k = -1
-			}
-			cmp = func() int {
-				sortProp := entrySortProp[typ]
-				if sortProp == "" {
-					return 0
-				}
-				aProp := entProps[a.Path][sortProp]
-				if aProp == nil {
-					return -1
-				}
-				bProp := entProps[b.Path][sortProp]
-				if bProp == nil {
-					return 1
-				}
-				// Even they are properties with same name, the types can be different.
-				cmp := k * strings.Compare(aProp.Type, bProp.Type)
-				if cmp != 0 {
-					return cmp
-				}
-				return k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
-			}()
-			if cmp != 0 {
-				return cmp < 0
-			}
-			cmp = k * strings.Compare(a.Name(), b.Name())
-			return cmp <= 0
-		})
+		sortEntries(gsubEnts)
 		grandSubEntries[sub.Path] = gsubEnts
 	}
 	// Get possible status for entry types defines it.
