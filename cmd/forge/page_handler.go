@@ -521,11 +521,9 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 					}
 					// Even they are properties with same name, the types can be different.
 					if entProps[a.Path][sortProp] == nil {
-						fmt.Println("a", sortProp, a.Path)
-						return 1
+						return -1
 					}
 					if entProps[b.Path][sortProp] == nil {
-						fmt.Println("b", sortProp, b.Path)
 						return 1
 					}
 					cmp := strings.Compare(entProps[a.Path][sortProp].Type, entProps[b.Path][sortProp].Type)
