@@ -385,15 +385,21 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 					return 1
 				}
 				// Even they are properties with same name, their types can be different.
-				cmp := strings.Compare(aProp.Type, bProp.Type)
+				cmp := k * strings.Compare(aProp.Type, bProp.Type)
 				if cmp != 0 {
-					return k * cmp
+					return cmp
 				}
-				return k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
+				cmp = k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
+				if cmp != 0 {
+					return cmp
+				}
+				// It always sorts entries with their name in ascending order.
+				return strings.Compare(a.Name(), b.Name())
 			}()
 			if cmp != 0 {
 				return cmp < 0
 			}
+			// It sorts entries with their name with order set by entrySortDesc.
 			cmp = k * strings.Compare(a.Name(), b.Name())
 			return cmp <= 0
 		})
