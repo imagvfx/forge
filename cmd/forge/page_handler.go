@@ -276,28 +276,22 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	// Organize the sub entries by type and by parent.
 	subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry) // map[type]map[parent]
-	if !resultsFromSearch {
-		// It might not have any entry for a sub entry type, still entry page needs the type label.
-		subtyps := make([]string, 0)
-		for _, p := range props {
-			if p.Name == ".sub_entry_types" {
-				for _, subtyp := range strings.Split(p.Value, ",") {
-					if subtyp == "" {
-						continue
-					}
-					subtyps = append(subtyps, strings.TrimSpace(subtyp))
-				}
-				break
-			}
-		}
-		for _, t := range subtyps {
-			subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
-		}
-	}
 	entProps := make(map[string]map[string]*forge.Property)
 	entProps[path] = make(map[string]*forge.Property)
 	for _, p := range props {
 		entProps[path][p.Name] = p
+	}
+	if !resultsFromSearch {
+		// It might not have any sub entry, still entry page needs the sub type labels.
+		p := entProps[path][".sub_entry_types"]
+		if p != nil {
+			for _, subtyp := range strings.Split(p.Value, ",") {
+				if subtyp != "" {
+					t := strings.TrimSpace(subtyp)
+					subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
+				}
+			}
+		}
 	}
 	for _, e := range subEnts {
 		if subEntsByTypeByParent[e.Type] == nil {
