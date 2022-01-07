@@ -240,6 +240,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		return a.Accessor <= b.Accessor
 	})
+	// Get entries from current path or search results.
 	resultsFromSearch := false
 	var subEnts []*forge.Entry
 	search := r.FormValue("search")
@@ -273,10 +274,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		searchEntryType = setting.EntryPageSearchEntryType
 	}
-	subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry)
+	// Organize the sub entries by type and by parent.
+	subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry) // map[type]map[parent]
 	if !resultsFromSearch {
-		// If the entry have .sub_entry_types property,
-		// default sub entry types are overrided with the property.
+		// It might not have any entry for a sub entry type, still entry page needs the type label.
 		subtyps := make([]string, 0)
 		for _, p := range props {
 			if p.Name == ".sub_entry_types" {
@@ -344,7 +345,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		entProps[e.Path] = propmap
 	}
-	// sort
+	// Sort sub entries.
 	entrySortProp := make(map[string]string)
 	entrySortDesc := make(map[string]bool)
 	for typ, prop := range setting.EntryPageSortProperty {
@@ -409,7 +410,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			})
 		}
 	}
-	// property filter
+	// Determine property filter for entry types
 	defaultProps := make(map[string][]string)
 	propFilters := make(map[string][]string)
 	entTypes := []string{ent.Type}
@@ -447,7 +448,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		propFilters[typ] = strings.Fields(g.Value)
 	}
-	// Get summary of grand sub entries.
+	// Get grand sub entries if needed.
 	grandSubEntries := make(map[string][]*forge.Entry)
 	showGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
