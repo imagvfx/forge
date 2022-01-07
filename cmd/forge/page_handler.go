@@ -505,49 +505,40 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		sort.Slice(gsubEnts, func(i, j int) bool {
 			a := gsubEnts[i]
 			b := gsubEnts[j]
-			sorters := []func(i, j int) int{
-				func(i, j int) int {
-					return strings.Compare(a.Type, b.Type)
-				},
-				func(i, j int) int {
-					// a and b's types are guaranteed to be same.
-					sortProp := entrySortProp[a.Type]
-					if sortProp == "" {
-						return 0
-					}
-					k := 1
-					if entrySortDesc[a.Type] {
-						k = -1
-					}
-					// Even they are properties with same name, the types can be different.
-					if entProps[a.Path][sortProp] == nil {
-						return -1
-					}
-					if entProps[b.Path][sortProp] == nil {
-						return 1
-					}
-					cmp := strings.Compare(entProps[a.Path][sortProp].Type, entProps[b.Path][sortProp].Type)
-					if cmp != 0 {
-						return cmp
-					}
-					return k * forge.CompareProperty(entProps[a.Path][sortProp].Type, entProps[a.Path][sortProp].Value, entProps[b.Path][sortProp].Value)
-				},
-				func(i, j int) int {
-					k := 1
-					if entrySortDesc[a.Type] {
-						k = -1
-					}
-					return k * strings.Compare(a.Path, b.Path)
-				},
-			}
-			for _, fn := range sorters {
-				cmp := fn(i, j)
-				if cmp == 0 {
-					continue
-				}
+			cmp := strings.Compare(a.Type, b.Type)
+			if cmp != 0 {
 				return cmp < 0
 			}
-			return true
+			typ := a.Type
+			k := 1
+			if entrySortDesc[typ] {
+				k = -1
+			}
+			cmp = func() int {
+				sortProp := entrySortProp[typ]
+				if sortProp == "" {
+					return 0
+				}
+				aProp := entProps[a.Path][sortProp]
+				if aProp == nil {
+					return -1
+				}
+				bProp := entProps[b.Path][sortProp]
+				if bProp == nil {
+					return 1
+				}
+				// Even they are properties with same name, the types can be different.
+				cmp := k * strings.Compare(aProp.Type, bProp.Type)
+				if cmp != 0 {
+					return cmp
+				}
+				return k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
+			}()
+			if cmp != 0 {
+				return cmp < 0
+			}
+			cmp = k * strings.Compare(a.Name(), b.Name())
+			return cmp <= 0
 		})
 		grandSubEntries[sub.Path] = gsubEnts
 	}
