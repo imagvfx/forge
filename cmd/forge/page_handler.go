@@ -209,37 +209,14 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
-	sort.Slice(props, func(i, j int) bool {
-		a := props[i]
-		b := props[j]
-		return a.Name <= b.Name
-	})
 	envs, err := h.server.EntryEnvirons(ctx, path)
 	if err != nil {
 		return err
 	}
-	sort.Slice(envs, func(i, j int) bool {
-		a := envs[i]
-		b := envs[j]
-		cmp := strings.Compare(a.EntryPath, b.EntryPath)
-		if cmp != 0 {
-			return cmp < 0
-		}
-		return a.Name <= b.Name
-	})
 	acs, err := h.server.EntryAccessControls(ctx, path)
 	if err != nil {
 		return err
 	}
-	sort.Slice(acs, func(i, j int) bool {
-		a := acs[i]
-		b := acs[j]
-		cmp := strings.Compare(a.EntryPath, b.EntryPath)
-		if cmp != 0 {
-			return cmp < 0
-		}
-		return a.Accessor <= b.Accessor
-	})
 	// Get entries from current path or search results.
 	resultsFromSearch := false
 	var subEnts []*forge.Entry

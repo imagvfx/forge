@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"sort"
 	"strings"
 
 	"golang.org/x/image/draw"
@@ -373,6 +374,11 @@ func (s *Server) EntryProperties(ctx context.Context, path string) ([]*Property,
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(props, func(i, j int) bool {
+		a := props[i]
+		b := props[j]
+		return a.Name <= b.Name
+	})
 	return props, nil
 }
 
@@ -463,6 +469,15 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(envs, func(i, j int) bool {
+		a := envs[i]
+		b := envs[j]
+		cmp := strings.Compare(a.EntryPath, b.EntryPath)
+		if cmp != 0 {
+			return cmp < 0
+		}
+		return a.Name <= b.Name
+	})
 	return envs, nil
 }
 
@@ -543,6 +558,15 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 	if err != nil {
 		return nil, err
 	}
+	sort.Slice(acls, func(i, j int) bool {
+		a := acls[i]
+		b := acls[j]
+		cmp := strings.Compare(a.EntryPath, b.EntryPath)
+		if cmp != 0 {
+			return cmp < 0
+		}
+		return a.Accessor <= b.Accessor
+	})
 	return acls, nil
 }
 
