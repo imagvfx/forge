@@ -144,6 +144,41 @@
 	display: none;
 }
 
+.subEntryTypeBar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 2rem;
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+.subEntryTypeLabel {
+	font-size: 1.2rem;
+}
+
+.subEntryTypeBar > form > :is(input, select, button) {
+	appearance: none;
+	-webkit-appearance: none;
+	box-sizing: border-box;
+	margin: 0;
+	height: 1.3rem;
+	font-size: 0.8rem;
+	padding: 0.05rem 0.3rem;;
+	-webkit-padding: 0 0.3rem;
+	border: 1px solid #DDD;
+	border-radius: 2px;
+}
+
+.subEntryTypeBar > form > :is(button, input[type="checkbox"]) {
+	background-color: #E8E8E8;
+	cursor: pointer;
+}
+
+.subEntryTypeBar > form > select {
+	background-color: #DDD;
+	cursor: pointer;
+}
 
 .infoTop {
 	display: flex;
