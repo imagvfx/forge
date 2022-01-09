@@ -232,40 +232,32 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				k := kwd[:idx]
 				v := kwd[idx+1:] // exclude colon or equal
-				if exactSearch {
-					// NOTE: The line with 'properties.val in (?)' is weird in a look, but it was the only query I can think of
-					// that checks empty 'user' properties when a user searches it. (eg. not assigned entries).
-					keys = append(keys, `
-						(properties.name=? AND
-							(
-								(properties.typ!='user' AND properties.val=?) OR
-								(properties.typ='user' AND properties.val='' AND properties.val in (?)) OR
-								(properties.typ='user' AND properties.id IN
-									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-										WHERE properties.typ='user' AND (accessors.called=? OR accessors.name=?)
-									)
-								)
-							)
-						)
-					`)
-					vals = append(vals, k, v, v, v, v)
-				} else {
-					keys = append(keys, `
-						(properties.name=? AND
-							(
-								(properties.typ!='user' AND properties.val LIKE ?) OR
-								(properties.typ='user' AND properties.val='' AND properties.val in (?)) OR
-								(properties.typ='user' AND properties.id IN
-									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-										WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
-									)
-								)
-							)
-						)
-					`)
-					vl := `%` + v + `%`
-					vals = append(vals, k, vl, v, vl, vl)
+				// NOTE: The line with 'properties.val in (?)' is weird in a look, but it was the only query I can think of
+				// that checks empty 'user' properties when a user searches it. (eg. not assigned entries).
+				eq := " = "
+				if !exactSearch {
+					eq = " LIKE "
 				}
+				q := fmt.Sprintf(`
+					(properties.name=? AND
+						(
+							(properties.typ!='user' AND properties.val %s ?) OR
+							(properties.typ='user' AND properties.val='' AND properties.val in (?)) OR
+							(properties.typ='user' AND properties.id IN
+								(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
+									WHERE properties.typ='user' AND (accessors.called %s ? OR accessors.name %s ?)
+								)
+							)
+						)
+					)
+				`, eq, eq, eq)
+				keys = append(keys, q)
+				vl := v
+				if !exactSearch {
+					vl = "%" + v + "%"
+				}
+				vals = append(vals, k, vl, v, vl, vl)
+
 			}
 		}
 		where := ""
