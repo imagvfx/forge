@@ -231,6 +231,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					exactSearch = true
 				}
 				k := kwd[:idx]
+				sub := ""
+				toks := strings.SplitN(k, ".", 2)
+				if len(toks) == 2 {
+					sub = toks[0]
+					k = toks[1]
+				}
 				v := kwd[idx+1:] // exclude colon or equal
 				// NOTE: The line with 'properties.val in (?)' is weird in a look, but it was the only query I can think of
 				// that checks empty 'user' properties when a user searches it. (eg. not assigned entries).
@@ -251,6 +257,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						)
 					)
 				`, eq, eq, eq)
+				if sub != "" {
+					q = fmt.Sprintf("(entries.path || '/%v' IN (SELECT path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id WHERE %v))", sub, q)
+				}
 				keys = append(keys, q)
 				vl := v
 				if !exactSearch {

@@ -102,6 +102,8 @@ var testSearches = []testSearch{
 	{path: "/", typ: "", query: "assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
 	{path: "/", typ: "", query: "assignee=", wantRes: []string{"/test/shot/cg/0010/mdl"}},
 	{path: "/", typ: "", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "ani.assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", typ: "", query: "mdl.assignee:admin", wantRes: []string{}},
 	{path: "", typ: "", query: "cg/ mdl", wantErr: errors.New("entry path not specified")},
 }
 
