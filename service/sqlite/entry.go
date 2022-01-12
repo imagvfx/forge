@@ -258,7 +258,11 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					)
 				`, eq, eq, eq)
 				if sub != "" {
-					q = fmt.Sprintf("(entries.path || '/%v' IN (SELECT path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id WHERE %v))", sub, q)
+					if sub == "(sub)" {
+						q = fmt.Sprintf("(entries.path IN (SELECT parents.path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id LEFT JOIN entries AS parents ON entries.parent_id=parents.id WHERE %v))", q)
+					} else {
+						q = fmt.Sprintf("(entries.path || '/%v' IN (SELECT path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id WHERE %v))", sub, q)
+					}
 				}
 				keys = append(keys, q)
 				vl := v

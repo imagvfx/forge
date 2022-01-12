@@ -75,11 +75,11 @@ type testProperty struct {
 }
 
 var testUpdateProps = []testProperty{
-	{path: "/test", k: "sup", t: "user", v: "admin@imagvfx.com"},
-	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: ""},
-	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: "not-exist@imagvfx.com", want: errors.New("user not found: not-exist@imagvfx.com")},
-	{path: "/test/shot/cg/0010/ani", k: "assignee", t: "user", v: "admin@imagvfx.com"},
-	{path: "/test/shot/cg/0010/lgt", k: "assignee", t: "user", v: "admin@imagvfx.com"},
+	{path: "/test", k: "sup", v: "admin@imagvfx.com"},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", v: ""},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "not-exist@imagvfx.com", want: errors.New("user not found: not-exist@imagvfx.com")},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "admin@imagvfx.com"},
+	{path: "/test/shot/cg/0010/lgt", k: "assignee", v: "admin@imagvfx.com"},
 }
 
 type testSearch struct {
@@ -104,6 +104,9 @@ var testSearches = []testSearch{
 	{path: "/", typ: "", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
 	{path: "/", typ: "", query: "ani.assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "", query: "mdl.assignee:admin", wantRes: []string{}},
+	{path: "/", typ: "shot", query: "(sub).assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", typ: "shot", query: "(sub).assignee=", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", typ: "shot", query: "(sub).assignee=xyz@imagvfx.com", wantRes: []string{}},
 	{path: "", typ: "", query: "cg/ mdl", wantErr: errors.New("entry path not specified")},
 }
 
