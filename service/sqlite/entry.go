@@ -173,8 +173,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			entries.path,
 			entry_types.name,
 			thumbnails.id
-		FROM properties
-		LEFT JOIN entries ON entries.id = properties.entry_id
+		FROM entries
+		LEFT JOIN properties ON entries.id = properties.entry_id
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
 		LEFT JOIN entry_types ON entries.type_id = entry_types.id
 		%s
@@ -280,7 +280,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		query := fmt.Sprintf(queryTmpl, where)
 		queries = append(queries, query)
 	}
-	rows, err := tx.QueryContext(ctx, strings.Join(queries, " INTERSECT "), vals...)
+	query := strings.Join(queries, " INTERSECT ")
+	rows, err := tx.QueryContext(ctx, query, vals...)
 	if err != nil {
 		return nil, err
 	}
