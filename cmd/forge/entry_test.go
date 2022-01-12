@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/imagvfx/forge"
@@ -107,7 +109,7 @@ var testSearches = []testSearch{
 	{path: "/", typ: "shot", query: "(sub).assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "shot", query: "(sub).assignee=", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "shot", query: "(sub).assignee=xyz@imagvfx.com", wantRes: []string{}},
-	{path: "", typ: "", query: "cg/ mdl", wantErr: errors.New("entry path not specified")},
+	{path: "", typ: "", query: "cg/ mdl", wantRes: []string{}, wantErr: errors.New("entry path not specified")},
 }
 
 func TestAddEntries(t *testing.T) {
@@ -147,22 +149,18 @@ func TestAddEntries(t *testing.T) {
 		}
 	}
 	for i, search := range testSearches {
-		wantMap := make(map[string]bool)
-		for _, path := range search.wantRes {
-			wantMap[path] = true
-		}
+		sort.Strings(search.wantRes)
 		ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
 		if !equalError(search.wantErr, err) {
 			t.Fatalf("search: %v: want err %q, got %q", i, errorString(search.wantErr), errorString(err))
 		}
+		got := make([]string, 0)
 		for _, e := range ents {
-			if !wantMap[e.Path] {
-				t.Fatalf("search: %v: got unexpected entry: %v", i, e.Path)
-			}
-			delete(wantMap, e.Path)
+			got = append(got, e.Path)
 		}
-		if len(wantMap) != 0 {
-			t.Fatalf("search: %v: got unmatched entries: %v", i, wantMap)
+		sort.Strings(got)
+		if !reflect.DeepEqual(got, search.wantRes) {
+			t.Fatalf("search: %v: got %q, want %q", i, got, search.wantRes)
 		}
 	}
 }
