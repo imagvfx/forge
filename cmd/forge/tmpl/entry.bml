@@ -345,7 +345,7 @@
 					<div id="infoUpdater" class="infoModifier nodisplay"> [
 						<div class="infoModifierTopBar" style="background-color:#E0EEEE;"> [
 							<div class="entryLabel" style=""> []
-							<div class="closeButton" style="background-color:#BDD;" onclick="hideFooter()"> [&#x2715]
+							<div class="closeButton" style="background-color:#BDD;"> [&#x2715]
 						]
 						<div style="display:flex;gap:0.5rem;padding:0.7rem;"> [
 							<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
@@ -364,7 +364,7 @@
 					<div id="infoAdder" class="infoModifier nodisplay"> [
 						<div class="infoModifierTopBar" style="background-color:#F5E0E0;"> [
 							<div class="entryLabel" style=""> []
-							<div class="closeButton" style="background-color:#ECC;" onclick="hideFooter()"> [&#x2715]
+							<div class="closeButton" style="background-color:#ECC;"> [&#x2715]
 						]
 						<div style="display:flex;gap:0.5rem;padding:0.7rem;background-color:inherit;"> [
 							<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
