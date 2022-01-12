@@ -152,7 +152,7 @@ func TestAddEntries(t *testing.T) {
 		sort.Strings(search.wantRes)
 		ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
 		if !equalError(search.wantErr, err) {
-			t.Fatalf("search: %v: want err %q, got %q", i, errorString(search.wantErr), errorString(err))
+			t.Fatalf("search: %v: got error %q, want %q", i, errorString(err), errorString(search.wantErr))
 		}
 		got := make([]string, 0)
 		for _, e := range ents {
