@@ -75,7 +75,7 @@
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 						{{$props := index $.EntryProperties $.Entry.Path}}
 						{{with $s := index $props "status"}}
-							<div class="statusDot statusLabeler" data-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
+							<div class="statusDot statusSelector statusLabeler" data-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
 						{{end}}
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
@@ -251,7 +251,7 @@
 									<div class="subEntryListFrom"> [
 										From
 										{{with $s := index $props "status"}}
-											<div class="statusDot statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
+											<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 										{{end}}
 										<a href="{{$parent}}"> [{{$parent}}]
 										({{len $subEntries}})

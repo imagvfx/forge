@@ -511,25 +511,27 @@ window.onload = function() {
 			continue
 		}
 		sel.onclick = function(event) {
-			let editMode = subEntArea.classList.contains("editMode");
-			if (!editMode) {
-				return;
-			}
-			let thisEnt = parentWithClass(sel, "subEntry");
+			let thisEnt = parentWithClass(sel, "entry");
 			let entPath = thisEnt.dataset.entryPath;
-			let selectedEnts = document.querySelectorAll(".subEntry.selected");
-			if (selectedEnts.length != 0) {
-				let inSel = false;
-				for (let ent of selectedEnts) {
-					if (entPath == ent.dataset.entryPath) {
-						inSel = true;
-						break;
-					}
-				}
-				if (!inSel) {
-					menu.classList.add("invisible");
-					printErrorStatus("entry not in selection: " + entPath);
+			if (thisEnt.classList.contains("subEntry")) {
+				let editMode = subEntArea.classList.contains("editMode");
+				if (!editMode) {
 					return;
+				}
+				let selectedEnts = document.querySelectorAll(".subEntry.selected");
+				if (selectedEnts.length != 0) {
+					let inSel = false;
+					for (let ent of selectedEnts) {
+						if (entPath == ent.dataset.entryPath) {
+							inSel = true;
+							break;
+						}
+					}
+					if (!inSel) {
+						menu.classList.add("invisible");
+						printErrorStatus("entry not in selection: " + entPath);
+						return;
+					}
 				}
 			}
 			if (currentStatusSel == sel && !menu.classList.contains("invisible")) {

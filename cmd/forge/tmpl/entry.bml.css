@@ -404,8 +404,12 @@
 	align-self: center;
 }
 
-.subEntryArea.editMode .statusDot {
+.statusSelector {
 	cursor: pointer;
+}
+
+.subEntryArea:not(.editMode) .statusDot {
+	cursor: default;
 }
 
 {{range $entType, $status := $.PossibleStatus}}
