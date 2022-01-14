@@ -10,15 +10,17 @@
 		{{template "nav.bml" $}}
 		<div class="main"> [
 			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
-				<!-- Pinned Path -->
-				<div style="display:flex;padding:1.5rem;align-items:center;"> [
-					<div style="font-size:1rem;color:#555;margin-right:0.5rem;"> [Pinned]
-					<div id="pinnedPathDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
-				]
-				<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
-					{{range $i, $p := $.UserSetting.PinnedPaths}}
-					<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-link="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
-					{{end}}
+				<div style="position:sticky;top:0"> [
+					<!-- Pinned Path -->
+					<div style="display:flex;padding:1.5rem;align-items:center;"> [
+						<div style="font-size:1rem;color:#555;margin-right:0.5rem;"> [Pinned]
+						<div id="pinnedPathDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
+					]
+					<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
+						{{range $i, $p := $.UserSetting.PinnedPaths}}
+						<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-link="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
+						{{end}}
+					]
 				]
 			]
 			<div class="right"> [
