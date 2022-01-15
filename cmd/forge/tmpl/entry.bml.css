@@ -236,7 +236,12 @@
 }
 
 .subEntryListFrom {
-	margin: 1.3rem 0;
+	position: sticky;
+	top: 0;
+	border-bottom: 1px dashed #DDD;
+	padding: 0.5rem 0;
+	background-color: #FAFAFA;
+	z-index: 10;
 	font-size: 0.83rem;
 	font-weight: bold;
 	display: flex;
@@ -259,6 +264,7 @@
 .subEntryList {
 	display: flex;
 	flex-direction: column;
+	margin: 1.5rem 0;
 	border: 1px solid #DDDDDD;
 	border-radius: 4px;
 	background-color: #DDDDDD;

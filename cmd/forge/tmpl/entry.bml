@@ -241,12 +241,9 @@
 							]
 						]
 						{{end}}
-						{{$j := 0}}
 						{{range $parent, $subEntries := $entsByParent}}
 							{{if $subEntries}}
-								{{if $j}}
-								<div style="height:1rem"> []
-								{{end}}
+							<div style="margin-bottom:3rem;"> [
 								{{if $.ResultsFromSearch}}
 									{{$ent := index $.ParentEntries $parent}}
 									{{$props := index $.EntryProperties $parent}}
@@ -336,8 +333,8 @@
 									]
 									{{end}}
 								]
-							{{$j = inc $j}}
 							{{end}}
+							]
 						{{end}}
 					]
 				{{$i = inc $i}}
