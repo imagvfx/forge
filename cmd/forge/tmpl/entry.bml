@@ -252,7 +252,7 @@
 										{{with $s := index $props "status"}}
 											<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 										{{end}}
-										<a href="{{$parent}}"> [{{$parent}}]
+										<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
 										({{len $subEntries}})
 									]
 								{{end}}
@@ -270,12 +270,12 @@
 											{{with $s := index $props "status"}}
 											<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 											{{end}}
-											<a class="subEntryName" href="{{$ent.Path}}" style="color:black;font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
+											<a class="subEntryName" href="{{$ent.Path}}" style="font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
 										]
 										<div class="subEntryBottom"> [
 											<div class="subEntryBottomLeft"> [
 												{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-												<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;color:black;text-decoration:none;" href="{{$ent.Path}}"> [
+												<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;text-decoration:none;" href="{{$ent.Path}}"> [
 													<div class="thumbnailContainer"> [
 														<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
 													]

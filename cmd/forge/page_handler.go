@@ -49,7 +49,7 @@ var pageHandlerFuncs = template.FuncMap{
 		for _, p := range ps {
 			p = template.HTMLEscapeString("/" + p)
 			link += p
-			full += fmt.Sprintf(`<a href="%v">%v</a>`, link, p)
+			full += fmt.Sprintf(`<a class="pathLink" href="%v">%v</a>`, link, p)
 		}
 		return template.HTML(full), nil
 	},

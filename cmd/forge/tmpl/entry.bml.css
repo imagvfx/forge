@@ -386,6 +386,10 @@
 	visibility: hidden;
 }
 
+.pathLink {
+	color: #44A;
+}
+
 .pathText {
 	word-break: break-word;
 }
