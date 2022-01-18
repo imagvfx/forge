@@ -191,6 +191,7 @@
 .infoTitle {
 	flex: 1;
 	display: flex;
+	align-items: center;
 	font-size: 0.75rem;
 	color: #AAAAAA;
 	padding: 1px;
@@ -588,6 +589,18 @@
 
 .mainEntryInfo:not(:hover) .infoContextMenuLoader {
 	visibility: hidden;
+}
+
+.hiddenPropertyIcon {
+	width: 9px;
+	height: 9px;
+	padding: 1px 2px 0 0;
+	background-image: url("/asset/moon.svg");
+	background-size: contain;
+	background-repeat: no-repeat;
+	transform: rotate(30deg);
+	background-origin: content-box;
+	filter: invert(60%) sepia(97%) hue-rotate(180deg) opacity(70%);
 }
 
 .infoContextMenuLoader:hover {

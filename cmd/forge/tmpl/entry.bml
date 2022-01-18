@@ -169,6 +169,7 @@
 									<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 										<div class="infoTop"> [
 											<div class="infoTitle"> [
+												<div class="hiddenPropertyIcon"> []
 												<div> [{{$p.Name}}]
 												<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 											]
