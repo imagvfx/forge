@@ -13,6 +13,15 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt.innerText).then(succeeded, failed);
 			return;
 		}
+		let expander = event.target.closest(".propertyExpander");
+		if (expander) {
+			if (expander.dataset.expand != "1") {
+				expander.dataset.expand = "1";
+			} else {
+				expander.dataset.expand = "";
+			}
+			return;
+		}
 		let hide = false;
 		if (event.target.closest(".statusDot") == null) {
 			let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");

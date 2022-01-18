@@ -501,6 +501,7 @@
 .infoCategoryToggle {
 	width: fit-content;
 	display: flex;
+	align-items: stretch;
 	border-radius: 2px;
 	cursor: pointer;
 }
@@ -550,6 +551,21 @@
 
 .infoAdder:hover {
 	color: #555;
+}
+
+.propertyExpander {
+	width: 5px;
+	padding: 0.3rem;
+	background-image: url("/asset/down-arrow.svg");
+	background-size: contain;
+	background-origin: content-box;
+	background-repeat: no-repeat;
+	background-position-y: center;
+	filter: opacity(40%);
+}
+
+.propertyExpander[data-expand="1"] {
+	background-image: url("/asset/up-arrow.svg");
 }
 
 .mainEntryInfo {
