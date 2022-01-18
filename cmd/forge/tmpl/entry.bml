@@ -127,7 +127,7 @@
 								]
 							]
 						]
-						<div class="mainEntryInfoContainer" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden=""> [
+						<div class="mainEntryInfoContainer" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [

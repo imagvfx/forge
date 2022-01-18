@@ -21,6 +21,21 @@ window.onload = function() {
 			} else {
 				cont.dataset.showHidden = "";
 			}
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("update_entry_page_show_hidden_property", "1");
+			formData.append("show_hidden", cont.dataset.showHidden);
+			req.open("post", "/api/update-user-setting");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+			}
+			req.send(formData);
 			return;
 		}
 		let hide = false;

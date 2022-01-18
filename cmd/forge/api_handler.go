@@ -615,6 +615,14 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_entry_page_show_hidden_property") != "" {
+		showHidden := r.FormValue("show_hidden")
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "entry_page_show_hidden_property", showHidden)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_filter") != "" {
 		entryType := r.FormValue("entry_page_entry_type")
 		filter := r.FormValue("entry_page_property_filter")
