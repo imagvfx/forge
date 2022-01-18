@@ -413,7 +413,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			return err
 		}
 		for _, d := range defaults {
-			if d.Category == "property" {
+			if d.Category == "property" && !strings.HasPrefix(d.Name, ".") {
 				if defaultProp[typ] == nil {
 					defaultProp[typ] = make(map[string]bool)
 				}
@@ -461,6 +461,17 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	for _, props := range hiddenProps {
 		sortProps(props)
 	}
+	mainEntryVisibleProp := make(map[string]bool)
+	for _, p := range propFilters[ent.Type] {
+		mainEntryVisibleProp[p] = true
+	}
+	mainEntryHiddenProps := make([]string, 0)
+	for _, p := range entProps[path] {
+		if !mainEntryVisibleProp[p.Name] {
+			mainEntryHiddenProps = append(mainEntryHiddenProps, p.Name)
+		}
+	}
+	sortProps(mainEntryHiddenProps)
 	// Get grand sub entries if needed.
 	grandSubEntries := make(map[string][]*forge.Entry)
 	showGrandSub := make(map[string]bool)
@@ -580,53 +591,55 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		return err
 	}
 	recipe := struct {
-		User                     string
-		UserSetting              *forge.UserSetting
-		Entry                    *forge.Entry
-		ParentEntries            map[string]*forge.Entry
-		EntryPinned              bool
-		SearchEntryType          string
-		SearchQuery              string
-		ResultsFromSearch        bool
-		SubEntriesByTypeByParent map[string]map[string][]*forge.Entry
-		EntryProperties          map[string]map[string]*forge.Property
-		ShowGrandSub             map[string]bool
-		GrandSubEntries          map[string][]*forge.Entry
-		PropertyTypes            []string
-		HiddenProperties         map[string][]string
-		PropertyFilters          map[string][]string
-		PossibleStatus           map[string][]forge.Status
-		Properties               []*forge.Property
-		Environs                 []*forge.Property
-		AccessorTypes            []string
-		AccessControls           []*forge.AccessControl
-		ThumbnailPath            map[string]string
-		BaseEntryTypes           []string
-		AllUsers                 []*forge.User
+		User                      string
+		UserSetting               *forge.UserSetting
+		Entry                     *forge.Entry
+		ParentEntries             map[string]*forge.Entry
+		EntryPinned               bool
+		SearchEntryType           string
+		SearchQuery               string
+		ResultsFromSearch         bool
+		SubEntriesByTypeByParent  map[string]map[string][]*forge.Entry
+		EntryProperties           map[string]map[string]*forge.Property
+		ShowGrandSub              map[string]bool
+		GrandSubEntries           map[string][]*forge.Entry
+		PropertyTypes             []string
+		MainEntryHiddenProperties []string
+		HiddenProperties          map[string][]string
+		PropertyFilters           map[string][]string
+		PossibleStatus            map[string][]forge.Status
+		Properties                []*forge.Property
+		Environs                  []*forge.Property
+		AccessorTypes             []string
+		AccessControls            []*forge.AccessControl
+		ThumbnailPath             map[string]string
+		BaseEntryTypes            []string
+		AllUsers                  []*forge.User
 	}{
-		User:                     user,
-		UserSetting:              setting,
-		Entry:                    ent,
-		ParentEntries:            parentEnts,
-		EntryPinned:              entryPinned,
-		SearchEntryType:          searchEntryType,
-		SearchQuery:              searchQuery,
-		ResultsFromSearch:        resultsFromSearch,
-		SubEntriesByTypeByParent: subEntsByTypeByParent,
-		EntryProperties:          entProps,
-		ShowGrandSub:             showGrandSub,
-		GrandSubEntries:          grandSubEntries,
-		PropertyTypes:            forge.PropertyTypes(),
-		HiddenProperties:         hiddenProps,
-		PropertyFilters:          propFilters,
-		PossibleStatus:           possibleStatus,
-		Properties:               props,
-		Environs:                 envs,
-		AccessorTypes:            forge.AccessorTypes(),
-		AccessControls:           acs,
-		ThumbnailPath:            thumbnailPath,
-		BaseEntryTypes:           baseTypes,
-		AllUsers:                 allUsers,
+		User:                      user,
+		UserSetting:               setting,
+		Entry:                     ent,
+		ParentEntries:             parentEnts,
+		EntryPinned:               entryPinned,
+		SearchEntryType:           searchEntryType,
+		SearchQuery:               searchQuery,
+		ResultsFromSearch:         resultsFromSearch,
+		SubEntriesByTypeByParent:  subEntsByTypeByParent,
+		EntryProperties:           entProps,
+		ShowGrandSub:              showGrandSub,
+		GrandSubEntries:           grandSubEntries,
+		PropertyTypes:             forge.PropertyTypes(),
+		MainEntryHiddenProperties: mainEntryHiddenProps,
+		HiddenProperties:          hiddenProps,
+		PropertyFilters:           propFilters,
+		PossibleStatus:            possibleStatus,
+		Properties:                props,
+		Environs:                  envs,
+		AccessorTypes:             forge.AccessorTypes(),
+		AccessControls:            acs,
+		ThumbnailPath:             thumbnailPath,
+		BaseEntryTypes:            baseTypes,
+		AllUsers:                  allUsers,
 	}
 	err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 	if err != nil {

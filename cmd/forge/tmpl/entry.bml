@@ -163,8 +163,7 @@
 									]
 									{{end}}
 								{{end}}
-								{{$hiddenProps := index $.HiddenProperties $.Entry.Type}}
-								{{range $name := $hiddenProps}}
+								{{range $name := $.MainEntryHiddenProperties}}
 									{{with $p := index $props $name}}
 									<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 										<div class="infoTop"> [
