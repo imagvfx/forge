@@ -15,10 +15,11 @@ window.onload = function() {
 		}
 		let expander = event.target.closest(".propertyExpander");
 		if (expander) {
-			if (expander.dataset.expand != "1") {
-				expander.dataset.expand = "1";
+			let cont = document.querySelector(".mainEntryInfoContainer");
+			if (cont.dataset.showHidden == "") {
+				cont.dataset.showHidden = "1";
 			} else {
-				expander.dataset.expand = "";
+				cont.dataset.showHidden = "";
 			}
 			return;
 		}

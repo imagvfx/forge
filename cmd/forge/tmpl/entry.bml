@@ -127,7 +127,7 @@
 								]
 							]
 						]
-						<div class="mainEntryInfoContainer" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}"> [
+						<div class="mainEntryInfoContainer" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden=""> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
@@ -150,6 +150,23 @@
 								{{range $name := $propFilters}}
 									{{with $p := index $props $name}}
 									<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+										<div class="infoTop"> [
+											<div class="infoTitle"> [
+												<div> [{{$p.Name}}]
+												<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+											]
+											<div style="width:1rem;"> []
+											<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+										]
+										<div style="width:1rem"> []
+										<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
+									]
+									{{end}}
+								{{end}}
+								{{$hiddenProps := index $.HiddenProperties $.Entry.Type}}
+								{{range $name := $hiddenProps}}
+									{{with $p := index $props $name}}
+									<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 										<div class="infoTop"> [
 											<div class="infoTitle"> [
 												<div> [{{$p.Name}}]
@@ -231,7 +248,10 @@
 								{{$desc := sortDesc $sortProp}}
 								<select name="entry_page_sort_property" style="margin-right:0.5rem;width:6rem;"> [
 									<option value=""> [(name)]
-								{{range $p := index $.DefaultProperties $entType}}
+								{{range $p := index $.PropertyFilters $entType}}
+									<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
+								{{end}}
+								{{range $p := index $.HiddenProperties $entType}}
 									<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
 								{{end}}
 								]

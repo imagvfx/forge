@@ -385,7 +385,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 	}
 	// Determine property filter for entry types
-	defaultProps := make(map[string][]string)
+	defaultProp := make(map[string]map[string]bool)
 	propFilters := make(map[string][]string)
 	entTypes := []string{ent.Type}
 	for typ := range subEntsByTypeByParent {
@@ -393,14 +393,31 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			entTypes = append(entTypes, typ)
 		}
 	}
+	sortProps := func(props []string) {
+		sort.Slice(props, func(i, j int) bool {
+			a := props[i]
+			b := props[j]
+			if !strings.HasPrefix(a, ".") && strings.HasPrefix(b, ".") {
+				return true
+			}
+			if strings.HasPrefix(a, ".") && !strings.HasPrefix(b, ".") {
+				return false
+			}
+			cmp := strings.Compare(a, b)
+			return cmp <= 0
+		})
+	}
 	for _, typ := range entTypes {
 		defaults, err := h.server.Defaults(ctx, typ)
 		if err != nil {
 			return err
 		}
 		for _, d := range defaults {
-			if d.Category == "property" && !strings.HasPrefix(d.Name, ".") {
-				defaultProps[typ] = append(defaultProps[typ], d.Name)
+			if d.Category == "property" {
+				if defaultProp[typ] == nil {
+					defaultProp[typ] = make(map[string]bool)
+				}
+				defaultProp[typ][d.Name] = true
 			}
 		}
 		// user property filter
@@ -417,10 +434,32 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				return err
 			}
 			// neither filter exists
-			propFilters[typ] = defaultProps[typ]
+			props := make([]string, 0)
+			for p := range defaultProp[typ] {
+				if !strings.HasPrefix(p, ".") {
+					props = append(props, p)
+				}
+			}
+			sortProps(props)
+			propFilters[typ] = props
 			continue
 		}
 		propFilters[typ] = strings.Fields(g.Value)
+	}
+	for typ := range propFilters {
+		for _, p := range propFilters[typ] {
+			delete(defaultProp[typ], p)
+		}
+	}
+	hiddenProps := make(map[string][]string)
+	for typ, prop := range defaultProp {
+		hiddenProps[typ] = make([]string, 0)
+		for p := range prop {
+			hiddenProps[typ] = append(hiddenProps[typ], p)
+		}
+	}
+	for _, props := range hiddenProps {
+		sortProps(props)
 	}
 	// Get grand sub entries if needed.
 	grandSubEntries := make(map[string][]*forge.Entry)
@@ -554,7 +593,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ShowGrandSub             map[string]bool
 		GrandSubEntries          map[string][]*forge.Entry
 		PropertyTypes            []string
-		DefaultProperties        map[string][]string
+		HiddenProperties         map[string][]string
 		PropertyFilters          map[string][]string
 		PossibleStatus           map[string][]forge.Status
 		Properties               []*forge.Property
@@ -578,7 +617,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ShowGrandSub:             showGrandSub,
 		GrandSubEntries:          grandSubEntries,
 		PropertyTypes:            forge.PropertyTypes(),
-		DefaultProperties:        defaultProps,
+		HiddenProperties:         hiddenProps,
 		PropertyFilters:          propFilters,
 		PossibleStatus:           possibleStatus,
 		Properties:               props,

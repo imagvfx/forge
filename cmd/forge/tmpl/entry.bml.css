@@ -538,6 +538,10 @@
 	display: none;
 }
 
+.mainEntryInfoContainer[data-selected-category="property"]:not([data-show-hidden="1"]) .mainEntryInfo.hiddenProperty {
+	display: none;
+}
+
 .infoSelector {
 	padding: 0.3rem;
 	border-radius: 2px 0 0 2px;
@@ -564,7 +568,7 @@
 	filter: opacity(40%);
 }
 
-.propertyExpander[data-expand="1"] {
+.mainEntryInfoContainer[data-show-hidden="1"] .propertyExpander {
 	background-image: url("/asset/up-arrow.svg");
 }
 
