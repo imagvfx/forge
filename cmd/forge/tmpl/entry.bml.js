@@ -888,7 +888,7 @@ window.onload = function() {
 				return;
 			}
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
-			infoHistory.href = "/logs?path=" + ent.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
+			infoHistory.href = "/logs?path=" + info.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
 			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
 			infoDelete.onclick = function(ev) {
 				ev.stopPropagation();
