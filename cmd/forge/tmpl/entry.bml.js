@@ -165,7 +165,8 @@ window.onload = function() {
 					if (p == pp) {
 						continue;
 					}
-					if (event.clientY < p.offsetTop + p.offsetHeight/2) {
+					let rect = p.getBoundingClientRect();
+					if (event.clientY < rect.top + rect.height/2) {
 						p.parentNode.insertBefore(pp, p);
 						break;
 					}
