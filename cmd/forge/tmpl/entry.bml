@@ -360,7 +360,7 @@
 				{{$i = inc $i}}
 				{{end}}
 				]
-				<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
+				<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:1;"> [
 					<div id="infoUpdater" class="infoModifier nodisplay"> [
 						<div class="infoModifierTopBar" style="background-color:#E0EEEE;"> [
 							<div class="entryLabel" style=""> []
