@@ -324,6 +324,7 @@
 	border-radius: 4px;
 	background-color: #DDDDDD;
 	gap: 1px;
+	overflow: hidden;
 }
 
 .subEntryArea.editMode .subEntryList {
@@ -355,16 +356,6 @@
 .subEntryArea.editMode .subEntry.selected {
 	outline: 1px solid #88AADD;
 	background-color: #EEFAFF;
-}
-
-.subEntry:first-child {
-	border-top-left-radius: 3px;
-	border-top-right-radius: 3px;
-}
-
-.subEntry:last-child {
-	border-bottom-left-radius: 3px;
-	border-bottom-right-radius: 3px;
 }
 
 .subEntryTop {
