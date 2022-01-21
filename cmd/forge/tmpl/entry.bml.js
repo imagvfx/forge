@@ -1537,7 +1537,8 @@ for (let i = 0; i < coll.length; i++) {
 
 function openDeleteEntryDialog(path) {
 	// The dialog itself is not hidden but the parent sets the visibility.
-	let dialogBg = document.getElementById("deleteEntryDialogBackground");
+	let bg = document.querySelector("#deleteEntryDialogBackground");
+	let dlg = document.querySelector("#deleteEntryDialog");
 	let numSubEntries = -1;
 	let req = new XMLHttpRequest();
 	let formData = new FormData();
@@ -1559,22 +1560,22 @@ function openDeleteEntryDialog(path) {
 		}
 		numSubEntries = j.Msg;
 		if (numSubEntries != 0) {
-			document.getElementById("deleteEntryDialogNoSub").classList.add("nodisplay");
-			document.getElementById("deleteEntryDialogHasSub").classList.remove("nodisplay");
-			document.getElementById("deleteEntryDialogTotalSub").innerText = String(numSubEntries);
+			document.querySelector("#deleteEntryDialogNoSub").classList.add("nodisplay");
+			document.querySelector("#deleteEntryDialogHasSub").classList.remove("nodisplay");
+			document.querySelector("#deleteEntryDialogTotalSub").innerText = String(numSubEntries);
 		} else {
-			document.getElementById("deleteEntryDialogNoSub").classList.remove("nodisplay");
-			document.getElementById("deleteEntryDialogHasSub").classList.add("nodisplay");
-			document.getElementById("deleteEntryDialogTotalSub").innerText = "";
+			document.querySelector("#deleteEntryDialogNoSub").classList.remove("nodisplay");
+			document.querySelector("#deleteEntryDialogHasSub").classList.add("nodisplay");
+			document.querySelector("#deleteEntryDialogTotalSub").innerText = "";
 		}
-		document.getElementById("deleteEntryDialogEntry").innerText = path;
-		dialogBg.classList.remove("invisible");
+		document.querySelector("#deleteEntryDialogEntry").innerText = path;
+		bg.classList.remove("invisible");
 	}
 	// cancel or confirm delete
-	document.getElementById("cancelDeleteEntryButton").onclick = function() {
-		dialogBg.classList.add("invisible");
+	dlg.querySelector(".cancelButton").onclick = function() {
+		bg.classList.add("invisible");
 	}
-	document.getElementById("confirmDeleteEntryButton").onclick = function() {
+	document.querySelector(".confirmButton").onclick = function() {
 		let req = new XMLHttpRequest();
 		let formData = new FormData();
 		formData.append("path", path);
@@ -1585,12 +1586,12 @@ function openDeleteEntryDialog(path) {
 		req.send(formData);
 		req.onerror = function(err) {
 			printErrorStatus("network error occurred. please check whether the server is down.");
-			dialogBg.classList.add("invisible");
+			bg.classList.add("invisible");
 		}
 		req.onload = function() {
 			if (req.status != 200) {
 				printErrorStatus(req.responseText);
-				dialogBg.classList.add("invisible");
+				bg.classList.add("invisible");
 				return;
 			}
 			let toks = path.split("/");

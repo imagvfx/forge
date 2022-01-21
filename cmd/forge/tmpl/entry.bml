@@ -422,17 +422,17 @@
 				{{end}}
 			]
 		]
-		<div id="deleteEntryDialogBackground" class="invisible"> [
-			<div id="deleteEntryDialog"> [
-				<div id="deleteEntryDialogTitle"> [Delete Entry]
-				<div id="deleteEntryDialogContent"> [
+		<div id="deleteEntryDialogBackground" class="dialogBackground invisible"> [
+			<div id="deleteEntryDialog" class="dialog"> [
+				<div class="title"> [Delete Entry]
+				<div class="content"> [
 					<div id="deleteEntryDialogEntry" style="color:#A22;margin-bottom:0.8rem;"> []
 					<div id="deleteEntryDialogNoSub"> [It does not have sub entries.]
 					<div id="deleteEntryDialogHasSub"> [It will also delete <div id="deleteEntryDialogTotalSub" style="display:inline-block;color:#A22;"> [] sub entries.]
 				]
-				<div style="padding:0.3rem;border-top:1px solid #CCC;border-radius:0 0 2px 2px;background-color:#EEE;display:flex;justify-content:right;gap:0.3rem;"> [
-					<div id="confirmDeleteEntryButton" class="deleteEntryDialogButton" > [Delete]
-					<div id="cancelDeleteEntryButton" class="deleteEntryDialogButton"> [Cancel]
+				<div class="buttonBar"> [
+					<div class="confirmButton button" > [Delete]
+					<div class="cancelButton button"> [Cancel]
 				]
 			]
 		]
