@@ -278,11 +278,12 @@ window.onload = function() {
 					if (s == qs) {
 						continue;
 					}
-					if (event.clientY < s.offsetTop || s.offsetTop + s.offsetHeight <= event.clientY) {
+					let rect = s.getBoundingClientRect();
+					if (event.clientY < rect.top || rect.top + rect.height <= event.clientY) {
 						continue;
 					}
-					if (event.clientX < s.offsetLeft + s.offsetWidth) {
-						if (event.clientX < s.offsetLeft + s.offsetWidth/2) {
+					if (event.clientX < rect.left + rect.width) {
+						if (event.clientX < rect.left + rect.width/2) {
 							s.parentNode.insertBefore(qs, s);
 							break;
 						}
