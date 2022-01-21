@@ -1581,6 +1581,9 @@ function openDeleteEntryDialog(path) {
 			let toks = path.split("/");
 			toks.pop();
 			let parent = toks.join("/");
+			if (parent == "") {
+				parent = "/";
+			}
 			window.location.href = parent;
 		}
 	}
