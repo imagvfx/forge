@@ -751,6 +751,83 @@
 	background-color: #F0F0F0;
 }
 
+.dialogBackground {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(255,255,255,0.4);
+}
+
+.dialog {
+	display: flex;
+	flex-direction: column;
+	border-radius: 3px;
+	width: 24rem;
+	min-height: 16rem;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 30px rgba(128,128,128,0.3);
+	background-color: #F8F8F8;
+}
+
+.dialog .title {
+	font-size: 1.1rem;
+	height: 1.3rem;
+	padding: 0.5rem;
+	border-radius: 2px 2px 0 0;
+	background-color: #A22;
+	color: white;"
+}
+
+.dialog .content {
+	flex: 1;
+	padding: 1rem;
+	background-color: #F8F8F8;
+	color: #222;
+}
+
+.dialog .buttonBar {
+	padding: 0.3rem;
+	border-top: 1px solid #CCC;
+	border-radius: 0 0 2px 2px;
+	background-color: #EEE;
+	display: flex;
+	justify-content: right;
+	gap: 0.3rem;
+}
+
+.dialog .button {
+	height: 2rem;
+	width: 4.5rem;
+	border: 1px solid #AAA;
+	border-radius: 2px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 0.85rem;
+	color: #222;
+	cursor: pointer;
+}
+
+.dialog .confirmButton {
+	background-color: #F8F4F4;
+	color:#A22;
+}
+
+.dialog .confirmButton:hover {
+	background-color: #F8E0E0;
+}
+
+.dialog .cancelButton {
+	background-color: #F8F8F8;
+}
+
+.dialog .cancelButton:hover {
+	background-color: #F0F0F0;
+}
+
 .assigneeInput {
 	width: 96px;
 	box-sizing: border-box;

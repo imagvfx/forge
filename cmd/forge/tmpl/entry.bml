@@ -402,7 +402,7 @@
 				]
 				<div id="infoContextMenu" class="invisible" style="position:absolute;display:flex;flex-direction:column;width:4rem;padding:0.3rem 0.6rem;gap:0.3rem;border:1px solid #AAA;border-radius:2px;background-color:#F4F4F4;font-size:0.75rem;"> [
 					<a class="infoHistory" style="color:black;"> [History]
-					<a class="infoDelete nodisplay" style="color:#A22;cursor:pointer;"> [Delete <!-- temporarily hidden -->]
+					<a class="infoDelete" style="color:#A22;cursor:pointer;"> [Delete]
 				]
 				<div id="userAutoCompleteMenu" class="invisible"> []
 				{{range $entType, $ps := $.PossibleStatus}}
@@ -433,6 +433,16 @@
 				<div style="padding:0.3rem;border-top:1px solid #CCC;border-radius:0 0 2px 2px;background-color:#EEE;display:flex;justify-content:right;gap:0.3rem;"> [
 					<div id="confirmDeleteEntryButton" class="deleteEntryDialogButton" > [Delete]
 					<div id="cancelDeleteEntryButton" class="deleteEntryDialogButton"> [Cancel]
+				]
+			]
+		]
+		<div id="deleteInfoDialogBackground" class="dialogBackground invisible"> [
+			<div id="deleteInfoDialog" class="dialog"> [
+				<div class="title"> [<!--Delete ... -->]
+				<div class="content"> [<!-- Do you really want to delete ...? -->]
+				<div class="buttonBar"> [
+					<div class="confirmButton button"> [Delete]
+					<div class="cancelButton button"> [Cancel]
 				]
 			]
 		]

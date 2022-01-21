@@ -891,24 +891,39 @@ window.onload = function() {
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
 			infoHistory.href = "/logs?path=" + info.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
 			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
+			if (info.dataset.category == "property") {
+				infoDelete.classList.add("nodisplay");
+			}
 			infoDelete.onclick = function(ev) {
-				ev.stopPropagation();
 				ev.preventDefault();
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
-				formData.append("path", info.dataset.entry);
-				formData.append("name", info.dataset.infoName);
-				req.open("post", "/api/delete-" + info.dataset.infoType);
-				req.send(formData);
-				req.onload = function() {
-					if (req.status == 200) {
-						location.reload();
-					} else {
-						printErrorStatus(req.responseText);
-					}
+				let dlg = document.querySelector("#deleteInfoDialog");
+				let ctg = info.dataset.category;
+				dlg.querySelector(".title").innerText = "Delete " + ctg.charAt(0).toUpperCase() + ctg.substring(1);
+				dlg.querySelector(".content").innerText = "Do you really want to delete '" + info.dataset.name + "' " + info.dataset.category + "?"
+				let bg = document.querySelector("#deleteInfoDialogBackground");
+				bg.classList.remove("invisible");
+				let cancelBtn = dlg.querySelector(".cancelButton");
+				cancelBtn.onclick = function() {
+					bg.classList.add("invisible");
 				}
-				req.onerror = function(err) {
-					printErrorStatus("network error occurred. please check whether the server is down.");
+				let confirmBtn = dlg.querySelector(".confirmButton");
+				confirmBtn.onclick = function() {
+					let req = new XMLHttpRequest();
+					let formData = new FormData();
+					formData.append("path", info.dataset.entryPath);
+					formData.append("name", info.dataset.name);
+					req.open("post", "/api/delete-" + info.dataset.category);
+					req.send(formData);
+					req.onload = function() {
+						if (req.status == 200) {
+							location.reload();
+						} else {
+							printErrorStatus(req.responseText);
+						}
+					}
+					req.onerror = function(err) {
+						printErrorStatus("network error occurred. please check whether the server is down.");
+					}
 				}
 			}
 			let x = loader.offsetLeft;
