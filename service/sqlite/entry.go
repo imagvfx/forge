@@ -167,26 +167,13 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		keywords = append(keywords, "")
 	}
 	queries := make([]string, 0)
-	queryTmpl := `
-		SELECT
-			entries.id,
-			entries.path,
-			entry_types.name,
-			thumbnails.id
-		FROM entries
-		LEFT JOIN properties ON entries.id = properties.entry_id
-		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
-		LEFT JOIN entry_types ON entries.type_id = entry_types.id
-		%s
-		GROUP BY entries.id
-	`
 	// vals will contain info for entire queries.
-	vals := make([]interface{}, 0)
+	vals := []interface{}{
+		search.SearchRoot + `/%`, // see queryTmpl
+	}
 	for _, kwd := range keywords {
 		keys := make([]string, 0)
 		// redundant, but needed in every loop for INTERSECT
-		keys = append(keys, "entries.path LIKE ?")
-		vals = append(vals, search.SearchRoot+`/%`)
 		if search.EntryType != "" {
 			keys = append(keys, "entry_types.name=?")
 			vals = append(vals, search.EntryType)
@@ -287,10 +274,25 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		if len(keys) != 0 {
 			where = "WHERE " + strings.Join(keys, " AND ")
 		}
-		query := fmt.Sprintf(queryTmpl, where)
+		query := fmt.Sprintf(`
+			SELECT entries.id FROM entries
+			LEFT JOIN properties ON entries.id=properties.entry_id
+			%v
+		`, where)
 		queries = append(queries, query)
 	}
-	query := strings.Join(queries, " INTERSECT ")
+	queryTmpl := `
+		SELECT
+			entries.id,
+			entries.path,
+			entry_types.name,
+			thumbnails.id
+		FROM entries
+		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
+		LEFT JOIN entry_types ON entries.type_id = entry_types.id
+		WHERE  entries.path LIKE ? AND entries.id IN (%s)
+	`
+	query := fmt.Sprintf(queryTmpl, strings.Join(queries, "INTERSECT"))
 	rows, err := tx.QueryContext(ctx, query, vals...)
 	if err != nil {
 		return nil, err
