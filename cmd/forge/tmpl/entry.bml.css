@@ -322,14 +322,19 @@
 	margin: 1.5rem 0;
 	border: 1px solid #DDDDDD;
 	border-radius: 4px;
-	background-color: #DDDDDD;
+	background-color: #F4F4F4;
 	gap: 1px;
 	overflow: hidden;
+	flex-wrap: wrap;
+}
+
+.subEntryList[data-view-mode="thumbnail"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 }
 
 .subEntryArea.editMode .subEntryList {
 	border: 1px solid #D0D0D0;
-	background-color: #D0D0D0;
 }
 
 .subEntry {
@@ -339,6 +344,11 @@
 	gap: 0.6rem;
 	padding: 0.6rem 0.6rem 0.9rem 0.6rem;
 	background-color: #FAFAFA;
+	outline: 1px solid #DDD;
+}
+
+.subEntryArea.editMode .subEntry {
+	outline: 1px solid #D0D0D0;
 }
 
 .subEntryArea.editMode .subEntry {
@@ -379,6 +389,7 @@
 	gap: 1.2rem;
 	display: flex;
 	align-items: stretch;
+	justify-content: center;
 	color: black;
 }
 
@@ -391,6 +402,10 @@
 	display:flex;
 	flex-wrap:wrap;
 	gap:1rem;
+}
+
+.subEntryList[data-view-mode="thumbnail"] .subEntryProperties {
+	display:none;
 }
 
 .subEntryInfo {

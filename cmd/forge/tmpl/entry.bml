@@ -263,7 +263,7 @@
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 							{{if $subEntries}}
-							<div style="margin-bottom:3rem;"> [
+							<div style="margin-bottom:3rem"> [
 								{{if $.ResultsFromSearch}}
 									{{$ent := index $.ParentEntries $parent}}
 									{{$props := index $.EntryProperties $parent}}
@@ -277,7 +277,7 @@
 									]
 								{{end}}
 								<!-- Sub Entries -->
-								<div class="subEntryList"> [
+								<div class="subEntryList" data-view-mode=""> [
 									{{$propFilters := index $.PropertyFilters $entType}}
 									{{range $k, $ent := $subEntries}}
 									{{$props := index $.EntryProperties $ent.Path}}
