@@ -293,6 +293,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		WHERE  entries.path LIKE ? AND entries.id IN (%s)
 	`
 	query := fmt.Sprintf(queryTmpl, strings.Join(queries, "INTERSECT"))
+	valNeeds := strings.Count(query, "?")
+	if len(vals) != valNeeds {
+		return nil, fmt.Errorf("query doesn't get exact amount of values: got %v, want %v", len(vals), valNeeds)
+	}
 	rows, err := tx.QueryContext(ctx, query, vals...)
 	if err != nil {
 		return nil, err
