@@ -230,9 +230,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					k = k[:len(k)-1]
 				}
 				v := kwd[idx+1:] // exclude colon or equal
-				eq := " = "
+				eq := "="
 				if !exactSearch {
-					eq = " LIKE "
+					eq = "LIKE"
 				}
 				not := ""
 				if notSearch {
@@ -254,7 +254,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 							(properties.typ='user' AND properties.id IN
 								(SELECT properties.id FROM properties
 									LEFT JOIN accessors ON properties.val=accessors.id
-									WHERE properties.typ='user' AND %v
+									WHERE properties.typ='user' AND %s
 								)
 							)
 						)
