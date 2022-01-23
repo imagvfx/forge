@@ -123,6 +123,16 @@ var testSearches = []testSearch{
 	{path: "/", typ: "", query: "(sub).sup=admin@imagvfx.com", wantRes: []string{"/"}},
 	{path: "/", typ: "", query: "(sub).cg:remove", wantRes: []string{"/test/shot/cg"}},
 	{path: "", typ: "", query: "cg/ mdl", wantRes: []string{}, wantErr: errors.New("entry path not specified")},
+	{path: "/", typ: "", query: ":", wantRes: []string{}},
+	{path: "/", typ: "", query: ":val", wantRes: []string{}},
+	{path: "/", typ: "", query: "=", wantRes: []string{}},
+	{path: "/", typ: "", query: "=val", wantRes: []string{}},
+	{path: "/", typ: "", query: ".=", wantRes: []string{}},
+	{path: "/", typ: "", query: ".=val", wantRes: []string{}},
+	{path: "/", typ: "", query: ".cg=val", wantRes: []string{}},
+	{path: "/", typ: "", query: "(sub).=val", wantRes: []string{}},
+	{path: "/", typ: "", query: "comp.=val", wantRes: []string{}},
+	{path: "/", typ: "", query: "comp.x=val", wantRes: []string{}},
 }
 
 func TestAddEntries(t *testing.T) {
