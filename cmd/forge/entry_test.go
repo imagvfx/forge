@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"sort"
 	"testing"
@@ -172,7 +173,6 @@ func TestAddEntries(t *testing.T) {
 		}
 	}
 	for i, search := range testSearches {
-		sort.Strings(search.wantRes)
 		ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
 		if !equalError(search.wantErr, err) {
 			t.Fatalf("search: %v: got error %q, want %q", i, errorString(err), errorString(search.wantErr))
@@ -182,8 +182,13 @@ func TestAddEntries(t *testing.T) {
 			got = append(got, e.Path)
 		}
 		sort.Strings(got)
+		sort.Strings(search.wantRes)
 		if !reflect.DeepEqual(got, search.wantRes) {
-			t.Fatalf("search: %v: got %q, want %q", i, got, search.wantRes)
+			label := fmt.Sprintf("searched %q from %q", search.query, search.path)
+			if search.typ != "" {
+				label += fmt.Sprintf("of type %q", search.typ)
+			}
+			t.Fatalf(label+": got %q, want %q", got, search.wantRes)
 		}
 	}
 }
