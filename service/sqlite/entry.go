@@ -225,7 +225,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					k = toks[1]
 				}
 				notSearch := false
-				if k[len(k)-1] == '!' {
+				if len(k) != 0 && k[len(k)-1] == '!' {
 					notSearch = true
 					k = k[:len(k)-1]
 				}
