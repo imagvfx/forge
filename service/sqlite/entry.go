@@ -224,10 +224,19 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					sub = toks[0]
 					k = toks[1]
 				}
+				notSearch := false
+				if k[len(k)-1] == '!' {
+					notSearch = true
+					k = k[:len(k)-1]
+				}
 				v := kwd[idx+1:] // exclude colon or equal
 				eq := " = "
 				if !exactSearch {
 					eq = " LIKE "
+				}
+				not := ""
+				if notSearch {
+					not = "NOT"
 				}
 				userWhere := ""
 				if v != "" {
@@ -239,7 +248,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					}
 				}
 				q := fmt.Sprintf(`
-					(properties.name=? AND
+					(properties.name=? AND %s
 						(
 							(properties.typ!='user' AND properties.val %s ?) OR
 							(properties.typ='user' AND properties.id IN
@@ -250,7 +259,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 							)
 						)
 					)
-				`, eq, userWhere)
+				`, not, eq, userWhere)
 				if sub != "" {
 					if sub == "(sub)" {
 						q = fmt.Sprintf("(entries.path IN (SELECT parents.path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id LEFT JOIN entries AS parents ON entries.parent_id=parents.id WHERE %v))", q)
