@@ -166,24 +166,18 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		// at least one loop needed
 		keywords = append(keywords, "")
 	}
-	queries := make([]string, 0)
+	subQueries := make([]string, 0)
 	// vals will contain info for entire queries.
-	vals := []interface{}{
-		search.SearchRoot + `/%`, // see queryTmpl
-	}
+	subVals := make([]interface{}, 0)
 	for _, kwd := range keywords {
-		keys := make([]string, 0)
+		subKeys := make([]string, 0)
 		// redundant, but needed in every loop for INTERSECT
-		if search.EntryType != "" {
-			keys = append(keys, "entry_types.name=?")
-			vals = append(vals, search.EntryType)
-		}
 		if kwd != "" {
 			idxColon := strings.Index(kwd, ":")
 			idxEqual := strings.Index(kwd, "=")
 			if idxColon == -1 && idxEqual == -1 {
 				// generic search; not tied to a property
-				keys = append(keys, `
+				subKeys = append(subKeys, `
 					(entries.path LIKE ? OR
 						(properties.name NOT LIKE '.%' AND
 							(
@@ -202,7 +196,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if strings.HasSuffix(kwd, "/") {
 					pathl += "%"
 				}
-				vals = append(vals, pathl, kwdl, kwdl, kwdl)
+				subVals = append(subVals, pathl, kwdl, kwdl, kwdl)
 			} else {
 				// Check which is appeared earlier.
 				if idxColon == -1 {
@@ -267,28 +261,28 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						q = fmt.Sprintf("(entries.path || '/%v' IN (SELECT path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id WHERE %v))", sub, q)
 					}
 				}
-				keys = append(keys, q)
+				subKeys = append(subKeys, q)
 				vl := v
 				if !exactSearch {
 					vl = "%" + v + "%"
 				}
-				vals = append(vals, k, vl)
+				subVals = append(subVals, k, vl)
 				if v != "" {
-					vals = append(vals, vl, vl)
+					subVals = append(subVals, vl, vl)
 				}
 
 			}
 		}
 		where := ""
-		if len(keys) != 0 {
-			where = "WHERE " + strings.Join(keys, " AND ")
+		if len(subKeys) != 0 {
+			where = "WHERE " + strings.Join(subKeys, " AND ")
 		}
-		query := fmt.Sprintf(`
+		subQuery := fmt.Sprintf(`
 			SELECT entries.id FROM entries
 			LEFT JOIN properties ON entries.id=properties.entry_id
 			%v
 		`, where)
-		queries = append(queries, query)
+		subQueries = append(subQueries, subQuery)
 	}
 	queryTmpl := `
 		SELECT
@@ -299,9 +293,18 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		FROM entries
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
 		LEFT JOIN entry_types ON entries.type_id = entry_types.id
-		WHERE  entries.path LIKE ? AND entries.id IN (%s)
+		WHERE  %s AND %s AND %s
 	`
-	query := fmt.Sprintf(queryTmpl, strings.Join(queries, "INTERSECT"))
+	wherePath := "entries.path LIKE ?"
+	vals := []interface{}{search.SearchRoot + `/%`}
+	whereType := "TRUE"
+	if search.EntryType != "" {
+		whereType = "entry_types.name=?"
+		vals = append(vals, search.EntryType)
+	}
+	whereSub := fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, "INTERSECT"))
+	vals = append(vals, subVals...)
+	query := fmt.Sprintf(queryTmpl, wherePath, whereType, whereSub)
 	valNeeds := strings.Count(query, "?")
 	if len(vals) != valNeeds {
 		return nil, fmt.Errorf("query doesn't get exact amount of values: got %v, want %v", len(vals), valNeeds)
