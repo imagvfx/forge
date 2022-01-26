@@ -263,7 +263,7 @@
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 							{{if $subEntries}}
-							<div style="margin-bottom:3rem"> [
+							<div> [
 								{{if $.ResultsFromSearch}}
 									{{$ent := index $.ParentEntries $parent}}
 									{{$props := index $.EntryProperties $parent}}
