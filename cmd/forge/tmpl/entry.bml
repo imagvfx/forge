@@ -37,9 +37,9 @@
 							<div id="quickSearchDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
 						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
-						{{range $i, $search := $.UserSetting.QuickSearches -}}
+							{{range $i, $search := $.UserSetting.QuickSearches -}}
 							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#555;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
-						{{- end}}
+							{{- end}}
 						]
 					]
 					]
@@ -49,11 +49,11 @@
 							<input hidden name="search" value="1"> []
 							<select name="search_entry_type" class="search-box-left"> [
 								<option value=""> [(any)]
-							{{range $t := $.BaseEntryTypes}}
+								{{range $t := $.BaseEntryTypes}}
 								{{if ne $t "root"}}
 								<option value="{{$t}}" {{if eq $t $.SearchEntryType}}selected{{end}}> [{{$t}}]
 								{{end}}
-							{{end}}
+								{{end}}
 							]
 							<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
 							<button class="search-box-right" style="background-color:inherit"> [Go]
@@ -77,7 +77,7 @@
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 						{{$props := index $.EntryProperties $.Entry.Path}}
 						{{with $s := index $props "status"}}
-							<div class="statusDot statusSelector statusLabeler" data-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
+						<div class="statusDot statusSelector statusLabeler" data-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
 						{{end}}
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
@@ -148,42 +148,44 @@
 								{{$props := index $.EntryProperties $.Entry.Path}}
 								{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 								{{range $name := $propFilters}}
-									{{with $p := index $props $name}}
-									<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-										<div class="infoTop"> [
-											<div class="infoTitle"> [
-												<div> [{{$p.Name}}]
-												<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
-											]
-											<div style="width:1rem;"> []
-											<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+								{{with $p := index $props $name}}
+								<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+									<div class="infoTop"> [
+										<div class="infoTitle"> [
+											<div> [{{$p.Name}}]
+											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 										]
-										<div style="width:1rem"> []
-										<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
+										<div style="width:1rem;"> []
+										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
-									{{end}}
+									<div style="width:1rem"> []
+									<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
+								]
+								{{end}}
 								{{end}}
 								{{range $name := $.MainEntryHiddenProperties}}
-									{{with $p := index $props $name}}
-									<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-										<div class="infoTop"> [
-											<div class="infoTitle"> [
-												<div class="hiddenPropertyIcon"> []
-												<div> [{{$p.Name}}]
-												<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
-											]
-											<div style="width:1rem;"> []
-											<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+								{{with $p := index $props $name}}
+								<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+									<div class="infoTop"> [
+										<div class="infoTitle"> [
+											<div class="hiddenPropertyIcon"> []
+											<div> [{{$p.Name}}]
+											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
 										]
-										<div style="width:1rem"> []
-										<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
+										<div style="width:1rem;"> []
+										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
-									{{end}}
+									<div style="width:1rem"> []
+									<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
+								]
+								{{end}}
 								{{end}}
 								{{range $e := $.Environs}}
 								<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
 									<div class="infoTop"> [
-										{{if ne $e.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]{{end}}
+										{{if ne $e.EntryPath $.Entry.Path}}
+										<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]
+										{{end}}
 										<div class="infoTitle"> [
 											<div> [{{$e.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $e)}}invisible{{end}}"> []
@@ -198,7 +200,9 @@
 								{{range $a := $.AccessControls}}
 								<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"> [
 									<div class="infoTop"> [
-										{{if ne $a.EntryPath $.Entry.Path}}<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]{{end}}
+										{{if ne $a.EntryPath $.Entry.Path}}
+										<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]
+										{{end}}
 										<div class="infoTitle"> [
 											<div> [{{$a.Accessor}}]
 											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $a)}}invisible{{end}}"> []
@@ -215,11 +219,13 @@
 				]
 				{{end}}
 				<div class="subEntryArea"> [
-				{{if $.ResultsFromSearch}}
-					{{if not $.SubEntriesByTypeByParent}}No search results{{end}}
-				{{end}}
-				{{$i := 0}}
-				{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
+					{{if $.ResultsFromSearch}}
+					{{if not $.SubEntriesByTypeByParent}}
+					No search results
+					{{end}}
+					{{end}}
+					{{$i := 0}}
+					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div> [
 						{{if $i}}
 						<div style="margin-top:3rem;margin-bottom:3rem;border-top:1px solid #DDD"> []
@@ -248,12 +254,12 @@
 								{{$desc := sortDesc $sortProp}}
 								<select name="entry_page_sort_property" style="margin-right:0.5rem;width:6rem;"> [
 									<option value=""> [(name)]
-								{{range $p := index $.PropertyFilters $entType}}
+									{{range $p := index $.PropertyFilters $entType}}
 									<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
-								{{end}}
-								{{range $p := index $.HiddenProperties $entType}}
+									{{end}}
+									{{range $p := index $.HiddenProperties $entType}}
 									<option value="{{$p}}" {{if eq $p $prop}}selected{{end}}> [{{$p}}]
-								{{end}}
+									{{end}}
 								]
 								<input id="sort_desc_cb" name="entry_page_sort_desc" style="border-radius:2px 0 0 2px;width:1.2rem;" type="checkbox" {{if $desc}}checked{{end}}> []
 								<button name="update_sort" style="border-left:0;border-radius:0 2px 2px 0;width:2.5rem" value="1"> [Sort]
@@ -262,103 +268,103 @@
 						]
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
-							{{if $subEntries}}
-							<div> [
-								{{if $.ResultsFromSearch}}
-									{{$ent := index $.ParentEntries $parent}}
-									{{$props := index $.EntryProperties $parent}}
-									<div class="subEntryListFrom"> [
-										From
-										{{with $s := index $props "status"}}
-											<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
-										{{end}}
-										<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
-										({{len $subEntries}})
-									]
+						{{if $subEntries}}
+						<div> [
+							{{if $.ResultsFromSearch}}
+							{{$ent := index $.ParentEntries $parent}}
+							{{$props := index $.EntryProperties $parent}}
+							<div class="subEntryListFrom"> [
+								From
+								{{with $s := index $props "status"}}
+								<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 								{{end}}
-								<!-- Sub Entries -->
-								<div class="subEntryList" data-view-mode=""> [
-									{{$propFilters := index $.PropertyFilters $entType}}
-									{{range $k, $ent := $subEntries}}
-									{{$props := index $.EntryProperties $ent.Path}}
-									{{$possibleSubTypes := ""}}
-									{{with $t := index (index $.EntryProperties $ent.Path) ".sub_entry_types"}}
-										{{$possibleSubTypes = trim $t.Value}}
-									{{end}}
-									<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
-										<div class="subEntryTop"> [
-											{{with $s := index $props "status"}}
-											<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
-											{{end}}
-											<a class="subEntryName" href="{{$ent.Path}}" style="font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
-										]
-										<div class="subEntryBottom"> [
-											<div class="subEntryBottomLeft"> [
-												{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-												<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;text-decoration:none;" href="{{$ent.Path}}"> [
-													<div class="thumbnailContainer"> [
-														<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
-													]
-													<form class="updateThumbnailForm" action="/api/{{if $ent.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
-														<input name="path" type="hidden" value="{{$ent.Path}}"> []
-														<label class="updateThumbnailButton thumbnailButton"> [+
-															<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
-														]
-														<input readonly name="back_to_referer" type="hidden" value="1"> []
-													]
-													<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
-														<input name="path" type="hidden" value="{{$ent.Path}}"> []
-														<label class="deleteThumbnailButton thumbnailButton"> [-]
-														<input readonly name="back_to_referer" type="hidden" value="1"> []
-													]
+								<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
+								({{len $subEntries}})
+							]
+							{{end}}
+							<!-- Sub Entries -->
+							<div class="subEntryList" data-view-mode=""> [
+								{{$propFilters := index $.PropertyFilters $entType}}
+								{{range $k, $ent := $subEntries}}
+								{{$props := index $.EntryProperties $ent.Path}}
+								{{$possibleSubTypes := ""}}
+								{{with $t := index (index $.EntryProperties $ent.Path) ".sub_entry_types"}}
+								{{$possibleSubTypes = trim $t.Value}}
+								{{end}}
+								<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
+									<div class="subEntryTop"> [
+										{{with $s := index $props "status"}}
+										<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
+										{{end}}
+										<a class="subEntryName" href="{{$ent.Path}}" style="font-weight:bold;overflow-wrap:anywhere;"> [{{$ent.Name}}]
+									]
+									<div class="subEntryBottom"> [
+										<div class="subEntryBottomLeft"> [
+											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
+											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;text-decoration:none;" href="{{$ent.Path}}"> [
+												<div class="thumbnailContainer"> [
+													<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
 												]
-												{{$assignee := index $props "assignee"}}
-												{{if $assignee}}
-												<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
-												{{end}}
-												{{if index $.ShowGrandSub $ent.Type}}
-													<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
-														<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
-															{{range $gs := (index $.GrandSubEntries $ent.Path)}}
-																{{$props := index $.EntryProperties $gs.Path}}
-																<div class="summaryDot summaryLabeler grandSubEntry" data-entry-type="{{$gs.Type}}" data-name="{{$gs.Name}}" data-value="{{with $p := index $props "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $props "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
-															{{end}}
-															<div class="summaryDot grandSubAdderLoader"> [+]
-														]
-														<div class="summaryDot grandSubAdder"> [
-															<div class="grandSubAdderInput" contenteditable="true" style="flex:1;"> []
-															<div> [+]
-														]
+												<form class="updateThumbnailForm" action="/api/{{if $ent.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
+													<input name="path" type="hidden" value="{{$ent.Path}}"> []
+													<label class="updateThumbnailButton thumbnailButton"> [+
+														<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 													]
-												{{end}}
+													<input readonly name="back_to_referer" type="hidden" value="1"> []
+												]
+												<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
+													<input name="path" type="hidden" value="{{$ent.Path}}"> []
+													<label class="deleteThumbnailButton thumbnailButton"> [-]
+													<input readonly name="back_to_referer" type="hidden" value="1"> []
+												]
 											]
-											<div class="subEntryProperties"> [
-												{{range $name := $propFilters}}
-													{{with $p := index $props $name}}
-													<div class="subEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-														<div class="subEntryInfoTop"> [
-															<div class="infoTitle"> [
-																<div> [{{$name}}]
-																<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
-																<div style="flex:1;"> []
-															]
-															<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
-														]
-														<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
-													]
+											{{$assignee := index $props "assignee"}}
+											{{if $assignee}}
+											<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
+											{{end}}
+											{{if index $.ShowGrandSub $ent.Type}}
+											<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
+												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
+													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
+													{{$props := index $.EntryProperties $gs.Path}}
+													<div class="summaryDot summaryLabeler grandSubEntry" data-entry-type="{{$gs.Type}}" data-name="{{$gs.Name}}" data-value="{{with $p := index $props "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $props "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
 													{{end}}
-												{{end}}
+													<div class="summaryDot grandSubAdderLoader"> [+]
+												]
+												<div class="summaryDot grandSubAdder"> [
+													<div class="grandSubAdderInput" contenteditable="true" style="flex:1;"> []
+													<div> [+]
+												]
 											]
+											{{end}}
+										]
+										<div class="subEntryProperties"> [
+											{{range $name := $propFilters}}
+											{{with $p := index $props $name}}
+											<div class="subEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+												<div class="subEntryInfoTop"> [
+													<div class="infoTitle"> [
+														<div> [{{$name}}]
+														<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+														<div style="flex:1;"> []
+													]
+													<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
+												]
+												<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Value}}{{$p.ValueError}}]
+											]
+											{{end}}
+											{{end}}
 										]
 									]
-									{{end}}
 								]
-							{{end}}
+								{{end}}
 							]
 						{{end}}
+						]
+						{{end}}
 					]
-				{{$i = inc $i}}
-				{{end}}
+					{{$i = inc $i}}
+					{{end}}
 				]
 				<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:1;"> [
 					<div id="infoUpdater" class="infoModifier nodisplay"> [
