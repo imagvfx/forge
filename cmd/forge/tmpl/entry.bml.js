@@ -569,8 +569,10 @@ window.onload = function() {
 			currentStatusSel = sel;
 			// slight adjust of the menu position to make statusDots aligned.
 			menu.classList.remove("invisible");
-			menu.style.left = String(sel.offsetLeft - 6) + "px";
-			menu.style.top = String(sel.offsetTop + sel.offsetHeight + 4) + "px";
+			let right = sel.closest(".right");
+			let offset = offsetFrom(sel, right);
+			menu.style.left = String(offset.left - 6) + "px";
+			menu.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
 			let items = menu.getElementsByClassName("selectStatusMenuItem");
 			for (let item of items) {
 				item.onclick = function(ev) {
@@ -635,8 +637,10 @@ window.onload = function() {
 			label.innerText = status;
 			label.style.fontSize = "0.8rem";
 			label.classList.remove("nodisplay");
-			label.style.left = String(labeler.offsetLeft - 4) + "px";
-			label.style.top = String(labeler.offsetTop - label.offsetHeight - 3) + "px";
+			let right = labeler.closest(".right");
+			let offset = offsetFrom(labeler, right);
+			label.style.left = String(offset.left - 4) + "px";
+			label.style.top = String(offset.top - label.offsetHeight - 3) + "px";
 		}
 		labeler.onmouseleave = function(event) {
 			label.classList.add("nodisplay");
@@ -1002,6 +1006,8 @@ window.onpageshow = function() {
 	}
 }
 
+
+
 function removeClass(parent, clsName) {
 	let elems = parent.getElementsByClassName(clsName);
 	for (let e of elems) {
@@ -1020,6 +1026,24 @@ function parentWithClass(from, clsName) {
 		}
 		from = parent;
 	}
+}
+
+function offsetFrom(elem, target) {
+	if (!target) {
+		return {top: 0, left: 0};
+	}
+	let top = elem.offsetTop;
+	let left = elem.offsetLeft;
+	let parent = elem.offsetParent;
+	while (parent) {
+		top += parent.offsetTop;
+		left += parent.offsetLeft;
+		if (parent == target) {
+			break
+		}
+		parent = parent.offsetParent;
+	}
+	return {top: top, left: left};
 }
 
 function removeDragDropEvents(el) {

@@ -832,6 +832,7 @@
 	background-color: #E0E0E0;
 	font-size: 0.8rem;
 	word-wrap: break-word;
+	z-index: 1;
 }
 
 .selectStatusMenuItem {
@@ -870,6 +871,7 @@
 	padding: 0.2rem 0.4rem 0.1rem 0.4rem;
 	font-size: 0.8rem;
 	opacity: 0.9;
+	z-index: 1;
 }
 
 .infoModifier {
