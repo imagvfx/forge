@@ -219,11 +219,15 @@
 				]
 				{{end}}
 				<div class="subEntryArea"> [
-					{{if $.ResultsFromSearch}}
-					{{if not $.SubEntriesByTypeByParent}}
-					No search results
+					{{$nSubs := 0}}
+					{{range $entsByParent := $.SubEntriesByTypeByParent}}
+					{{range $subEntries := $entsByParent}}
+					{{range $sub := $subEntries}}
+					{{$nSubs = inc $nSubs}}
 					{{end}}
 					{{end}}
+					{{end}}
+					<div style="font-size:0.9rem;margin-bottom:2rem;"> [Searched {{$nSubs}} entries.]
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div> [
