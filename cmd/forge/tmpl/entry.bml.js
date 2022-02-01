@@ -1366,20 +1366,26 @@ function keyPressed(ev) {
 			return;
 		}
 		ev.preventDefault();
+		let nVis = 0;
 		let selEnts = document.querySelectorAll(".subEntry");
 		for (let ent of selEnts) {
-			ent.classList.add("selected");
+			// Wierd way of checking it's visibility, but it is what it is.
+			let vis = ent.offsetWidth > 0 || ent.offsetHeight > 0;
+			if (vis) {
+				nVis++
+				ent.classList.add("selected");
+			}
 		}
 		removeClass(subEntArea, "lastClicked");
 		removeClass(subEntArea, "temporary");
 		let what = "";
 		let entry = "entry"
-		if (selEnts.length == 0) {
+		if (nVis == 0) {
 			what = "no entry";
-		} else if (selEnts.length == 1) {
+		} else if (nVis == 1) {
 			what = "1 entry";
 		} else {
-			what = String(selEnts.length) + " entries";
+			what = String(nVis) + " entries";
 		}
 		printStatus(what + " selected");
 		return;
