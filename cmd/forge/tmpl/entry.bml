@@ -220,6 +220,7 @@
 				{{end}}
 				<div class="subEntryArea"> [
 					{{$nSubs := 0}}
+					{{if $.ResultsFromSearch}}
 					{{range $entsByParent := $.SubEntriesByTypeByParent}}
 					{{range $subEntries := $entsByParent}}
 					{{range $sub := $subEntries}}
@@ -228,6 +229,7 @@
 					{{end}}
 					{{end}}
 					<div style="font-size:0.9rem;margin-bottom:2rem;"> [Searched {{$nSubs}} entries.]
+					{{end}}
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div> [
