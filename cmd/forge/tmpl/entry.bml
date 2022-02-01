@@ -273,11 +273,12 @@
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 						{{if $subEntries}}
-						<div> [
+						<div class="subEntryListContainer" data-expanded="1"> [
 							{{if $.ResultsFromSearch}}
 							{{$ent := index $.ParentEntries $parent}}
 							{{$props := index $.EntryProperties $parent}}
 							<div class="subEntryListFrom"> [
+								<img class="subEntryListExpander" src="/asset/down-arrow.svg"> []
 								From
 								{{with $s := index $props "status"}}
 								<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []

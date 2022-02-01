@@ -38,6 +38,15 @@ window.onload = function() {
 			req.send(formData);
 			return;
 		}
+		expander = event.target.classList.contains("subEntryListExpander");
+		if (expander) {
+			let cont = event.target.closest(".subEntryListContainer");
+			if (!cont.dataset.expanded) {
+				cont.dataset.expanded = "1"
+			} else {
+				cont.dataset.expanded = ""
+			}
+		}
 		let hide = false;
 		if (event.target.closest(".statusDot") == null) {
 			let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
