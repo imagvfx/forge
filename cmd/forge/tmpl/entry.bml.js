@@ -41,10 +41,18 @@ window.onload = function() {
 		expander = event.target.classList.contains("subEntryListExpander");
 		if (expander) {
 			let cont = event.target.closest(".subEntryListContainer");
-			if (!cont.dataset.expanded) {
-				cont.dataset.expanded = "1"
-			} else {
-				cont.dataset.expanded = ""
+			let conts = [cont]
+			if (event.shiftKey) {
+				let area = event.target.closest(".subEntryArea");
+				conts = area.querySelectorAll(".subEntryListContainer");
+			}
+			let expanded = cont.dataset.expanded;
+			for (let c of conts) {
+				if (!expanded) {
+					c.dataset.expanded = "1"
+				} else {
+					c.dataset.expanded = ""
+				}
 			}
 		}
 		let hide = false;
