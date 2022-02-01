@@ -231,9 +231,6 @@
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div> [
-						{{if $i}}
-						<div style="margin-top:3rem;margin-bottom:3rem;border-top:1px solid #DDD"> []
-						{{end}}
 						{{if not $.ResultsFromSearch}}
 						<div class="subEntryTypeBar"> [
 							<div class="subEntryTypeLabel"> [<b> [{{$entType}} ({{len (index $entsByParent $.Entry.Path)}})]]
