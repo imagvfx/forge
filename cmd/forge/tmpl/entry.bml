@@ -278,7 +278,8 @@
 							{{$props := index $.EntryProperties $parent}}
 							<div class="subEntryListFrom"> [
 								<img class="subEntryListExpander" src="/asset/down-arrow.svg" title="shift+click to collapse/expand all"> []
-								From
+								{{$entType}}s
+								from
 								{{with $s := index $props "status"}}
 								<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 								{{end}}
