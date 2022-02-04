@@ -122,6 +122,7 @@ type Property struct {
 	EntryPath  string
 	Name       string
 	Type       string
+	Eval       string
 	Value      string
 	ValueError error
 	RawValue   string
@@ -133,6 +134,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 		Path      string
 		Name      string
 		Type      string
+		Eval      string
 		Value     string
 		RawValue  string
 		UpdatedAt time.Time
@@ -140,6 +142,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 		Path:      p.EntryPath,
 		Name:      p.Name,
 		Type:      p.Type,
+		Eval:      p.Eval,
 		Value:     p.Value,
 		RawValue:  p.RawValue,
 		UpdatedAt: p.UpdatedAt,

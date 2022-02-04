@@ -1264,7 +1264,8 @@ function submitUpdaterOrAdder(ev, input) {
 						valueElem.innerHTML = "";
 						let value = j.Msg.Value;
 						infoElem.dataset.value = value;
-						for (let line of value.split("\n")) {
+						let evaled = j.Msg.Eval;
+						for (let line of evaled.split("\n")) {
 							line = line.trim();
 							if (line == "") {
 								valueElem.innerHTML += "<br>"

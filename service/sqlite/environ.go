@@ -125,7 +125,7 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([
 		if err != nil {
 			return nil, err
 		}
-		e.Value, e.ValueError = evalProperty(tx, ctx, e.EntryPath, e.Type, e.RawValue)
+		e.Eval, e.Value, e.ValueError = evalProperty(tx, ctx, e.EntryPath, e.Type, e.RawValue)
 		if err != nil {
 			return nil, err
 		}

@@ -104,9 +104,9 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 			return nil, err
 		}
 		if strings.HasPrefix(p.Name, ".") {
-			p.Value, p.ValueError = evalSpecialProperty(tx, ctx, p.Name, p.RawValue)
+			p.Eval, p.Value, p.ValueError = evalSpecialProperty(tx, ctx, p.Name, p.RawValue)
 		} else {
-			p.Value, p.ValueError = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
+			p.Eval, p.Value, p.ValueError = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
 		}
 		props = append(props, p)
 	}
