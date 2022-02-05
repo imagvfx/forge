@@ -223,7 +223,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					notSearch = true
 					k = k[:len(k)-1]
 				}
-				v := kwd[idx+1:] // exclude colon or equal
+				val := kwd[idx+1:] // exclude colon or equal
 				eq := "="
 				if !exactSearch {
 					eq = "LIKE"
@@ -232,17 +232,29 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if notSearch {
 					not = "NOT"
 				}
-				userWhere := ""
-				if v != "" {
-					userWhere = fmt.Sprintf("(accessors.called %s ? OR accessors.name %s ?)", eq, eq)
-				} else {
-					userWhere = "(accessors.id IS NULL)"
-					if !exactSearch {
-						userWhere = "TRUE"
+				q := fmt.Sprintf("(properties.name=? AND %v (", not)
+				subVals = append(subVals, k)
+				vs := strings.Split(val, ",")
+				for i, v := range vs {
+					if i != 0 {
+						q += " OR "
 					}
-				}
-				q := fmt.Sprintf(`
-					(properties.name=? AND %s
+					vl := v
+					if !exactSearch {
+						vl = "%" + v + "%"
+					}
+					userWhere := ""
+					whereVals := make([]interface{}, 0)
+					if v != "" {
+						userWhere = fmt.Sprintf("(accessors.called %s ? OR accessors.name %s ?)", eq, eq)
+						whereVals = append(whereVals, vl, vl)
+					} else {
+						userWhere = "(accessors.id IS NULL)"
+						if !exactSearch {
+							userWhere = "TRUE"
+						}
+					}
+					vq := fmt.Sprintf(`
 						(
 							(properties.typ!='user' AND properties.val %s ?) OR
 							(properties.typ='user' AND properties.id IN
@@ -252,8 +264,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 								)
 							)
 						)
-					)
-				`, not, eq, userWhere)
+					`, eq, userWhere)
+					subVals = append(subVals, vl)
+					subVals = append(subVals, whereVals...)
+					q += vq
+				}
+				q += "))"
 				if sub != "" {
 					if sub == "(sub)" {
 						q = fmt.Sprintf("(entries.path IN (SELECT parents.path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id LEFT JOIN entries AS parents ON entries.parent_id=parents.id WHERE %v))", q)
@@ -262,15 +278,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					}
 				}
 				subKeys = append(subKeys, q)
-				vl := v
-				if !exactSearch {
-					vl = "%" + v + "%"
-				}
-				subVals = append(subVals, k, vl)
-				if v != "" {
-					subVals = append(subVals, vl, vl)
-				}
-
 			}
 		}
 		where := ""
