@@ -1023,8 +1023,6 @@ window.onpageshow = function() {
 	}
 }
 
-
-
 function removeClass(parent, clsName) {
 	let elems = parent.getElementsByClassName(clsName);
 	for (let e of elems) {
