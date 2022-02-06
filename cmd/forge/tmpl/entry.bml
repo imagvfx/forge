@@ -153,7 +153,7 @@
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 										]
 										<div style="width:1rem;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -170,7 +170,7 @@
 										<div class="infoTitle"> [
 											<div class="hiddenPropertyIcon"> []
 											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+											<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 										]
 										<div style="width:1rem;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -350,7 +350,7 @@
 												<div class="subEntryInfoTop"> [
 													<div class="infoTitle"> [
 														<div> [{{$name}}]
-														<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}"> []
+														<div class="recentlyUpdatedDot {{if not (recentlyUpdated $p)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 														<div style="flex:1;"> []
 													]
 													<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
