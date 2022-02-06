@@ -87,11 +87,13 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 			entries.id,
 			entries.path,
 			entry_types.name,
+			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
 		FROM entries
 		LEFT JOIN entries AS parents ON entries.parent_id = parents.id
 		LEFT JOIN entry_types ON entries.type_id = entry_types.id
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
+
 		`+where+`
 		ORDER BY entries.id ASC
 	`,
@@ -109,6 +111,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 			&e.ID,
 			&e.Path,
 			&e.Type,
+			&e.UpdatedAt,
 			&thumbID,
 		)
 		if err != nil {
@@ -296,6 +299,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			entries.id,
 			entries.path,
 			entry_types.name,
+			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
 		FROM entries
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
@@ -329,6 +333,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			&e.ID,
 			&e.Path,
 			&e.Type,
+			&e.UpdatedAt,
 			&thumbID,
 		)
 		if err != nil {

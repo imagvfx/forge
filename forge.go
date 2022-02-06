@@ -13,6 +13,7 @@ type Entry struct {
 	ID           int
 	Path         string
 	Type         string
+	UpdatedAt    time.Time
 	HasThumbnail bool
 }
 

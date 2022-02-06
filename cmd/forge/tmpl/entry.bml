@@ -296,7 +296,7 @@
 								{{with $t := index (index $.EntryProperties $ent.Path) ".sub_entry_types"}}
 								{{$possibleSubTypes = trim $t.Value}}
 								{{end}}
-								<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
+								<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-entry-updated-at="{{formatTime $ent.UpdatedAt}}" data-possible-sub-types={{$possibleSubTypes}}> [
 									<div class="subEntryTop"> [
 										{{with $s := index $props "status"}}
 										<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
