@@ -52,7 +52,11 @@ func evalUser(tx *sql.Tx, ctx context.Context, entry, val string) (string, strin
 	if err != nil {
 		return "", "", err
 	}
-	return u.Called, u.Name, nil
+	called := u.Called
+	if called == "" {
+		called = u.Name
+	}
+	return called, u.Name, nil
 }
 
 func evalTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
