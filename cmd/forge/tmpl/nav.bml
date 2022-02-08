@@ -4,5 +4,8 @@
 	<a style="margin-left:2rem;color:#FFF" href="/users"> [user]
 	<a style="margin-left:2rem;color:#FFF" href="/groups"> [group]
 	<div style="flex:1"> []
-	<div style="color:#FFF"> [{{$.User}} <a style="color:#777" href="/logout"> [(logout)]]
+	<div style="font-size:0.9rem;"> [
+		<a href="/setting" style="color:#FFF;margin-right:0.2rem;"> [{{$.User}}]
+		<a style="color:#777" href="/logout"> [(logout)]
+	]
 ]

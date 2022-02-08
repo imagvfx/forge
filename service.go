@@ -53,6 +53,7 @@ type Service interface {
 	GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error)
 	FindUsers(ctx context.Context, find UserFinder) ([]*User, error)
 	AddUser(ctx context.Context, u *User) error
+	UpdateUserCalled(ctx context.Context, user, called string) error
 	GetUser(ctx context.Context, user string) (*User, error)
 	GetUserSetting(ctx context.Context, user string) (*UserSetting, error)
 	UpdateUserSetting(ctx context.Context, upd UserSettingUpdater) error

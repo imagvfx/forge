@@ -863,3 +863,30 @@ func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWr
 	}
 	return nil
 }
+
+func (h *pageHandler) handleSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
+	setting, err := h.server.GetUserSetting(ctx, user)
+	if err != nil {
+		return err
+	}
+	// TODO: change User as *forge.User in every templates
+	recipe := struct {
+		User    string
+		I       *forge.User
+		Setting *forge.UserSetting
+	}{
+		User:    user,
+		I:       u,
+		Setting: setting,
+	}
+	err = Tmpl.ExecuteTemplate(w, "setting.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
+}

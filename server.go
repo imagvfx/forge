@@ -727,6 +727,17 @@ func (s *Server) AddUser(ctx context.Context, u *User) error {
 	return nil
 }
 
+func (s *Server) UpdateUserCalled(ctx context.Context, user, called string) error {
+	if user == "" {
+		return fmt.Errorf("user not specified")
+	}
+	err := s.svc.UpdateUserCalled(ctx, user, called)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting, error) {
 	if user == "" {
 		return nil, fmt.Errorf("user not specified")

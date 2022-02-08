@@ -227,3 +227,56 @@ func addUser(tx *sql.Tx, ctx context.Context, u *forge.User) error {
 	}
 	return nil
 }
+
+func UpdateUserCalled(db *sql.DB, ctx context.Context, user, called string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if forge.UserNameFromContext(ctx) != user {
+		return forge.Unauthorized("cannot change other user's information")
+	}
+	err = updateUserCalled(tx, ctx, user, called)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func updateUserCalled(tx *sql.Tx, ctx context.Context, user, called string) error {
+	u, err := getUser(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	called = strings.TrimSpace(called)
+	if strings.Contains(called, "\n") {
+		return fmt.Errorf("called shouldn't contain new line characters: %v", called)
+	}
+	if u.Called == called {
+		return nil
+	}
+	result, err := tx.ExecContext(ctx, `
+		UPDATE accessors
+		SET called=?
+		WHERE is_group=0 AND name=?
+	`,
+		called,
+		user,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return fmt.Errorf("no user affected")
+	}
+	return nil
+}

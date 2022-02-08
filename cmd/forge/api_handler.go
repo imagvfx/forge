@@ -605,6 +605,19 @@ func (h *apiHandler) handleDeleteThumbnail(ctx context.Context, w http.ResponseW
 	return nil
 }
 
+func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	called := r.FormValue("called")
+	name := forge.UserNameFromContext(ctx)
+	err := h.server.UpdateUserCalled(ctx, name, called)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// NOTE: don't use make, maps not for the update should be nil
 	if r.FormValue("update_entry_page_selected_category") != "" {

@@ -1,0 +1,38 @@
+<!doctype html>
+<html> [
+	<head> [
+		<style> [`{{template "style.css"}}`]
+	]
+	<body> [
+		{{template "nav.bml" $}}
+		<div class="main"> [
+			<div class="one"> [
+				<div class="entryTypeList group"> [
+					<h1> [
+						Settings
+					]
+					<form action="/api/update-user-called" method="post"> [
+						<div style="display:flex;"> [
+							<div class="inputLabel"> [Name] <!-- internal representation is User.Called -->
+							<input class="input" name="called" type="text" placeholder="name" value="{{$.I.Called}}"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button class="button" type="submit"> [Update]
+						]
+					]
+				]
+			]
+		]
+	]
+]
+
+<style> [`
+.inputLabel {
+	width: 10rem;
+}
+.input {
+	width: 20rem;
+}
+.button {
+	margin-left: 1rem;
+}
+`]
