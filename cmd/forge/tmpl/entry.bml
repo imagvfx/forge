@@ -81,7 +81,7 @@
 						{{end}}
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
-							<div class="recentlyUpdatedDot bigger {{if not (recent $.Entry.UpdatedAt)}}invisible{{end}}"> []
+							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
 						]
 						<div style="flex:1"> []
 						<div class="mainEntryFunctions"> [
@@ -189,7 +189,7 @@
 										{{end}}
 										<div class="infoTitle"> [
 											<div> [{{$e.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt)}}invisible{{end}}"> []
+											<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
 										]
 										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -206,7 +206,7 @@
 										{{end}}
 										<div class="infoTitle"> [
 											<div> [{{$a.Accessor}}]
-											<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt)}}invisible{{end}}"> []
+											<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
 										]
 										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -304,7 +304,7 @@
 										{{end}}
 										<a class="subEntryName" href="{{$ent.Path}}"> [
 											{{$ent.Name}}
-											<div class="recentlyUpdatedDot bigger {{if not (recent $ent.UpdatedAt)}}invisible{{end}}"> []
+											<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
 										]
 									]
 									<div class="subEntryBottom"> [

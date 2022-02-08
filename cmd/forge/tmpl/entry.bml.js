@@ -1006,6 +1006,13 @@ window.onload = function() {
 			mod.classList.add("nodisplay");
 		}
 	}
+	let dots = document.querySelectorAll(".recentlyUpdatedDot");
+	for (let dot of dots) {
+		if (dot.classList.contains("invisible")) {
+			continue;
+		}
+		titleRecentlyUpdatedDot(dot);
+	}
 }
 
 window.onpageshow = function() {
@@ -1118,6 +1125,25 @@ function toggleRenameInput() {
 	} else {
 		input.classList.add("nodisplay");
 	}
+}
+
+function titleRecentlyUpdatedDot(dot) {
+	let then = new Date(dot.dataset.updatedAt);
+	let now = new Date();
+	let today = new Date(now.toDateString());
+	let dur = then - today;
+	let day = 24 * 60 * 60 * 1000;
+	let n = Math.floor(dur / day);
+	let title = "updated today";
+	if (n < 0) {
+		n = Math.abs(n);
+		if (n == 1) {
+			title = "updated 1 day ago";
+		} else {
+			title = "updated " + n + " days ago";
+		}
+	}
+	dot.title = title;
 }
 
 function updateThumbnail(thumb) {
@@ -1285,10 +1311,16 @@ function submitUpdaterOrAdder(ev, input) {
 						let updated = new Date(j.Msg.UpdatedAt);
 						let now = Date.now();
 						let delta = (now - updated);
-						let day = 24 * 60 * 60 * 100;
+						let day = 24 * 60 * 60 * 1000;
 						if (delta <= day) {
-							let dotElem = infoElem.querySelector(".recentlyUpdatedDot");
-							dotElem.classList.remove("invisible");
+							let dot = infoElem.querySelector(".recentlyUpdatedDot");
+							let ent = dot.closest(".entry");
+							let entDot = ent.querySelector(".recentlyUpdatedDot.forEntry");
+							for (let d of [dot, entDot]) {
+								d.dataset.updatedAt = j.Msg.UpdatedAt;
+								d.title = "updated just now";
+								d.classList.remove("invisible");
+							}
 						}
 					}
 					printStatus("done");

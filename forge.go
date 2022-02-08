@@ -138,7 +138,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 		Eval      string
 		Value     string
 		RawValue  string
-		UpdatedAt time.Time
+		UpdatedAt string
 	}{
 		Path:      p.EntryPath,
 		Name:      p.Name,
@@ -146,7 +146,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 		Eval:      p.Eval,
 		Value:     p.Value,
 		RawValue:  p.RawValue,
-		UpdatedAt: p.UpdatedAt,
+		UpdatedAt: p.UpdatedAt.Format(time.RFC3339),
 	}
 	return json.Marshal(m)
 }
