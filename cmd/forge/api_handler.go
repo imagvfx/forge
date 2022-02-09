@@ -664,6 +664,24 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_update_marker_lasts") != "" {
+		v := r.FormValue("update_marker_lasts")
+		var last int
+		var err error
+		if v == "" {
+			last = -1
+		} else {
+			last, err = strconv.Atoi(v)
+			if err != nil {
+				return fmt.Errorf("need integer value for update_marker_lasts: %v", v)
+			}
+		}
+		user := forge.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "update_marker_lasts", last)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_quick_search") != "" {
 		name := r.FormValue("quick_search_name")
 		val := r.FormValue("quick_search_value")

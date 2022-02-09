@@ -84,7 +84,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 		s := setting[user]
 		if s == nil {
 			s = &forge.UserSetting{
-				User: user,
+				User:              user,
+				UpdateMarkerLasts: -1,
 			}
 		}
 		switch key {
@@ -118,6 +119,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 					s.PinnedPaths = append(s.PinnedPaths, ent.Path)
 				}
 			}
+		case "update_marker_lasts":
+			err = json.Unmarshal([]byte(value), &s.UpdateMarkerLasts)
 		default:
 			// It may have legacy settings, nothing to do with them.
 			continue
@@ -129,6 +132,10 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 	}
 	settings := make([]*forge.UserSetting, 0, len(setting))
 	for _, s := range setting {
+		// set default values
+		if s.UpdateMarkerLasts < 0 {
+			s.UpdateMarkerLasts = 1
+		}
 		settings = append(settings, s)
 	}
 	return settings, nil
@@ -403,6 +410,15 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			pinnedIDs = append(pinnedIDs, id)
 		}
 		value, err = json.Marshal(pinnedIDs)
+		if err != nil {
+			return err
+		}
+	case "update_marker_lasts":
+		last, ok := upd.Value.(int)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		value, err = json.Marshal(last)
 		if err != nil {
 			return err
 		}

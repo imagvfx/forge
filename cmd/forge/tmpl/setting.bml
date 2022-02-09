@@ -19,6 +19,15 @@
 							<button class="button" type="submit"> [Update]
 						]
 					]
+					<br>
+					<form action="/api/update-user-setting" method="post"> [
+						<div style="display:flex;"> [
+							<div class="inputLabel"> [Update Marker Lasts]
+							<input class="input" name="update_marker_lasts" type="text" placeholder="in days" value="{{$.Setting.UpdateMarkerLasts}}" autocomplete="off"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button class="button" name="update_update_marker_lasts" type="submit" value="1" > [Update]
+						]
+					]
 				]
 			]
 		]

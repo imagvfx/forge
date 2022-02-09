@@ -81,7 +81,7 @@
 						{{end}}
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
-							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
+							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
 						]
 						<div style="flex:1"> []
 						<div class="mainEntryFunctions"> [
@@ -154,7 +154,7 @@
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
 											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
+											<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 										]
 										<div style="width:1rem;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -171,7 +171,7 @@
 										<div class="infoTitle"> [
 											<div class="hiddenPropertyIcon"> []
 											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
+											<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 										]
 										<div style="width:1rem;"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -189,7 +189,7 @@
 										{{end}}
 										<div class="infoTitle"> [
 											<div> [{{$e.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
+											<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
 										]
 										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -206,7 +206,7 @@
 										{{end}}
 										<div class="infoTitle"> [
 											<div> [{{$a.Accessor}}]
-											<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
+											<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
 										]
 										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
@@ -304,7 +304,7 @@
 										{{end}}
 										<a class="subEntryName" href="{{$ent.Path}}"> [
 											{{$ent.Name}}
-											<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
+											<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
 										]
 									]
 									<div class="subEntryBottom"> [
@@ -354,7 +354,7 @@
 												<div class="subEntryInfoTop"> [
 													<div class="infoTitle"> [
 														<div> [{{$name}}]
-														<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
+														<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 														<div style="flex:1;"> []
 													]
 													<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]

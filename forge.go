@@ -335,6 +335,7 @@ type UserSetting struct {
 	EntryPageSortProperty       map[string]string
 	QuickSearches               []StringKV
 	PinnedPaths                 []string
+	UpdateMarkerLasts           int
 }
 
 type UserSettingFinder struct {

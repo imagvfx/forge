@@ -127,9 +127,9 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return c
 	},
-	"recent": func(t time.Time) (bool, error) {
+	"recent": func(t time.Time, days int) (bool, error) {
 		delta := time.Now().UTC().Sub(t)
-		if delta < 24*time.Hour {
+		if delta < time.Duration(days)*24*time.Hour {
 			return true, nil
 		}
 		return false, nil
