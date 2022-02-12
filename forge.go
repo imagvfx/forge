@@ -336,6 +336,7 @@ type UserSetting struct {
 	QuickSearches               []StringKV
 	PinnedPaths                 []string
 	UpdateMarkerLasts           int
+	SearchResultExpand          bool
 }
 
 type UserSettingFinder struct {

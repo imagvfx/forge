@@ -84,8 +84,9 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 		s := setting[user]
 		if s == nil {
 			s = &forge.UserSetting{
-				User:              user,
-				UpdateMarkerLasts: -1,
+				User:               user,
+				UpdateMarkerLasts:  -1,
+				SearchResultExpand: true,
 			}
 		}
 		switch key {
@@ -121,6 +122,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 			}
 		case "update_marker_lasts":
 			err = json.Unmarshal([]byte(value), &s.UpdateMarkerLasts)
+		case "search_result_expand":
+			err = json.Unmarshal([]byte(value), &s.SearchResultExpand)
 		default:
 			// It may have legacy settings, nothing to do with them.
 			continue
@@ -419,6 +422,15 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
 		value, err = json.Marshal(last)
+		if err != nil {
+			return err
+		}
+	case "search_result_expand":
+		expand, ok := upd.Value.(bool)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		value, err = json.Marshal(expand)
 		if err != nil {
 			return err
 		}

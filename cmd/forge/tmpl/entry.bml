@@ -229,7 +229,13 @@
 					{{end}}
 					{{end}}
 					{{end}}
-					<div style="font-size:0.9rem;margin-bottom:2rem;"> [Searched {{$nSubs}} entries.]
+					<div style="font-size:0.9rem;margin-bottom:1rem;"> [Searched {{$nSubs}} entries.]
+					{{end}}
+					{{if $.ResultsFromSearch}}
+					<div class="subEntryListOptions"> [
+						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}"> [
+						]
+					]
 					{{end}}
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
@@ -273,7 +279,7 @@
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 						{{if $subEntries}}
-						<div class="subEntryListContainer" data-expanded="1"> [
+						<div class="subEntryListContainer" data-expanded="{{if $.UserSetting.SearchResultExpand}}1{{end}}"> [
 							{{if $.ResultsFromSearch}}
 							{{$ent := index $.ParentEntries $parent}}
 							{{$props := index $.EntryProperties $parent}}

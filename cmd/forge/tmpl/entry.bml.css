@@ -360,6 +360,46 @@
 	border: 1px solid #D0D0D0;
 }
 
+.subEntryListOptions {
+	height: 1.5rem;
+	border: 1px solid #DDD;
+	border-radius: 4px;
+	padding: 1px;
+	margin-bottom: 1rem;
+	overflow: clip;
+	display:flex;
+	gap:1px;
+}
+
+.subEntryListOption {
+	width: 1.5rem;
+	border: 1px solid #E4E4E4;
+	border-radius: 3px;
+	background-color: #EEE;
+	box-sizing:border-box;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-origin: content-box;
+	background-repeat: no-repeat;
+	background-position-x: center;
+	background-position-y: center;
+}
+
+.subEntryListOption:hover {
+	border: 1px solid #E4E4E4;
+	background-color: #E4E4E4;
+}
+
+.subEntryListOption.expandOption {
+	background-image: url("/asset/down-arrow.svg");
+	background-size: 10px;
+}
+
+.subEntryListOption.expandOption[data-value=""] {
+	rotate: 270deg;
+}
+
 .subEntry {
 	display: flex;
 	flex-direction: column;

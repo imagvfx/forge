@@ -728,6 +728,18 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_search_result_expand") != "" {
+		val := strings.TrimSpace(r.FormValue("expand"))
+		expand := false
+		if val != "" {
+			expand = true
+		}
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "search_result_expand", expand)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}

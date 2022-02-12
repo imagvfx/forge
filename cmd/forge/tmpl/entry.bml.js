@@ -13,6 +13,34 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt.innerText).then(succeeded, failed);
 			return;
 		}
+		let options = event.target.closest(".subEntryListOptions");
+		if (options) {
+			let opt = event.target.closest(".subEntryListOption.expandOption");
+			if (opt) {
+				if (opt.dataset.value == "") {
+					opt.dataset.value = "1";
+				} else {
+					opt.dataset.value = "";
+				}
+				let req = new XMLHttpRequest();
+				let formData = new FormData();
+				formData.append("update_search_result_expand", "1");
+				formData.append("expand", opt.dataset.value);
+				req.open("post", "/api/update-user-setting");
+				req.onerror = function() {
+					printErrorStatus("network error occurred. please check whether the server is down.");
+				}
+				req.onload = function() {
+					if (req.status != 200) {
+						printErrorStatus(req.responseText);
+						return;
+					}
+					location.reload();
+				}
+				req.send(formData);
+				return;
+			}
+		}
 		let expander = event.target.closest(".propertyExpander");
 		if (expander) {
 			let cont = document.querySelector(".mainEntryInfoContainer");
