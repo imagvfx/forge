@@ -219,7 +219,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}"> [
+				<div class="subEntryArea" data-view="{{if $.ResultsFromSearch}}{{$.UserSetting.SearchView}}{{end}}"> [
 					{{$nSubs := 0}}
 					{{if $.ResultsFromSearch}}
 					{{range $entsByParent := $.SubEntriesByTypeByParent}}
