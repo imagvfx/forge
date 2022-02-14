@@ -337,6 +337,7 @@ type UserSetting struct {
 	PinnedPaths                 []string
 	UpdateMarkerLasts           int
 	SearchResultExpand          bool
+	SearchView                  string
 }
 
 type UserSettingFinder struct {
