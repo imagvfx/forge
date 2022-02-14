@@ -22,6 +22,11 @@ window.onload = function() {
 				} else {
 					opt.dataset.value = "";
 				}
+				let area = event.target.closest(".subEntryArea");
+				let conts = area.querySelectorAll(".subEntryListContainer");
+				for (let c of conts) {
+					c.dataset.expanded = opt.dataset.value;
+				}
 				let req = new XMLHttpRequest();
 				let formData = new FormData();
 				formData.append("update_search_result_expand", "1");
@@ -35,7 +40,6 @@ window.onload = function() {
 						printErrorStatus(req.responseText);
 						return;
 					}
-					location.reload();
 				}
 				req.send(formData);
 				return;
@@ -47,6 +51,8 @@ window.onload = function() {
 				} else {
 					opt.dataset.value = "";
 				}
+				let area = event.target.closest(".subEntryArea");
+				area.dataset.view = opt.dataset.value;
 				let req = new XMLHttpRequest();
 				let formData = new FormData();
 				formData.append("update_search_view", "1");
@@ -60,7 +66,6 @@ window.onload = function() {
 						printErrorStatus(req.responseText);
 						return;
 					}
-					location.reload();
 				}
 				req.send(formData);
 				return;
