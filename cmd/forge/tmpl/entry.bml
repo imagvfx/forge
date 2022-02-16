@@ -299,7 +299,7 @@
 							]
 							{{end}}
 							<!-- Sub Entries -->
-							<div class="subEntryList" data-view-mode=""> [
+							<div class="subEntryList"> [
 								{{$propFilters := index $.PropertyFilters $entType}}
 								{{range $k, $ent := $subEntries}}
 								{{$props := index $.EntryProperties $ent.Path}}
