@@ -342,7 +342,7 @@
 											<input class="assigneeInput" data-path="{{$ent.Path}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 											{{end}}
 											{{if index $.ShowGrandSub $ent.Type}}
-											<div class="grandSubArea" style="display:flex;flex-direction:column;"> [
+											<div class="grandSubArea"> [
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
 													{{$props := index $.EntryProperties $gs.Path}}
@@ -355,6 +355,8 @@
 													<div> [+]
 												]
 											]
+											<div class="flexSpacer"> []
+											<img class="thumbnailViewExpander" src="/asset/expander.svg"> []
 											{{end}}
 										]
 										<div class="subEntryProperties"> [

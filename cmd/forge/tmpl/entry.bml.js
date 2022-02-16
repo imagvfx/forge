@@ -96,6 +96,37 @@ window.onload = function() {
 			req.send(formData);
 			return;
 		}
+		expander = event.target.closest(".thumbnailViewExpander");
+		if (expander) {
+			let thisEnt = expander.closest(".subEntry");
+			let expand = !thisEnt.classList.contains("expanded");
+			let selected = {}
+			for (let ent of document.querySelectorAll(".subEntry")) {
+				if (ent.classList.contains("selected")) {
+					selected[ent.dataset.entryPath] = true;
+				}
+			}
+			if (Object.keys(selected).length != 0) {
+				if (!selected[thisEnt.dataset.entryPath]) {
+					printErrorStatus("entry not in selection: " + thisEnt.dataset.entryPath);
+					return;
+				}
+			} else {
+				selected[thisEnt.dataset.entryPath] = true;
+			}
+			for (let ent of document.querySelectorAll(".subEntry")) {
+				if (selected[ent.dataset.entryPath] != null) {
+					if (expand) {
+						ent.classList.add("expanded");
+					} else {
+						ent.classList.remove("expanded");
+					}
+				} else {
+					ent.classList.remove("expanded");
+				}
+			}
+			return;
+		}
 		expander = event.target.classList.contains("subEntryListExpander");
 		if (expander) {
 			let cont = event.target.closest(".subEntryListContainer");
@@ -523,7 +554,7 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
-			if (event.target.closest(".statusDot, .summaryDot, .infoTitle, .assigneeInput, .pathText") != null) {
+			if (event.target.closest(".statusDot, .summaryDot, .infoTitle, .assigneeInput, .pathText, .thumbnailViewExpander") != null) {
 				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {

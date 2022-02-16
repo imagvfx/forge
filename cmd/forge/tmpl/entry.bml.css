@@ -1,5 +1,9 @@
 // html { filter: grayscale(100%) }
 
+.flexSpacer {
+	flex: 1;
+}
+
 .pinnedPathLink:hover {
 	text-decoration: underline;
 }
@@ -417,9 +421,13 @@
 	flex-direction: column;
 	justify-content: start;
 	gap: 0.6rem;
-	padding: 0.6rem 0.6rem 0.9rem 0.6rem;
+	padding: 0.6rem;
 	background-color: #FAFAFA;
 	outline: 1px solid #DDD;
+}
+
+.subEntry.expanded {
+	grid-column: 1 / -1;
 }
 
 .subEntryArea.editMode .subEntry {
@@ -473,6 +481,29 @@
 
 .subEntryBottomLeft {
 	width: 98px;
+	display: flex;
+	flex-direction: column;
+}
+
+.thumbnailViewExpander {
+	width: 0.4rem;
+	height: 0.4rem;
+	padding: 2px;
+	align-self: end;
+	filter: invert(90%);
+	user-select: none;
+}
+
+.thumbnailViewExpander:hover {
+	filter: invert(70%) sepia(100%) hue-rotate(180deg) saturate(2);
+}
+
+.subEntryArea:not([data-view="thumbnail"]) .subEntry .thumbnailViewExpander {
+	visibility: hidden;
+}
+
+.subEntry:not(:hover) .thumbnailViewExpander {
+	visibility: hidden;
 }
 
 .subEntryProperties {
@@ -482,7 +513,7 @@
 	gap:1rem;
 }
 
-.subEntryArea[data-view="thumbnail"] .subEntryProperties {
+.subEntryArea[data-view="thumbnail"] .subEntry:not(.expanded) .subEntryProperties {
 	display:none;
 }
 
