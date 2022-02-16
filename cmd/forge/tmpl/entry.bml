@@ -283,7 +283,7 @@
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 						{{if $subEntries}}
-						<div class="subEntryListContainer" data-expanded="{{if $.UserSetting.SearchResultExpand}}1{{end}}"> [
+						<div class="subEntryListContainer" data-expanded="{{if (or (not $.ResultsFromSearch) $.UserSetting.SearchResultExpand)}}1{{end}}"> [
 							{{if $.ResultsFromSearch}}
 							{{$ent := index $.ParentEntries $parent}}
 							{{$props := index $.EntryProperties $parent}}
