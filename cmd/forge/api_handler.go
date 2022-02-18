@@ -748,6 +748,22 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_copy_path_remap") != "" {
+		from := strings.TrimSpace(r.FormValue("from"))
+		if strings.Contains(from, ";") {
+			return fmt.Errorf("remap from path cannot have semicolon(;) in it")
+		}
+		to := strings.TrimSpace(r.FormValue("to"))
+		if strings.Contains(to, ";") {
+			return fmt.Errorf("remap to path cannot have semicolon(;) in it")
+		}
+		remap := from + ";" + to
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "copy_path_remap", remap)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}

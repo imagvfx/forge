@@ -338,6 +338,7 @@ type UserSetting struct {
 	UpdateMarkerLasts           int
 	SearchResultExpand          bool
 	SearchView                  string
+	CopyPathRemap               string
 }
 
 type UserSettingFinder struct {

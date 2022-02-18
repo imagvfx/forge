@@ -28,6 +28,16 @@
 							<button class="button" name="update_update_marker_lasts" type="submit" value="1" > [Update]
 						]
 					]
+					<br>
+					<form action="/api/update-user-setting" method="post"> [
+						<div style="display:flex;"> [
+							<div class="inputLabel"> [Copy Path Remap]
+							<input class="halfInput" name="from" type="text" placeholder="from" value="{{remapFrom $.Setting.CopyPathRemap}}" autocomplete="off"> []
+							<input class="halfInput" name="to" type="text" placeholder="to" value="{{remapTo $.Setting.CopyPathRemap}}" autocomplete="off"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button class="button" name="update_copy_path_remap" type="submit" value="1" > [Update]
+						]
+					]
 				]
 			]
 		]
@@ -37,11 +47,20 @@
 <style> [`
 .inputLabel {
 	width: 10rem;
+	box-sizing: border-box;
 }
 .input {
+	margin-left: 1rem;
 	width: 20rem;
+	box-sizing: border-box;
+}
+.halfInput {
+	margin-left: 1rem;
+	width: 9.5rem;
+	box-sizing: border-box;
 }
 .button {
 	margin-left: 1rem;
+	box-sizing: border-box;
 }
 `]

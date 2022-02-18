@@ -39,6 +39,15 @@ var pageHandlerFuncs = template.FuncMap{
 		return strings.Contains(s, tok)
 	},
 	"trim": strings.TrimSpace,
+	"remapFrom": func(s string) string {
+		return strings.Split(s, ";")[0]
+	},
+	"remapTo": func(s string) string {
+		if !strings.Contains(s, ";") {
+			return ""
+		}
+		return strings.Split(s, ";")[1]
+	},
 	"formatTime": func(t time.Time) string {
 		return t.Format(time.RFC3339)
 	},

@@ -3,14 +3,19 @@
 window.onload = function() {
 	document.onclick = function(event) {
 		if (event.target.classList.contains("pathText")) {
-			let ptxt = event.target;
+			let p = event.target;
+			let ptxt = p.textContent;
+			let main = document.querySelector(".main");
+			if (ptxt.startsWith(main.dataset.copyPathRemapFrom)) {
+				ptxt = ptxt.replace(main.dataset.copyPathRemapFrom, main.dataset.copyPathRemapTo);
+			}
 			let succeeded = function() {
-				printStatus("path copied: " + ptxt.textContent);
+				printStatus("path copied: " + ptxt);
 			}
 			let failed = function() {
 				printStatus("failed to copy path");
 			}
-			navigator.clipboard.writeText(ptxt.innerText).then(succeeded, failed);
+			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
 		let options = event.target.closest(".subEntryListOptions");
