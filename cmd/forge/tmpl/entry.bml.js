@@ -150,13 +150,11 @@ window.onload = function() {
 			}
 		}
 		let hide = false;
-		if (event.target.closest(".statusDot") == null) {
-			let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
-			for (let menu of selectStatusMenus) {
-				if (!menu.classList.contains("invisible")) {
-					menu.classList.add("invisible");
-					hide = true;
-				}
+		if (event.target.closest(".statusSelector") == null) {
+			let mainDiv = document.querySelector(".main");
+			if (mainDiv.dataset.currentSelectStatusMenu != "") {
+				mainDiv.dataset.currentSelectStatusMenu = "";
+				hide = true;
 			}
 		}
 		if (event.target.closest(".assigneeInput") == null) {
@@ -643,12 +641,13 @@ window.onload = function() {
 	let statusSelector = document.getElementsByClassName("statusSelector");
 	for (let sel of statusSelector) {
 		let entType = sel.dataset.entryType;
-		let menu = document.getElementById("selectStatusMenu-" + entType);
+		let menu = document.querySelector(`.selectStatusMenu[data-entry-type="${entType}"]`);
 		if (menu == null) {
 			// It can be null, if possible_status global for the entry type is not exists.
 			continue
 		}
 		sel.onclick = function(event) {
+			let mainDiv = document.querySelector(".main");
 			let thisEnt = parentWithClass(sel, "entry");
 			let entPath = thisEnt.dataset.entryPath;
 			if (thisEnt.classList.contains("subEntry")) {
@@ -666,20 +665,25 @@ window.onload = function() {
 						}
 					}
 					if (!inSel) {
-						menu.classList.add("invisible");
+						mainDiv.dataset.currentSelectStatusMenu = "";
 						printErrorStatus("entry not in selection: " + entPath);
 						return;
 					}
 				}
 			}
-			if (currentStatusSel == sel && !menu.classList.contains("invisible")) {
-				menu.classList.add("invisible");
+			if (currentStatusSel != null && mainDiv.dataset.currentSelectStatusMenu == "") {
+				// Mismatch between currentStatusSel and currentSelectStatusMenu can happen,
+				// if the page is loaded from history.
 				currentStatusSel = null;
+			}
+			mainDiv.dataset.currentSelectStatusMenu = sel.dataset.entryType;
+			if (currentStatusSel == sel) {
+				currentStatusSel = null;
+				mainDiv.dataset.currentSelectStatusMenu = "";
 				return;
 			}
 			currentStatusSel = sel;
 			// slight adjust of the menu position to make statusDots aligned.
-			menu.classList.remove("invisible");
 			let right = sel.closest(".right");
 			let offset = offsetFrom(sel, right);
 			menu.style.left = String(offset.left - 6) + "px";
@@ -699,7 +703,7 @@ window.onload = function() {
 							}
 						}
 						if (!inSel) {
-							menu.classList.add("invisible");
+							mainDiv.dataset.currentSelectStatusMenu = "";
 							printErrorStatus("entry not in selection: " + entPath);
 							return;
 						}
@@ -725,7 +729,7 @@ window.onload = function() {
 								entDot.classList.replace(oldClass, newClass);
 								entDot.dataset.value = item.dataset.value;
 							}
-							menu.classList.add("invisible");
+							mainDiv.dataset.currentSelectStatusMenu = "";
 						} else {
 							printErrorStatus(req.responseText);
 						}
@@ -1439,12 +1443,10 @@ function keyPressed(ev) {
 	if (ev.code == "Escape") {
 		// Will close floating UIs first, if any exists.
 		let hide = false;
-		let selectStatusMenus = document.getElementsByClassName("selectStatusMenu");
-		for (let menu of selectStatusMenus) {
-			if (!menu.classList.contains("invisible")) {
-				menu.classList.add("invisible");
-				hide = true;
-			}
+		let mainDiv = document.querySelector(".main");
+		if (mainDiv.dataset.currentSelectStatusMenu != "") {
+			mainDiv.dataset.currentSelectStatusMenu = "";
+			hide = true;
 		}
 		let userMenu = document.getElementById("userAutoCompleteMenu");
 		if (!userMenu.classList.contains("invisible")) {

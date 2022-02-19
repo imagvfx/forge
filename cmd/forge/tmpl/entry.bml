@@ -8,7 +8,10 @@
 	]
 	<body> [
 		{{template "nav.bml" $}}
-		<div class="main" data-copy-path-remap-from="{{remapFrom $.UserSetting.CopyPathRemap}}" data-copy-path-remap-to="{{remapTo $.UserSetting.CopyPathRemap}}"> [
+		<div class="main"
+			data-copy-path-remap-from="{{remapFrom $.UserSetting.CopyPathRemap}}"
+			data-copy-path-remap-to="{{remapTo $.UserSetting.CopyPathRemap}}"
+			data-current-select-status-menu=""> [
 			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
 				<div style="position:sticky;top:0"> [
 					<!-- Pinned Path -->
@@ -433,7 +436,7 @@
 				]
 				<div id="userAutoCompleteMenu" class="invisible"> []
 				{{range $entType, $ps := $.PossibleStatus}}
-				<div id="selectStatusMenu-{{$entType}}" class="selectStatusMenu invisible"> [
+				<div id="selectStatusMenu-{{$entType}}" class="selectStatusMenu" data-entry-type="{{$entType}}"> [
 					<div class="selectStatusMenuItem" data-value=""> [
 						<div class="selectStatusMenuItemDot statusDot statusDot-{{$entType}}-"> []
 						<div class="selectStatusMenuItemValue" style="color:#888888;"> [(none)]

@@ -938,7 +938,7 @@
 	position: absolute;
 	width: 8rem;
 	box-sizing: border-box;
-	display: flex;
+	display: none;
 	flex-direction: column;
 	gap: 1px;
 	border: 1px solid #AAAAAA;
@@ -948,6 +948,13 @@
 	word-wrap: break-word;
 	z-index: 1;
 }
+
+
+{{range $entType, $status := $.PossibleStatus}}
+.main[data-current-select-status-menu="{{$entType}}"] .selectStatusMenu[data-entry-type="{{$entType}}"] {
+	display: flex;
+}
+{{end}}
 
 .selectStatusMenuItem {
 	display: flex;
