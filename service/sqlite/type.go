@@ -182,6 +182,14 @@ func AddEntryType(db *sql.DB, ctx context.Context, name string) error {
 		return err
 	}
 	defer tx.Rollback()
+	user := forge.UserNameFromContext(ctx)
+	yes, err := isAdmin(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	if !yes {
+		return forge.Unauthorized("user doesn't have permission to add entry type: %v", user)
+	}
 	err = addEntryType(tx, ctx, name)
 	if err != nil {
 		return err
