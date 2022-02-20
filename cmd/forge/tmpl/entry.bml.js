@@ -723,11 +723,8 @@ window.onload = function() {
 					req.onload = function() {
 						if (req.status == 200) {
 							for (let ent of selectedEnts) {
-								let entDot = ent.getElementsByClassName("statusDot")[0];
-								let oldClass = "statusDot-" + entDot.dataset.entryType + "-" + entDot.dataset.value;
-								let newClass = "statusDot-" + entDot.dataset.entryType + "-" + item.dataset.value;
-								entDot.classList.replace(oldClass, newClass);
-								entDot.dataset.value = item.dataset.value;
+								let dot = ent.querySelector(".statusDot");
+								dot.dataset.value = item.dataset.value;
 							}
 							mainDiv.dataset.currentSelectStatusMenu = "";
 						} else {
