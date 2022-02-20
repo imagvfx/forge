@@ -642,11 +642,11 @@ window.onload = function() {
 	for (let sel of statusSelector) {
 		let entType = sel.dataset.entryType;
 		let menu = document.querySelector(`.selectStatusMenu[data-entry-type="${entType}"]`);
-		if (menu == null) {
-			// It can be null, if possible_status global for the entry type is not exists.
-			continue
-		}
 		sel.onclick = function(event) {
+			if (menu == null) {
+				printErrorStatus("'possible_status' global not defined for '" + entType + "' entry type");
+				return;
+			}
 			let mainDiv = document.querySelector(".main");
 			let thisEnt = parentWithClass(sel, "entry");
 			let entPath = thisEnt.dataset.entryPath;
