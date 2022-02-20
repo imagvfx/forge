@@ -711,10 +711,19 @@ window.onload = function() {
 					if (selectedEnts.length == 0) {
 						selectedEnts = [thisEnt];
 					}
+					let sub = sel.dataset.sub;
 					let req = new XMLHttpRequest();
 					let formData = new FormData();
 					for (let ent of selectedEnts) {
-						formData.append("path", ent.dataset.entryPath);
+						let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
+						if (!dot) {
+							continue;
+						}
+						let path = ent.dataset.entryPath;
+						if (sub != "") {
+							path += "/" + sub;
+						}
+						formData.append("path", path);
 					}
 					formData.append("name", "status");
 					formData.append("value", item.dataset.value);
@@ -723,7 +732,10 @@ window.onload = function() {
 					req.onload = function() {
 						if (req.status == 200) {
 							for (let ent of selectedEnts) {
-								let dot = ent.querySelector(".statusDot");
+								let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
+								if (!dot) {
+									continue;
+								}
 								dot.dataset.value = item.dataset.value;
 							}
 							mainDiv.dataset.currentSelectStatusMenu = "";

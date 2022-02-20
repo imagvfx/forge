@@ -80,7 +80,7 @@
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 						{{$props := index $.EntryProperties $.Entry.Path}}
 						{{with $s := index $props "status"}}
-						<div class="statusDot statusSelector statusLabeler" data-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
+						<div class="statusDot statusSelector statusLabeler" data-path="{{$.Entry.Path}}" data-sub="" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
 						{{end}}
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
@@ -295,7 +295,7 @@
 								{{$entType}}s
 								from
 								{{with $s := index $props "status"}}
-								<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
+								<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-path="{{$parent}}" data-sub="" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 								{{end}}
 								<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
 								({{len $subEntries}})
@@ -313,7 +313,7 @@
 								<div class="subEntry entry" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
 									<div class="subEntryTop"> [
 										{{with $s := index $props "status"}}
-										<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
+										<div class="statusDot statusSelector statusLabeler" data-path="{{$ent.Path}}" data-sub="" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 										{{end}}
 										<a class="subEntryName" href="{{$ent.Path}}"> [
 											{{$ent.Name}}
@@ -349,7 +349,7 @@
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
 													{{$props := index $.EntryProperties $gs.Path}}
-													<div class="summaryDot summaryLabeler grandSubEntry" data-entry-type="{{$gs.Type}}" data-name="{{$gs.Name}}" data-value="{{with $p := index $props "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $props "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
+													<div class="summaryDot summaryLabeler statusSelector grandSubEntry" data-sub="{{$gs.Name}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $props "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $props "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
 													{{end}}
 													<div class="summaryDot grandSubAdderLoader"> [+]
 												]
