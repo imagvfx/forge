@@ -295,7 +295,7 @@
 								{{$entType}}s
 								from
 								{{with $s := index $props "status"}}
-								<div class="statusDot statusSelector statusLabeler" style="display:inline-block" data-sub="" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
+								<div class="statusDot statusLabeler" style="display:inline-block" data-sub="" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 								{{end}}
 								<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
 								({{len $subEntries}})
