@@ -8,6 +8,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/imagvfx/forge"
 )
@@ -19,11 +20,16 @@ func createEntriesTable(tx *sql.Tx) error {
 			parent_id INTEGER,
 			path STRING NOT NULL UNIQUE,
 			type_id INTEGER NOT NULL,
+			created_at TIMESTAMP NOT NULL,
 			FOREIGN KEY (parent_id) REFERENCES entries (id),
 			FOREIGN KEY (type_id) REFERENCES entry_types (id)
 		)
 	`)
 	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`ALTER TABLE entries ADD COLUMN created_at TIMESTMAP NOT NULL DEFAULT '0000-01-01 00:00:00'`)
+	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
 		return err
 	}
 	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_entries_path ON entries (path)`)
@@ -33,11 +39,11 @@ func createEntriesTable(tx *sql.Tx) error {
 func addRootEntry(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO entries
-			(id, path, type_id)
+			(id, path, type_id, created_at)
 		VALUES
-			(?, ?, ?)
+			(?, ?, ?, ?)
 	`,
-		1, "/", 1, // sqlite IDs are 1 based
+		1, "/", 1, time.Now().UTC(), // sqlite IDs are 1 based
 	)
 	if err != nil {
 		return err
@@ -87,13 +93,13 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 			entries.id,
 			entries.path,
 			entry_types.name,
+			entries.created_at,
 			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
 		FROM entries
 		LEFT JOIN entries AS parents ON entries.parent_id = parents.id
 		LEFT JOIN entry_types ON entries.type_id = entry_types.id
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
-
 		`+where+`
 		ORDER BY entries.id ASC
 	`,
@@ -106,16 +112,22 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
 		e := &forge.Entry{}
+		updated := sql.NullTime{}
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
 			&e.Path,
 			&e.Type,
-			&e.UpdatedAt,
+			&e.CreatedAt,
+			&updated,
 			&thumbID,
 		)
 		if err != nil {
 			return nil, err
+		}
+		e.UpdatedAt = updated.Time
+		if !updated.Valid {
+			e.UpdatedAt = e.CreatedAt
 		}
 		if thumbID != nil {
 			e.HasThumbnail = true
@@ -299,6 +311,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			entries.id,
 			entries.path,
 			entry_types.name,
+			entries.created_at,
 			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
 		FROM entries
@@ -328,16 +341,22 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
 		e := &forge.Entry{}
+		updated := sql.NullTime{}
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
 			&e.Path,
 			&e.Type,
-			&e.UpdatedAt,
+			&e.CreatedAt,
+			&updated,
 			&thumbID,
 		)
 		if err != nil {
 			return nil, err
+		}
+		e.UpdatedAt = updated.Time
+		if !updated.Valid {
+			e.UpdatedAt = e.CreatedAt
 		}
 		if thumbID != nil {
 			e.HasThumbnail = true
@@ -714,13 +733,15 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 		INSERT INTO entries (
 			path,
 			type_id,
-			parent_id
+			parent_id,
+			created_at
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		e.Path,
 		typeID,
 		p.ID,
+		time.Now().UTC(),
 	)
 	if err != nil {
 		return err
