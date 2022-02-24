@@ -112,19 +112,21 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
 		e := &forge.Entry{}
+		created := Time{}
 		updated := sql.NullTime{}
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
 			&e.Path,
 			&e.Type,
-			&e.CreatedAt,
+			&created,
 			&updated,
 			&thumbID,
 		)
 		if err != nil {
 			return nil, err
 		}
+		e.CreatedAt = time.Time(created)
 		e.UpdatedAt = updated.Time
 		if !updated.Valid {
 			e.UpdatedAt = e.CreatedAt
@@ -341,19 +343,21 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
 		e := &forge.Entry{}
+		created := Time{}
 		updated := sql.NullTime{}
 		var thumbID *int
 		err := rows.Scan(
 			&e.ID,
 			&e.Path,
 			&e.Type,
-			&e.CreatedAt,
+			&created,
 			&updated,
 			&thumbID,
 		)
 		if err != nil {
 			return nil, err
 		}
+		e.CreatedAt = time.Time(created)
 		e.UpdatedAt = updated.Time
 		if !updated.Valid {
 			e.UpdatedAt = e.CreatedAt
