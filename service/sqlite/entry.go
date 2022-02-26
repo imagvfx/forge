@@ -102,7 +102,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 		vals...,
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("find entries: %w", err)
 	}
 	defer rows.Close()
 	ents := make([]*forge.Entry, 0)
@@ -183,6 +183,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	// vals will contain info for entire queries.
 	subVals := make([]interface{}, 0)
 	for _, kwd := range keywords {
+		findParent := false
 		subKeys := make([]string, 0)
 		// redundant, but needed in every loop for INTERSECT
 		if kwd != "" {
@@ -192,12 +193,14 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				// generic search; not tied to a property
 				subKeys = append(subKeys, `
 					(entries.path LIKE ? OR
-						(properties.name NOT LIKE '.%' AND
+						(default_properties.name NOT LIKE '.%' AND
 							(
-								(properties.typ!='user' AND properties.val LIKE ?) OR
-								(properties.typ='user' AND properties.id IN
-									(SELECT properties.id FROM properties LEFT JOIN accessors ON properties.val=accessors.id
-										WHERE properties.typ='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+								(default_properties.type!='user' AND properties.val LIKE ?) OR
+								(default_properties.type='user' AND properties.id IN
+									(SELECT properties.id FROM properties
+										LEFT JOIN accessors ON properties.val=accessors.id
+										LEFT JOIN default_properties ON properties.default_id=default_properties.id
+										WHERE default_properties.type='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
 									)
 								)
 							)
@@ -245,8 +248,16 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if notSearch {
 					not = "NOT"
 				}
-				q := fmt.Sprintf("(properties.name=? AND %v (", not)
+				q := fmt.Sprintf("(default_properties.name=? AND ")
 				subVals = append(subVals, k)
+				if sub != "" {
+					findParent = true
+					if sub != "(sub)" {
+						q += "entries.path LIKE ? AND"
+						subVals = append(subVals, "%/"+sub)
+					}
+				}
+				q += not + "("
 				vs := strings.Split(val, ",")
 				for i, v := range vs {
 					if i != 0 {
@@ -269,11 +280,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					}
 					vq := fmt.Sprintf(`
 						(
-							(properties.typ!='user' AND properties.val %s ?) OR
-							(properties.typ='user' AND properties.id IN
+							(default_properties.type!='user' AND properties.val %s ?) OR
+							(default_properties.type='user' AND properties.id IN
 								(SELECT properties.id FROM properties
 									LEFT JOIN accessors ON properties.val=accessors.id
-									WHERE properties.typ='user' AND %s
+									LEFT JOIN default_properties ON properties.default_id=default_properties.id
+									WHERE default_properties.type='user' AND %s
 								)
 							)
 						)
@@ -283,13 +295,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					q += vq
 				}
 				q += "))"
-				if sub != "" {
-					if sub == "(sub)" {
-						q = fmt.Sprintf("(entries.path IN (SELECT parents.path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id LEFT JOIN entries AS parents ON entries.parent_id=parents.id WHERE %v))", q)
-					} else {
-						q = fmt.Sprintf("(entries.path || '/%v' IN (SELECT path FROM entries LEFT JOIN properties ON entries.id=properties.entry_id WHERE %v))", sub, q)
-					}
-				}
 				subKeys = append(subKeys, q)
 			}
 		}
@@ -297,11 +302,17 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		if len(subKeys) != 0 {
 			where = "WHERE " + strings.Join(subKeys, " AND ")
 		}
+		target := "entries"
+		if findParent {
+			target = "parents"
+		}
 		subQuery := fmt.Sprintf(`
-			SELECT entries.id FROM entries
+			SELECT %s.id FROM entries
+			LEFT JOIN entries AS parents ON entries.parent_id=parents.id
 			LEFT JOIN properties ON entries.id=properties.entry_id
+			LEFT JOIN default_properties ON properties.default_id=default_properties.id
 			%v
-		`, where)
+		`, target, where)
 		subQueries = append(subQueries, subQuery)
 	}
 	queryTmpl := `

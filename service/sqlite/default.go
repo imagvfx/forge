@@ -138,6 +138,7 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find forge.DefaultFi
 	}
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
+			default_properties.id,
 			entry_types.name,
 			default_properties.name,
 			default_properties.type,
@@ -157,6 +158,7 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find forge.DefaultFi
 			Category: "property",
 		}
 		err := rows.Scan(
+			&d.ID,
 			&d.EntryType,
 			&d.Name,
 			&d.Type,
@@ -181,7 +183,7 @@ func getDefaultProperty(tx *sql.Tx, ctx context.Context, entry_type, name string
 	}
 	defaults, err := findDefaultProperties(tx, ctx, find)
 	if len(defaults) == 0 {
-		return nil, forge.NotFound("default not found")
+		return nil, forge.NotFound("default not found: %v: %v", entry_type, name)
 	}
 	return defaults[0], err
 }
@@ -242,7 +244,7 @@ func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string)
 	}
 	defaults, err := findDefaultEnvirons(tx, ctx, find)
 	if len(defaults) == 0 {
-		return nil, forge.NotFound("default not found")
+		return nil, forge.NotFound("default not found: %v: %v", entry_type, name)
 	}
 	return defaults[0], err
 }
@@ -316,7 +318,7 @@ func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) 
 	}
 	defaults, err := findDefaultAccesses(tx, ctx, find)
 	if len(defaults) == 0 {
-		return nil, forge.NotFound("default not found")
+		return nil, forge.NotFound("default not found: %v: %v", entry_type, name)
 	}
 	return defaults[0], err
 }
@@ -452,14 +454,13 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 	_, err = tx.ExecContext(ctx, `
 		INSERT INTO properties (
 			entry_id,
-			name,
-			typ,
+			default_id,
 			val,
 			updated_at
-		) SELECT id, ?, ?, ?, ? FROM entries WHERE type_id=?
+		) SELECT id, ?, ?, ? FROM entries WHERE type_id=?
 		ON CONFLICT DO NOTHING
 	`,
-		d.Name, d.Type, d.Value, time.Now().UTC(), typeID,
+		d.ID, d.Value, time.Now().UTC(), typeID,
 	)
 	if err != nil {
 		return err

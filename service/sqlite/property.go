@@ -16,12 +16,12 @@ func createPropertiesTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS properties (
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER,
-			name STRING NOT NULL,
-			typ STRING NOT NULL,
+			default_id INTEGER NOT NULL,
 			val STRING NOT NULL,
 			updated_at TIMESTAMP NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
-			UNIQUE (entry_id, name)
+			FOREIGN KEY (default_id) REFERENCES default_properties (id),
+			UNIQUE (entry_id, default_id)
 		)
 	`)
 	if err != nil {
@@ -57,7 +57,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.Name != nil {
-		keys = append(keys, "properties.name=?")
+		keys = append(keys, "default_properties.name=?")
 		vals = append(vals, *find.Name)
 	}
 	if find.EntryPath != nil {
@@ -71,13 +71,14 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			properties.id,
-			properties.name,
-			properties.typ,
+			default_properties.name,
+			default_properties.type,
 			properties.val,
 			properties.updated_at,
 			entries.path
 		FROM properties
 		LEFT JOIN entries ON properties.entry_id = entries.id
+		LEFT JOIN default_properties ON properties.default_id = default_properties.id
 		`+where,
 		vals...,
 	)
@@ -97,7 +98,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 			&p.EntryPath,
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("find properties: %w", err)
 		}
 		if strings.HasPrefix(p.Name, ".") {
 			p.Eval, p.Value, p.ValueError = evalSpecialProperty(tx, ctx, p.Name, p.RawValue)
@@ -160,6 +161,14 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	if err != nil {
 		return err
 	}
+	ent, err := getEntry(tx, ctx, p.EntryPath)
+	if err != nil {
+		return err
+	}
+	d, err := getDefaultProperty(tx, ctx, ent.Type, p.Name)
+	if err != nil {
+		return err
+	}
 	if strings.HasPrefix(p.Name, ".") {
 		p.Value, err = validateSpecialProperty(tx, ctx, p.Name, p.Value)
 		if err != nil {
@@ -178,16 +187,14 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO properties (
 			entry_id,
-			typ,
-			name,
+			default_id,
 			val,
 			updated_at
 		)
-		VALUES (?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		entryID,
-		p.Type,
-		p.Name,
+		d.ID,
 		p.Value,
 		time.Now().UTC(),
 	)
