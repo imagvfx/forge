@@ -28,10 +28,6 @@ func createEntriesTable(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`ALTER TABLE entries ADD COLUMN created_at TIMESTMAP NOT NULL DEFAULT '0000-01-01 00:00:00'`)
-	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
-		return err
-	}
 	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_entries_path ON entries (path)`)
 	return err
 }

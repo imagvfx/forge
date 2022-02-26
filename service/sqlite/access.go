@@ -28,10 +28,6 @@ func createAccessControlsTable(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`ALTER TABLE access_controls ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT '0000-01-01 00:00:00'`)
-	if err != nil && !strings.Contains(err.Error(), "duplicate column name") {
-		return err
-	}
 	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_access_controls_entry_id ON access_controls (entry_id)`)
 	return err
 }
