@@ -416,7 +416,7 @@
 							<div class="closeButton" style="background-color:#ECC;"> [&#x2715]
 						]
 						<div style="display:flex;gap:0.5rem;padding:0.7rem;background-color:inherit;"> [
-							<form class="valueForm" action="/api/add-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+							<form class="valueForm" action="/api/add-environ" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
 								<input name="path" class="entryInput" type="hidden"> []
 								<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
 								<input name="ctg" class="categoryInput" type="hidden"> []

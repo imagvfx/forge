@@ -35,10 +35,8 @@ type Service interface {
 	DeleteThumbnail(ctx context.Context, path string) error
 	EntryProperties(ctx context.Context, path string) ([]*Property, error)
 	GetProperty(ctx context.Context, path, name string) (*Property, error)
-	AddProperty(ctx context.Context, p *Property) error
 	UpdateProperty(ctx context.Context, upd PropertyUpdater) error
 	BulkUpdateProperties(ctx context.Context, upds []PropertyUpdater) error
-	DeleteProperty(ctx context.Context, path string, name string) error
 	EntryEnvirons(ctx context.Context, path string) ([]*Property, error)
 	GetEnviron(ctx context.Context, path, name string) (*Property, error)
 	AddEnviron(ctx context.Context, p *Property) error

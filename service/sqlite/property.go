@@ -139,23 +139,6 @@ func getProperty(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Pro
 	return p, nil
 }
 
-func AddProperty(db *sql.DB, ctx context.Context, p *forge.Property) error {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	err = addProperty(tx, ctx, p)
-	if err != nil {
-		return err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	err := userWrite(tx, ctx, p.EntryPath)
 	if err != nil {
@@ -335,23 +318,6 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	})
 	if err != nil {
 		return nil
-	}
-	return nil
-}
-
-func DeleteProperty(db *sql.DB, ctx context.Context, path, name string) error {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	err = deleteProperty(tx, ctx, path, name)
-	if err != nil {
-		return err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return err
 	}
 	return nil
 }

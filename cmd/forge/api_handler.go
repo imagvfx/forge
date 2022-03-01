@@ -245,28 +245,6 @@ func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWrite
 	return nil
 }
 
-func (h *apiHandler) handleAddProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	r.FormValue("") // To parse multipart form.
-	entPaths := r.PostForm["path"]
-	if len(entPaths) == 0 {
-		return fmt.Errorf("path not defined")
-	}
-	name := r.FormValue("name")
-	typ := r.FormValue("type")
-	value := r.FormValue("value")
-	value = strings.TrimSpace(value)
-	for _, pth := range entPaths {
-		err := h.server.AddProperty(ctx, pth, name, typ, value)
-		if err != nil {
-			return err
-		}
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
-	return nil
-}
-
 func (h *apiHandler) handleUpdateProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]
@@ -293,25 +271,6 @@ func (h *apiHandler) handleGetProperty(ctx context.Context, w http.ResponseWrite
 	name := r.FormValue("name")
 	p, err := h.server.GetProperty(ctx, entPath, name)
 	h.WriteResponse(w, p, err)
-	return nil
-}
-
-func (h *apiHandler) handleDeleteProperty(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	r.FormValue("") // To parse multipart form.
-	entPaths := r.PostForm["path"]
-	if len(entPaths) == 0 {
-		return fmt.Errorf("path not defined")
-	}
-	name := r.FormValue("name")
-	for _, pth := range entPaths {
-		err := h.server.DeleteProperty(ctx, pth, name)
-		if err != nil {
-			return err
-		}
-	}
-	if r.FormValue("back_to_referer") != "" {
-		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
-	}
 	return nil
 }
 

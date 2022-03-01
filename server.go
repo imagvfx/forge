@@ -396,33 +396,6 @@ func (s *Server) GetProperty(ctx context.Context, path string, name string) (*Pr
 	return p, nil
 }
 
-func (s *Server) AddProperty(ctx context.Context, path string, name, typ, value string) error {
-	if path == "" {
-		return fmt.Errorf("property path not specified")
-	}
-	if name == "" {
-		return fmt.Errorf("property name not specified")
-	}
-	if typ == "" {
-		return fmt.Errorf("property type not specified")
-	}
-	ent, err := s.svc.GetEntry(ctx, path)
-	if err != nil {
-		return err
-	}
-	prop := &Property{
-		EntryPath: ent.Path,
-		Name:      name,
-		Type:      typ,
-		Value:     value,
-	}
-	err = s.svc.AddProperty(ctx, prop.ServiceProperty())
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *Server) UpdateProperty(ctx context.Context, path string, name, value string) error {
 	if path == "" {
 		return fmt.Errorf("property path not specified")
@@ -445,20 +418,6 @@ func (s *Server) BulkUpdateProperties(ctx context.Context, upds []PropertyUpdate
 	// Note it directly uses UpdateProperty unlike others methods here.
 	// I will change to use service instead of Server in the future.
 	return s.svc.BulkUpdateProperties(ctx, upds)
-}
-
-func (s *Server) DeleteProperty(ctx context.Context, path string, name string) error {
-	if path == "" {
-		return fmt.Errorf("property path not specified")
-	}
-	if name == "" {
-		return fmt.Errorf("property name not specified")
-	}
-	err := s.svc.DeleteProperty(ctx, path, name)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, error) {

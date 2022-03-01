@@ -134,20 +134,12 @@ func (s *Service) GetProperty(ctx context.Context, path, name string) (*forge.Pr
 	return GetProperty(s.db, ctx, path, name)
 }
 
-func (s *Service) AddProperty(ctx context.Context, ent *forge.Property) error {
-	return AddProperty(s.db, ctx, ent)
-}
-
 func (s *Service) UpdateProperty(ctx context.Context, upd forge.PropertyUpdater) error {
 	return UpdateProperty(s.db, ctx, upd)
 }
 
 func (s *Service) BulkUpdateProperties(ctx context.Context, upds []forge.PropertyUpdater) error {
 	return BulkUpdateProperties(s.db, ctx, upds)
-}
-
-func (s *Service) DeleteProperty(ctx context.Context, path, name string) error {
-	return DeleteProperty(s.db, ctx, path, name)
 }
 
 func (s *Service) EntryEnvirons(ctx context.Context, path string) ([]*forge.Property, error) {
