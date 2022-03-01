@@ -693,7 +693,8 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 			id IN (
 				SELECT properties.id FROM properties
 				LEFT JOIN entries ON properties.entry_id = entries.id
-				WHERE entries.type_id=? AND properties.name=?
+				LEFT JOIN default_properties ON properties.default_id = default_properties.id
+				WHERE entries.type_id=? AND default_properties.name=?
 			)
 	`,
 			*upd.Value, d.Value, typeID, upd.Name,
