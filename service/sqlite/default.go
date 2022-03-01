@@ -683,24 +683,6 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 	if err != nil {
 		return err
 	}
-	// Update existing entries.
-	if d.Type != *upd.Type {
-		_, err := tx.ExecContext(ctx, `
-		UPDATE properties
-		SET typ = ?
-		WHERE
-			id IN (
-				SELECT properties.id FROM properties
-				LEFT JOIN entries ON properties.entry_id = entries.id
-				WHERE entries.type_id=? AND properties.name=?
-			)
-	`,
-			*upd.Type, typeID, upd.Name,
-		)
-		if err != nil {
-			return err
-		}
-	}
 	// For value, we will only update properties having old default value with the new one.
 	if d.Value != *upd.Value {
 		_, err := tx.ExecContext(ctx, `
