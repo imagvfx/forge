@@ -14,7 +14,13 @@ import (
 	"github.com/imagvfx/forge"
 )
 
-func validateProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (string, error) {
+// validateProperty validates a property with related infos.
+// `entry` can be an empty string when it is a default (not related to a specific entry).
+func validateProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, val string) (string, error) {
+	handled, val, err := validateSpecialProperty(tx, ctx, entry, name, typ, val)
+	if handled {
+		return val, err
+	}
 	validateFn := map[string]func(*sql.Tx, context.Context, string, string) (string, error){
 		"timecode":   validateTimecode,
 		"text":       validateText,
@@ -28,12 +34,57 @@ func validateProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (
 	if validate == nil {
 		return "", fmt.Errorf("unknown type of property: %v", typ)
 	}
-	var err error
 	val, err = validate(tx, ctx, entry, val)
 	if err != nil {
 		return "", err
 	}
 	return val, nil
+}
+
+// validateSpecialProperty validates special properties those Forge treats specially.
+// For normal properties, it will return the input value unmodified.
+func validateSpecialProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, val string) (bool, string, error) {
+	// TODO: .sub_entry_types
+	switch name {
+	case ".predefined_sub_entries":
+		val, err := func() (string, error) {
+			subNameType := make(map[string]int)
+			for _, nt := range strings.Split(val, ",") {
+				nt = strings.TrimSpace(nt)
+				toks := strings.Split(nt, ":")
+				if len(toks) != 2 {
+					return "", fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
+				}
+				sub := strings.TrimSpace(toks[0])
+				typ := strings.TrimSpace(toks[1])
+				// Save the type id, instead.
+				id, err := getEntryTypeID(tx, ctx, typ)
+				if err != nil {
+					var e *forge.NotFoundError
+					if !errors.As(err, &e) {
+						return "", err
+					}
+					return "", fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+				}
+				subNameType[sub] = id
+			}
+			subNames := make([]string, 0, len(subNameType))
+			for sub := range subNameType {
+				subNames = append(subNames, sub)
+			}
+			sort.Slice(subNames, func(i, j int) bool { return subNames[i] < subNames[j] })
+			val = ""
+			for i, sub := range subNames {
+				if i != 0 {
+					val += ", "
+				}
+				val += sub + ":" + strconv.Itoa(subNameType[sub])
+			}
+			return val, nil
+		}()
+		return true, val, err
+	}
+	return false, val, nil
 }
 
 func validateText(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
@@ -149,49 +200,6 @@ func validateInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, er
 	_, err := strconv.Atoi(val)
 	if err != nil {
 		return "", fmt.Errorf("cannot convert to int: %v", val)
-	}
-	return val, nil
-}
-
-// validateSpecialProperty validates special properties that starts with dot (.).
-// For normal properties, it will return the input value unmodified.
-func validateSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (string, error) {
-	// TODO: .sub_entry_types
-	switch name {
-	case ".predefined_sub_entries":
-		subNameType := make(map[string]int)
-		for _, nt := range strings.Split(val, ",") {
-			nt = strings.TrimSpace(nt)
-			toks := strings.Split(nt, ":")
-			if len(toks) != 2 {
-				return "", fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
-			}
-			sub := strings.TrimSpace(toks[0])
-			typ := strings.TrimSpace(toks[1])
-			// Save the type id, instead.
-			id, err := getEntryTypeID(tx, ctx, typ)
-			if err != nil {
-				var e *forge.NotFoundError
-				if !errors.As(err, &e) {
-					return "", err
-				}
-				return "", fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
-			}
-			subNameType[sub] = id
-		}
-		subNames := make([]string, 0, len(subNameType))
-		for sub := range subNameType {
-			subNames = append(subNames, sub)
-		}
-		sort.Slice(subNames, func(i, j int) bool { return subNames[i] < subNames[j] })
-		val = ""
-		for i, sub := range subNames {
-			if i != 0 {
-				val += ", "
-			}
-			val += sub + ":" + strconv.Itoa(subNameType[sub])
-		}
-		return val, nil
 	}
 	return val, nil
 }

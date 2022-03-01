@@ -423,11 +423,9 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 	if err != nil {
 		return err
 	}
-	if strings.HasPrefix(d.Name, ".") {
-		d.Value, err = validateSpecialProperty(tx, ctx, d.Name, d.Value)
-		if err != nil {
-			return err
-		}
+	d.Value, err = validateProperty(tx, ctx, "", d.Name, d.Type, d.Value)
+	if err != nil {
+		return err
 	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO default_properties (
@@ -651,23 +649,24 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 		keys = append(keys, "type=?")
 		vals = append(vals, *upd.Type)
 	}
+	d, err := getDefaultProperty(tx, ctx, upd.EntryType, upd.Name)
+	if err != nil {
+		return err
+	}
 	if upd.Value != nil {
-		if strings.HasPrefix(upd.Name, ".") {
-			var err error
-			*upd.Value, err = validateSpecialProperty(tx, ctx, upd.Name, *upd.Value)
-			if err != nil {
-				return err
-			}
+		typ := d.Type
+		if upd.Type != nil {
+			typ = *upd.Type
+		}
+		*upd.Value, err = validateProperty(tx, ctx, "", d.Name, typ, *upd.Value)
+		if err != nil {
+			return err
 		}
 		keys = append(keys, "value=?")
 		vals = append(vals, *upd.Value)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "property", upd.Name)
-	}
-	old, err := getDefaultProperty(tx, ctx, upd.EntryType, upd.Name)
-	if err != nil {
-		return err
 	}
 	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
 	if err != nil {
@@ -685,7 +684,7 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 		return err
 	}
 	// Update existing entries.
-	if old.Type != *upd.Type {
+	if d.Type != *upd.Type {
 		_, err := tx.ExecContext(ctx, `
 		UPDATE properties
 		SET typ = ?
@@ -703,7 +702,7 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 		}
 	}
 	// For value, we will only update properties having old default value with the new one.
-	if old.Value != *upd.Value {
+	if d.Value != *upd.Value {
 		_, err := tx.ExecContext(ctx, `
 		UPDATE properties
 		SET val = ?
@@ -715,7 +714,7 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 				WHERE entries.type_id=? AND properties.name=?
 			)
 	`,
-			*upd.Value, old.Value, typeID, upd.Name,
+			*upd.Value, d.Value, typeID, upd.Name,
 		)
 		if err != nil {
 			return err

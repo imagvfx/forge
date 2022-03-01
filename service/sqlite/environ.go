@@ -180,7 +180,7 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	e.Value, err = validateProperty(tx, ctx, e.EntryPath, e.Type, e.Value)
+	e.Value, err = validateProperty(tx, ctx, e.EntryPath, e.Name, e.Type, e.Value)
 	if err != nil {
 		return err
 	}
@@ -257,7 +257,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if upd.Value != nil {
-		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, e.Type, *upd.Value)
+		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, e.Name, e.Type, *upd.Value)
 		if err != nil {
 			return err
 		}
