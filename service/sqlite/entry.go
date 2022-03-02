@@ -669,30 +669,30 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 				}
 			}
 		}
-		defAccs, err := findDefaultAccesses(tx, ctx, forge.DefaultFinder{EntryType: &entType})
+		defAccs, err := findDefaultAccessList(tx, ctx, forge.DefaultFinder{EntryType: &entType})
 		if err != nil {
 			return err
 		}
 		for _, d := range defAccs {
 			if !seenAcc[d.Name] {
-				dacc := &forge.AccessControl{
+				dacc := &forge.Access{
 					EntryPath:    e.Path,
 					Accessor:     d.Name,
 					AccessorType: d.Type,
 					Mode:         d.Value,
 				}
-				err := addAccessControl(tx, ctx, dacc)
+				err := addAccess(tx, ctx, dacc)
 				if err != nil {
 					return err
 				}
 				seenAcc[d.Name] = true
 			} else {
-				upd := forge.AccessControlUpdater{
+				upd := forge.AccessUpdater{
 					EntryPath: e.Path,
 					Accessor:  d.Name,
 					Mode:      &d.Value,
 				}
-				err := updateAccessControl(tx, ctx, upd)
+				err := updateAccess(tx, ctx, upd)
 				if err != nil {
 					return err
 				}

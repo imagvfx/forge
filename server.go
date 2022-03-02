@@ -509,11 +509,11 @@ func (s *Server) DeleteEnviron(ctx context.Context, path string, name string) er
 	return nil
 }
 
-func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*AccessControl, error) {
+func (s *Server) EntryAccessList(ctx context.Context, path string) ([]*Access, error) {
 	if path == "" {
 		return nil, fmt.Errorf("access control path not specified")
 	}
-	acls, err := s.svc.EntryAccessControls(ctx, path)
+	acls, err := s.svc.EntryAccessList(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -529,21 +529,21 @@ func (s *Server) EntryAccessControls(ctx context.Context, path string) ([]*Acces
 	return acls, nil
 }
 
-func (s *Server) GetAccessControl(ctx context.Context, path string, accessor string) (*AccessControl, error) {
+func (s *Server) GetAccess(ctx context.Context, path string, accessor string) (*Access, error) {
 	if path == "" {
 		return nil, fmt.Errorf("access control path not specified")
 	}
 	if accessor == "" {
 		return nil, fmt.Errorf("accessor not specified")
 	}
-	acl, err := s.svc.GetAccessControl(ctx, path, accessor)
+	acl, err := s.svc.GetAccess(ctx, path, accessor)
 	if err != nil {
 		return nil, err
 	}
 	return acl, nil
 }
 
-func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, accessor_type, mode string) error {
+func (s *Server) AddAccess(ctx context.Context, path string, accessor, accessor_type, mode string) error {
 	if path == "" {
 		return fmt.Errorf("access control path not specified")
 	}
@@ -568,20 +568,20 @@ func (s *Server) AddAccessControl(ctx context.Context, path string, accessor, ac
 	default:
 		return fmt.Errorf("unknown access type")
 	}
-	ac := &AccessControl{
+	ac := &Access{
 		EntryPath:    path,
 		Accessor:     accessor,
 		AccessorType: accessor_type,
 		Mode:         mode,
 	}
-	err := s.svc.AddAccessControl(ctx, ac)
+	err := s.svc.AddAccess(ctx, ac)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Server) UpdateAccessControl(ctx context.Context, path, accessor, mode string) error {
+func (s *Server) UpdateAccess(ctx context.Context, path, accessor, mode string) error {
 	if path == "" {
 		return fmt.Errorf("access control path not specified")
 	}
@@ -597,26 +597,26 @@ func (s *Server) UpdateAccessControl(ctx context.Context, path, accessor, mode s
 	default:
 		return fmt.Errorf("unknown access type")
 	}
-	ac := AccessControlUpdater{
+	ac := AccessUpdater{
 		EntryPath: path,
 		Accessor:  accessor,
 		Mode:      &mode,
 	}
-	err := s.svc.UpdateAccessControl(ctx, ac)
+	err := s.svc.UpdateAccess(ctx, ac)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Server) DeleteAccessControl(ctx context.Context, path string, accessor string) error {
+func (s *Server) DeleteAccess(ctx context.Context, path string, accessor string) error {
 	if path == "" {
 		return fmt.Errorf("access control path not specified")
 	}
 	if accessor == "" {
 		return fmt.Errorf("accessor not specified")
 	}
-	err := s.svc.DeleteAccessControl(ctx, path, accessor)
+	err := s.svc.DeleteAccess(ctx, path, accessor)
 	if err != nil {
 		return err
 	}

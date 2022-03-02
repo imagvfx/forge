@@ -162,24 +162,24 @@ func (s *Service) DeleteEnviron(ctx context.Context, path, name string) error {
 	return DeleteEnviron(s.db, ctx, path, name)
 }
 
-func (s Service) EntryAccessControls(ctx context.Context, path string) ([]*forge.AccessControl, error) {
-	return EntryAccessControls(s.db, ctx, path)
+func (s Service) EntryAccessList(ctx context.Context, path string) ([]*forge.Access, error) {
+	return EntryAccessList(s.db, ctx, path)
 }
 
-func (s *Service) GetAccessControl(ctx context.Context, path, name string) (*forge.AccessControl, error) {
-	return GetAccessControl(s.db, ctx, path, name)
+func (s *Service) GetAccess(ctx context.Context, path, name string) (*forge.Access, error) {
+	return GetAccess(s.db, ctx, path, name)
 }
 
-func (s Service) AddAccessControl(ctx context.Context, a *forge.AccessControl) error {
-	return AddAccessControl(s.db, ctx, a)
+func (s Service) AddAccess(ctx context.Context, a *forge.Access) error {
+	return AddAccess(s.db, ctx, a)
 }
 
-func (s Service) UpdateAccessControl(ctx context.Context, upd forge.AccessControlUpdater) error {
-	return UpdateAccessControl(s.db, ctx, upd)
+func (s Service) UpdateAccess(ctx context.Context, upd forge.AccessUpdater) error {
+	return UpdateAccess(s.db, ctx, upd)
 }
 
-func (s *Service) DeleteAccessControl(ctx context.Context, path, name string) error {
-	return DeleteAccessControl(s.db, ctx, path, name)
+func (s *Service) DeleteAccess(ctx context.Context, path, name string) error {
+	return DeleteAccess(s.db, ctx, path, name)
 }
 
 func (s *Service) FindLogs(ctx context.Context, find forge.LogFinder) ([]*forge.Log, error) {

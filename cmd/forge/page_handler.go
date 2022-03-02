@@ -213,7 +213,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
-	acs, err := h.server.EntryAccessControls(ctx, path)
+	acs, err := h.server.EntryAccessList(ctx, path)
 	if err != nil {
 		return err
 	}
@@ -614,7 +614,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		Properties                []*forge.Property
 		Environs                  []*forge.Property
 		AccessorTypes             []string
-		AccessControls            []*forge.AccessControl
+		AccessList                []*forge.Access
 		ThumbnailPath             map[string]string
 		BaseEntryTypes            []string
 		AllUsers                  []*forge.User
@@ -639,7 +639,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		Properties:                props,
 		Environs:                  envs,
 		AccessorTypes:             forge.AccessorTypes(),
-		AccessControls:            acs,
+		AccessList:                acs,
 		ThumbnailPath:             thumbnailPath,
 		BaseEntryTypes:            baseTypes,
 		AllUsers:                  allUsers,

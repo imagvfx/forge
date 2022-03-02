@@ -60,7 +60,7 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	err = createDefaultAccessesTable(tx)
+	err = createDefaultAccessListTable(tx)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func Init(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	err = createAccessControlsTable(tx)
+	err = createAccessListTable(tx)
 	if err != nil {
 		return err
 	}

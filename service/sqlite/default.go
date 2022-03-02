@@ -48,7 +48,8 @@ func createDefaultEnvironsTable(tx *sql.Tx) error {
 	return err
 }
 
-func createDefaultAccessesTable(tx *sql.Tx) error {
+func createDefaultAccessListTable(tx *sql.Tx) error {
+	// TODO: rename to default_access_list table?
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS default_accesses (
 			id INTEGER PRIMARY KEY,
@@ -104,7 +105,7 @@ func FindDefaults(db *sql.DB, ctx context.Context, find forge.DefaultFinder) ([]
 		return nil, err
 	}
 	defaults = append(defaults, envs...)
-	accs, err := findDefaultAccesses(tx, ctx, find)
+	accs, err := findDefaultAccessList(tx, ctx, find)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +250,7 @@ func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string)
 	return defaults[0], err
 }
 
-func findDefaultAccesses(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
+func findDefaultAccessList(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryType != nil {
@@ -316,7 +317,7 @@ func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) 
 		EntryType: &entry_type,
 		Name:      &name,
 	}
-	defaults, err := findDefaultAccesses(tx, ctx, find)
+	defaults, err := findDefaultAccessList(tx, ctx, find)
 	if len(defaults) == 0 {
 		return nil, forge.NotFound("default not found: %v: %v", entry_type, name)
 	}

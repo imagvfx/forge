@@ -242,7 +242,7 @@ type Accessor struct {
 	Called  string
 }
 
-type AccessControl struct {
+type Access struct {
 	ID           int
 	EntryPath    string
 	Accessor     string
@@ -252,7 +252,7 @@ type AccessControl struct {
 	UpdatedAt    time.Time
 }
 
-func (p *AccessControl) MarshalJSON() ([]byte, error) {
+func (p *Access) MarshalJSON() ([]byte, error) {
 	m := struct {
 		Path      string
 		Name      string
@@ -271,12 +271,12 @@ func (p *AccessControl) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-type AccessControlFinder struct {
+type AccessFinder struct {
 	EntryPath *string
 	Accessor  *string
 }
 
-type AccessControlUpdater struct {
+type AccessUpdater struct {
 	EntryPath string
 	Accessor  string
 	Mode      *string

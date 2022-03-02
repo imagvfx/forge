@@ -143,7 +143,7 @@
 									<div class="infoAdder"> [+]
 								]
 								<div class="infoCategoryToggle" data-category="access"> [
-									<div class="infoSelector"> [Access ({{len $.AccessControls}})]
+									<div class="infoSelector"> [Access ({{len $.AccessList}})]
 									<div class="infoAdder"> [+]
 								]
 							]
@@ -201,7 +201,7 @@
 									<div class="{{if $e.ValueError}}invalid{{end}} infoValue"> [{{brLines $e.Eval}}{{$e.ValueError}}]
 								]
 								{{end}}
-								{{range $a := $.AccessControls}}
+								{{range $a := $.AccessList}}
 								<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"> [
 									<div class="infoTop"> [
 										{{if ne $a.EntryPath $.Entry.Path}}

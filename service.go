@@ -42,11 +42,11 @@ type Service interface {
 	AddEnviron(ctx context.Context, p *Property) error
 	UpdateEnviron(ctx context.Context, upd PropertyUpdater) error
 	DeleteEnviron(ctx context.Context, path string, name string) error
-	EntryAccessControls(ctx context.Context, path string) ([]*AccessControl, error)
-	GetAccessControl(ctx context.Context, path, name string) (*AccessControl, error)
-	AddAccessControl(ctx context.Context, ac *AccessControl) error
-	UpdateAccessControl(ctx context.Context, upd AccessControlUpdater) error
-	DeleteAccessControl(ctx context.Context, path string, name string) error
+	EntryAccessList(ctx context.Context, path string) ([]*Access, error)
+	GetAccess(ctx context.Context, path, name string) (*Access, error)
+	AddAccess(ctx context.Context, ac *Access) error
+	UpdateAccess(ctx context.Context, upd AccessUpdater) error
+	DeleteAccess(ctx context.Context, path string, name string) error
 	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
 	GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error)
 	FindUsers(ctx context.Context, find UserFinder) ([]*User, error)

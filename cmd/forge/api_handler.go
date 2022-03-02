@@ -355,7 +355,7 @@ func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter,
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
 	for _, pth := range entPaths {
-		err := h.server.AddAccessControl(ctx, pth, accessor, accessor_type, mode)
+		err := h.server.AddAccess(ctx, pth, accessor, accessor_type, mode)
 		if err != nil {
 			return err
 		}
@@ -376,7 +376,7 @@ func (h *apiHandler) handleUpdateAccess(ctx context.Context, w http.ResponseWrit
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
 	for _, pth := range entPaths {
-		err := h.server.UpdateAccessControl(ctx, pth, accessor, mode)
+		err := h.server.UpdateAccess(ctx, pth, accessor, mode)
 		if err != nil {
 			return err
 		}
@@ -398,7 +398,7 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
 	for _, pth := range entPaths {
-		acl, err := h.server.GetAccessControl(ctx, pth, accessor)
+		acl, err := h.server.GetAccess(ctx, pth, accessor)
 		if err != nil {
 			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
@@ -409,12 +409,12 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 			if accessor_type != "" && accessor_type != acl.AccessorType {
 				return fmt.Errorf("accessor exists, but with different type: %v", acl.AccessorType)
 			}
-			err := h.server.UpdateAccessControl(ctx, pth, accessor, mode)
+			err := h.server.UpdateAccess(ctx, pth, accessor, mode)
 			if err != nil {
 				return err
 			}
 		} else {
-			err = h.server.AddAccessControl(ctx, pth, accessor, accessor_type, mode)
+			err = h.server.AddAccess(ctx, pth, accessor, accessor_type, mode)
 			if err != nil {
 				return err
 			}
@@ -430,7 +430,7 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	accessor := r.FormValue("name")
-	acl, err := h.server.GetAccessControl(ctx, entPath, accessor)
+	acl, err := h.server.GetAccess(ctx, entPath, accessor)
 	h.WriteResponse(w, acl, err)
 	return nil
 }
@@ -443,7 +443,7 @@ func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWrit
 	}
 	name := r.FormValue("name")
 	for _, pth := range entPaths {
-		err := h.server.DeleteAccessControl(ctx, pth, name)
+		err := h.server.DeleteAccess(ctx, pth, name)
 		if err != nil {
 			return err
 		}

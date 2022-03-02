@@ -12,8 +12,9 @@ import (
 	"github.com/imagvfx/forge"
 )
 
-func createAccessControlsTable(tx *sql.Tx) error {
+func createAccessListTable(tx *sql.Tx) error {
 	// TODO: add group_id once groups table is created
+	// TODO: rename the table to access_list
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS access_controls (
 			id INTEGER PRIMARY KEY,
@@ -32,13 +33,13 @@ func createAccessControlsTable(tx *sql.Tx) error {
 	return err
 }
 
-func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*forge.AccessControl, error) {
+func EntryAccessList(db *sql.DB, ctx context.Context, path string) ([]*forge.Access, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	accs, err := entryAccessControls(tx, ctx, path)
+	accs, err := entryAccessList(tx, ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -49,14 +50,14 @@ func EntryAccessControls(db *sql.DB, ctx context.Context, path string) ([]*forge
 	return accs, nil
 }
 
-func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*forge.AccessControl, error) {
-	acm := make(map[string]*forge.AccessControl)
+func entryAccessList(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Access, error) {
+	acm := make(map[string]*forge.Access)
 	for {
 		ent, err := getEntry(tx, ctx, path)
 		if err != nil {
 			return nil, err
 		}
-		as, err := findAccessControls(tx, ctx, forge.AccessControlFinder{EntryPath: &path})
+		as, err := findAccessList(tx, ctx, forge.AccessFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +74,7 @@ func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*forge
 		}
 		path = filepath.Dir(path)
 	}
-	acs := make([]*forge.AccessControl, 0)
+	acs := make([]*forge.Access, 0)
 	for _, a := range acm {
 		acs = append(acs, a)
 	}
@@ -81,7 +82,7 @@ func entryAccessControls(tx *sql.Tx, ctx context.Context, path string) ([]*forge
 }
 
 // when id is empty, it will find access controls of root.
-func findAccessControls(tx *sql.Tx, ctx context.Context, find forge.AccessControlFinder) ([]*forge.AccessControl, error) {
+func findAccessList(tx *sql.Tx, ctx context.Context, find forge.AccessFinder) ([]*forge.Access, error) {
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
 	if find.EntryPath != nil {
@@ -114,10 +115,10 @@ func findAccessControls(tx *sql.Tx, ctx context.Context, find forge.AccessContro
 		return nil, err
 	}
 	defer rows.Close()
-	acss := make([]*forge.AccessControl, 0)
+	acss := make([]*forge.Access, 0)
 	for rows.Next() {
 		var isGroup bool
-		a := &forge.AccessControl{}
+		a := &forge.Access{}
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryPath,
@@ -196,7 +197,7 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 		return &rwMode, nil
 	}
 	for {
-		as, err := findAccessControls(tx, ctx, forge.AccessControlFinder{EntryPath: &path})
+		as, err := findAccessList(tx, ctx, forge.AccessFinder{EntryPath: &path})
 		if err != nil {
 			return nil, err
 		}
@@ -236,13 +237,13 @@ func isAdmin(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
 	return isGroupMember(tx, ctx, "admin", user)
 }
 
-func GetAccessControl(db *sql.DB, ctx context.Context, path, name string) (*forge.AccessControl, error) {
+func GetAccess(db *sql.DB, ctx context.Context, path, name string) (*forge.Access, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-	acl, err := getAccessControl(tx, ctx, path, name)
+	acl, err := getAccess(tx, ctx, path, name)
 	if err != nil {
 		return nil, err
 	}
@@ -253,8 +254,8 @@ func GetAccessControl(db *sql.DB, ctx context.Context, path, name string) (*forg
 	return acl, nil
 }
 
-func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*forge.AccessControl, error) {
-	as, err := findAccessControls(tx, ctx, forge.AccessControlFinder{
+func getAccess(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Access, error) {
+	as, err := findAccessList(tx, ctx, forge.AccessFinder{
 		EntryPath: &path,
 		Accessor:  &name,
 	})
@@ -268,13 +269,13 @@ func getAccessControl(tx *sql.Tx, ctx context.Context, path, name string) (*forg
 	return a, nil
 }
 
-func AddAccessControl(db *sql.DB, ctx context.Context, a *forge.AccessControl) error {
+func AddAccess(db *sql.DB, ctx context.Context, a *forge.Access) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = addAccessControl(tx, ctx, a)
+	err = addAccess(tx, ctx, a)
 	if err != nil {
 		return err
 	}
@@ -285,7 +286,7 @@ func AddAccessControl(db *sql.DB, ctx context.Context, a *forge.AccessControl) e
 	return nil
 }
 
-func addAccessControl(tx *sql.Tx, ctx context.Context, a *forge.AccessControl) error {
+func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 	err := userWrite(tx, ctx, a.EntryPath)
 	if err != nil {
 		return err
@@ -347,13 +348,13 @@ func addAccessControl(tx *sql.Tx, ctx context.Context, a *forge.AccessControl) e
 	return nil
 }
 
-func UpdateAccessControl(db *sql.DB, ctx context.Context, upd forge.AccessControlUpdater) error {
+func UpdateAccess(db *sql.DB, ctx context.Context, upd forge.AccessUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = updateAccessControl(tx, ctx, upd)
+	err = updateAccess(tx, ctx, upd)
 	if err != nil {
 		return err
 	}
@@ -364,12 +365,12 @@ func UpdateAccessControl(db *sql.DB, ctx context.Context, upd forge.AccessContro
 	return nil
 }
 
-func updateAccessControl(tx *sql.Tx, ctx context.Context, upd forge.AccessControlUpdater) error {
+func updateAccess(tx *sql.Tx, ctx context.Context, upd forge.AccessUpdater) error {
 	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
 		return err
 	}
-	a, err := getAccessControl(tx, ctx, upd.EntryPath, upd.Accessor)
+	a, err := getAccess(tx, ctx, upd.EntryPath, upd.Accessor)
 	if err != nil {
 		return err
 	}
@@ -425,13 +426,13 @@ func updateAccessControl(tx *sql.Tx, ctx context.Context, upd forge.AccessContro
 	return nil
 }
 
-func DeleteAccessControl(db *sql.DB, ctx context.Context, path, name string) error {
+func DeleteAccess(db *sql.DB, ctx context.Context, path, name string) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	err = deleteAccessControl(tx, ctx, path, name)
+	err = deleteAccess(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
@@ -442,7 +443,7 @@ func DeleteAccessControl(db *sql.DB, ctx context.Context, path, name string) err
 	return nil
 }
 
-func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) error {
+func deleteAccess(tx *sql.Tx, ctx context.Context, path, name string) error {
 	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
@@ -461,7 +462,7 @@ func deleteAccessControl(tx *sql.Tx, ctx context.Context, path, name string) err
 			return err
 		}
 	}
-	a, err := getAccessControl(tx, ctx, path, name)
+	a, err := getAccess(tx, ctx, path, name)
 	if err != nil {
 		return err
 	}
