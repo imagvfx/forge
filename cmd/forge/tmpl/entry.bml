@@ -202,19 +202,19 @@
 								]
 								{{end}}
 								{{range $a := $.AccessList}}
-								<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Accessor}}" data-type="{{$a.AccessorType}}" data-value="{{$a.Mode}}"> [
+								<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
 									<div class="infoTop"> [
 										{{if ne $a.EntryPath $.Entry.Path}}
 										<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]
 										{{end}}
 										<div class="infoTitle"> [
-											<div> [{{$a.Accessor}}]
+											<div> [{{$a.Name}}]
 											<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
 										]
 										<div style="width:1rem"> []
 										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 									]
-									<div class="infoValue"> [{{$a.Mode}}]
+									<div class="infoValue"> [{{$a.Value}}]
 								]
 								{{end}}
 							]

@@ -524,7 +524,7 @@ func (s *Server) EntryAccessList(ctx context.Context, path string) ([]*Access, e
 		if cmp != 0 {
 			return cmp < 0
 		}
-		return a.Accessor <= b.Accessor
+		return a.Name <= b.Name
 	})
 	return acls, nil
 }
@@ -569,10 +569,10 @@ func (s *Server) AddAccess(ctx context.Context, path string, accessor, accessor_
 		return fmt.Errorf("unknown access type")
 	}
 	ac := &Access{
-		EntryPath:    path,
-		Accessor:     accessor,
-		AccessorType: accessor_type,
-		Mode:         mode,
+		EntryPath: path,
+		Name:      accessor,
+		Type:      accessor_type,
+		Value:     mode,
 	}
 	err := s.svc.AddAccess(ctx, ac)
 	if err != nil {
@@ -599,8 +599,8 @@ func (s *Server) UpdateAccess(ctx context.Context, path, accessor, mode string) 
 	}
 	ac := AccessUpdater{
 		EntryPath: path,
-		Accessor:  accessor,
-		Mode:      &mode,
+		Name:      accessor,
+		Value:     &mode,
 	}
 	err := s.svc.UpdateAccess(ctx, ac)
 	if err != nil {

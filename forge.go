@@ -243,13 +243,13 @@ type Accessor struct {
 }
 
 type Access struct {
-	ID           int
-	EntryPath    string
-	Accessor     string
-	AccessorType string
-	Mode         string
-	RawMode      int
-	UpdatedAt    time.Time
+	ID        int
+	EntryPath string
+	Name      string
+	Type      string
+	Value     string
+	RawValue  int
+	UpdatedAt time.Time
 }
 
 func (p *Access) MarshalJSON() ([]byte, error) {
@@ -262,10 +262,10 @@ func (p *Access) MarshalJSON() ([]byte, error) {
 		UpdatedAt time.Time
 	}{
 		Path:      p.EntryPath,
-		Name:      p.Accessor,
-		Type:      p.AccessorType,
-		Value:     p.Mode,
-		RawValue:  p.Mode,
+		Name:      p.Name,
+		Type:      p.Type,
+		Value:     p.Value,
+		RawValue:  p.Value,
 		UpdatedAt: p.UpdatedAt,
 	}
 	return json.Marshal(m)
@@ -273,13 +273,13 @@ func (p *Access) MarshalJSON() ([]byte, error) {
 
 type AccessFinder struct {
 	EntryPath *string
-	Accessor  *string
+	Name      *string
 }
 
 type AccessUpdater struct {
 	EntryPath string
-	Accessor  string
-	Mode      *string
+	Name      string
+	Value     *string
 }
 
 type Log struct {

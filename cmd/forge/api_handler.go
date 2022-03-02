@@ -406,8 +406,8 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 			}
 		}
 		if acl != nil {
-			if accessor_type != "" && accessor_type != acl.AccessorType {
-				return fmt.Errorf("accessor exists, but with different type: %v", acl.AccessorType)
+			if accessor_type != "" && accessor_type != acl.Type {
+				return fmt.Errorf("accessor exists, but with different type: %v", acl.Type)
 			}
 			err := h.server.UpdateAccess(ctx, pth, accessor, mode)
 			if err != nil {

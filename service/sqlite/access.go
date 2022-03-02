@@ -62,12 +62,12 @@ func entryAccessList(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Acc
 			return nil, err
 		}
 		for _, a := range as {
-			if acm[a.Accessor] != nil {
+			if acm[a.Name] != nil {
 				// Already found the accessor permission on a child entry.
 				continue
 			}
 			a.EntryPath = ent.Path
-			acm[a.Accessor] = a
+			acm[a.Name] = a
 		}
 		if path == "/" {
 			break
@@ -89,9 +89,9 @@ func findAccessList(tx *sql.Tx, ctx context.Context, find forge.AccessFinder) ([
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)
 	}
-	if find.Accessor != nil {
+	if find.Name != nil {
 		keys = append(keys, "accessors.name=?")
-		vals = append(vals, *find.Accessor)
+		vals = append(vals, *find.Name)
 	}
 	where := ""
 	if len(keys) != 0 {
@@ -122,21 +122,21 @@ func findAccessList(tx *sql.Tx, ctx context.Context, find forge.AccessFinder) ([
 		err := rows.Scan(
 			&a.ID,
 			&a.EntryPath,
-			&a.Accessor,
+			&a.Name,
 			&isGroup,
-			&a.RawMode,
+			&a.RawValue,
 			&a.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
-		a.AccessorType = "user"
+		a.Type = "user"
 		if isGroup {
-			a.AccessorType = "group"
+			a.Type = "group"
 		}
-		a.Mode = "r"
-		if a.RawMode == 1 {
-			a.Mode = "rw"
+		a.Value = "r"
+		if a.RawValue == 1 {
+			a.Value = "rw"
 		}
 		acss = append(acss, a)
 	}
@@ -204,21 +204,21 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 		// Lower entry has precedence to higher entry.
 		// In a same entry, user accessor has precedence to group accessor.
 		for _, a := range as {
-			if a.AccessorType == "user" && a.Accessor == user {
-				return &a.Mode, nil
+			if a.Type == "user" && a.Name == user {
+				return &a.Value, nil
 			}
 		}
 		for _, a := range as {
-			if a.AccessorType == "user" {
+			if a.Type == "user" {
 				continue
 			}
 			// groups
-			yes, err := isGroupMember(tx, ctx, a.Accessor, user)
+			yes, err := isGroupMember(tx, ctx, a.Name, user)
 			if err != nil {
 				return nil, err
 			}
 			if yes {
-				return &a.Mode, nil
+				return &a.Value, nil
 			}
 		}
 		if path == "/" {
@@ -257,7 +257,7 @@ func GetAccess(db *sql.DB, ctx context.Context, path, name string) (*forge.Acces
 func getAccess(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Access, error) {
 	as, err := findAccessList(tx, ctx, forge.AccessFinder{
 		EntryPath: &path,
-		Accessor:  &name,
+		Name:      &name,
 	})
 	if err != nil {
 		return nil, err
@@ -291,7 +291,7 @@ func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 	if err != nil {
 		return err
 	}
-	ac, err := getAccessor(tx, ctx, a.Accessor)
+	ac, err := getAccessor(tx, ctx, a.Name)
 	if err != nil {
 		return err
 	}
@@ -299,12 +299,12 @@ func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 	if ac.IsGroup {
 		acType = "group"
 	}
-	if a.AccessorType != acType {
-		return fmt.Errorf("mismatch accessor type: got %v, want %v", a.AccessorType, acType)
+	if a.Type != acType {
+		return fmt.Errorf("mismatch accessor type: got %v, want %v", a.Type, acType)
 	}
-	a.RawMode = 0
-	if a.Mode == "rw" {
-		a.RawMode = 1
+	a.RawValue = 0
+	if a.Value == "rw" {
+		a.RawValue = 1
 	}
 	entryID, err := getEntryID(tx, ctx, a.EntryPath)
 	if err != nil {
@@ -321,7 +321,7 @@ func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 	`,
 		entryID,
 		ac.ID,
-		a.RawMode,
+		a.RawValue,
 		time.Now().UTC(),
 	)
 	if err != nil {
@@ -338,9 +338,9 @@ func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 		User:      user,
 		Action:    "create",
 		Category:  "access",
-		Name:      a.Accessor,
-		Type:      a.AccessorType,
-		Value:     a.Mode,
+		Name:      a.Name,
+		Type:      a.Type,
+		Value:     a.Value,
 	})
 	if err != nil {
 		return err
@@ -370,21 +370,21 @@ func updateAccess(tx *sql.Tx, ctx context.Context, upd forge.AccessUpdater) erro
 	if err != nil {
 		return err
 	}
-	a, err := getAccess(tx, ctx, upd.EntryPath, upd.Accessor)
+	a, err := getAccess(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
 	keys := make([]string, 0)
 	vals := make([]interface{}, 0)
-	if upd.Mode != nil {
+	if upd.Value != nil {
 		rawMode := 0
-		if *upd.Mode == "rw" {
+		if *upd.Value == "rw" {
 			rawMode = 1
 		}
-		if rawMode != a.RawMode {
+		if rawMode != a.RawValue {
 			keys = append(keys, "mode=?")
 			vals = append(vals, rawMode)
-			a.Mode = *upd.Mode
+			a.Value = *upd.Value
 		}
 	}
 	if len(keys) == 0 {
@@ -416,9 +416,9 @@ func updateAccess(tx *sql.Tx, ctx context.Context, upd forge.AccessUpdater) erro
 		User:      user,
 		Action:    "update",
 		Category:  "access",
-		Name:      a.Accessor,
-		Type:      a.AccessorType,
-		Value:     a.Mode,
+		Name:      a.Name,
+		Type:      a.Type,
+		Value:     a.Value,
 	})
 	if err != nil {
 		return err
@@ -488,8 +488,8 @@ func deleteAccess(tx *sql.Tx, ctx context.Context, path, name string) error {
 		User:      user,
 		Action:    "delete",
 		Category:  "access",
-		Name:      a.Accessor,
-		Type:      a.AccessorType,
+		Name:      a.Name,
+		Type:      a.Type,
 		Value:     "",
 	})
 	if err != nil {

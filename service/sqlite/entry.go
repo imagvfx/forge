@@ -676,10 +676,10 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 		for _, d := range defAccs {
 			if !seenAcc[d.Name] {
 				dacc := &forge.Access{
-					EntryPath:    e.Path,
-					Accessor:     d.Name,
-					AccessorType: d.Type,
-					Mode:         d.Value,
+					EntryPath: e.Path,
+					Name:      d.Name,
+					Type:      d.Type,
+					Value:     d.Value,
 				}
 				err := addAccess(tx, ctx, dacc)
 				if err != nil {
@@ -689,8 +689,8 @@ func addEntryR(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 			} else {
 				upd := forge.AccessUpdater{
 					EntryPath: e.Path,
-					Accessor:  d.Name,
-					Mode:      &d.Value,
+					Name:      d.Name,
+					Value:     &d.Value,
 				}
 				err := updateAccess(tx, ctx, upd)
 				if err != nil {
