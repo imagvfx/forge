@@ -981,7 +981,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			})
 
 		}
-		err = h.server.BulkUpdateProperties(ctx, upds)
+		err = h.server.UpdateProperties(ctx, upds)
 		if err != nil {
 			return err
 		}

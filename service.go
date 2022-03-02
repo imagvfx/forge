@@ -36,7 +36,7 @@ type Service interface {
 	EntryProperties(ctx context.Context, path string) ([]*Property, error)
 	GetProperty(ctx context.Context, path, name string) (*Property, error)
 	UpdateProperty(ctx context.Context, upd PropertyUpdater) error
-	BulkUpdateProperties(ctx context.Context, upds []PropertyUpdater) error
+	UpdateProperties(ctx context.Context, upds []PropertyUpdater) error
 	EntryEnvirons(ctx context.Context, path string) ([]*Property, error)
 	GetEnviron(ctx context.Context, path, name string) (*Property, error)
 	AddEnviron(ctx context.Context, p *Property) error

@@ -198,9 +198,9 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	return nil
 }
 
-// BulkUpdateProperties is an efficient way of update properties of an entry, by group them in a transaction.
+// UpdateProperties is an efficient way of update properties of an entry, by group them in a transaction.
 // If there's an error, all changes will be reverted.
-func BulkUpdateProperties(db *sql.DB, ctx context.Context, upds []forge.PropertyUpdater) error {
+func UpdateProperties(db *sql.DB, ctx context.Context, upds []forge.PropertyUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err

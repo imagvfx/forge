@@ -414,10 +414,10 @@ func (s *Server) UpdateProperty(ctx context.Context, path string, name, value st
 	return nil
 }
 
-func (s *Server) BulkUpdateProperties(ctx context.Context, upds []PropertyUpdater) error {
+func (s *Server) UpdateProperties(ctx context.Context, upds []PropertyUpdater) error {
 	// Note it directly uses UpdateProperty unlike others methods here.
 	// I will change to use service instead of Server in the future.
-	return s.svc.BulkUpdateProperties(ctx, upds)
+	return s.svc.UpdateProperties(ctx, upds)
 }
 
 func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, error) {

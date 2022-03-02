@@ -138,8 +138,8 @@ func (s *Service) UpdateProperty(ctx context.Context, upd forge.PropertyUpdater)
 	return UpdateProperty(s.db, ctx, upd)
 }
 
-func (s *Service) BulkUpdateProperties(ctx context.Context, upds []forge.PropertyUpdater) error {
-	return BulkUpdateProperties(s.db, ctx, upds)
+func (s *Service) UpdateProperties(ctx context.Context, upds []forge.PropertyUpdater) error {
+	return UpdateProperties(s.db, ctx, upds)
 }
 
 func (s *Service) EntryEnvirons(ctx context.Context, path string) ([]*forge.Property, error) {
