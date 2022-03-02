@@ -215,18 +215,6 @@ func PropertyTypes() []string {
 	}
 }
 
-func (p *Property) ServiceProperty() *Property {
-	sp := &Property{
-		EntryPath: p.EntryPath,
-		Name:      p.Name,
-		Type:      p.Type,
-		Value:     p.Value,
-		RawValue:  p.RawValue,
-		UpdatedAt: p.UpdatedAt,
-	}
-	return sp
-}
-
 func AccessorTypes() []string {
 	return []string{
 		"user",

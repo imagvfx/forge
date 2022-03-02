@@ -470,7 +470,7 @@ func (s *Server) AddEnviron(ctx context.Context, path string, name, typ, value s
 		Type:      typ,
 		Value:     value,
 	}
-	err := s.svc.AddEnviron(ctx, env.ServiceProperty())
+	err := s.svc.AddEnviron(ctx, env)
 	if err != nil {
 		return err
 	}
