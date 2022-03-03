@@ -284,6 +284,15 @@
 							]
 						]
 						{{end}}
+						{{with $numStatus := index $.StatusSummary $entType}}
+						<div class="statusBar"> [
+						{{range $s := index $.PossibleStatus $entType}}
+							{{with $n := index $numStatus $s.Name}}
+							<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="{{$s.Name}}" style="flex:{{$n}}" title="{{$n}} {{$s.Name}}"> [{{$n}} {{$s.Name}}]
+							{{end}}
+						{{end}}
+						]
+						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 						{{if $subEntries}}
 						<div class="subEntryListContainer" data-expanded="{{if (or (not $.ResultsFromSearch) $.UserSetting.SearchResultExpand)}}1{{end}}"> [

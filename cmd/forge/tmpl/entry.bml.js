@@ -18,6 +18,16 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
+		let bar = event.target.closest(".statusBar");
+		if (bar) {
+			let focus = bar.classList.contains("focus");
+			if (focus) {
+				bar.classList.remove("focus");
+			} else {
+				bar.classList.add("focus");
+			}
+			return;
+		}
 		let options = event.target.closest(".subEntryListOptions");
 		if (options) {
 			let opt = event.target.closest(".subEntryListOption.expandOption");

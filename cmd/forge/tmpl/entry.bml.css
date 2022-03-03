@@ -186,6 +186,40 @@
 	display: none;
 }
 
+.statusBar {
+	display: flex;
+	height: 0.25rem;
+	border-radius: 1rem;
+	overflow: clip;
+	border: 1px solid #EEE;
+	margin-bottom: 1rem;
+	opacity: 0.4;
+	user-select: none;
+}
+
+.statusBar:hover {
+	cursor: pointer;
+}
+
+.statusBar.focus {
+	height: 0.8rem;
+	opacity: 1;
+}
+
+.statusCounter {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 0;
+	color: white;
+	min-width: fit-content;
+	padding: 1px 2px 0 2px;
+}
+
+.statusBar.focus .statusCounter {
+	font-size: 0.6rem;
+}
+
 .subEntryTypeBar {
 	display: flex;
 	align-items: center;
@@ -661,6 +695,10 @@
 
 {{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
+.statusColor[data-entry-type="{{$entType}}"][data-status="{{$s.Name}}"] {
+	background-color: {{$s.Color}};
+}
+
 .summaryDot[data-entry-type="{{$entType}}"][data-value="{{$s.Name}}"] {
 	background-color: {{setAlphaToColor $s.Color 0.6}} !important;
 	border: none !important;

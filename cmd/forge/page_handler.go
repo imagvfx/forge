@@ -317,6 +317,18 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		entProps[e.Path] = propmap
 	}
+	statusSummary := make(map[string]map[string]int)
+	for typ, byType := range subEntsByTypeByParent {
+		num := make(map[string]int)
+		for _, byParent := range byType {
+			for _, ent := range byParent {
+				if stat := entProps[ent.Path]["status"]; stat != nil {
+					num[stat.Value] += 1
+				}
+			}
+		}
+		statusSummary[typ] = num
+	}
 	// Sort sub entries.
 	entrySortProp := make(map[string]string)
 	entrySortDesc := make(map[string]bool)
@@ -603,6 +615,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SearchQuery               string
 		ResultsFromSearch         bool
 		SubEntriesByTypeByParent  map[string]map[string][]*forge.Entry
+		StatusSummary             map[string]map[string]int
 		EntryProperties           map[string]map[string]*forge.Property
 		ShowGrandSub              map[string]bool
 		GrandSubEntries           map[string][]*forge.Entry
@@ -628,6 +641,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		SearchQuery:               searchQuery,
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByParent:  subEntsByTypeByParent,
+		StatusSummary:             statusSummary,
 		EntryProperties:           entProps,
 		ShowGrandSub:              showGrandSub,
 		GrandSubEntries:           grandSubEntries,
