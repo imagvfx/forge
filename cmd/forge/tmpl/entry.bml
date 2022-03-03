@@ -286,11 +286,14 @@
 						{{end}}
 						{{with $numStatus := index $.StatusSummary $entType}}
 						<div class="statusSummary"> [
-						{{range $s := index $.PossibleStatus $entType}}
+							{{with $n := index $numStatus ""}}
+							<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="" style="flex:{{$n}};color:#444;" title="{{$n}} (none)"> [{{$n}} (none)]
+							{{end}}
+							{{range $s := index $.PossibleStatus $entType}}
 							{{with $n := index $numStatus $s.Name}}
 							<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="{{$s.Name}}" style="flex:{{$n}}" title="{{$n}} {{$s.Name}}"> [{{$n}} {{$s.Name}}]
 							{{end}}
-						{{end}}
+							{{end}}
 						]
 						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
