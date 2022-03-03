@@ -523,7 +523,7 @@
 	width: 0.4rem;
 	height: 0.4rem;
 	padding: 2px;
-	align-self: end;
+	align-self: flex-end;
 	filter: invert(90%);
 	user-select: none;
 }
