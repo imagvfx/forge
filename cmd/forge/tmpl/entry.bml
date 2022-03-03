@@ -367,9 +367,9 @@
 													<div> [+]
 												]
 											]
-											<div class="flexSpacer"> []
-											<img class="thumbnailViewExpander" src="/asset/expander.svg"> []
 											{{end}}
+											<img class="thumbnailViewExpander" src="/asset/expander.svg"> []
+											<div class="flexSpacer"> []
 										]
 										<div class="subEntryProperties"> [
 											{{range $name := $propFilters}}
