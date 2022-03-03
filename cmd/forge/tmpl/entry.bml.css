@@ -192,6 +192,7 @@
 	border-radius: 1rem;
 	overflow: clip;
 	border: 1px solid #EEE;
+	margin-top: 1rem;
 	margin-bottom: 1rem;
 	opacity: 0.4;
 	user-select: none;
@@ -403,7 +404,6 @@
 	border: 1px solid #DDD;
 	border-radius: 4px;
 	padding: 1px;
-	margin-bottom: 1rem;
 	overflow: clip;
 	display:flex;
 	gap:1px;
