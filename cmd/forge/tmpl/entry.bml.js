@@ -18,13 +18,13 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
-		let bar = event.target.closest(".statusBar");
-		if (bar) {
-			let focus = bar.classList.contains("focus");
+		let sum = event.target.closest(".statusSummary");
+		if (sum) {
+			let focus = sum.classList.contains("focus");
 			if (focus) {
-				bar.classList.remove("focus");
+				sum.classList.remove("focus");
 			} else {
-				bar.classList.add("focus");
+				sum.classList.add("focus");
 			}
 			return;
 		}

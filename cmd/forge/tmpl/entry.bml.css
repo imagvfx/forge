@@ -186,7 +186,7 @@
 	display: none;
 }
 
-.statusBar {
+.statusSummary {
 	display: flex;
 	height: 0.25rem;
 	border-radius: 1rem;
@@ -198,11 +198,11 @@
 	user-select: none;
 }
 
-.statusBar:hover {
+.statusSummary:hover {
 	cursor: pointer;
 }
 
-.statusBar.focus {
+.statusSummary.focus {
 	height: 0.8rem;
 	opacity: 1;
 }
@@ -217,7 +217,7 @@
 	padding: 1px 2px 0 2px;
 }
 
-.statusBar.focus .statusCounter {
+.statusSummary.focus .statusCounter {
 	font-size: 0.6rem;
 }
 
