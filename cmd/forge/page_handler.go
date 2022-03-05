@@ -29,6 +29,9 @@ var pageHandlerFuncs = template.FuncMap{
 	"inc": func(i int) int {
 		return i + 1
 	},
+	"add": func(a, b int) int {
+		return a + b
+	},
 	"min": func(a, b int) int {
 		if a < b {
 			return a

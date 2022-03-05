@@ -223,17 +223,6 @@
 				]
 				{{end}}
 				<div class="subEntryArea" data-view="{{if $.ResultsFromSearch}}{{$.UserSetting.SearchView}}{{end}}"> [
-					{{$nSubs := 0}}
-					{{if $.ResultsFromSearch}}
-					{{range $entsByParent := $.SubEntriesByTypeByParent}}
-					{{range $subEntries := $entsByParent}}
-					{{range $sub := $subEntries}}
-					{{$nSubs = inc $nSubs}}
-					{{end}}
-					{{end}}
-					{{end}}
-					<div style="font-size:0.9rem;margin-bottom:1rem;"> [Searched {{$nSubs}} entries.]
-					{{end}}
 					{{if $.ResultsFromSearch}}
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}"> [
@@ -244,18 +233,29 @@
 						]
 					]
 					{{end}}
+					{{$nTotal := 0}}
+					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
+					{{range $ents := $entsByParent}}
+					{{$nTotal = add $nTotal (len $ents)}}
+					{{end}}
+					{{end}}
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div class="subEntryListForType"> [
-						{{if not $.ResultsFromSearch}}
 						<div class="subEntryTypeBar"> [
-							<div class="subEntryTypeLabel"> [<b> [{{$entType}} ({{len (index $entsByParent $.Entry.Path)}})]]
+							{{$nInType := 0}}
+							{{range $ents := $entsByParent}}
+							{{$nInType = add $nInType (len $ents)}}
+							{{end}}
+							<div class="subEntryTypeLabel"> [<b> [{{$entType}} ({{$nInType}}{{if $.ResultsFromSearch}}/{{$nTotal}}{{end}})]]
+							{{if not $.ResultsFromSearch}}
 							<!-- Add SubEntry -->
 							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="name" style="border-radius:2px 0 0 2px;" placeholder="name"> []
 								<button style="border-left:0;border-radius:0 2px 2px 0;width:1.2rem;"> [+]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
+							{{end}}
 							<!-- Property Filter -->
 							<form action="/api/update-user-setting" style="flex:1;display:flex" method="POST"> [
 								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
@@ -283,7 +283,6 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 						]
-						{{end}}
 						{{with $numStatus := index $.StatusSummary $entType}}
 						<div class="statusSummary" data-entry-type="{{$entType}}"> [
 							{{with $n := index $numStatus ""}}
