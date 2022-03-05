@@ -37,6 +37,7 @@ window.onload = function() {
 				}
 				if (dot.dataset.value != sum.dataset.selected) {
 					ent.style.display = "none"; // hide
+					ent.classList.remove("selected");
 				} else {
 					ent.style.removeProperty("display");
 				}
