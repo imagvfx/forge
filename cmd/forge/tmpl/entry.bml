@@ -246,7 +246,7 @@
 					{{end}}
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
-					<div> [
+					<div class="subEntryListForType"> [
 						{{if not $.ResultsFromSearch}}
 						<div class="subEntryTypeBar"> [
 							<div class="subEntryTypeLabel"> [<b> [{{$entType}} ({{len (index $entsByParent $.Entry.Path)}})]]
@@ -285,7 +285,7 @@
 						]
 						{{end}}
 						{{with $numStatus := index $.StatusSummary $entType}}
-						<div class="statusSummary"> [
+						<div class="statusSummary" data-entry-type="{{$entType}}"> [
 							{{with $n := index $numStatus ""}}
 							<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="" style="flex:{{$n}};color:#444;" title="{{$n}} (none)"> [{{$n}} (none)]
 							{{end}}

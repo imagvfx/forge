@@ -18,13 +18,41 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
-		let sum = event.target.closest(".statusSummary");
-		if (sum) {
-			let focus = sum.classList.contains("focus");
-			if (focus) {
-				sum.classList.remove("focus");
+		let counter = event.target.closest(".statusCounter");
+		if (counter) {
+			let sum = counter.closest(".statusSummary");
+			let status = counter.dataset.status;
+			if (sum.dataset.selected == status) {
+				sum.dataset.selected = null;
+				status = null;
 			} else {
-				sum.classList.add("focus");
+				sum.dataset.selected = status;
+			}
+			let fortype = sum.closest(".subEntryListForType");
+			for (let ent of fortype.querySelectorAll(".subEntry")) {
+				let dot = ent.querySelector(".statusDot");
+				if (status === null) {
+					ent.style.removeProperty("display"); // show
+					continue
+				}
+				if (dot.dataset.value != sum.dataset.selected) {
+					ent.style.display = "none"; // hide
+				} else {
+					ent.style.removeProperty("display");
+				}
+			}
+			for (let cnt of fortype.querySelectorAll(".subEntryListContainer")) {
+				let n = 0
+				for (let ent of cnt.querySelectorAll(".subEntry")) {
+					if (ent.style.display != "none") {
+						n++
+					}
+				}
+				if (n == 0) {
+					cnt.style.display = "none";
+				} else {
+					cnt.style.removeProperty("display");
+				}
 			}
 			return;
 		}

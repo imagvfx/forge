@@ -188,7 +188,7 @@
 
 .statusSummary {
 	display: flex;
-	height: 0.25rem;
+	height: 0.8rem;
 	border-radius: 1rem;
 	overflow: clip;
 	border: 1px solid #EEE;
@@ -197,29 +197,31 @@
 	user-select: none;
 }
 
-.statusSummary:hover {
-	cursor: pointer;
-}
-
-.statusSummary.focus {
-	height: 0.8rem;
-}
-
 .statusCounter {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	font-size: 0;
+	font-size: 0.6rem;
 	color: #FAFAFA;
 	min-width: max-content;
 	padding: 1px 2px 0 2px;
 	opacity: 0.4;
 }
 
-.statusSummary.focus .statusCounter {
-	font-size: 0.6rem;
-	opacity: 0.8;
+.statusCounter:hover {
+	cursor: pointer;
 }
+
+{{range $entType, $status := $.PossibleStatus}}
+.statusSummary[data-entry-type="{{$entType}}"][data-selected=""] .statusCounter[data-status=""] {
+	opacity: 1;
+}
+{{range $s := $status}}
+.statusSummary[data-entry-type="{{$entType}}"][data-selected="{{$s.Name}}"] .statusCounter[data-status="{{$s.Name}}"] {
+	opacity: 1;
+}
+{{end}}
+{{end}}
 
 .subEntryTypeBar {
 	display: flex;
