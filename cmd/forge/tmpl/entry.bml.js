@@ -20,39 +20,49 @@ window.onload = function() {
 		}
 		let counter = event.target.closest(".statusCounter");
 		if (counter) {
-			let sum = counter.closest(".statusSummary");
+			let group = counter.closest(".statusGroup");
+			let sum = group.closest(".statusSummary");
+			let entType = group.dataset.entryType;
 			let status = counter.dataset.status;
-			if (sum.dataset.selected == status) {
-				sum.dataset.selected = null;
-				status = null;
+			if (sum.dataset.selected == "1" && sum.dataset.selectedEntryType == entType && sum.dataset.selectedStatus == status) {
+				sum.dataset.selected = "";
 			} else {
-				sum.dataset.selected = status;
+				sum.dataset.selected = "1";
+				sum.dataset.selectedEntryType = entType;
+				sum.dataset.selectedStatus = status;
 			}
-			let fortype = sum.closest(".subEntryListForType");
-			for (let ent of fortype.querySelectorAll(".subEntry")) {
-				let dot = ent.querySelector(".statusDot");
-				if (status === null) {
-					ent.style.removeProperty("display"); // show
-					continue
-				}
-				if (dot.dataset.value != sum.dataset.selected) {
-					ent.style.display = "none"; // hide
-					ent.classList.remove("selected");
-				} else {
-					ent.style.removeProperty("display");
-				}
-			}
-			for (let cnt of fortype.querySelectorAll(".subEntryListContainer")) {
-				let n = 0
-				for (let ent of cnt.querySelectorAll(".subEntry")) {
-					if (ent.style.display != "none") {
-						n++
+			let forTypes = document.querySelectorAll(".subEntryListForType");
+			for (let forType of forTypes) {
+				let typ = forType.dataset.entryType;
+				for (let ent of forType.querySelectorAll(".subEntry")) {
+					if (sum.dataset.selected != "1") {
+						ent.style.removeProperty("display"); // show every entry
+						continue;
 					}
+					if (forType.dataset.entryType != entType) {
+						ent.style.display = "none"
+						continue;
+					}
+					let dot = ent.querySelector(".statusDot");
+					if (dot.dataset.value != sum.dataset.selectedStatus) {
+						ent.style.display = "none";
+						ent.classList.remove("selected");
+						continue;
+					}
+					ent.style.removeProperty("display"); // show
 				}
-				if (n == 0) {
-					cnt.style.display = "none";
-				} else {
-					cnt.style.removeProperty("display");
+				for (let cnt of forType.querySelectorAll(".subEntryListContainer")) {
+					let n = 0;
+					for (let ent of cnt.querySelectorAll(".subEntry")) {
+						if (ent.style.display != "none") {
+							n++
+						}
+					}
+					if (n == 0) {
+						cnt.style.display = "none";
+					} else {
+						cnt.style.removeProperty("display");
+					}
 				}
 			}
 			return;

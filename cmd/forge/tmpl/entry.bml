@@ -233,15 +233,36 @@
 						]
 					]
 					{{end}}
-					{{$nTotal := 0}}
-					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
-					{{range $ents := $entsByParent}}
-					{{$nTotal = add $nTotal (len $ents)}}
-					{{end}}
-					{{end}}
+					<div class="statusSummary" data-selected="" data-selected-entry-type="" data-selected-status=""> [
+						{{$nTotal := 0}}
+						{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
+						{{$nInType := 0}}
+						{{range $ents := $entsByParent}}
+						{{$nInType = add $nInType (len $ents)}}
+						{{end}}
+						{{with $numStatus := index $.StatusSummary $entType}}
+						<div class="statusGroup" data-entry-type="{{$entType}}" style="flex:{{$nInType}};display:flex;flex-direction:column;"> [
+							<div class="statusGroupChart"> [
+								{{with $n := index $numStatus ""}}
+								<div class="statusCounter statusColor bg" data-status="" style="flex:{{$n}};color:#444;" title="{{$n}} (none)"> [{{$n}} (none)]
+								{{end}}
+								{{range $s := index $.PossibleStatus $entType}}
+								{{with $n := index $numStatus $s.Name}}
+								<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="{{$s.Name}}" style="flex:{{$n}}" title="{{$n}} {{$s.Name}}"> [{{$n}} {{$s.Name}}]
+								{{end}}
+								{{end}}
+							]
+							<div class="statusGroupLabel"> [{{$nInType}} {{$entType}}]
+						]
+						{{end}}
+						{{range $ents := $entsByParent}}
+						{{$nTotal = add $nTotal (len $ents)}}
+						{{end}}
+						{{end}}
+					]
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
-					<div class="subEntryListForType"> [
+					<div class="subEntryListForType" data-entry-type="{{$entType}}"> [
 						<div class="subEntryTypeBar"> [
 							{{$nInType := 0}}
 							{{range $ents := $entsByParent}}
@@ -283,18 +304,6 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 						]
-						{{with $numStatus := index $.StatusSummary $entType}}
-						<div class="statusSummary" data-entry-type="{{$entType}}"> [
-							{{with $n := index $numStatus ""}}
-							<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="" style="flex:{{$n}};color:#444;" title="{{$n}} (none)"> [{{$n}} (none)]
-							{{end}}
-							{{range $s := index $.PossibleStatus $entType}}
-							{{with $n := index $numStatus $s.Name}}
-							<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="{{$s.Name}}" style="flex:{{$n}}" title="{{$n}} {{$s.Name}}"> [{{$n}} {{$s.Name}}]
-							{{end}}
-							{{end}}
-						]
-						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 						{{if $subEntries}}
 						<div class="subEntryListContainer" data-expanded="{{if (or (not $.ResultsFromSearch) $.UserSetting.SearchResultExpand)}}1{{end}}"> [

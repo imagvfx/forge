@@ -188,12 +188,29 @@
 
 .statusSummary {
 	display: flex;
+	gap: 1rem;
+}
+
+.statusGroup {
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+}
+
+.statusGroupLabel {
+	align-self: center;
+	justify-self: center;
+	font-size: 0.7rem;
+	color: #444;
+	padding: 0 0.2rem;
+	margin-top: 0.2rem;
+}
+
+.statusGroupChart {
+	display: flex;
 	height: 0.8rem;
 	border-radius: 1rem;
 	overflow: clip;
 	border: 1px solid #EEE;
-	margin-top: 1rem;
-	margin-bottom: 1rem;
 	user-select: none;
 }
 
@@ -213,11 +230,11 @@
 }
 
 {{range $entType, $status := $.PossibleStatus}}
-.statusSummary[data-entry-type="{{$entType}}"][data-selected=""] .statusCounter[data-status=""] {
+.statusSummary[data-selected="1"][data-selected-entry-type="{{$entType}}"][data-selected-status=""] .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
 	opacity: 1;
 }
 {{range $s := $status}}
-.statusSummary[data-entry-type="{{$entType}}"][data-selected="{{$s.Name}}"] .statusCounter[data-status="{{$s.Name}}"] {
+.statusSummary[data-selected="1"][data-selected-entry-type="{{$entType}}"][data-selected-status="{{$s.Name}}"] .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status="{{$s.Name}}"] {
 	opacity: 1;
 }
 {{end}}
