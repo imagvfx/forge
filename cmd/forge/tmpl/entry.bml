@@ -263,20 +263,19 @@
 					{{$i := 0}}
 					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
 					<div class="subEntryListForType" data-entry-type="{{$entType}}"> [
+						{{if not $.ResultsFromSearch}}
 						<div class="subEntryTypeBar"> [
 							{{$nInType := 0}}
 							{{range $ents := $entsByParent}}
 							{{$nInType = add $nInType (len $ents)}}
 							{{end}}
 							<div class="subEntryTypeLabel"> [<b> [{{$entType}} ({{$nInType}}{{if $.ResultsFromSearch}}/{{$nTotal}}{{end}})]]
-							{{if not $.ResultsFromSearch}}
 							<!-- Add SubEntry -->
 							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="name" style="border-radius:2px 0 0 2px;" placeholder="name"> []
 								<button style="border-left:0;border-radius:0 2px 2px 0;width:1.2rem;"> [+]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
-							{{end}}
 							<!-- Property Filter -->
 							<form action="/api/update-user-setting" style="flex:1;display:flex" method="POST"> [
 								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
@@ -304,6 +303,7 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 						]
+						{{end}}
 						{{range $parent, $subEntries := $entsByParent}}
 						{{if $subEntries}}
 						<div class="subEntryListContainer" data-expanded="{{if (or (not $.ResultsFromSearch) $.UserSetting.SearchResultExpand)}}1{{end}}"> [
