@@ -41,13 +41,23 @@ window.onload = function() {
 					}
 					if (forType.dataset.entryType != entType) {
 						ent.style.display = "none"
+						ent.classList.remove("selected");
 						continue;
 					}
 					let dot = ent.querySelector(".statusDot");
-					if (dot.dataset.value != sum.dataset.selectedStatus) {
-						ent.style.display = "none";
-						ent.classList.remove("selected");
-						continue;
+					if (dot != null) {
+						if (dot.dataset.value != sum.dataset.selectedStatus) {
+							ent.style.display = "none";
+							ent.classList.remove("selected");
+							continue;
+						}
+					} else {
+						// Should work for entries of type that doesn't have status.
+						if (sum.dataset.selectedStatus != "") {
+							ent.style.display = "none";
+							ent.classList.remove("selected");
+							continue;
+						}
 					}
 					ent.style.removeProperty("display"); // show
 				}

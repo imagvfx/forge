@@ -327,6 +327,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			for _, ent := range byParent {
 				if stat := entProps[ent.Path]["status"]; stat != nil {
 					num[stat.Value] += 1
+				} else {
+					num[""] += 1
 				}
 			}
 		}
