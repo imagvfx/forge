@@ -230,8 +230,12 @@
 }
 
 {{range $entType, $status := $.PossibleStatus}}
+.statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
+	color: #AAA;
+}
+
 .statusSummary[data-selected="1"][data-selected-entry-type="{{$entType}}"][data-selected-status=""] .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
-	font-weight: bold;
+	color: black;
 }
 
 {{range $s := $status}}
