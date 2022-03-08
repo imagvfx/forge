@@ -554,6 +554,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			if !errors.As(err, &e) {
 				return err
 			}
+			possibleStatus[typ] = status
 			continue
 		}
 		for _, ps := range strings.Fields(p.Value) {
