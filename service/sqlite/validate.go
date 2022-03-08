@@ -197,9 +197,9 @@ func validateInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, er
 		// unset
 		return "", nil
 	}
-	_, err := strconv.Atoi(val)
+	n, err := strconv.Atoi(val)
 	if err != nil {
 		return "", fmt.Errorf("cannot convert to int: %v", val)
 	}
-	return val, nil
+	return strconv.Itoa(n), nil
 }
