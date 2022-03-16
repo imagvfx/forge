@@ -427,7 +427,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			return cmp <= 0
 		})
 	}
-	for _, typ := range entTypes {
+	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
+	if err != nil {
+		return err
+	}
+	for _, typ := range baseTypes {
 		defaults, err := h.server.Defaults(ctx, typ)
 		if err != nil {
 			return err
@@ -542,10 +546,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	// Get possible status for entry types defines it.
 	possibleStatus := make(map[string][]forge.Status)
-	baseTypes, err := h.server.FindBaseEntryTypes(ctx)
-	if err != nil {
-		return err
-	}
 	for _, typ := range baseTypes {
 		status := make([]forge.Status, 0)
 		p, err := h.server.GetGlobal(ctx, typ, "possible_status")

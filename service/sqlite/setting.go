@@ -100,6 +100,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 			err = json.Unmarshal([]byte(value), &s.EntryPagePropertyFilter)
 		case "entry_page_sort_property":
 			err = json.Unmarshal([]byte(value), &s.EntryPageSortProperty)
+		case "picked_property":
+			err = json.Unmarshal([]byte(value), &s.PickedProperty)
 		case "quick_searches":
 			err = json.Unmarshal([]byte(value), &s.QuickSearches)
 		case "pinned_paths_v2":
@@ -272,6 +274,22 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			sortProp[entryType] = p
 		}
 		value, err = json.Marshal(sortProp)
+		if err != nil {
+			return err
+		}
+	case "picked_property":
+		pickedProp := setting.PickedProperty
+		if pickedProp == nil {
+			pickedProp = make(map[string]string)
+		}
+		pickedProp, ok := upd.Value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		for entryType, p := range pickedProp {
+			pickedProp[entryType] = p
+		}
+		value, err = json.Marshal(pickedProp)
 		if err != nil {
 			return err
 		}

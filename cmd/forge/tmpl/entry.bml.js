@@ -209,10 +209,170 @@ window.onload = function() {
 			}
 		}
 		let hide = false;
-		if (event.target.closest(".statusSelector") == null) {
+		let handle = event.target.closest(".statusSelector, .updatePropertyPopup");
+		if (handle != null) {
+			hide = true;
+			let mainDiv = document.querySelector(".main");
+			let fn = function() {
+				if (handle.classList.contains("statusSelector")) {
+					let sel = handle;
+					let thisEnt = sel.closest(".entry");
+					let entPath = thisEnt.dataset.entryPath;
+					let entType = sel.dataset.entryType;
+					let popup = document.querySelector(`.updatePropertyPopup[data-entry-type="${entType}"]`);
+					if (popup == null) {
+						printErrorStatus("'possible_status' global not defined for '" + entType + "' entry type");
+						return;
+					}
+					if (thisEnt.classList.contains("subEntry")) {
+						let editMode = subEntArea.classList.contains("editMode");
+						if (!editMode) {
+							return;
+						}
+						let selectedEnts = document.querySelectorAll(".subEntry.selected");
+						if (selectedEnts.length != 0) {
+							let inSel = false;
+							for (let ent of selectedEnts) {
+								if (entPath == ent.dataset.entryPath) {
+									inSel = true;
+									break;
+								}
+							}
+							if (!inSel) {
+								sel.dataset.popupAttached = "";
+								mainDiv.dataset.currentSelectStatusMenu = "";
+								printErrorStatus("entry not in selection: " + entPath);
+								return;
+							}
+						}
+					}
+					popup.dataset.entryPath = entPath;
+					popup.dataset.sub = sel.dataset.sub;
+					if (sel.dataset.popupAttached == "1") {
+						sel.dataset.popupAttached = "";
+						mainDiv.dataset.currentSelectStatusMenu = "";
+						hide = true;
+						return;
+					}
+					mainDiv.dataset.currentSelectStatusMenu = sel.dataset.entryType;
+					let attached = document.querySelector(`.statusSelector[data-popup-attached="1"]`)
+					if (attached) {
+						attached.dataset.popupAttached = "";
+					}
+					sel.dataset.popupAttached = "1";
+					let nameInput = popup.querySelector(".propertyPickerName");
+					let valueInput = popup.querySelector(".propertyPickerValue");
+					valueInput.value = "";
+					let path = entPath;
+					let prop = nameInput.value.trim();
+					if (prop == "") {
+						valueInput.disabled = "1";
+					} else {
+						valueInput.disabled = "";
+						if (popup.dataset.sub != "") {
+							path += "/" + popup.dataset.sub
+						}
+						let r = new XMLHttpRequest();
+						let fdata = new FormData();
+						fdata.append("path", path);
+						fdata.append("name", prop);
+						r.open("post", "/api/get-property");
+						r.send(fdata);
+						r.onerror = function() {
+							printErrorStatus("network error occurred. please check whether the server is down.");
+						}
+						r.onload = function() {
+							if (r.status != 200) {
+								printErrorStatus(r.responseText);
+								return;
+							}
+							let j = JSON.parse(r.responseText);
+							if (j.Err != null) {
+								printErrorStatus(j.Err);
+								return;
+							}
+							nameInput.dataset.error = "";
+							nameInput.modified = "";
+							valueInput.value = j.Msg.Eval;
+							printStatus("done");
+						}
+					}
+					// slight adjust of the popup position to make statusDots aligned.
+					let right = sel.closest(".right");
+					let offset = offsetFrom(sel, right);
+					popup.style.left = String(offset.left - 6) + "px";
+					popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
+				} else {
+					let popup = handle;
+					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
+					let entPath = thisEnt.dataset.entryPath;
+					let item = event.target.closest(".selectStatusMenuItem");
+					if (item != null) {
+						let selectedEnts = document.querySelectorAll(".subEntry.selected");
+						if (selectedEnts.length != 0) {
+							let inSel = false;
+							for (let ent of selectedEnts) {
+								if (entPath == ent.dataset.entryPath) {
+									inSel = true;
+									break;
+								}
+							}
+							if (!inSel) {
+								mainDiv.dataset.currentSelectStatusMenu = "";
+								printErrorStatus("entry not in selection: " + entPath);
+								return;
+							}
+						}
+						if (selectedEnts.length == 0) {
+							selectedEnts = [thisEnt];
+						}
+						let sub = popup.dataset.sub;
+						let req = new XMLHttpRequest();
+						let formData = new FormData();
+						for (let ent of selectedEnts) {
+							let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
+							if (!dot) {
+								continue;
+							}
+							let path = ent.dataset.entryPath;
+							if (sub != "") {
+								path += "/" + sub;
+							}
+							formData.append("path", path);
+						}
+						formData.append("name", "status");
+						formData.append("value", item.dataset.value);
+						req.open("post", "/api/update-property");
+						req.send(formData);
+						req.onload = function() {
+							if (req.status == 200) {
+								for (let ent of selectedEnts) {
+									let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
+									if (!dot) {
+										continue;
+									}
+									dot.dataset.value = item.dataset.value;
+								}
+								mainDiv.dataset.currentSelectStatusMenu = "";
+							} else {
+								printErrorStatus(req.responseText);
+							}
+						}
+						req.onerror = function(err) {
+							printErrorStatus("network error occurred. please check whether the server is down.");
+						}
+					}
+				}
+			}
+			fn()
+		} else {
 			let mainDiv = document.querySelector(".main");
 			if (mainDiv.dataset.currentSelectStatusMenu != "") {
 				mainDiv.dataset.currentSelectStatusMenu = "";
+				let attached = document.querySelector(`.statusSelector[data-popup-attached="1"]`)
+				if (attached) {
+					attached.dataset.popupAttached = "";
+				}
 				hide = true;
 			}
 		}
@@ -287,6 +447,223 @@ window.onload = function() {
 				removeClass(subEntArea, "temporary");
 				printStatus("no entry selected");
 			}
+		}
+	}
+	document.onkeydown = function(event) {
+		let ctrlPressed = event.ctrlKey || event.metaKey;
+		if (event.code == "Escape") {
+			// Will close floating UIs first, if any exists.
+			let hide = false;
+			let mainDiv = document.querySelector(".main");
+			if (mainDiv.dataset.currentSelectStatusMenu != "") {
+				mainDiv.dataset.currentSelectStatusMenu = "";
+				hide = true;
+			}
+			let userMenu = document.getElementById("userAutoCompleteMenu");
+			if (!userMenu.classList.contains("invisible")) {
+				userMenu.replaceChildren();
+				userMenu.classList.add("invisible");
+				hide = true;
+			}
+			let infoMenu = document.getElementById("infoContextMenu");
+			if (currentContextMenuLoader != null) {
+				infoMenu.classList.add("invisible");
+				currentContextMenuLoader = null;
+				hide = true;
+			}
+			if (hide) {
+				return;
+			}
+			hide = hideInfoModifier();
+			if (hide) {
+				return;
+			}
+			let subEntArea = document.querySelector(".subEntryArea");
+			if (subEntArea.classList.contains("editMode")) {
+				let selEnts = document.querySelectorAll(".subEntry.selected");
+				if (selEnts.length == 0) {
+					subEntArea.classList.remove("editMode");
+					removeClass(subEntArea, "lastClicked");
+					removeClass(subEntArea, "temporary");
+					printStatus("normal mode");
+					return;
+				}
+				for (let ent of selEnts) {
+					ent.classList.remove("selected");
+				}
+				removeClass(subEntArea, "lastClicked");
+				removeClass(subEntArea, "temporary");
+				printStatus("no entry selected");
+				return;
+			}
+			return;
+		}
+		if (event.target.closest(".propertyPickerValue")) {
+			if (ctrlPressed && event.code == "Enter") {
+				let popup = event.target.closest(".updatePropertyPopup");
+				let nameInput = popup.querySelector(".propertyPickerName");
+				let valueInput = popup.querySelector(".propertyPickerValue");
+				let prop = nameInput.value.trim();
+				if (prop == "") {
+					return;
+				}
+				let mainDiv = document.querySelector(".main");
+				let entPath = popup.dataset.entryPath;
+				let sub = popup.dataset.sub;
+				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let paths = [];
+				if (selEnts.length == 0) {
+					paths.push(entPath);
+				} else {
+					for (let ent of selEnts) {
+						paths.push(ent.dataset.entryPath);
+					}
+				}
+				if (sub != "") {
+					for (let i in paths) {
+						paths[i] += "/" + sub;
+					}
+				}
+				let req = new XMLHttpRequest();
+				let formData = new FormData();
+				for (let path of paths) {
+					formData.append("path", path);
+				}
+				formData.append("name", prop);
+				formData.append("value", valueInput.value.trim());
+				req.open("post", "/api/update-property");
+				req.send(formData);
+				req.onerror = function() {
+					nameInput.dataset.error = "1";
+					printErrorStatus("network error occurred. please check whether the server is down.");
+				}
+				req.onload = function() {
+					if (req.status != 200) {
+						nameInput.dataset.error = "1";
+						printErrorStatus(req.responseText);
+						return;
+					}
+					nameInput.dataset.error = "";
+					nameInput.dataset.modified = "";
+					printStatus("done");
+				}
+			}
+			return;
+		}
+		if (event.code == "KeyA") {
+			if (!ctrlPressed) {
+				return;
+			}
+			let userEditables = ["textarea", "input"];
+			if (userEditables.includes(event.target.tagName.toLowerCase())) {
+				return;
+			}
+			let subEntArea = document.querySelector(".subEntryArea");
+			if (!subEntArea.classList.contains("editMode")) {
+				return;
+			}
+			event.preventDefault();
+			let nVis = 0;
+			let selEnts = document.querySelectorAll(".subEntry");
+			for (let ent of selEnts) {
+				// Wierd way of checking it's visibility, but it is what it is.
+				let vis = ent.offsetWidth > 0 || ent.offsetHeight > 0;
+				if (vis) {
+					nVis++
+					ent.classList.add("selected");
+				}
+			}
+			removeClass(subEntArea, "lastClicked");
+			removeClass(subEntArea, "temporary");
+			let what = "";
+			let entry = "entry"
+			if (nVis == 0) {
+				what = "no entry";
+			} else if (nVis == 1) {
+				what = "1 entry";
+			} else {
+				what = String(nVis) + " entries";
+			}
+			printStatus(what + " selected");
+			return;
+		}
+	}
+	document.onchange = function(event) {
+		if (event.target.closest(".propertyPickerName")) {
+			let popup = event.target.closest(".updatePropertyPopup");
+			let nameInput = popup.querySelector(".propertyPickerName");
+			nameInput.dataset.value = nameInput.value;
+			let valueInput = popup.querySelector(".propertyPickerValue");
+			let prop = nameInput.value.trim();
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			let entType = popup.dataset.entryType;
+			if (entType == "") {
+				printErrorStatus("entry type should not be empty.");
+				return;
+			}
+			formData.append("update_picked_property", "1");
+			formData.append("entry_type", entType);
+			formData.append("picked_property", prop);
+			req.open("post", "/api/update-user-setting");
+			req.send(formData);
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+				if (prop == "") {
+					nameInput.dataset.error = "";
+					nameInput.dataset.modified = "";
+					valueInput.disabled = "1";
+					valueInput.value = "";
+					return;
+				}
+				valueInput.disabled = "";
+				let mainDiv = document.querySelector(".main");
+				let entPath = popup.dataset.entryPath;
+				let sub = popup.dataset.sub;
+				let path = entPath;
+				if (sub != "") {
+					path += "/" + popup.dataset.sub
+				}
+				let r = new XMLHttpRequest();
+				let fdata = new FormData();
+				fdata.append("path", path);
+				fdata.append("name", prop);
+				r.open("post", "/api/get-property");
+				r.send(fdata);
+				r.onerror = function() {
+					printErrorStatus("network error occurred. please check whether the server is down.");
+				}
+				r.onload = function() {
+					if (r.status != 200) {
+						printErrorStatus(r.responseText);
+						return;
+					}
+					let j = JSON.parse(r.responseText);
+					if (j.Err != null) {
+						printErrorStatus(j.Err);
+						return;
+					}
+					valueInput.value = j.Msg.Eval;
+					nameInput.dataset.error = "";
+					nameInput.dataset.modified = "";
+					printStatus("done");
+				}
+			}
+			return;
+		}
+	}
+	document.oninput = function() {
+		if (event.target.closest(".propertyPickerValue")) {
+			let popup = event.target.closest(".updatePropertyPopup");
+			let nameInput = popup.querySelector(".propertyPickerName");
+			nameInput.dataset.error = "";
+			nameInput.dataset.modified = "1";
 		}
 	}
 	let allInputs = document.getElementsByTagName("input");
@@ -692,119 +1069,6 @@ window.onload = function() {
 				printStatus(what + " selected");
 				if (document.querySelector(".subEntry.selected") == null) {
 					hideInfoModifier();
-				}
-			}
-		}
-	}
-	let currentStatusSel = null;
-	let statusSelector = document.getElementsByClassName("statusSelector");
-	for (let sel of statusSelector) {
-		let entType = sel.dataset.entryType;
-		let menu = document.querySelector(`.selectStatusMenu[data-entry-type="${entType}"]`);
-		sel.onclick = function(event) {
-			if (menu == null) {
-				printErrorStatus("'possible_status' global not defined for '" + entType + "' entry type");
-				return;
-			}
-			let mainDiv = document.querySelector(".main");
-			let thisEnt = parentWithClass(sel, "entry");
-			let entPath = thisEnt.dataset.entryPath;
-			if (thisEnt.classList.contains("subEntry")) {
-				let editMode = subEntArea.classList.contains("editMode");
-				if (!editMode) {
-					return;
-				}
-				let selectedEnts = document.querySelectorAll(".subEntry.selected");
-				if (selectedEnts.length != 0) {
-					let inSel = false;
-					for (let ent of selectedEnts) {
-						if (entPath == ent.dataset.entryPath) {
-							inSel = true;
-							break;
-						}
-					}
-					if (!inSel) {
-						mainDiv.dataset.currentSelectStatusMenu = "";
-						printErrorStatus("entry not in selection: " + entPath);
-						return;
-					}
-				}
-			}
-			if (currentStatusSel != null && mainDiv.dataset.currentSelectStatusMenu == "") {
-				// Mismatch between currentStatusSel and currentSelectStatusMenu can happen,
-				// if the page is loaded from history.
-				currentStatusSel = null;
-			}
-			mainDiv.dataset.currentSelectStatusMenu = sel.dataset.entryType;
-			if (currentStatusSel == sel) {
-				currentStatusSel = null;
-				mainDiv.dataset.currentSelectStatusMenu = "";
-				return;
-			}
-			currentStatusSel = sel;
-			// slight adjust of the menu position to make statusDots aligned.
-			let right = sel.closest(".right");
-			let offset = offsetFrom(sel, right);
-			menu.style.left = String(offset.left - 6) + "px";
-			menu.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
-			let items = menu.getElementsByClassName("selectStatusMenuItem");
-			for (let item of items) {
-				item.onclick = function(ev) {
-					ev.stopPropagation();
-					ev.preventDefault();
-					let selectedEnts = document.querySelectorAll(".subEntry.selected");
-					if (selectedEnts.length != 0) {
-						let inSel = false;
-						for (let ent of selectedEnts) {
-							if (entPath == ent.dataset.entryPath) {
-								inSel = true;
-								break;
-							}
-						}
-						if (!inSel) {
-							mainDiv.dataset.currentSelectStatusMenu = "";
-							printErrorStatus("entry not in selection: " + entPath);
-							return;
-						}
-					}
-					if (selectedEnts.length == 0) {
-						selectedEnts = [thisEnt];
-					}
-					let sub = sel.dataset.sub;
-					let req = new XMLHttpRequest();
-					let formData = new FormData();
-					for (let ent of selectedEnts) {
-						let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
-						if (!dot) {
-							continue;
-						}
-						let path = ent.dataset.entryPath;
-						if (sub != "") {
-							path += "/" + sub;
-						}
-						formData.append("path", path);
-					}
-					formData.append("name", "status");
-					formData.append("value", item.dataset.value);
-					req.open("post", "/api/update-property");
-					req.send(formData);
-					req.onload = function() {
-						if (req.status == 200) {
-							for (let ent of selectedEnts) {
-								let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
-								if (!dot) {
-									continue;
-								}
-								dot.dataset.value = item.dataset.value;
-							}
-							mainDiv.dataset.currentSelectStatusMenu = "";
-						} else {
-							printErrorStatus(req.responseText);
-						}
-					}
-					req.onerror = function(err) {
-						printErrorStatus("network error occurred. please check whether the server is down.");
-					}
 				}
 			}
 		}
@@ -1503,96 +1767,6 @@ function submitUpdaterOrAdder(ev, input) {
 	req.open(form.method, form.action);
 	req.send(formData);
 	marker.classList.remove("invisible");
-}
-
-document.onkeydown = keyPressed;
-
-function keyPressed(ev) {
-	if (ev.code == "Escape") {
-		// Will close floating UIs first, if any exists.
-		let hide = false;
-		let mainDiv = document.querySelector(".main");
-		if (mainDiv.dataset.currentSelectStatusMenu != "") {
-			mainDiv.dataset.currentSelectStatusMenu = "";
-			hide = true;
-		}
-		let userMenu = document.getElementById("userAutoCompleteMenu");
-		if (!userMenu.classList.contains("invisible")) {
-			userMenu.replaceChildren();
-			userMenu.classList.add("invisible");
-			hide = true;
-		}
-		let infoMenu = document.getElementById("infoContextMenu");
-		if (currentContextMenuLoader != null) {
-			infoMenu.classList.add("invisible");
-			currentContextMenuLoader = null;
-			hide = true;
-		}
-		if (hide) {
-			return;
-		}
-		hide = hideInfoModifier();
-		if (hide) {
-			return;
-		}
-		let subEntArea = document.querySelector(".subEntryArea");
-		if (subEntArea.classList.contains("editMode")) {
-			let selEnts = document.querySelectorAll(".subEntry.selected");
-			if (selEnts.length == 0) {
-				subEntArea.classList.remove("editMode");
-				removeClass(subEntArea, "lastClicked");
-				removeClass(subEntArea, "temporary");
-				printStatus("normal mode");
-				return;
-			}
-			for (let ent of selEnts) {
-				ent.classList.remove("selected");
-			}
-			removeClass(subEntArea, "lastClicked");
-			removeClass(subEntArea, "temporary");
-			printStatus("no entry selected");
-			return;
-		}
-		return;
-	}
-	if (ev.code == "KeyA") {
-		let ctrlLike = ev.ctrlKey || ev.metaKey;
-		if (!ctrlLike) {
-			return;
-		}
-		let userEditables = ["textarea", "input"];
-		if (userEditables.includes(ev.target.tagName.toLowerCase())) {
-			return;
-		}
-		let subEntArea = document.querySelector(".subEntryArea");
-		if (!subEntArea.classList.contains("editMode")) {
-			return;
-		}
-		ev.preventDefault();
-		let nVis = 0;
-		let selEnts = document.querySelectorAll(".subEntry");
-		for (let ent of selEnts) {
-			// Wierd way of checking it's visibility, but it is what it is.
-			let vis = ent.offsetWidth > 0 || ent.offsetHeight > 0;
-			if (vis) {
-				nVis++
-				ent.classList.add("selected");
-			}
-		}
-		removeClass(subEntArea, "lastClicked");
-		removeClass(subEntArea, "temporary");
-		let what = "";
-		let entry = "entry"
-		if (nVis == 0) {
-			what = "no entry";
-		} else if (nVis == 1) {
-			what = "1 entry";
-		} else {
-			what = String(nVis) + " entries";
-		}
-		printStatus(what + " selected");
-		return;
-	}
 }
 
 function showCategoryInfos(ctg) {

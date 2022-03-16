@@ -623,6 +623,18 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_picked_property") != "" {
+		entryType := r.FormValue("entry_type")
+		picked := r.FormValue("picked_property")
+		pickedProperty := map[string]string{
+			entryType: picked,
+		}
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "picked_property", pickedProperty)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_update_marker_lasts") != "" {
 		v := r.FormValue("update_marker_lasts")
 		var last int

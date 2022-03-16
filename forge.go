@@ -322,6 +322,7 @@ type UserSetting struct {
 	EntryPageSearchEntryType    string
 	EntryPagePropertyFilter     map[string]string
 	EntryPageSortProperty       map[string]string
+	PickedProperty              map[string]string
 	QuickSearches               []StringKV
 	PinnedPaths                 []string
 	UpdateMarkerLasts           int
