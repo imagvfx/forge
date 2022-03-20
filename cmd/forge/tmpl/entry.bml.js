@@ -61,11 +61,13 @@ window.onload = function() {
 					}
 					ent.style.removeProperty("display"); // show
 				}
+				let nTotal = 0;
 				for (let cnt of forType.querySelectorAll(".subEntryListContainer")) {
 					let n = 0;
 					for (let ent of cnt.querySelectorAll(".subEntry")) {
 						if (ent.style.display != "none") {
-							n++
+							n++;
+							nTotal++;
 						}
 					}
 					if (n == 0) {
@@ -73,6 +75,12 @@ window.onload = function() {
 					} else {
 						cnt.style.removeProperty("display");
 					}
+				}
+				let bar = forType.querySelector(".subEntryTypeBar");
+				if (nTotal == 0) {
+					bar.style.display = "none";
+				} else {
+					bar.style.removeProperty("display");
 				}
 			}
 			return;
