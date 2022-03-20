@@ -222,8 +222,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea" data-view="{{if $.ResultsFromSearch}}{{$.UserSetting.SearchView}}{{end}}"> [
-					{{if $.ResultsFromSearch}}
+				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}"> [
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}"> [
 						]
@@ -232,7 +231,6 @@
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []
 						]
 					]
-					{{end}}
 					<div class="statusSummary" data-selected="" data-selected-entry-type="" data-selected-status=""> [
 						{{$nTotal := 0}}
 						{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
