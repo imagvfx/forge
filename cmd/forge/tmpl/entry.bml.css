@@ -436,13 +436,14 @@
 	overflow: clip;
 	display:flex;
 	gap:1px;
+	background-color: #EEE;
 }
 
 .subEntryListOption {
 	width: 1.5rem;
 	border: 1px solid #E4E4E4;
 	border-radius: 3px;
-	background-color: #EEE;
+	background-color: #FAFAFA;
 	box-sizing:border-box;
 	display: flex;
 	justify-content: center;
@@ -455,7 +456,8 @@
 
 .subEntryListOption:hover {
 	border: 1px solid #E4E4E4;
-	background-color: #E4E4E4;
+	background-color: white;
+	cursor: pointer;
 }
 
 .subEntryListOption.expandOption {
