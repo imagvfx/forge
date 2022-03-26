@@ -71,7 +71,9 @@ window.onload = function() {
 						}
 					}
 					let count = cnt.querySelector(".subEntryListFromCount");
-					count.innerText = "(" + String(n) + ")";
+					if (count) {
+						count.innerText = "(" + String(n) + ")";
+					}
 					if (n == 0) {
 						cnt.style.display = "none";
 					} else {
@@ -80,7 +82,9 @@ window.onload = function() {
 				}
 				let bar = forType.querySelector(".subEntryTypeBar");
 				let typeCount = bar.querySelector(".subEntryTypeCount");
-				typeCount.innerText = "(" + String(nTotal) + ")";
+				if (typeCount) {
+					typeCount.innerText = "(" + String(nTotal) + ")";
+				}
 				if (nTotal == 0) {
 					bar.style.display = "none";
 				} else {
