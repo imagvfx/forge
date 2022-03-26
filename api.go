@@ -1,6 +1,6 @@
 package forge
 
 type APIResponse struct {
-	Msg interface{}
+	Msg any
 	Err error
 }

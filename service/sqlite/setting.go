@@ -47,7 +47,7 @@ func FindUserSettings(db *sql.DB, ctx context.Context, find forge.UserSettingFin
 
 func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFinder) ([]*forge.UserSetting, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.User != nil {
 		keys = append(keys, "accessors.name=?")
 		vals = append(vals, *find.User)

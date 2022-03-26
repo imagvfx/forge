@@ -45,7 +45,7 @@ func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.Respons
 	}
 }
 
-func (h *apiHandler) WriteResponse(w http.ResponseWriter, m interface{}, e error) {
+func (h *apiHandler) WriteResponse(w http.ResponseWriter, m any, e error) {
 	w.WriteHeader(httpStatusFromError(e))
 	resp, _ := json.Marshal(forge.APIResponse{Msg: m, Err: e})
 	_, err := w.Write(resp)

@@ -338,7 +338,7 @@ type UserSettingFinder struct {
 type UserSettingUpdater struct {
 	User  string
 	Key   string
-	Value interface{}
+	Value any
 }
 
 type StringKV struct {

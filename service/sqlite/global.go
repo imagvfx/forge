@@ -43,7 +43,7 @@ func FindGlobals(db *sql.DB, ctx context.Context, find forge.GlobalFinder) ([]*f
 
 func findGlobals(tx *sql.Tx, ctx context.Context, find forge.GlobalFinder) ([]*forge.Global, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryType != nil {
 		keys = append(keys, "entry_types.name=?")
 		vals = append(vals, *find.EntryType)
@@ -192,7 +192,7 @@ func UpdateGlobal(db *sql.DB, ctx context.Context, upd forge.GlobalUpdater) erro
 
 func updateGlobal(tx *sql.Tx, ctx context.Context, upd forge.GlobalUpdater) error {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Type != nil {
 		keys = append(keys, "type=?")
 		vals = append(vals, *upd.Type)

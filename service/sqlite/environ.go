@@ -77,7 +77,7 @@ func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Prope
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
 func findEnvirons(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([]*forge.Property, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.Name != nil {
 		keys = append(keys, "environs.name=?")
 		vals = append(vals, *find.Name)
@@ -255,7 +255,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 		return err
 	}
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Value != nil {
 		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, e.Name, e.Type, *upd.Value)
 		if err != nil {

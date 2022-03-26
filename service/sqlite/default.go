@@ -124,7 +124,7 @@ func FindDefaults(db *sql.DB, ctx context.Context, find forge.DefaultFinder) ([]
 
 func findDefaultProperties(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryType != nil {
 		keys = append(keys, "entry_types.name=?")
 		vals = append(vals, *find.EntryType)
@@ -191,7 +191,7 @@ func getDefaultProperty(tx *sql.Tx, ctx context.Context, entry_type, name string
 
 func findDefaultEnvirons(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryType != nil {
 		keys = append(keys, "entry_types.name=?")
 		vals = append(vals, *find.EntryType)
@@ -252,7 +252,7 @@ func getDefaultEnviron(tx *sql.Tx, ctx context.Context, entry_type, name string)
 
 func findDefaultAccessList(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryType != nil {
 		keys = append(keys, "entry_types.name=?")
 		vals = append(vals, *find.EntryType)
@@ -326,7 +326,7 @@ func getDefaultAccess(tx *sql.Tx, ctx context.Context, entry_type, name string) 
 
 func findDefaultSubEntries(tx *sql.Tx, ctx context.Context, find forge.DefaultFinder) ([]*forge.Default, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryType != nil {
 		keys = append(keys, "entry_types.name=?")
 		vals = append(vals, *find.EntryType)
@@ -645,7 +645,7 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd forge.DefaultUpdater) er
 
 func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Type != nil {
 		keys = append(keys, "type=?")
 		vals = append(vals, *upd.Type)
@@ -709,7 +709,7 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 
 func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Type != nil {
 		keys = append(keys, "type=?")
 		vals = append(vals, *upd.Type)
@@ -782,7 +782,7 @@ func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpda
 
 func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Type != nil {
 		return fmt.Errorf("cannot change default accessor type")
 	}
@@ -822,7 +822,7 @@ func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdat
 
 func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Type != nil {
 		keys = append(keys, "sub_entry_type_id=?")
 		subTypeID, err := getEntryTypeID(tx, ctx, *upd.Type)

@@ -69,7 +69,7 @@ func FindGroups(db *sql.DB, ctx context.Context, find forge.GroupFinder) ([]*for
 
 func findGroups(tx *sql.Tx, ctx context.Context, find forge.GroupFinder) ([]*forge.Group, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	keys = append(keys, "is_group=?")
 	vals = append(vals, true)
 	if find.Name != nil {
@@ -227,7 +227,7 @@ func updateGroup(tx *sql.Tx, ctx context.Context, upd forge.GroupUpdater) error 
 		return err
 	}
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.NewName != nil {
 		if upd.Name == "admin" || strings.Split(upd.Name, "@")[0] == "everyone" {
 			return fmt.Errorf("rename 'admin' or 'everyone[@host]' group is not supported: %v", upd.Name)

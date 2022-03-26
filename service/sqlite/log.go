@@ -54,7 +54,7 @@ func FindLogs(db *sql.DB, ctx context.Context, find forge.LogFinder) ([]*forge.L
 // when id is empty, it will find logs of root.
 func findLogs(tx *sql.Tx, ctx context.Context, find forge.LogFinder) ([]*forge.Log, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)

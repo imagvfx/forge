@@ -6,7 +6,7 @@ import (
 
 type Time time.Time
 
-func (t *Time) Scan(i interface{}) error {
+func (t *Time) Scan(i any) error {
 	switch v := i.(type) {
 	case time.Time:
 		*t = Time(v)

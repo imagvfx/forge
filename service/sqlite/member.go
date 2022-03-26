@@ -46,7 +46,7 @@ func FindGroupMembers(db *sql.DB, ctx context.Context, find forge.MemberFinder) 
 
 func findGroupMembers(tx *sql.Tx, ctx context.Context, find forge.MemberFinder) ([]*forge.Member, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	keys = append(keys, "groups.name=?")
 	vals = append(vals, find.Group)
 	if find.Member != nil {

@@ -67,7 +67,7 @@ func FindEntries(db *sql.DB, ctx context.Context, find forge.EntryFinder) ([]*fo
 // when id is empty, it will find entries of root.
 func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*forge.Entry, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.ID != nil {
 		keys = append(keys, "entries.id=?")
 		vals = append(vals, *find.ID)
@@ -181,7 +181,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	}
 	subQueries := make([]string, 0)
 	// vals will contain info for entire queries.
-	subVals := make([]interface{}, 0)
+	subVals := make([]any, 0)
 	for _, kwd := range keywords {
 		findParent := false
 		subKeys := make([]string, 0)
@@ -268,7 +268,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						vl = "%" + v + "%"
 					}
 					userWhere := ""
-					whereVals := make([]interface{}, 0)
+					whereVals := make([]any, 0)
 					if v != "" {
 						userWhere = fmt.Sprintf("(accessors.called %s ? OR accessors.name %s ?)", eq, eq)
 						whereVals = append(whereVals, vl, vl)
@@ -329,7 +329,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		WHERE  %s AND %s AND %s
 	`
 	wherePath := "entries.path LIKE ?"
-	vals := []interface{}{search.SearchRoot + `/%`}
+	vals := []any{search.SearchRoot + `/%`}
 	whereType := "TRUE"
 	if search.EntryType != "" {
 		whereType = "entry_types.name=?"

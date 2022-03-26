@@ -31,7 +31,7 @@ func FindUsers(db *sql.DB, ctx context.Context, find forge.UserFinder) ([]*forge
 
 func findUsers(tx *sql.Tx, ctx context.Context, find forge.UserFinder) ([]*forge.User, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	keys = append(keys, "is_group=?")
 	vals = append(vals, false)
 	if find.ID != nil {

@@ -74,7 +74,7 @@ func (e *NotFoundError) Error() string {
 	return e.err.Error()
 }
 
-func NotFound(s string, is ...interface{}) *NotFoundError {
+func NotFound(s string, is ...any) *NotFoundError {
 	return &NotFoundError{fmt.Errorf(s, is...)}
 }
 
@@ -89,7 +89,7 @@ func (e *UnauthorizedError) Error() string {
 	return e.err.Error()
 }
 
-func Unauthorized(s string, is ...interface{}) *UnauthorizedError {
+func Unauthorized(s string, is ...any) *UnauthorizedError {
 	return &UnauthorizedError{fmt.Errorf(s, is...)}
 }
 

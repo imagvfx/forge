@@ -44,7 +44,7 @@ func FindThumbnails(db *sql.DB, ctx context.Context, find forge.ThumbnailFinder)
 
 func findThumbnails(tx *sql.Tx, ctx context.Context, find forge.ThumbnailFinder) ([]*forge.Thumbnail, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)
@@ -195,7 +195,7 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd forge.ThumbnailUpdater
 		return err
 	}
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Data != nil {
 		keys = append(keys, "data=?")
 		vals = append(vals, upd.Data)

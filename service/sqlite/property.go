@@ -55,7 +55,7 @@ func entryProperties(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Pro
 // when id is empty, it will find properties of root.
 func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([]*forge.Property, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if find.Name != nil {
 		keys = append(keys, "default_properties.name=?")
 		vals = append(vals, *find.Name)
@@ -257,7 +257,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 		return err
 	}
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	if upd.Value != nil {
 		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, p.Name, p.Type, *upd.Value)
 		if err != nil {

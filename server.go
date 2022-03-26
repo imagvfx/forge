@@ -708,7 +708,7 @@ func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting,
 	return us, nil
 }
 
-func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value interface{}) error {
+func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value any) error {
 	upd := UserSettingUpdater{
 		User:  user,
 		Key:   key,

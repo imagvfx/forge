@@ -86,7 +86,7 @@ var pageHandlerFuncs = template.FuncMap{
 		// '+' means ascending, '-' means descending order
 		return order == '-'
 	},
-	"marshalJS": func(v interface{}) (template.JS, error) {
+	"marshalJS": func(v any) (template.JS, error) {
 		b, err := json.Marshal(v)
 		if err != nil {
 			return "", err

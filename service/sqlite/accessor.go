@@ -26,7 +26,7 @@ func createAccessorsTable(tx *sql.Tx) error {
 
 func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*forge.Accessor, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	keys = append(keys, "name=?")
 	vals = append(vals, name)
 	where := ""
@@ -66,7 +66,7 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*forge.Accessor,
 
 func getAccessorByID(tx *sql.Tx, ctx context.Context, id int) (*forge.Accessor, error) {
 	keys := make([]string, 0)
-	vals := make([]interface{}, 0)
+	vals := make([]any, 0)
 	keys = append(keys, "id=?")
 	vals = append(vals, id)
 	where := ""
