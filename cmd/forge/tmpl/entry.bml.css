@@ -236,6 +236,7 @@
 
 .statusSummary[data-selected="1"][data-selected-entry-type="{{$entType}}"][data-selected-status=""] .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
 	color: black;
+	background-color: white;
 }
 
 {{range $s := $status}}
