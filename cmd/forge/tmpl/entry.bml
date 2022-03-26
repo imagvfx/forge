@@ -222,7 +222,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}"> [
+				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}" data-group-by="parent"> [
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}" data-disabled="{{if not $.ResultsFromSearch}}1{{end}}"> []
 						<div class="subEntryListOption viewOption" title="normal/thumbnail view" data-value="{{$.UserSetting.SearchView}}"> [
@@ -328,6 +328,9 @@
 								{{$possibleSubTypes = trim $t.Value}}
 								{{end}}
 								<div class="subEntry entry {{if eq $.UserSetting.SearchView ""}}expanded{{end}}" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
+									{{if $.ResultsFromSearch}}
+									<a class="parentLink" href="{{$parent}}"> [{{trimPrefix $parent (addString $.Entry.Path "/")}}]
+									{{end}}
 									<div class="subEntryTop"> [
 										{{with $s := index $props "status"}}
 										<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []

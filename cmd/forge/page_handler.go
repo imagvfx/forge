@@ -32,6 +32,9 @@ var pageHandlerFuncs = template.FuncMap{
 	"add": func(a, b int) int {
 		return a + b
 	},
+	"addString": func(a, b string) string {
+		return a + b
+	},
 	"min": func(a, b int) int {
 		if a < b {
 			return a
@@ -41,7 +44,8 @@ var pageHandlerFuncs = template.FuncMap{
 	"has": func(s, tok string) bool {
 		return strings.Contains(s, tok)
 	},
-	"trim": strings.TrimSpace,
+	"trim":       strings.TrimSpace,
+	"trimPrefix": strings.TrimPrefix,
 	"remapFrom": func(s string) string {
 		return strings.Split(s, ";")[0]
 	},
