@@ -265,7 +265,9 @@
 							{{range $ents := $entsByParent}}
 							{{$nInType = add $nInType (len $ents)}}
 							{{end}}
-							<div class="subEntryTypeLabel"> [<b> [{{$entType}} ({{$nInType}}{{if ge (len $.SubEntriesByTypeByParent) 2}}/{{$nTotal}}{{end}})]]
+							<div class="subEntryTypeLabel"> [
+								<b> [{{$entType}}]
+								<b class="subEntryTypeCount"> [({{$nInType}})]]
 							<!-- Add SubEntry -->
 							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="name" style="border-radius:2px 0 0 2px;" placeholder="name" {{if $.ResultsFromSearch}}disabled{{end}}> []
@@ -313,7 +315,7 @@
 								<div class="statusDot statusLabeler" style="display:inline-block" data-sub="" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 								{{end}}
 								<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
-								({{len $subEntries}})
+								<div class="subEntryListFromCount"> [({{len $subEntries}})]
 							]
 							{{end}}
 							<!-- Sub Entries -->
