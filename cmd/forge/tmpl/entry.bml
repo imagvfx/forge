@@ -224,8 +224,7 @@
 				{{end}}
 				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}"> [
 					<div class="subEntryListOptions"> [
-						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}"> [
-						]
+						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}" data-disabled="{{if not $.ResultsFromSearch}}1{{end}}"> []
 						<div class="subEntryListOption viewOption" title="normal/thumbnail view" data-value="{{$.UserSetting.SearchView}}"> [
 							<img class="normalViewOption" src="/asset/normal-view.svg"> []
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []

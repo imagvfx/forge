@@ -89,6 +89,10 @@ window.onload = function() {
 		if (options) {
 			let opt = event.target.closest(".subEntryListOption.expandOption");
 			if (opt) {
+				if (opt.dataset.disabled == "1") {
+					// don't shrink.
+					return;
+				}
 				if (opt.dataset.value == "") {
 					opt.dataset.value = "1";
 				} else {

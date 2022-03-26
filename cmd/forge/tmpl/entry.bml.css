@@ -454,10 +454,14 @@
 	background-position-y: center;
 }
 
-.subEntryListOption:hover {
+.subEntryListOption:not([data-disabled="1"]):hover {
 	border: 1px solid #E4E4E4;
 	background-color: white;
 	cursor: pointer;
+}
+
+.subEntryListOption[data-disabled="1"] {
+	opacity: 0.3;
 }
 
 .subEntryListOption.expandOption {
