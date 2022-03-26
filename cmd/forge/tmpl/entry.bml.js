@@ -131,6 +131,13 @@ window.onload = function() {
 				} else {
 					opt.dataset.value = "";
 				}
+				for (let ent of document.querySelectorAll(".subEntry")) {
+					if (opt.dataset.value == "thumbnail") {
+						ent.classList.remove("expanded");
+					} else {
+						ent.classList.add("expanded");
+					}
+				}
 				let area = event.target.closest(".subEntryArea");
 				area.dataset.view = opt.dataset.value;
 				let req = new XMLHttpRequest();
@@ -201,8 +208,6 @@ window.onload = function() {
 					} else {
 						ent.classList.remove("expanded");
 					}
-				} else {
-					ent.classList.remove("expanded");
 				}
 			}
 			return;

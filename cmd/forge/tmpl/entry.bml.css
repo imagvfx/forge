@@ -404,24 +404,18 @@
 }
 
 .subEntryList {
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 	margin: 1.5rem 0 3rem 0;
 	border: 1px solid #DDDDDD;
 	border-radius: 4px;
 	background-color: #F4F4F4;
 	gap: 1px;
 	overflow: hidden;
-	flex-wrap: wrap;
 }
 
 .subEntryArea .subEntryListContainer[data-expanded=""] .subEntryList {
 	display: none;
-}
-
-.subEntryArea[data-view="thumbnail"] .subEntryList {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
 }
 
 .subEntryArea.editMode .subEntryList {
@@ -559,16 +553,12 @@
 	height: 0.4rem;
 	padding: 2px;
 	align-self: flex-end;
-	filter: invert(90%);
+	filter: invert(95%);
 	user-select: none;
 }
 
 .thumbnailViewExpander:hover {
 	filter: invert(70%) sepia(100%) hue-rotate(180deg) saturate(2);
-}
-
-.subEntryArea:not([data-view="thumbnail"]) .subEntry .thumbnailViewExpander {
-	visibility: hidden;
 }
 
 .subEntry:not(:hover) .thumbnailViewExpander {
@@ -582,8 +572,8 @@
 	gap:1rem;
 }
 
-.subEntryArea[data-view="thumbnail"] .subEntry:not(.expanded) .subEntryProperties {
-	display:none;
+.subEntry:not(.expanded) .subEntryProperties {
+	display: none;
 }
 
 .subEntryInfo {
