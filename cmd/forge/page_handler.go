@@ -427,7 +427,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				return cmp < 0
 			}
 			// It sorts entries with their name with order set by entrySortDesc.
-			cmp = k * strings.Compare(a.Name(), b.Name())
+			cmp = k * strings.Compare(a.Path, b.Path)
 			return cmp <= 0
 		})
 	}
