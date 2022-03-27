@@ -407,6 +407,15 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				if cmp != 0 {
 					return cmp
 				}
+				if aProp.Value == "" {
+					cmp++
+				}
+				if bProp.Value == "" {
+					cmp--
+				}
+				if cmp != 0 {
+					return cmp
+				}
 				cmp = k * forge.CompareProperty(aProp.Type, aProp.Value, bProp.Value)
 				if cmp != 0 {
 					return cmp

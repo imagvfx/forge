@@ -153,19 +153,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 }
 
 func CompareProperty(t string, a, b string) int {
-	// TODO: simplify the logic, so we don't need `desc` in here?
 	cmp := 0
-	// Entry with empty value should stand behind of non-empty value always,
-	// regardless of it's order type. Meaning `desc` is not affecting here.
-	if a == "" {
-		cmp++
-	}
-	if b == "" {
-		cmp--
-	}
-	if cmp != 0 {
-		return cmp
-	}
 	switch t {
 	case "int":
 		ia, erra := strconv.Atoi(a)
