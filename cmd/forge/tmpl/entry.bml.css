@@ -480,6 +480,10 @@
 	display: none;
 }
 
+.subEntryListOption.groupByOption {
+	width: auto;
+}
+
 .subEntry {
 	display: flex;
 	flex-direction: column;
@@ -631,15 +635,11 @@
 
 .parentLink {
 	font-size: 0.7rem;
-	background-color: #F4F4F4;
+	background-color: #EEE;
 	padding: 2px 3px;
 	border-radius: 2px;
 	align-self: start;
 	color: #444;
-}
-
-.subEntryArea[data-group-by="parent"] .parentLink {
-	display: none;
 }
 
 .statusDot {

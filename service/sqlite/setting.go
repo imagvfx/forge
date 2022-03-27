@@ -128,6 +128,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 			err = json.Unmarshal([]byte(value), &s.SearchResultExpand)
 		case "search_view":
 			err = json.Unmarshal([]byte(value), &s.SearchView)
+		case "entry_group_by":
+			err = json.Unmarshal([]byte(value), &s.EntryGroupBy)
 		case "copy_path_remap":
 			err = json.Unmarshal([]byte(value), &s.CopyPathRemap)
 		default:
@@ -462,6 +464,15 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
 		value, err = json.Marshal(view)
+		if err != nil {
+			return err
+		}
+	case "entry_group_by":
+		groupBy, ok := upd.Value.(string)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		value, err = json.Marshal(groupBy)
 		if err != nil {
 			return err
 		}

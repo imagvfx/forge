@@ -719,6 +719,14 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_entry_group_by") != "" {
+		groupBy := strings.TrimSpace(r.FormValue("group_by"))
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "entry_group_by", groupBy)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_copy_path_remap") != "" {
 		from := strings.TrimSpace(r.FormValue("from"))
 		if strings.Contains(from, ";") {

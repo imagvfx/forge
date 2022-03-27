@@ -328,6 +328,7 @@ type UserSetting struct {
 	UpdateMarkerLasts           int
 	SearchResultExpand          bool
 	SearchView                  string
+	EntryGroupBy                string
 	CopyPathRemap               string
 }
 

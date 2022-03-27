@@ -222,19 +222,24 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}" data-group-by="parent"> [
+				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption expandOption" title="expand/collapse results" data-value="{{if $.UserSetting.SearchResultExpand}}1{{end}}" data-disabled="{{if not $.ResultsFromSearch}}1{{end}}"> []
 						<div class="subEntryListOption viewOption" title="normal/thumbnail view" data-value="{{$.UserSetting.SearchView}}"> [
 							<img class="normalViewOption" src="/asset/normal-view.svg"> []
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []
 						]
+						<div class="flexSpacer"> []
+						<select class="subEntryListOption groupByOption" data-disabled="{{if not $.ResultsFromSearch}}1{{end}}"> [
+							<option value=""> [(group by)]
+							<option value="parent"> [parent]
+						]
 					]
 					<div class="statusSummary" data-selected="" data-selected-entry-type="" data-selected-status=""> [
 						{{$nTotal := 0}}
-						{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
+						{{range $entType, $entsByGroup := $.SubEntriesByTypeByGroup}}
 						{{$nInType := 0}}
-						{{range $ents := $entsByParent}}
+						{{range $ents := $entsByGroup}}
 						{{$nInType = add $nInType (len $ents)}}
 						{{end}}
 						{{with $numStatus := index $.StatusSummary $entType}}
@@ -252,17 +257,17 @@
 							<div class="statusGroupLabel"> [{{$nInType}} {{$entType}}]
 						]
 						{{end}}
-						{{range $ents := $entsByParent}}
+						{{range $ents := $entsByGroup}}
 						{{$nTotal = add $nTotal (len $ents)}}
 						{{end}}
 						{{end}}
 					]
 					{{$i := 0}}
-					{{range $entType, $entsByParent := $.SubEntriesByTypeByParent}}
+					{{range $entType, $entsByGroup := $.SubEntriesByTypeByGroup}}
 					<div class="subEntryListForType" data-entry-type="{{$entType}}"> [
 						<div class="subEntryTypeBar"> [
 							{{$nInType := 0}}
-							{{range $ents := $entsByParent}}
+							{{range $ents := $entsByGroup}}
 							{{$nInType = add $nInType (len $ents)}}
 							{{end}}
 							<div class="subEntryTypeLabel"> [
@@ -301,11 +306,12 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 						]
-						{{range $parent, $subEntries := $entsByParent}}
+						{{range $group, $subEntries := $entsByGroup}}
 						{{if $subEntries}}
 						<div class="subEntryListContainer" data-expanded="{{if (or (not $.ResultsFromSearch) $.UserSetting.SearchResultExpand)}}1{{end}}"> [
-							{{if $.ResultsFromSearch}}
-							{{$ent := index $.ParentEntries $parent}}
+							{{if and $.ResultsFromSearch (eq $.UserSetting.EntryGroupBy "parent")}}
+							{{$parent := $group}}
+							{{$ent := index $.EntryByPath $parent}}
 							{{$props := index $.EntryProperties $parent}}
 							<div class="subEntryListFrom"> [
 								<img class="subEntryListExpander" src="/asset/down-arrow.svg" title="shift+click to collapse/expand all"> []
@@ -328,7 +334,8 @@
 								{{$possibleSubTypes = trim $t.Value}}
 								{{end}}
 								<div class="subEntry entry {{if eq $.UserSetting.SearchView ""}}expanded{{end}}" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
-									{{if $.ResultsFromSearch}}
+									{{if and $.ResultsFromSearch (ne $.UserSetting.EntryGroupBy "parent")}}
+									{{$parent := dir $ent.Path}}
 									<a class="parentLink" href="{{$parent}}"> [{{trimPrefix $parent (addString $.Entry.Path "/")}}]
 									{{end}}
 									<div class="subEntryTop"> [

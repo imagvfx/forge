@@ -682,6 +682,26 @@ window.onload = function() {
 			}
 			return;
 		}
+		let opt = event.target.closest(".subEntryListOption.groupByOption");
+		if (opt) {
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("update_entry_group_by", "1");
+			formData.append("group_by", opt.value);
+			req.open("post", "/api/update-user-setting");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+				location.reload();
+			}
+			req.send(formData);
+			return;
+		}
 	}
 	document.oninput = function() {
 		if (event.target.closest(".propertyPickerValue")) {

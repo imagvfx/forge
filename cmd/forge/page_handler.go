@@ -150,6 +150,7 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return false, nil
 	},
+	"dir": filepath.Dir,
 }
 
 func httpStatusFromError(err error) int {
@@ -259,7 +260,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		searchEntryType = setting.EntryPageSearchEntryType
 	}
 	// Organize the sub entries by type and by parent.
-	subEntsByTypeByParent := make(map[string]map[string][]*forge.Entry) // map[type]map[parent]
+	subEntsByTypeByGroup := make(map[string]map[string][]*forge.Entry) // map[type]map[parent]
 	entProps := make(map[string]map[string]*forge.Property)
 	entProps[path] = make(map[string]*forge.Property)
 	for _, p := range props {
@@ -272,47 +273,65 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			for _, subtyp := range strings.Split(p.Value, ",") {
 				if subtyp != "" {
 					t := strings.TrimSpace(subtyp)
-					subEntsByTypeByParent[t] = make(map[string][]*forge.Entry)
+					subEntsByTypeByGroup[t] = make(map[string][]*forge.Entry)
 				}
 			}
 		}
 	}
-	parentEnts := make(map[string]*forge.Entry)
-	for _, e := range subEnts {
-		if subEntsByTypeByParent[e.Type] == nil {
-			// This should come from search results.
-			subEntsByTypeByParent[e.Type] = make(map[string][]*forge.Entry)
-		}
-		byParent := subEntsByTypeByParent[e.Type]
-		parent := filepath.Dir(e.Path)
-		if _, ok := parentEnts[parent]; !ok {
-			p, err := h.server.GetEntry(ctx, parent)
-			if err != nil {
-				return err
+	entryByPath := make(map[string]*forge.Entry)
+	if setting.EntryGroupBy == "" {
+		for _, e := range subEnts {
+			// at least one group needed
+			if subEntsByTypeByGroup[e.Type] == nil {
+				// This should come from search results.
+				subEntsByTypeByGroup[e.Type] = make(map[string][]*forge.Entry)
 			}
-			parentEnts[parent] = p
-			if parent != ent.Path {
-				props, err := h.server.EntryProperties(ctx, parent)
+			byGroup := subEntsByTypeByGroup[e.Type]
+			if byGroup[""] == nil {
+				byGroup[""] = make([]*forge.Entry, 0)
+			}
+			byGroup[""] = append(byGroup[""], e)
+			subEntsByTypeByGroup[e.Type] = byGroup
+		}
+	} else if setting.EntryGroupBy == "parent" {
+		for _, e := range subEnts {
+			if subEntsByTypeByGroup[e.Type] == nil {
+				// This should come from search results.
+				subEntsByTypeByGroup[e.Type] = make(map[string][]*forge.Entry)
+			}
+			byGroup := subEntsByTypeByGroup[e.Type]
+			parent := filepath.Dir(e.Path)
+			if _, ok := entryByPath[parent]; !ok {
+				p, err := h.server.GetEntry(ctx, parent)
 				if err != nil {
-					var e *forge.NotFoundError
-					if !errors.As(err, &e) {
-						return err
+					return err
+				}
+				entryByPath[parent] = p
+				if parent != ent.Path {
+					props, err := h.server.EntryProperties(ctx, parent)
+					if err != nil {
+						var e *forge.NotFoundError
+						if !errors.As(err, &e) {
+							return err
+						}
+					}
+					entProps[parent] = make(map[string]*forge.Property)
+					for _, p := range props {
+						entProps[parent][p.Name] = p
 					}
 				}
-				entProps[parent] = make(map[string]*forge.Property)
-				for _, p := range props {
-					entProps[parent][p.Name] = p
-				}
 			}
+			if e.Path == "/" {
+				parent = ""
+			}
+			if byGroup[parent] == nil {
+				byGroup[parent] = make([]*forge.Entry, 0)
+			}
+			byGroup[parent] = append(byGroup[parent], e)
+			subEntsByTypeByGroup[e.Type] = byGroup
 		}
-		if e.Path == "/" {
-			parent = ""
-		}
-		if byParent[parent] == nil {
-			byParent[parent] = make([]*forge.Entry, 0)
-		}
-		byParent[parent] = append(byParent[parent], e)
-		subEntsByTypeByParent[e.Type] = byParent
+	}
+	for _, e := range subEnts {
 		// subProps
 		props, err := h.server.EntryProperties(ctx, e.Path)
 		if err != nil {
@@ -325,10 +344,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		entProps[e.Path] = propmap
 	}
 	statusSummary := make(map[string]map[string]int)
-	for typ, byType := range subEntsByTypeByParent {
+	for typ, byType := range subEntsByTypeByGroup {
 		num := make(map[string]int)
-		for _, byParent := range byType {
-			for _, ent := range byParent {
+		for _, byGroup := range byType {
+			for _, ent := range byGroup {
 				if stat := entProps[ent.Path]["status"]; stat != nil {
 					num[stat.Value] += 1
 				} else {
@@ -403,8 +422,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			return cmp <= 0
 		})
 	}
-	for _, byParent := range subEntsByTypeByParent {
-		for _, subEnts := range byParent {
+	for _, byGroup := range subEntsByTypeByGroup {
+		for _, subEnts := range byGroup {
 			sortEntries(subEnts)
 		}
 	}
@@ -412,7 +431,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	defaultProp := make(map[string]map[string]bool)
 	propFilters := make(map[string][]string)
 	entTypes := []string{ent.Type}
-	for typ := range subEntsByTypeByParent {
+	for typ := range subEntsByTypeByGroup {
 		if typ != ent.Type {
 			entTypes = append(entTypes, typ)
 		}
@@ -619,12 +638,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User                      string
 		UserSetting               *forge.UserSetting
 		Entry                     *forge.Entry
-		ParentEntries             map[string]*forge.Entry
+		EntryByPath               map[string]*forge.Entry
 		EntryPinned               bool
 		SearchEntryType           string
 		SearchQuery               string
 		ResultsFromSearch         bool
-		SubEntriesByTypeByParent  map[string]map[string][]*forge.Entry
+		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
 		EntryProperties           map[string]map[string]*forge.Property
 		ShowGrandSub              map[string]bool
@@ -645,12 +664,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User:                      user,
 		UserSetting:               setting,
 		Entry:                     ent,
-		ParentEntries:             parentEnts,
+		EntryByPath:               entryByPath,
 		EntryPinned:               entryPinned,
 		SearchEntryType:           searchEntryType,
 		SearchQuery:               searchQuery,
 		ResultsFromSearch:         resultsFromSearch,
-		SubEntriesByTypeByParent:  subEntsByTypeByParent,
+		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
 		EntryProperties:           entProps,
 		ShowGrandSub:              showGrandSub,
