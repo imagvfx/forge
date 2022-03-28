@@ -231,8 +231,8 @@
 						]
 						<div class="flexSpacer"> []
 						<select class="subEntryListOption groupByOption" data-disabled="{{if not $.ResultsFromSearch}}1{{end}}"> [
-							<option value=""> [(group by)]
-							<option value="parent"> [parent]
+							<option value="" {{if eq $.UserSetting.EntryGroupBy ""}}selected{{end}}> [(group by)]
+							<option value="parent" {{if eq $.UserSetting.EntryGroupBy "parent"}}selected{{end}}> [parent]
 						]
 					]
 					<div class="statusSummary" data-selected="" data-selected-entry-type="" data-selected-status=""> [
