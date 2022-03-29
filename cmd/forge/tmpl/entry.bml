@@ -230,7 +230,7 @@
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []
 						]
 						<div class="flexSpacer"> []
-						<select class="subEntryListOption groupByOption" data-disabled="{{if not $.ResultsFromSearch}}1{{end}}"> [
+						<select class="subEntryListOption groupByOption" {{if not $.ResultsFromSearch}}data-disabled="1" disabled{{end}}> [
 							<option value="" {{if eq $.UserSetting.EntryGroupBy ""}}selected{{end}}> [(group by)]
 							<option value="parent" {{if eq $.UserSetting.EntryGroupBy "parent"}}selected{{end}}> [parent]
 						]
