@@ -524,7 +524,7 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.closest(".propertyPickerValue")) {
-			if (ctrlPressed && event.code == "Enter") {
+			if ((ctrlPressed && event.code == "Enter") || event.code == "NumpadEnter") {
 				let popup = event.target.closest(".updatePropertyPopup");
 				let nameInput = popup.querySelector(".propertyPickerName");
 				let valueInput = popup.querySelector(".propertyPickerValue");
