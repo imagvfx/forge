@@ -149,6 +149,9 @@ var testSearches = []testSearch{
 	{path: "/test", typ: "", query: "path!:/test/shot", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/char/yb"}},
 	{path: "/test", typ: "shot", query: "path=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/test", typ: "shot", query: "path!=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", typ: "shot", query: "name=0010", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", typ: "shot", query: "name!=0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", typ: "part", query: "name=ani", wantRes: []string{"/test/shot/cg/0010/ani"}},
 }
 
 func TestAddEntries(t *testing.T) {

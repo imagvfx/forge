@@ -242,11 +242,20 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if notSearch {
 					not = "NOT"
 				}
+				// special keywords those aren't contained in properties table.
 				if k == "path" {
-					// special keyword that isn't contained in properties table.
 					if !exactSearch {
 						val = "%" + val + "%"
 					}
+					subVals = append(subVals, val)
+					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM entries WHERE %s path %s ?", not, eq))
+					continue
+				}
+				if k == "name" {
+					// Sliently change from in-exactSearch to exactSearch.
+					// Sqlite cannot perform it without support of REGEXP which should be installed separately.
+					eq = "LIKE"
+					val = "%/" + val
 					subVals = append(subVals, val)
 					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM entries WHERE %s path %s ?", not, eq))
 					continue
