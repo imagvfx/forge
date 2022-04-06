@@ -228,12 +228,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					exactSearch = true
 				}
 				k := kwd[:idx]
-				sub := ""
-				toks := strings.SplitN(k, ".", 2)
-				if len(toks) == 2 {
-					sub = toks[0]
-					k = toks[1]
-				}
 				notSearch := false
 				if len(k) != 0 && k[len(k)-1] == '!' {
 					notSearch = true
@@ -247,6 +241,21 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				not := ""
 				if notSearch {
 					not = "NOT"
+				}
+				if k == "path" {
+					// special keyword that isn't contained in properties table.
+					if !exactSearch {
+						val = "%" + val + "%"
+					}
+					subVals = append(subVals, val)
+					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM entries WHERE %s path %s ?", not, eq))
+					continue
+				}
+				sub := ""
+				toks := strings.SplitN(k, ".", 2)
+				if len(toks) == 2 {
+					sub = toks[0]
+					k = toks[1]
 				}
 				q := fmt.Sprintf("(default_properties.name=? AND ")
 				subVals = append(subVals, k)
@@ -338,6 +347,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	whereSub := fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, "INTERSECT"))
 	vals = append(vals, subVals...)
 	query := fmt.Sprintf(queryTmpl, wherePath, whereType, whereSub)
+	// We need these prints time to time. Do not delete.
+	// fmt.Println(query)
+	// fmt.Println(vals)
 	valNeeds := strings.Count(query, "?")
 	if len(vals) != valNeeds {
 		return nil, fmt.Errorf("query doesn't get exact amount of values: got %v, want %v", len(vals), valNeeds)
