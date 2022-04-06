@@ -21,6 +21,7 @@ var testEntryTypes = []testEntryType{
 	{name: "category"},
 	{name: "group"},
 	{name: "shot"},
+	{name: "asset"},
 	{name: "part"},
 	{name: "part.mdl"},
 	{name: "part.ani"},
@@ -72,6 +73,11 @@ var testEntries = []testEntry{
 	{path: "/test/shot/cg/0010/#fx", typ: "part", want: errors.New("entry name has invalid character '#': /test/shot/cg/0010/#fx")},
 	// validation of parent path checks it's existance. no check to invalid characters.
 	{path: "/test/shot/#cg/0010/lgt", typ: "part", want: errors.New("check parent: entry not found: /test/shot/#cg/0010")},
+	{path: "/test/shot/cg/0020", typ: "shot"},
+	{path: "/test/shot/cg/0030", typ: "shot"},
+	{path: "/test/asset", typ: "category"},
+	{path: "/test/asset/char", typ: "group"},
+	{path: "/test/asset/char/yb", typ: "asset"},
 }
 
 type testProperty struct {
@@ -138,6 +144,11 @@ var testSearches = []testSearch{
 	{path: "/", typ: "", query: "(sub).=val", wantRes: []string{}},
 	{path: "/", typ: "", query: "comp.=val", wantRes: []string{}},
 	{path: "/", typ: "", query: "comp.x=val", wantRes: []string{}},
+	{path: "/", typ: "", query: "comp.x=val", wantRes: []string{}},
+	{path: "/test", typ: "", query: "path:/test/shot", wantRes: []string{"/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", typ: "", query: "path!:/test/shot", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/char/yb"}},
+	{path: "/test", typ: "shot", query: "path=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", typ: "shot", query: "path!=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 }
 
 func TestAddEntries(t *testing.T) {
