@@ -353,7 +353,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		whereType = "entry_types.name=?"
 		vals = append(vals, search.EntryType)
 	}
-	whereSub := fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, "INTERSECT"))
+	whereSub := fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, " INTERSECT "))
 	vals = append(vals, subVals...)
 	query := fmt.Sprintf(queryTmpl, wherePath, whereType, whereSub)
 	// We need these prints time to time. Do not delete.
