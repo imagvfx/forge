@@ -1088,6 +1088,9 @@ window.onload = function() {
 					let [from, to] = range;
 					for (let i = from; i <= to; i++) {
 						let e = subEntries[i];
+						if (window.getComputedStyle(e).display == "none") {
+							continue;
+						}
 						if (lastClicked.classList.contains("selected")) {
 							if (!e.classList.contains("selected")) {
 								e.classList.add("selected");
