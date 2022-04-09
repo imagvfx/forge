@@ -1042,12 +1042,14 @@ window.onload = function() {
 				return;
 			}
 			if (!alreadyHandled && subEntArea.classList.contains("editMode")) {
+				// check new entry is same type with current selected entry, otherwise it cannot be expanded.
 				let selEnt = document.querySelector(".subEntry.selected");
 				if ((selEnt != null) && (ent.dataset.entryType != selEnt.dataset.entryType)) {
 					printErrorStatus("entry type is different from selected entries");
 					return;
 				}
 				if (!event.shiftKey || subEntArea.querySelector(".lastClicked") == null) {
+					// select/deselect single entry.
 					if (ent.classList.contains("selected")) {
 						ent.classList.remove("selected");
 					} else {
@@ -1059,12 +1061,14 @@ window.onload = function() {
 					removeClass(subEntArea, "lastClicked");
 					ent.classList.add("lastClicked");
 				} else {
+					// select/deselect multiple entries.
 					let lastClicked = subEntArea.querySelector(".lastClicked");
 					for (let temp of subEntArea.querySelectorAll(".temporary")) {
 						temp.classList.remove("temporary");
 						if (temp == lastClicked) {
 							continue;
 						}
+						// revert to the previous status
 						if (temp.classList.contains("selected")) {
 							temp.classList.remove("selected");
 						} else {
@@ -1091,16 +1095,11 @@ window.onload = function() {
 						if (window.getComputedStyle(e).display == "none") {
 							continue;
 						}
+						e.classList.add("temporary");
 						if (lastClicked.classList.contains("selected")) {
-							if (!e.classList.contains("selected")) {
-								e.classList.add("selected");
-								e.classList.add("temporary");
-							}
+							e.classList.add("selected");
 						} else {
-							if (e.classList.contains("selected")) {
-								e.classList.remove("selected");
-								e.classList.add("temporary");
-							}
+							e.classList.remove("selected");
 						}
 					}
 				}
