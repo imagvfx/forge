@@ -259,13 +259,13 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.Value != nil {
-		*upd.Value, err = validateProperty(tx, ctx, upd.EntryPath, p.Name, p.Type, *upd.Value)
+		updRawValue, err := validateProperty(tx, ctx, upd.EntryPath, p.Name, p.Type, *upd.Value)
 		if err != nil {
 			return err
 		}
-		if p.RawValue != *upd.Value {
+		if p.RawValue != updRawValue {
 			keys = append(keys, "val=?")
-			vals = append(vals, *upd.Value)
+			vals = append(vals, updRawValue)
 			p.Value = *upd.Value // for logging
 		}
 	}
@@ -304,6 +304,29 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	})
 	if err != nil {
 		return nil
+	}
+	if p.Name == "assignee" && p.Value != "" {
+		assignee := p.Value
+		_, err := getAccess(tx, ctx, p.EntryPath, assignee)
+		if err != nil {
+			e := &forge.NotFoundError{}
+			if !errors.As(err, &e) {
+				return err
+			}
+			a := &forge.Access{
+				EntryPath: p.EntryPath,
+				Name:      assignee,
+				Value:     "rw",
+			}
+			return addAccess(tx, ctx, a)
+		}
+		mode := "rw"
+		upd := forge.AccessUpdater{
+			EntryPath: p.EntryPath,
+			Name:      assignee,
+			Value:     &mode,
+		}
+		return updateAccess(tx, ctx, upd)
 	}
 	return nil
 }

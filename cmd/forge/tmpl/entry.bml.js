@@ -1270,32 +1270,12 @@ window.onload = function() {
 					printStatus("done");
 					return;
 				}
-				// Give the assignee write permission of the entry.
-				let r = new XMLHttpRequest();
-				let data = new FormData();
 				for (let ent of selectedEnts) {
-					data.append("path", ent.dataset.entryPath);
+					let input = ent.getElementsByClassName("assigneeInput")[0];
+					input.dataset.oldValue = called;
+					input.value = called;
 				}
-				data.append("name", value);
-				data.append("type", "user");
-				data.append("value", "rw");
-				r.open("post", "/api/add-or-update-access");
-				r.send(data);
-				r.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				r.onload = function() {
-					if (r.status != 200) {
-						printErrorStatus("cannot update access: " + r.responseText);
-						return;
-					}
-					for (let ent of selectedEnts) {
-						let input = ent.getElementsByClassName("assigneeInput")[0];
-						input.dataset.oldValue = called;
-						input.value = called;
-					}
-					printStatus("done");
-				}
+				printStatus("done");
 			}
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
