@@ -11,12 +11,67 @@
 					Users
 				]
 				{{range $u := $.Users}}
-					<div style="display:flex"> [
-						<div> [{{$u.Name}} - {{$u.Called}}]
+					<div class="user"> [
+						<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
 					]
 				{{end}}
+			]
+			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
+				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
 			]
 		]
 	]
 ]
 
+<style> [```
+.user {
+	display: flex;
+	height: 1.8rem;
+	color: #444;
+}
+
+.userID {
+	cursor: pointer;
+}
+
+.userID:hover {
+	color: black;
+	text-decoration: underline;
+}
+```]
+
+<script> [```
+window.onload = function() {
+	document.onclick = function(event) {
+		let t = event.target.closest(".userID");
+		if (t) {
+			let txt = t.textContent;
+			console.log(txt);
+			let succeeded = function() {
+				printStatus("text copied: " + txt);
+			}
+			let failed = function(err) {
+				printStatus("failed to copy text: " + err);
+			}
+			navigator.clipboard.writeText(txt).then(succeeded, failed);
+			return;
+		}
+	}
+}
+
+function printStatus(s) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.remove("error");
+	statusBar.innerHTML = s;
+}
+
+function printErrorStatus(e) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.add("error");
+	statusBar.innerHTML = e;
+}
+
+function clearStatus() {
+	printStatus("");
+}
+```]
