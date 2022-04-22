@@ -295,13 +295,6 @@ func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 	if err != nil {
 		return err
 	}
-	acType := "user"
-	if ac.IsGroup {
-		acType = "group"
-	}
-	if a.Type != acType {
-		return fmt.Errorf("mismatch accessor type: got %v, want %v", a.Type, acType)
-	}
 	a.RawValue = 0
 	if a.Value == "rw" {
 		a.RawValue = 1

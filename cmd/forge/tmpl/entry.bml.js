@@ -1927,15 +1927,17 @@ function showInfoAdder(entry, ctg) {
 	nameInput.placeholder = ctg;
 	let typeSel = adder.getElementsByClassName("typeSelect")[0]
 	typeSel.innerHTML = "";
-	let types = PropertyTypes;
 	if (ctg == "access") {
-		types = AccessorTypes;
-	}
-	for (let t of types) {
-		let option = document.createElement("option");
-		option.value = t;
-		option.text = t;
-		typeSel.appendChild(option)
+		typeSel.style.display = "none";
+	} else {
+		typeSel.style.removeProperty("display");
+		let types = PropertyTypes;
+		for (let t of types) {
+			let option = document.createElement("option");
+			option.value = t;
+			option.text = t;
+			typeSel.appendChild(option)
+		}
 	}
 	adder.getElementsByClassName("valueForm")[0].action = "/api/add-" + ctg;
 

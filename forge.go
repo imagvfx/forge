@@ -222,7 +222,7 @@ type Access struct {
 	ID        int
 	EntryPath string
 	Name      string
-	Type      string
+	Type      string // Don't need when adding Access.
 	Value     string
 	RawValue  int
 	UpdatedAt time.Time

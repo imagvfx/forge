@@ -543,24 +543,15 @@ func (s *Server) GetAccess(ctx context.Context, path string, accessor string) (*
 	return acl, nil
 }
 
-func (s *Server) AddAccess(ctx context.Context, path string, accessor, accessor_type, mode string) error {
+func (s *Server) AddAccess(ctx context.Context, path string, accessor, mode string) error {
 	if path == "" {
 		return fmt.Errorf("access control path not specified")
 	}
 	if accessor == "" {
 		return fmt.Errorf("accessor not specified")
 	}
-	if accessor_type == "" {
-		return fmt.Errorf("accessor type not specified")
-	}
 	if mode == "" {
 		return fmt.Errorf("access mode not specified")
-	}
-	switch accessor_type {
-	case "user":
-	case "group":
-	default:
-		return fmt.Errorf("unknown accessor type")
 	}
 	switch mode {
 	case "r":
@@ -571,7 +562,6 @@ func (s *Server) AddAccess(ctx context.Context, path string, accessor, accessor_
 	ac := &Access{
 		EntryPath: path,
 		Name:      accessor,
-		Type:      accessor_type,
 		Value:     mode,
 	}
 	err := s.svc.AddAccess(ctx, ac)

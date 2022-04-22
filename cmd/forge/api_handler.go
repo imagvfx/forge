@@ -351,11 +351,10 @@ func (h *apiHandler) handleAddAccess(ctx context.Context, w http.ResponseWriter,
 		return fmt.Errorf("path not defined")
 	}
 	accessor := r.FormValue("name")
-	accessor_type := r.FormValue("type")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
 	for _, pth := range entPaths {
-		err := h.server.AddAccess(ctx, pth, accessor, accessor_type, mode)
+		err := h.server.AddAccess(ctx, pth, accessor, mode)
 		if err != nil {
 			return err
 		}
@@ -414,7 +413,7 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 				return err
 			}
 		} else {
-			err = h.server.AddAccess(ctx, pth, accessor, accessor_type, mode)
+			err = h.server.AddAccess(ctx, pth, accessor, mode)
 			if err != nil {
 				return err
 			}
