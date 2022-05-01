@@ -132,10 +132,6 @@
 	border-radius: 2px;
 }
 
-.thumbnail.inherited .thumbnailImg {
-	opacity: 0.6;
-}
-
 .thumbnail:not(:is(.exists, .inherited)) .thumbnailImg {
 	visibility: hidden;
 }
