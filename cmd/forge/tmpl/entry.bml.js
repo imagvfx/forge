@@ -1242,24 +1242,11 @@ window.onload = function() {
 				}
 				selectedEnts = [thisEnt];
 			}
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
+			let ents = []
 			for (let ent of selectedEnts) {
-				formData.append("path", ent.dataset.entryPath);
+				ents.push(ent.dataset.entryPath);
 			}
-			formData.append("name", "assignee");
-			formData.append("ctg", "property");
-			formData.append("value", value);
-			req.open("post", "/api/update-property");
-			req.send(formData);
-			req.onerror = function() {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status != 200) {
-					printErrorStatus(req.responseText);
-					return;
-				}
+			let onsuccess = function() {
 				let called = CalledByName[value];
 				if (!called) {
 					called = "";
@@ -1267,7 +1254,6 @@ window.onload = function() {
 				input.value = called;
 				input.dataset.oldValue = called;
 				if (!called) {
-					printStatus("done");
 					return;
 				}
 				for (let ent of selectedEnts) {
@@ -1275,8 +1261,8 @@ window.onload = function() {
 					input.dataset.oldValue = called;
 					input.value = called;
 				}
-				printStatus("done");
 			}
+			requestPropertyUpdate(ents, "assignee", value, onsuccess);
 		}
 		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
 	}
@@ -2184,5 +2170,29 @@ function autoComplete(input, labels, vals, oncomplete) {
 			return;
 		}
 		items[focus].classList.add("active");
+	}
+}
+
+function requestPropertyUpdate(ents, prop, value, onsuccess) {
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	for (let ent of ents) {
+		formData.append("path", ent);
+	}
+	formData.append("name", "assignee");
+	formData.append("ctg", "property");
+	formData.append("value", value);
+	req.open("post", "/api/update-property");
+	req.send(formData);
+	req.onerror = function() {
+		printErrorStatus("network error occurred. please check whether the server is down.");
+	}
+	req.onload = function() {
+		if (req.status != 200) {
+			printErrorStatus(req.responseText);
+			return;
+		}
+		onsuccess()
+		printStatus("done");
 	}
 }
