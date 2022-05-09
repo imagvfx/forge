@@ -992,7 +992,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			}
 		}
 		for _, p := range props {
-			v := propValue[p]
+			v := strings.TrimSpace(propValue[p])
 			upds = append(upds, forge.PropertyUpdater{
 				EntryPath: entPath,
 				Name:      p,
