@@ -286,42 +286,7 @@ window.onload = function() {
 					}
 					sel.dataset.popupAttached = "1";
 					let nameInput = popup.querySelector(".propertyPickerName");
-					let valueInput = popup.querySelector(".propertyPickerValue");
-					valueInput.value = "";
-					let path = entPath;
-					let prop = nameInput.value.trim();
-					if (prop == "") {
-						valueInput.disabled = "1";
-					} else {
-						valueInput.disabled = "";
-						if (popup.dataset.sub != "") {
-							path += "/" + popup.dataset.sub
-						}
-						let r = new XMLHttpRequest();
-						let fdata = new FormData();
-						fdata.append("path", path);
-						fdata.append("name", prop);
-						r.open("post", "/api/get-property");
-						r.send(fdata);
-						r.onerror = function() {
-							printErrorStatus("network error occurred. please check whether the server is down.");
-						}
-						r.onload = function() {
-							if (r.status != 200) {
-								printErrorStatus(r.responseText);
-								return;
-							}
-							let j = JSON.parse(r.responseText);
-							if (j.Err != null) {
-								printErrorStatus(j.Err);
-								return;
-							}
-							nameInput.dataset.error = "";
-							nameInput.modified = "";
-							valueInput.value = j.Msg.Eval;
-							printStatus("done");
-						}
-					}
+					reloadPropertyPicker(popup, nameInput.value.trim());
 					// slight adjust of the popup position to make statusDots aligned.
 					let right = sel.closest(".right");
 					let offset = offsetFrom(sel, right);
@@ -640,45 +605,7 @@ window.onload = function() {
 					printErrorStatus(req.responseText);
 					return;
 				}
-				if (prop == "") {
-					nameInput.dataset.error = "";
-					nameInput.dataset.modified = "";
-					valueInput.disabled = "1";
-					valueInput.value = "";
-					return;
-				}
-				valueInput.disabled = "";
-				let mainDiv = document.querySelector(".main");
-				let entPath = popup.dataset.entryPath;
-				let sub = popup.dataset.sub;
-				let path = entPath;
-				if (sub != "") {
-					path += "/" + popup.dataset.sub
-				}
-				let r = new XMLHttpRequest();
-				let fdata = new FormData();
-				fdata.append("path", path);
-				fdata.append("name", prop);
-				r.open("post", "/api/get-property");
-				r.send(fdata);
-				r.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				r.onload = function() {
-					if (r.status != 200) {
-						printErrorStatus(r.responseText);
-						return;
-					}
-					let j = JSON.parse(r.responseText);
-					if (j.Err != null) {
-						printErrorStatus(j.Err);
-						return;
-					}
-					valueInput.value = j.Msg.Eval;
-					nameInput.dataset.error = "";
-					nameInput.dataset.modified = "";
-					printStatus("done");
-				}
+				reloadPropertyPicker(popup, prop);
 			}
 			return;
 		}
@@ -1219,7 +1146,9 @@ window.onload = function() {
 				input.blur();
 			}
 		}
-		let oncomplete = function(value) {
+		let menuAt = getOffset(input);
+		menuAt.top += input.getBoundingClientRect().height + 4;
+		autoComplete(input, AllUserLabels, AllUserNames, menuAt, function(value) {
 			let thisEnt = parentWithClass(input, "subEntry");
 			let entPath = thisEnt.dataset.entryPath;
 			let selectedEnts = document.querySelectorAll(".subEntry.selected");
@@ -1263,8 +1192,7 @@ window.onload = function() {
 				}
 			}
 			requestPropertyUpdate(ents, "assignee", value, onsuccess);
-		}
-		autoComplete(input, AllUserLabels, AllUserNames, oncomplete);
+		});
 	}
 	let grandSubAdderInputs = document.querySelectorAll(".grandSubAdderInput");
 	for (let input of grandSubAdderInputs) {
@@ -1509,6 +1437,14 @@ function offsetFrom(elem, target) {
 		parent = parent.offsetParent;
 	}
 	return {top: top, left: left};
+}
+
+function getOffset(el) {
+  const rect = el.getBoundingClientRect();
+  return {
+    left: rect.left + window.scrollX,
+    top: rect.top + window.scrollY
+  };
 }
 
 function removeDragDropEvents(el) {
@@ -2065,7 +2001,7 @@ let CalledByName = {
 // autoComplete takes input tag and possible autocompleted values and label.
 // It takes oncomplete function as an argument that will be called with user selected value.
 // It will give oncomplete raw input value when it cannot find any item with the value.
-function autoComplete(input, labels, vals, oncomplete) {
+function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	// Turn off browser's default autocomplete behavior.
 	input.setAttribute("autocomplete", "off");
 	let focus = -1;
@@ -2076,11 +2012,11 @@ function autoComplete(input, labels, vals, oncomplete) {
 		}
 		let lsearch = search.toLowerCase();
 		// reset focus on further input.
-		focus = -1;
+		let focus = -1;
 		let menu = document.getElementById("userAutoCompleteMenu");
 		menu.classList.add("invisible");
-		menu.style.left = String(input.offsetLeft) + "px";
-		menu.style.top = String(input.offsetTop + input.offsetHeight) + "px";
+		menu.style.left = String(menuAt.left) + "px";
+		menu.style.top = String(menuAt.top) + "px";
 		menu.replaceChildren();
 		let items = [];
 		for (let [i, l] of labels.entries()) {
@@ -2133,15 +2069,15 @@ function autoComplete(input, labels, vals, oncomplete) {
 				activate(items, focus);
 			}
 		} else if (event.key == "Enter") {
+			if (items.length == 0) {
+				menu.replaceChildren();
+				menu.classList.add("invisible");
+				focus = -1;
+				return;
+			}
+			event.stopImmediatePropagation();
 			event.preventDefault();
 			if (focus == -1) {
-				if (items.length == 0) {
-					oncomplete(input.value);
-					menu.replaceChildren();
-					menu.classList.add("invisible");
-					focus = -1;
-					return;
-				}
 				focus = 0;
 			}
 			oncomplete(items[focus].dataset.value);
@@ -2193,6 +2129,101 @@ function requestPropertyUpdate(ents, prop, value, onsuccess) {
 			return;
 		}
 		onsuccess()
+		printStatus("done");
+	}
+}
+
+function reloadPropertyPicker(popup, prop) {
+	let nameInput = popup.querySelector(".propertyPickerName");
+	let valueInput = popup.querySelector(".propertyPickerValue");
+	nameInput.dataset.value = prop;
+	if (prop == "") {
+		nameInput.dataset.error = "";
+		nameInput.dataset.modified = "";
+		valueInput.disabled = "1";
+		valueInput.value = "";
+		return;
+	}
+	valueInput.disabled = "";
+	let mainDiv = document.querySelector(".main");
+	let entPath = popup.dataset.entryPath;
+	let path = entPath;
+	if (popup.dataset.sub != "") {
+		path += "/" + popup.dataset.sub
+	}
+	let r = new XMLHttpRequest();
+	let fdata = new FormData();
+	fdata.append("path", path);
+	fdata.append("name", prop);
+	r.open("post", "/api/get-property");
+	r.send(fdata);
+	r.onerror = function() {
+		printErrorStatus("network error occurred. please check whether the server is down.");
+	}
+	r.onload = function() {
+		if (r.status != 200) {
+			printErrorStatus(r.responseText);
+			return;
+		}
+		let j = JSON.parse(r.responseText);
+		if (j.Err != null) {
+			printErrorStatus(j.Err);
+			return;
+		}
+		valueInput.value = j.Msg.Eval;
+		nameInput.dataset.type = j.Msg.Type;
+		nameInput.dataset.error = "";
+		nameInput.dataset.modified = "";
+
+		if (nameInput.dataset.type == "user") {
+			let menuAt = getOffset(valueInput);
+			menuAt.top += valueInput.getBoundingClientRect().height + 4;
+			autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
+				let entPath = popup.dataset.entryPath;
+				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
+				let selectedEnts = document.querySelectorAll(".subEntry.selected");
+				if (selectedEnts.length != 0) {
+					let inSel = false;
+					for (let ent of selectedEnts) {
+						if (entPath == ent.dataset.entryPath) {
+							inSel = true;
+							break;
+						}
+					}
+					if (!inSel) {
+						printErrorStatus("entry not in selection: " + entPath);
+						return;
+					}
+				}
+				if (selectedEnts.length == 0) {
+					selectedEnts = [thisEnt];
+				}
+				let ents = []
+				for (let ent of selectedEnts) {
+					let path = ent.dataset.entryPath;
+					if (popup.dataset.sub != "") {
+						path += "/" + popup.dataset.sub;
+					}
+					ents.push(path);
+				}
+				let onsuccess = function() {
+					valueInput.value = CalledByName[value];
+					nameInput.dataset.error = "";
+					nameInput.dataset.modified = "";
+					if (nameInput.dataset.value == "assignee" && popup.dataset.sub != "") {
+						for (let ent of selectedEnts) {
+							let dot = ent.querySelector(`.statusSelector[data-sub="${popup.dataset.sub}"]`);
+							if (!dot) {
+								continue;
+							}
+							dot.dataset.assignee = value;
+						}
+					}
+				}
+				requestPropertyUpdate(ents, nameInput.value, value, onsuccess);
+			});
+		}
+
 		printStatus("done");
 	}
 }
