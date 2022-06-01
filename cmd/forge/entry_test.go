@@ -162,11 +162,29 @@ func TestAddEntries(t *testing.T) {
 	defer db.Close()
 	ctx := context.Background()
 	// first user who was added to the db becomes an admin
-	err = addUser(server, ctx, "admin@imagvfx.com")
-	if err != nil {
-		t.Fatal(err)
+	for _, user := range []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com", "blocked@imagvfx.com"} {
+		err = server.AddUser(ctx, &forge.User{Name: user})
+		if err != nil {
+			t.Fatal(err)
+		}
 	}
 	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
+	groupMembers := map[string][]string{
+		"readers": {"reader@imagvfx.com", "readwriter@imagvfx.com"},
+		"writers": {"readwriter@imagvfx.com"},
+	}
+	for group, members := range groupMembers {
+		err = server.AddGroup(ctx, &forge.Group{Name: group})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, member := range members {
+			err = server.AddGroupMember(ctx, group, member)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
 	for _, typ := range testEntryTypes {
 		err := server.AddEntryType(ctx, typ.name)
 		if !equalError(typ.want, err) {
