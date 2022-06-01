@@ -3,44 +3,37 @@ package main
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/imagvfx/forge"
 )
 
-var testAdmin string = "admin@imagvfx.com"
-
-func addAdmin(server *forge.Server, ctx context.Context) error {
+func addUser(server *forge.Server, ctx context.Context, user string) error {
 	u := &forge.User{
-		Name:   testAdmin,
-		Called: "admin of tests",
+		Name: user,
 	}
 	err := server.AddUser(ctx, u)
 	if err != nil {
 		return err
 	}
-	got, err := server.GetUser(ctx, testAdmin)
+	got, err := server.GetUser(ctx, user)
 	if err != nil {
 		return err
 	}
-	if got != nil {
-		u.ID = got.ID
-	}
-	if !reflect.DeepEqual(got, u) {
+	if user != got.Name {
 		return fmt.Errorf("got %v, want %v", got, u)
 	}
 	return nil
 }
 
-func TestAddAdmin(t *testing.T) {
+func TestAddUser(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
 	ctx := context.Background()
-	err = addAdmin(server, ctx)
+	err = addUser(server, ctx, "admin@imagvfx.com")
 	if err != nil {
 		t.Fatal(err)
 	}

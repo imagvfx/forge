@@ -161,11 +161,12 @@ func TestAddEntries(t *testing.T) {
 	}
 	defer db.Close()
 	ctx := context.Background()
-	err = addAdmin(server, ctx)
+	// first user who was added to the db becomes an admin
+	err = addUser(server, ctx, "admin@imagvfx.com")
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx = forge.ContextWithUserName(ctx, testAdmin)
+	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	for _, typ := range testEntryTypes {
 		err := server.AddEntryType(ctx, typ.name)
 		if !equalError(typ.want, err) {
