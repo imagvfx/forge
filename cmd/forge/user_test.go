@@ -26,6 +26,24 @@ func addUser(server *forge.Server, ctx context.Context, user string) error {
 	return nil
 }
 
+func addGroup(server *forge.Server, ctx context.Context, group string) error {
+	g := &forge.Group{
+		Name: group,
+	}
+	err := server.AddGroup(ctx, g)
+	if err != nil {
+		return err
+	}
+	got, err := server.GetGroup(ctx, group)
+	if err != nil {
+		return err
+	}
+	if group != got.Name {
+		return fmt.Errorf("got %v, want %v", got, g)
+	}
+	return nil
+}
+
 func TestAddUser(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
@@ -34,6 +52,11 @@ func TestAddUser(t *testing.T) {
 	defer db.Close()
 	ctx := context.Background()
 	err = addUser(server, ctx, "admin@imagvfx.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
+	err = addGroup(server, ctx, "pms")
 	if err != nil {
 		t.Fatal(err)
 	}
