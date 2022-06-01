@@ -381,6 +381,9 @@ func AddDefault(db *sql.DB, ctx context.Context, d *forge.Default) error {
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
@@ -605,6 +608,9 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd forge.DefaultUpdater) er
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
@@ -865,6 +871,9 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err

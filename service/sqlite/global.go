@@ -120,6 +120,9 @@ func AddGlobal(db *sql.DB, ctx context.Context, g *forge.Global) error {
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
@@ -175,6 +178,9 @@ func UpdateGlobal(db *sql.DB, ctx context.Context, upd forge.GlobalUpdater) erro
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
@@ -229,6 +235,9 @@ func DeleteGlobal(db *sql.DB, ctx context.Context, entryType, name string) error
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err

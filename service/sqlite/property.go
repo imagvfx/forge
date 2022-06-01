@@ -183,6 +183,9 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	}
 	p.ID = int(id)
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: p.EntryPath,
 		User:      user,
@@ -293,6 +296,9 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: p.EntryPath,
 		User:      user,
@@ -371,6 +377,9 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: p.EntryPath,
 		User:      user,

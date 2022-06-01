@@ -234,7 +234,11 @@ func UpdateUserCalled(db *sql.DB, ctx context.Context, user, called string) erro
 		return err
 	}
 	defer tx.Rollback()
-	if forge.UserNameFromContext(ctx) != user {
+	ctxUser := forge.UserNameFromContext(ctx)
+	if ctxUser == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	if ctxUser != user {
 		return forge.Unauthorized("cannot change other user's information")
 	}
 	err = updateUserCalled(tx, ctx, user, called)

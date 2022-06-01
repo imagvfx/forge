@@ -213,6 +213,9 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *forge.Property) error {
 	}
 	e.ID = int(id)
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: e.EntryPath,
 		User:      user,
@@ -291,6 +294,9 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: e.EntryPath,
 		User:      user,
@@ -363,6 +369,9 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 		return fmt.Errorf("want 1 environ affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: path,
 		User:      user,

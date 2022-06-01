@@ -156,6 +156,9 @@ func addThumbnail(tx *sql.Tx, ctx context.Context, thumb *forge.Thumbnail) error
 	}
 	thumb.ID = int(id)
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: thumb.EntryPath,
 		User:      user,
@@ -222,6 +225,9 @@ func updateThumbnail(tx *sql.Tx, ctx context.Context, upd forge.ThumbnailUpdater
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: upd.EntryPath,
 		User:      user,
@@ -277,6 +283,9 @@ func deleteThumbnail(tx *sql.Tx, ctx context.Context, path string) error {
 		return fmt.Errorf("want 1 thumbnail affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: path,
 		User:      user,

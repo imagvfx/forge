@@ -187,6 +187,9 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 		return nil, fmt.Errorf("path should be specified for access check")
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return nil, forge.Unauthorized("context user unspecified")
+	}
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return nil, err
@@ -336,6 +339,9 @@ func addAccess(tx *sql.Tx, ctx context.Context, a *forge.Access) error {
 	}
 	a.ID = int(id)
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: a.EntryPath,
 		User:      user,
@@ -414,6 +420,9 @@ func updateAccess(tx *sql.Tx, ctx context.Context, upd forge.AccessUpdater) erro
 		return fmt.Errorf("want 1 property affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: a.EntryPath,
 		User:      user,
@@ -486,6 +495,9 @@ func deleteAccess(tx *sql.Tx, ctx context.Context, path, name string) error {
 		return fmt.Errorf("want 1 access_control affected, got %v", n)
 	}
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: path,
 		User:      user,

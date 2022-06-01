@@ -784,6 +784,9 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 	}
 	e.ID = int(id)
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: e.Path,
 		User:      user,
@@ -857,6 +860,9 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	// Let's log only for the entry (not for sub entries).
 	// This might be changed in the future.
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
 	err = addLog(tx, ctx, &forge.Log{
 		EntryPath: newPath,
 		User:      user,

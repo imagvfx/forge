@@ -126,6 +126,10 @@ func AddGroupMember(db *sql.DB, ctx context.Context, m *forge.Member) error {
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
@@ -182,6 +186,10 @@ func DeleteGroupMember(db *sql.DB, ctx context.Context, group, member string) er
 	}
 	defer tx.Rollback()
 	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+
 	yes, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return err
