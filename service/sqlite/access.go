@@ -208,6 +208,9 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 				return &a.Value, nil
 			}
 		}
+		// a user can be a member of multiple groups,
+		// let's find most permissive
+		value := ""
 		for _, a := range as {
 			if a.Type == "user" {
 				continue
@@ -218,8 +221,15 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 				return nil, err
 			}
 			if yes {
+				if a.Value == "r" {
+					value = a.Value
+					continue
+				}
 				return &a.Value, nil
 			}
+		}
+		if value == "r" {
+			return &value, nil
 		}
 		if path == "/" {
 			break
