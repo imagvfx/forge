@@ -162,7 +162,8 @@ func TestAddEntries(t *testing.T) {
 	defer db.Close()
 	ctx := context.Background()
 	// first user who was added to the db becomes an admin
-	for _, user := range []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com", "blocked@imagvfx.com"} {
+	users := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com", "uninvited@imagvfx.com"}
+	for _, user := range users {
 		err = server.AddUser(ctx, &forge.User{Name: user})
 		if err != nil {
 			t.Fatal(err)
@@ -184,6 +185,13 @@ func TestAddEntries(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
+	}
+	access := map[string]string{
+		"readers": "r",
+		"writers": "rw",
+	}
+	for group, access := range access {
+		err = server.AddAccess(ctx, "/", group, access)
 	}
 	for _, typ := range testEntryTypes {
 		err := server.AddEntryType(ctx, typ.name)
@@ -209,23 +217,49 @@ func TestAddEntries(t *testing.T) {
 			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
 		}
 	}
-	for i, search := range testSearches {
-		ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
-		if !equalError(search.wantErr, err) {
-			t.Fatalf("search: %v: got error %q, want %q", i, errorString(err), errorString(search.wantErr))
-		}
-		got := make([]string, 0)
-		for _, e := range ents {
-			got = append(got, e.Path)
-		}
-		sort.Strings(got)
-		sort.Strings(search.wantRes)
-		if !reflect.DeepEqual(got, search.wantRes) {
-			label := fmt.Sprintf("searched %q from %q", search.query, search.path)
-			if search.typ != "" {
-				label += fmt.Sprintf("of type %q", search.typ)
+	whoCanRead := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com"}
+	for _, user := range whoCanRead {
+		ctx = forge.ContextWithUserName(ctx, user)
+		for i, search := range testSearches {
+			ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
+			if !equalError(search.wantErr, err) {
+				t.Fatalf("search: %v: got error %q, want %q", i, errorString(err), errorString(search.wantErr))
 			}
-			t.Fatalf(label+": got %q, want %q", got, search.wantRes)
+			got := make([]string, 0)
+			for _, e := range ents {
+				got = append(got, e.Path)
+			}
+			sort.Strings(got)
+			sort.Strings(search.wantRes)
+			if !reflect.DeepEqual(got, search.wantRes) {
+				label := fmt.Sprintf("searched %q from %q", search.query, search.path)
+				if search.typ != "" {
+					label += fmt.Sprintf("of type %q", search.typ)
+				}
+				t.Fatalf(label+": got %q, want %q", got, search.wantRes)
+			}
+		}
+	}
+	whoCannotRead := []string{"uninvited@imagvfx.com"}
+	for _, user := range whoCannotRead {
+		ctx = forge.ContextWithUserName(ctx, user)
+		for _, search := range testSearches {
+			ents, _ := server.SearchEntries(ctx, search.path, search.typ, search.query)
+			got := make([]string, 0)
+			for _, e := range ents {
+				got = append(got, e.Path)
+			}
+			if len(got) != 0 {
+				if len(got) == 1 && got[0] == "/" {
+					// anyone can search root, even to an uninvited user
+					continue
+				}
+				label := fmt.Sprintf("searched %q from %q", search.query, search.path)
+				if search.typ != "" {
+					label += fmt.Sprintf("of type %q", search.typ)
+				}
+				t.Fatalf(label+": uninvited user shouldn't be able to search child entries, got: %v", got)
+			}
 		}
 	}
 }
