@@ -74,6 +74,7 @@ var testEntries = []testEntry{
 	// validation of parent path checks it's existance. no check to invalid characters.
 	{path: "/test/shot/#cg/0010/lgt", typ: "part", want: errors.New("check parent: entry not found: /test/shot/#cg/0010")},
 	{path: "/test/shot/cg/0020", typ: "shot"},
+	{path: "/test/shot/cg/0020/ani", typ: "part"},
 	{path: "/test/shot/cg/0030", typ: "shot"},
 	{path: "/test/asset", typ: "category"},
 	{path: "/test/asset/char", typ: "group"},
@@ -97,6 +98,7 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010/lgt", k: "assignee", v: "admin@imagvfx.com"},
 	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress"},
 	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter"},
+	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com"},
 }
 
 type testSearch struct {
@@ -119,17 +121,17 @@ var testSearches = []testSearch{
 	{path: "/", typ: "", query: "assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
 	{path: "/", typ: "", query: "assignee=", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match"}},
 	{path: "/", typ: "", query: "assignee=admin@imagvfx.com,", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match"}},
-	{path: "/", typ: "", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani"}},
 	{path: "/", typ: "", query: "ani.assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "", query: "mdl.assignee:admin", wantRes: []string{}},
 	{path: "/", typ: "shot", query: "(sub).assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "shot", query: "(sub).assignee=", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "shot", query: "(sub).assignee=xyz@imagvfx.com", wantRes: []string{}},
 	{path: "/", typ: "", query: "assignee:admin status=inprogress", wantRes: []string{"/test/shot/cg/0010/lgt"}},
-	{path: "/", typ: "", query: "status=,inprogress,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "status=,inprogress,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani"}},
 	{path: "/", typ: "", query: "status!=", wantRes: []string{"/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
-	{path: "/", typ: "", query: "status!=omit status!=done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt"}},
-	{path: "/", typ: "", query: "status!=omit,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt"}},
+	{path: "/", typ: "", query: "status!=omit status!=done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani"}},
+	{path: "/", typ: "", query: "status!=omit,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani"}},
 	{path: "/", typ: "", query: "(sub).sup=admin@imagvfx.com", wantRes: []string{"/"}},
 	{path: "/", typ: "", query: "(sub).sup!=,admin@imagvfx.com", wantRes: []string{}},
 	{path: "/", typ: "", query: "(sub).cg:remove", wantRes: []string{"/test/shot/cg"}},
@@ -145,13 +147,14 @@ var testSearches = []testSearch{
 	{path: "/", typ: "", query: "comp.=val", wantRes: []string{}},
 	{path: "/", typ: "", query: "comp.x=val", wantRes: []string{}},
 	{path: "/", typ: "", query: "comp.x=val", wantRes: []string{}},
-	{path: "/test", typ: "", query: "path:/test/shot", wantRes: []string{"/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", typ: "shot", query: "ani.status!=done", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/test", typ: "", query: "path:/test/shot", wantRes: []string{"/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020", "/test/shot/cg/0020/ani", "/test/shot/cg/0030"}},
 	{path: "/test", typ: "", query: "path!:/test/shot", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/char/yb"}},
 	{path: "/test", typ: "shot", query: "path=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/test", typ: "shot", query: "path!=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 	{path: "/", typ: "shot", query: "name=0010", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", typ: "shot", query: "name!=0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", typ: "part", query: "name=ani", wantRes: []string{"/test/shot/cg/0010/ani"}},
+	{path: "/", typ: "part", query: "name=ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani"}},
 }
 
 func TestAddEntries(t *testing.T) {
@@ -217,13 +220,20 @@ func TestAddEntries(t *testing.T) {
 			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
 		}
 	}
+	errorLabel := func(s testSearch) string {
+		l := fmt.Sprintf("searched %q from %q", s.query, s.path)
+		if s.typ != "" {
+			l += fmt.Sprintf("of type %q", s.typ)
+		}
+		return l
+	}
 	whoCanRead := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com"}
 	for _, user := range whoCanRead {
 		ctx = forge.ContextWithUserName(ctx, user)
-		for i, search := range testSearches {
+		for _, search := range testSearches {
 			ents, err := server.SearchEntries(ctx, search.path, search.typ, search.query)
 			if !equalError(search.wantErr, err) {
-				t.Fatalf("search: %v: got error %q, want %q", i, errorString(err), errorString(search.wantErr))
+				t.Fatalf("%v: got error %q, want %q", errorLabel(search), errorString(err), errorString(search.wantErr))
 			}
 			got := make([]string, 0)
 			for _, e := range ents {
@@ -236,7 +246,7 @@ func TestAddEntries(t *testing.T) {
 				if search.typ != "" {
 					label += fmt.Sprintf("of type %q", search.typ)
 				}
-				t.Fatalf(label+": got %q, want %q", got, search.wantRes)
+				t.Fatalf("%v: got %q, want %q", errorLabel(search), got, search.wantRes)
 			}
 		}
 	}
