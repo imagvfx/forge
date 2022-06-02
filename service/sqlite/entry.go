@@ -275,7 +275,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						subVals = append(subVals, "%/"+sub)
 					}
 				}
-				q += not + "("
+				q += " " + not + " ("
 				vs := strings.Split(val, ",")
 				for i, v := range vs {
 					if i != 0 {
