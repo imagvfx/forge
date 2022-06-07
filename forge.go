@@ -24,10 +24,17 @@ func (e *Entry) Name() string {
 
 func (e *Entry) MarshalJSON() ([]byte, error) {
 	m := struct {
-		Path       string
-		SubEntries []string
+		Path      string
+		Name      string
+		Type      string
+		CreatedAt string
+		UpdatedAt string
 	}{
-		Path: e.Path,
+		Path:      e.Path,
+		Name:      e.Name(),
+		Type:      e.Type,
+		CreatedAt: e.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: e.UpdatedAt.Format(time.RFC3339),
 	}
 	return json.Marshal(m)
 }
