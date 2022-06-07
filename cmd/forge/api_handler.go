@@ -190,6 +190,20 @@ func (h *apiHandler) handleCountAllSubEntries(ctx context.Context, w http.Respon
 	return nil
 }
 
+func (h *apiHandler) handleSearchEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	from := r.FormValue("from")
+	typ := r.FormValue("type")
+	q := r.FormValue("q")
+	ctx = forge.ContextWithUserName(ctx, user)
+	ents, err := h.server.SearchEntries(ctx, from, typ, q)
+	h.WriteResponse(w, ents, err)
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]
