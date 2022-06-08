@@ -1,0 +1,18 @@
+<!doctype html>
+<html> [
+	<head> [
+		<style> [`{{template "style.css"}}`]
+	]
+	<body> [
+		<div class="main"> [
+			<div class="one" style="display:flex;align-items:center;justify-content:center;text-align:center;"> [
+				<div> [
+					<div> [Login completed.]
+					<div style="height:1rem;"> []
+					<div> [Please go back to your app.]
+				]
+			]
+		]
+	]
+]
+

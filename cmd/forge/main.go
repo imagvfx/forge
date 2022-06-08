@@ -167,6 +167,8 @@ func main() {
 			}
 		}
 	}
+	appSessionMan := NewAppSessionManager()
+	// appSessionMan.DebugStatus()
 	login := &loginHandler{
 		server: server,
 		oidc: &forge.OIDC{
@@ -175,6 +177,7 @@ func main() {
 			RedirectURI:  "https://" + host + "/login/callback/google",
 			HostDomain:   oidcHost,
 		},
+		apps: appSessionMan,
 	}
 	page := &pageHandler{
 		server: server,
@@ -182,12 +185,14 @@ func main() {
 	}
 	api := &apiHandler{
 		server: server,
+		apps:   appSessionMan,
 	}
 	Tmpl = template.New("").Funcs(pageHandlerFuncs)
 	Tmpl = template.Must(bml.ToHTMLTemplate(Tmpl, "tmpl/*"))
 	mux := http.NewServeMux()
 	mux.HandleFunc("/login", login.Handle)
 	mux.HandleFunc("/login/callback/google", login.HandleCallback)
+	mux.HandleFunc("/app-login-completed", login.HandleAppLoginCompleted)
 	mux.HandleFunc("/logout", login.HandleLogout)
 	mux.HandleFunc("/", page.Handler(page.handleEntry))
 	mux.HandleFunc("/logs", page.Handler(page.handleEntryLogs))
@@ -197,6 +202,7 @@ func main() {
 	mux.HandleFunc("/types", page.Handler(page.handleEntryTypes))
 	mux.HandleFunc("/types/", page.Handler(page.handleEachEntryType))
 	mux.HandleFunc("/setting", page.Handler(page.handleSetting))
+	mux.HandleFunc("/api/app-login", api.Handler(api.handleAppLogin))
 	mux.HandleFunc("/api/add-entry-type", api.Handler(api.handleAddEntryType))
 	mux.HandleFunc("/api/rename-entry-type", api.Handler(api.handleRenameEntryType))
 	mux.HandleFunc("/api/delete-entry-type", api.Handler(api.handleDeleteEntryType))

@@ -18,6 +18,7 @@ import (
 type loginHandler struct {
 	server *forge.Server
 	oidc   *forge.OIDC
+	apps   *AppSessionManager
 }
 
 func (h *loginHandler) Handle(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +40,11 @@ func (h *loginHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			hs.Write(seed)
 			state := fmt.Sprintf("%x", hs.Sum(nil))
 			session["state"] = state
+		}
+		appKey := r.FormValue("app_session_key")
+		if appKey != "" {
+			// Need to store the authentication info so the app could retrive it with api.
+			session["app_session_key"] = appKey
 		}
 		setSession(w, session)
 
@@ -133,6 +139,20 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		session["user"] = user
 		// session["state"] was created for login. Need to clear it for possible re-login.
 		session["state"] = ""
+		appKey := session["app_session_key"]
+		if appKey != "" {
+			encoded, err := secureCookie.Encode("session", session)
+			if err != nil {
+				return err
+			}
+			sess := AppSession{
+				User:    user,
+				Session: encoded,
+			}
+			h.apps.SendSession(appKey, sess)
+			http.Redirect(w, r, "/app-login-completed", http.StatusSeeOther)
+			return nil
+		}
 		err = setSession(w, session)
 		if err != nil {
 			return err
@@ -141,6 +161,11 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		return nil
 
 	}()
+	handleError(w, err)
+}
+
+func (h *loginHandler) HandleAppLoginCompleted(w http.ResponseWriter, r *http.Request) {
+	err := Tmpl.ExecuteTemplate(w, "app_login_completed.bml", nil)
 	handleError(w, err)
 }
 

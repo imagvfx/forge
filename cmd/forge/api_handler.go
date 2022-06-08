@@ -24,6 +24,7 @@ import (
 
 type apiHandler struct {
 	server *forge.Server
+	apps   *AppSessionManager
 }
 
 func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
@@ -36,6 +37,13 @@ func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.Respons
 			if err != nil {
 				clearSession(w)
 				return err
+			}
+			if r.FormValue("session") != "" {
+				// Session sended with a form instead.
+				err = secureCookie.Decode("session", r.FormValue("session"), &session)
+				if err != nil {
+					return err
+				}
 			}
 			user := session["user"]
 			ctx := forge.ContextWithUserName(r.Context(), user)
@@ -52,6 +60,13 @@ func (h *apiHandler) WriteResponse(w http.ResponseWriter, m any, e error) {
 	if err != nil {
 		log.Print(err)
 	}
+}
+
+func (h *apiHandler) handleAppLogin(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	key := r.FormValue("key")
+	sess, err := h.apps.RecieveSession(key)
+	h.WriteResponse(w, sess, err)
+	return nil
 }
 
 func (h *apiHandler) handleAddEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -191,11 +206,9 @@ func (h *apiHandler) handleCountAllSubEntries(ctx context.Context, w http.Respon
 }
 
 func (h *apiHandler) handleSearchEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := r.FormValue("user")
 	from := r.FormValue("from")
 	typ := r.FormValue("type")
 	q := r.FormValue("q")
-	ctx = forge.ContextWithUserName(ctx, user)
 	ents, err := h.server.SearchEntries(ctx, from, typ, q)
 	h.WriteResponse(w, ents, err)
 	if r.FormValue("back_to_referer") != "" {
