@@ -645,6 +645,7 @@
 	border-radius: 0.6rem;
 	margin-bottom: 0.1rem;
 	background-color: {{setAlphaToColor "#DDD" 0.8}};
+	flex-shrink: 0;
 }
 
 .mainEntry .statusDot {
