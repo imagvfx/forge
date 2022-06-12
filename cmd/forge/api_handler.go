@@ -55,7 +55,11 @@ func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.Respons
 
 func (h *apiHandler) WriteResponse(w http.ResponseWriter, m any, e error) {
 	w.WriteHeader(httpStatusFromError(e))
-	resp, _ := json.Marshal(forge.APIResponse{Msg: m, Err: e})
+	errStr := ""
+	if e != nil {
+		errStr = e.Error()
+	}
+	resp, _ := json.Marshal(forge.APIResponse{Msg: m, Err: errStr})
 	_, err := w.Write(resp)
 	if err != nil {
 		log.Print(err)

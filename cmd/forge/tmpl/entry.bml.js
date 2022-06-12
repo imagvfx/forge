@@ -1650,7 +1650,7 @@ function submitUpdaterOrAdder(ev, input) {
 			get.onload = function() {
 				if (get.status == 200) {
 					let j = JSON.parse(get.responseText);
-					if (j.Err != null) {
+					if (j.Err != "") {
 						printErrorStatus(j.Err);
 						return;
 					}
@@ -1928,7 +1928,7 @@ function openDeleteEntryDialog(path) {
 			return;
 		}
 		let j = JSON.parse(req.responseText);
-		if (j.Err != null) {
+		if (j.Err != "") {
 			printErrorStatus(j.Err);
 			return;
 		}
@@ -2166,7 +2166,7 @@ function reloadPropertyPicker(popup, prop) {
 			return;
 		}
 		let j = JSON.parse(r.responseText);
-		if (j.Err != null) {
+		if (j.Err != "") {
 			printErrorStatus(j.Err);
 			return;
 		}
