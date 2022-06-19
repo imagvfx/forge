@@ -80,6 +80,10 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 		keys = append(keys, "parents.path=?")
 		vals = append(vals, *find.ParentPath)
 	}
+	if find.Type != nil {
+		keys = append(keys, "entry_types.name=?")
+		vals = append(vals, *find.Type)
+	}
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")

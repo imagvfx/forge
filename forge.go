@@ -43,6 +43,7 @@ type EntryFinder struct {
 	ID         *int
 	ParentPath *string
 	Path       *string
+	Type       *string
 }
 
 type EntrySearcher struct {
