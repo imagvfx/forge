@@ -356,6 +356,13 @@ func (h *apiHandler) handleGetEnviron(ctx context.Context, w http.ResponseWriter
 	return nil
 }
 
+func (h *apiHandler) handleEntryEnvirons(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPath := r.FormValue("path")
+	envs, err := h.server.EntryEnvirons(ctx, entPath)
+	h.WriteResponse(w, envs, err)
+	return nil
+}
+
 func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]

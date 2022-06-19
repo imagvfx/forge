@@ -222,6 +222,7 @@ func main() {
 	mux.HandleFunc("/api/add-environ", api.Handler(api.handleAddEnviron))
 	mux.HandleFunc("/api/update-environ", api.Handler(api.handleUpdateEnviron))
 	mux.HandleFunc("/api/get-environ", api.Handler(api.handleGetEnviron))
+	mux.HandleFunc("/api/entry-environs", api.Handler(api.handleEntryEnvirons))
 	mux.HandleFunc("/api/delete-environ", api.Handler(api.handleDeleteEnviron))
 	mux.HandleFunc("/api/add-thumbnail", api.Handler(api.handleAddThumbnail))
 	mux.HandleFunc("/api/update-thumbnail", api.Handler(api.handleUpdateThumbnail))
