@@ -3,9 +3,9 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/imagvfx/forge"
 )
@@ -427,7 +427,7 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 	if err != nil {
 		return err
 	}
-	d.Value, err = validateProperty(tx, ctx, "", d.Name, d.Type, d.Value)
+	_, err = validateProperty(tx, ctx, "", d.Name, d.Type, d.Value)
 	if err != nil {
 		return err
 	}
@@ -453,25 +453,37 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 		return err
 	}
 	d.ID = int(id)
-	_, err = tx.ExecContext(ctx, `
-		INSERT INTO properties (
-			entry_id,
-			default_id,
-			val,
-			updated_at
-		) SELECT id, ?, ?, ? FROM entries WHERE type_id=?
-		ON CONFLICT DO NOTHING
-	`,
-		d.ID, d.Value, time.Now().UTC(), typeID,
-	)
+	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType})
 	if err != nil {
 		return err
+	}
+	for _, ent := range entries {
+		_, err = getProperty(tx, ctx, ent.Path, d.Name)
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+			err = addProperty(tx, ctx, &forge.Property{
+				EntryPath: ent.Path,
+				Name:      d.Name,
+				Type:      d.Type,
+				Value:     d.Value,
+			})
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
 
 func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
+	if err != nil {
+		return err
+	}
+	_, err = validateProperty(tx, ctx, "", d.Name, d.Type, d.Value)
 	if err != nil {
 		return err
 	}
@@ -497,20 +509,27 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 		return err
 	}
 	d.ID = int(id)
-	_, err = tx.ExecContext(ctx, `
-		INSERT INTO environs (
-			entry_id,
-			name,
-			typ,
-			val,
-			updated_at
-		) SELECT id, ?, ?, ?, ? FROM entries WHERE type_id=?
-		ON CONFLICT DO NOTHING
-	`,
-		d.Name, d.Type, d.Value, time.Now().UTC(), typeID,
-	)
+	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType})
 	if err != nil {
 		return err
+	}
+	for _, ent := range entries {
+		_, err = getEnviron(tx, ctx, ent.Path, d.Name)
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+			err = addEnviron(tx, ctx, &forge.Property{
+				EntryPath: ent.Path,
+				Name:      d.Name,
+				Type:      d.Type,
+				Value:     d.Value,
+			})
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -561,8 +580,28 @@ func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 		return err
 	}
 	d.ID = int(id)
-	// Things can be chaotic if we change pre-existing accesses for entry.
-	// Let's not do that.
+	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType})
+	if err != nil {
+		return err
+	}
+	for _, ent := range entries {
+		_, err = getAccess(tx, ctx, ent.Path, d.Name)
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+			err = addAccess(tx, ctx, &forge.Access{
+				EntryPath: ent.Path,
+				Name:      d.Name,
+				Type:      d.Type,
+				Value:     d.Value,
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
