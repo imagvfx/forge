@@ -140,6 +140,11 @@ func validateEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (stri
 		// unset
 		return "", nil
 	}
+	if val == "." {
+		// "." indicates the entry itself.
+		// Note that it doesn't require 'entry' path, so "." can be used in defaults.
+		return "0", nil
+	}
 	if !path.IsAbs(val) {
 		// make abs path
 		val = path.Join(entry, val)

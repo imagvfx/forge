@@ -81,6 +81,10 @@ func evalEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, 
 	if err != nil {
 		return "", "", err
 	}
+	if id == 0 {
+		// 0 is a special id that indicates the entry itself.
+		return entry, ".", nil
+	}
 	ent, err := getEntryByID(tx, ctx, id)
 	if err != nil {
 		return "", "", err
@@ -93,19 +97,11 @@ func evalEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, 
 }
 
 func evalEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
-	id, err := strconv.Atoi(val)
+	eval, val, err := evalEntryPath(tx, ctx, entry, val)
 	if err != nil {
 		return "", "", err
 	}
-	ent, err := getEntryByID(tx, ctx, id)
-	if err != nil {
-		return "", "", err
-	}
-	pth, err := filepath.Rel(entry, ent.Path)
-	if err != nil {
-		return "", "", err
-	}
-	return path.Base(ent.Path), pth, nil
+	return path.Base(eval), val, nil
 }
 
 func evalDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
