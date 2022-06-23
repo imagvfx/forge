@@ -506,12 +506,14 @@ window.onload = function() {
 					paths.push(entPath);
 				} else {
 					for (let ent of selEnts) {
-						paths.push(ent.dataset.entryPath);
-					}
-				}
-				if (sub != "") {
-					for (let i in paths) {
-						paths[i] += "/" + sub;
+						let path = ent.dataset.entryPath;
+						if (sub != "") {
+							if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
+								continue
+							}
+							path += "/" + sub;
+						}
+						paths.push(path);
 					}
 				}
 				let req = new XMLHttpRequest();
