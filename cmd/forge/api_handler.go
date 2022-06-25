@@ -693,23 +693,12 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 	if r.FormValue("update_quick_search") != "" {
 		name := r.FormValue("quick_search_name")
 		val := r.FormValue("quick_search_value")
-		quickSearch := []forge.StringKV{
-			{K: name, V: val},
-		}
-		user := forge.UserNameFromContext(ctx)
-		err := h.server.UpdateUserSetting(ctx, user, "quick_searches", quickSearch)
-		if err != nil {
-			return err
-		}
-	}
-	if r.FormValue("arrange_quick_search") != "" {
-		name := r.FormValue("quick_search_name")
 		at := r.FormValue("quick_search_at")
 		n, err := strconv.Atoi(at)
 		if err != nil {
 			return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
 		}
-		arr := forge.QuickSearchArranger{Name: name, Index: n}
+		arr := forge.QuickSearchArranger{KV: forge.StringKV{K: name, V: val}, Index: n}
 		user := forge.UserNameFromContext(ctx)
 		err = h.server.UpdateUserSetting(ctx, user, "quick_searches", arr)
 		if err != nil {

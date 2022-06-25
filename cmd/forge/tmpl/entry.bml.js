@@ -1479,7 +1479,7 @@ function updatePinnedPath(path, at) {
 function updateQuickSearch(path, at) {
 	let req = new XMLHttpRequest();
 	let formData = new FormData();
-	formData.append("arrange_quick_search", "1");
+	formData.append("update_quick_search", "1");
 	formData.append("quick_search_name", path);
 	formData.append("quick_search_at", at);
 	req.open("post", "/api/update-user-setting");

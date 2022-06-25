@@ -371,19 +371,10 @@ type MemberFinder struct {
 }
 
 type QuickSearchArranger struct {
-	Name  string
+	KV    StringKV
 	Index int
 }
 
-// PinnedPathArranger add/move/remove the path from UserSetting.PinnedPaths.
-// The index system in Arranger is a little different than the others, so please read below.
-//
-// The path will be removed when Index is under 0.
-// Otherwise the path will be moved to the index.
-// The path will be added when it doesn't already exist in the PinnedPaths.
-// It will just be appeneded to the end, when Index is equal or greater than len(PinnedPaths).
-//
-// TODO: It could be changed to SliceItemArranger when generics come in Go.
 type PinnedPathArranger struct {
 	Path  string
 	Index int

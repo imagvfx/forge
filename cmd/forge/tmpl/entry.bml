@@ -67,6 +67,7 @@
 							<input name="user" type="hidden" value="{{$.User}}"> []
 							<input name="quick_search_name" style="width:7rem;border-radius:2px;background-color:inherit;font-size:0.7rem;border: 1px solid rgba(1, 1, 1, 0);" placeholder="add to quick search" value=""> []
 							<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
+							<input name="quick_search_at" type="hidden" value="{{len $.UserSetting.QuickSearches}}"> []
 							<button name="update_quick_search" value="1" hidden> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]

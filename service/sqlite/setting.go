@@ -296,136 +296,36 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			return err
 		}
 	case "quick_searches":
-		switch val := upd.Value.(type) {
-		case []forge.StringKV:
-			updateQuickSearch := val
-			quickSearches := setting.QuickSearches
-			if quickSearches == nil {
-				quickSearches = make([]forge.StringKV, 0)
-			}
-			for _, updQs := range updateQuickSearch {
-				if updQs.K == "" {
-					// TODO: check this for other settings as well
-					return fmt.Errorf("quick search name is empty")
-				}
-				if updQs.V == "" {
-					// Remove the quick search.
-					idx := -1
-					for i, s := range quickSearches {
-						if s.K == updQs.K {
-							idx = i
-							break
-						}
-					}
-					if idx != -1 {
-						quickSearches = append(quickSearches[:idx], quickSearches[idx+1:]...)
-					}
-				} else {
-					// Add or update the quick search.
-					found := false
-					for i, qs := range quickSearches {
-						if qs.K != updQs.K {
-							continue
-						}
-						found = true
-						quickSearches[i] = updQs
-					}
-					if !found {
-						quickSearches = append(quickSearches, updQs)
-					}
-				}
-			}
-			value, err = json.Marshal(quickSearches)
-			if err != nil {
-				return err
-			}
-		case forge.QuickSearchArranger:
-			arr := val
-			if arr.Name == "" {
-				return fmt.Errorf("%v: name empty", upd.Key)
-			}
-			oldSearches := setting.QuickSearches
-			if oldSearches == nil {
-				oldSearches = make([]forge.StringKV, 0)
-			}
-			searches := make([]forge.StringKV, 0, len(oldSearches)+1)
-			search := forge.StringKV{}
-			for _, s := range oldSearches {
-				if s.K == arr.Name {
-					search = s
-					continue
-				}
-				searches = append(searches, s)
-			}
-			if search.K == "" {
-				return fmt.Errorf("%v: not found quick search: %v", upd.Key, arr.Name)
-			}
-			switch n := arr.Index; {
-			case n < 0:
-				// remove: already done
-			case n < len(oldSearches):
-				// insert el at n
-				searches = append(searches, forge.StringKV{})
-				copy(searches[n+1:], searches[n:])
-				searches[n] = search
-			default:
-				searches = append(searches, search)
-			}
-			value, err = json.Marshal(searches)
-			if err != nil {
-				return err
-			}
-		default:
+		arng, ok := upd.Value.(forge.QuickSearchArranger)
+		if !ok {
 			return fmt.Errorf("invalid type of value: %v", upd.Key)
+		}
+		search := arng.KV
+		if search.K == "" {
+			return fmt.Errorf("%v: name empty", upd.Key)
+		}
+		key := func(a forge.StringKV) string { return a.K }
+		searches := forge.Arrange(setting.QuickSearches, search, arng.Index, key, false)
+		value, err = json.Marshal(searches)
+		if err != nil {
+			return err
 		}
 	case "pinned_paths":
 		// Correct the key with internal represetation version.
 		upd.Key = "pinned_paths_v2"
-		updatePinnedPath, ok := upd.Value.(forge.PinnedPathArranger)
+		pinned, ok := upd.Value.(forge.PinnedPathArranger)
 		if !ok {
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
-		path := updatePinnedPath.Path
-		_, err := getEntryID(tx, ctx, path)
+		_, err := getEntryID(tx, ctx, pinned.Path)
 		if err != nil {
 			return err
 		}
-		n := updatePinnedPath.Index
-		// Insert/Remove pinned paths by specifiying the index n.
-		// n < 0 means remove the path,
-		// n >= len(oldPinned) means append it to the last.
-		//
-		// ex) when pinned is initialized as []string{"a", "b", "c"}
-		//
-		//     pinned = []string{"b", "c"}       where path = "a" and n = -1
-		//     pinned = []string{"a", "b", "c"}  where path = "a" and n = 0
-		//     pinned = []string{"b", "a", "c"}  where path = "a" and n = 1
-		//     pinned = []string{"b", "c", "a"}  where path = "a" and n = 2
-		//
-		oldPinned := setting.PinnedPaths
-		if oldPinned == nil {
-			oldPinned = make([]string, 0)
-		}
-		pinned := make([]string, 0, len(oldPinned)+1)
-		for _, p := range oldPinned {
-			// Remove the path from currently pinned, if exists.
-			if p != path {
-				pinned = append(pinned, p)
-			}
-		}
-		if n < 0 {
-			// remove: already done
-		} else if n < len(oldPinned) {
-			// insert el at n
-			pinned = append(pinned, "")
-			copy(pinned[n+1:], pinned[n:])
-			pinned[n] = path
-		} else {
-			pinned = append(pinned, path)
-		}
+		key := func(a string) string { return a }
+		pinnedPaths := forge.Arrange(setting.PinnedPaths, pinned.Path, pinned.Index, key, false)
 		// Convert to internal represetation.
 		pinnedIDs := make([]int, 0)
-		for _, p := range pinned {
+		for _, p := range pinnedPaths {
 			id, err := getEntryID(tx, ctx, p)
 			if err != nil {
 				var e *forge.NotFoundError
