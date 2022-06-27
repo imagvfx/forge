@@ -320,16 +320,16 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 	case "pinned_paths":
 		// Correct the key with internal represetation version.
 		upd.Key = "pinned_paths_v2"
-		pinned, ok := upd.Value.(forge.PinnedPathArranger)
+		pinned, ok := upd.Value.(forge.StringSliceArranger)
 		if !ok {
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
-		_, err := getEntryID(tx, ctx, pinned.Path)
+		_, err := getEntryID(tx, ctx, pinned.Value)
 		if err != nil {
 			return err
 		}
 		key := func(a string) string { return a }
-		pinnedPaths := forge.Arrange(setting.PinnedPaths, pinned.Path, pinned.Index, key, false)
+		pinnedPaths := forge.Arrange(setting.PinnedPaths, pinned.Value, pinned.Index, key, false)
 		// Convert to internal represetation.
 		pinnedIDs := make([]int, 0)
 		for _, p := range pinnedPaths {

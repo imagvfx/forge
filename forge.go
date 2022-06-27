@@ -375,7 +375,7 @@ type QuickSearchArranger struct {
 	Index int
 }
 
-type PinnedPathArranger struct {
-	Path  string
+type StringSliceArranger struct {
+	Value string
 	Index int
 }

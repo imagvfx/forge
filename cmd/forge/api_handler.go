@@ -722,8 +722,8 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		if err != nil {
 			return fmt.Errorf("pinned_path_at cannot be converted to int: %v", at)
 		}
-		pinnedPath := forge.PinnedPathArranger{
-			Path:  path,
+		pinnedPath := forge.StringSliceArranger{
+			Value: path,
 			Index: n,
 		}
 		user := forge.UserNameFromContext(ctx)
