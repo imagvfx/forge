@@ -732,6 +732,25 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_programs_in_use") != "" {
+		prog := strings.TrimSpace(r.FormValue("program"))
+		if prog == "" {
+			return fmt.Errorf("program not provided")
+		}
+		at := r.FormValue("program_at")
+		n, err := strconv.Atoi(at)
+		if err != nil {
+			return fmt.Errorf("program_at cannot be converted to int: %v", at)
+		}
+		progsInUse := forge.StringSliceArranger{
+			Value: prog,
+			Index: n,
+		}
+		user := forge.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "programs_in_use", progsInUse)
+		h.WriteResponse(w, "", err)
+		return err
+	}
 	if r.FormValue("update_search_result_expand") != "" {
 		val := strings.TrimSpace(r.FormValue("expand"))
 		expand := false
