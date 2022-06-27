@@ -614,6 +614,13 @@ func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.Response
 	return nil
 }
 
+func (h *apiHandler) handleGetUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	u, err := h.server.GetUserSetting(ctx, user)
+	h.WriteResponse(w, u, err)
+	return nil
+}
+
 func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// NOTE: don't use make, maps not for the update should be nil
 	if r.FormValue("update_entry_page_selected_category") != "" {

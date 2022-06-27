@@ -237,6 +237,7 @@ func main() {
 	mux.HandleFunc("/api/add-group-member", api.Handler(api.handleAddGroupMember))
 	mux.HandleFunc("/api/delete-group-member", api.Handler(api.handleDeleteGroupMember))
 	mux.HandleFunc("/api/update-user-called", api.Handler(api.handleUpdateUserCalled))
+	mux.HandleFunc("/api/get-user-setting", api.Handler(api.handleGetUserSetting))
 	mux.HandleFunc("/api/update-user-setting", api.Handler(api.handleUpdateUserSetting))
 	mux.HandleFunc("/api/bulk-update", api.Handler(api.handleBulkUpdate))
 	fs := http.FileServer(http.Dir("asset"))
