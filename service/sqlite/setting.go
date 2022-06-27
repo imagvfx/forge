@@ -202,6 +202,13 @@ func UpdateUserSetting(db *sql.DB, ctx context.Context, upd forge.UserSettingUpd
 }
 
 func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpdater) error {
+	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	if user != upd.User {
+		return forge.Unauthorized("cannot update setting for another user")
+	}
 	setting, err := getUserSetting(tx, ctx, upd.User)
 	if err != nil {
 		return err
