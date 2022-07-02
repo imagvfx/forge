@@ -434,8 +434,8 @@ func countAllSubEntries(tx *sql.Tx, ctx context.Context, path string) (int, erro
 		path = ""
 	}
 	rows, err := tx.QueryContext(ctx, `
-		SELECT COUNT(*) FROM entries WHERE path LIKE ?`,
-		path+"/%",
+		SELECT COUNT(*) FROM entries WHERE path GLOB ?`,
+		path+"/*",
 	)
 	if err != nil {
 		return 0, err
@@ -857,6 +857,15 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 		return err
 	}
 	newPath := filepath.Join(parent, newName)
+	_, err = getEntry(tx, ctx, newPath)
+	if err != nil {
+		var e *forge.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
+	} else {
+		return fmt.Errorf("rename target path already exists: %v", newPath)
+	}
 	err = updateEntryPath(tx, ctx, path, newPath)
 	if err != nil {
 		return err
@@ -879,12 +888,12 @@ func renameEntry(tx *sql.Tx, ctx context.Context, path, newName string) error {
 	}
 	// root entry successfully renamed,
 	// let's do it for all sub entries.
-	like := path + `/%`
+	like := path + `/*`
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			path
 		FROM entries
-		WHERE path LIKE ?
+		WHERE path GLOB ?
 	`,
 		like,
 	)
@@ -953,7 +962,7 @@ func DeleteEntry(db *sql.DB, ctx context.Context, path string) error {
 }
 
 func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
-	// Rename an entry actually affects many sub entries,
+	// Delete an entry actually affects many sub entries,
 	// should be picky.
 	if path == "" {
 		return fmt.Errorf("need a path to delete")
@@ -962,12 +971,12 @@ func deleteEntry(tx *sql.Tx, ctx context.Context, path string) error {
 		return fmt.Errorf("cannot delete root entry")
 	}
 	// The entry that will be deleted shouldn't have sub entries.
-	like := path + `/%`
+	like := path + `/*`
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			path
 		FROM entries
-		WHERE path LIKE ?
+		WHERE path GLOB ?
 	`,
 		like,
 	)

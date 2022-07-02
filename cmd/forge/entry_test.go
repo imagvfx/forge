@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"reflect"
 	"sort"
 	"testing"
@@ -79,6 +80,8 @@ var testEntries = []testEntry{
 	{path: "/test/asset", typ: "category"},
 	{path: "/test/asset/char", typ: "group"},
 	{path: "/test/asset/char/yb", typ: "asset"},
+	// check case sensitive search for entries,
+	{path: "/TEST", typ: "show"},
 }
 
 type testProperty struct {
@@ -157,6 +160,31 @@ var testSearches = []testSearch{
 	{path: "/", typ: "part", query: "name=ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani"}},
 }
 
+type testRename struct {
+	path    string
+	newName string
+	wantErr error
+}
+
+var testRenames = []testRename{
+	{
+		path:    "/TEST",
+		newName: "test",
+		wantErr: errors.New("rename target path already exists: /test"),
+	},
+}
+
+type testDelete struct {
+	path    string
+	wantErr error
+}
+
+var testDeletes = []testDelete{
+	{
+		path: "/TEST",
+	},
+}
+
 func TestAddEntries(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
@@ -220,6 +248,28 @@ func TestAddEntries(t *testing.T) {
 			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
 		}
 	}
+
+	// test renames and revert it back.
+	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
+	for _, rename := range testRenames {
+		dir := path.Dir(rename.path)
+		oldName := path.Base(rename.path)
+		err := server.RenameEntry(ctx, rename.path, rename.newName)
+		if !equalError(rename.wantErr, err) {
+			t.Fatalf("rename %q to %q: want err %q, got %q", rename.path, rename.newName, errorString(rename.wantErr), errorString(err))
+		}
+		if err != nil {
+			// The rename wasn't done, no need to revert.
+			continue
+		}
+		// revert
+		newPath := path.Join(dir, rename.newName)
+		err = server.RenameEntry(ctx, newPath, oldName)
+		if err != nil {
+			t.Fatalf("rename %q to %q: revert got unwanted err: %v", rename.path, rename.newName, err)
+		}
+	}
+
 	errorLabel := func(s testSearch) string {
 		l := fmt.Sprintf("searched %q from %q", s.query, s.path)
 		if s.typ != "" {
@@ -270,6 +320,15 @@ func TestAddEntries(t *testing.T) {
 				}
 				t.Fatalf(label+": uninvited user shouldn't be able to search child entries, got: %v", got)
 			}
+		}
+	}
+
+	// test delete
+	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
+	for _, delete := range testDeletes {
+		err := server.DeleteEntry(ctx, delete.path)
+		if !equalError(delete.wantErr, err) {
+			t.Fatalf("delete %q: want err %q, got %q", delete.path, errorString(delete.wantErr), errorString(err))
 		}
 	}
 }
