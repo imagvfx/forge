@@ -2201,11 +2201,15 @@ function reloadPropertyPicker(popup, prop) {
 				if (selectedEnts.length == 0) {
 					selectedEnts = [thisEnt];
 				}
+				let sub = popup.dataset.sub;
 				let ents = []
 				for (let ent of selectedEnts) {
 					let path = ent.dataset.entryPath;
-					if (popup.dataset.sub != "") {
-						path += "/" + popup.dataset.sub;
+					if (sub != "") {
+						if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
+							continue
+						}
+						path += "/" + sub;
 					}
 					ents.push(path);
 				}
