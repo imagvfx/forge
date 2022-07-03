@@ -133,7 +133,7 @@ func getProperty(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Pro
 		return nil, err
 	}
 	if len(props) == 0 {
-		return nil, forge.NotFound("property not found")
+		return nil, forge.NotFound("property not found: %v.%v", path, name)
 	}
 	p := props[0]
 	return p, nil
