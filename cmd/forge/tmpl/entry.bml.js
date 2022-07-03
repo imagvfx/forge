@@ -501,20 +501,21 @@ window.onload = function() {
 				let entPath = popup.dataset.entryPath;
 				let sub = popup.dataset.sub;
 				let selEnts = document.querySelectorAll(".subEntry.selected");
-				let paths = [];
 				if (selEnts.length == 0) {
-					paths.push(entPath);
-				} else {
-					for (let ent of selEnts) {
-						let path = ent.dataset.entryPath;
-						if (sub != "") {
-							if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
-								continue
-							}
-							path += "/" + sub;
+					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
+					selEnts = [thisEnt];
+				}
+
+				let paths = [];
+				for (let ent of selEnts) {
+					let path = ent.dataset.entryPath;
+					if (sub != "") {
+						if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
+							continue
 						}
-						paths.push(path);
+						path += "/" + sub;
 					}
+					paths.push(path);
 				}
 				let req = new XMLHttpRequest();
 				let formData = new FormData();
