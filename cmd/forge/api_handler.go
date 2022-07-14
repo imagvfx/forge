@@ -231,6 +231,16 @@ func (h *apiHandler) handleSearchEntries(ctx context.Context, w http.ResponseWri
 	return nil
 }
 
+func (h *apiHandler) handleGetEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path") // To parse multipart form.
+	ent, err := h.server.GetEntry(ctx, path)
+	h.WriteResponse(w, ent, err)
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]
@@ -741,6 +751,25 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		if err != nil {
 			return err
 		}
+	}
+	if r.FormValue("update_recent_paths") != "" {
+		path := strings.TrimSpace(r.FormValue("path"))
+		if path == "" {
+			return fmt.Errorf("path not provided")
+		}
+		at := r.FormValue("path_at")
+		n, err := strconv.Atoi(at)
+		if err != nil {
+			return fmt.Errorf("path_at cannot be converted to int: %v", at)
+		}
+		recentPath := forge.StringSliceArranger{
+			Value: path,
+			Index: n,
+		}
+		user := forge.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "recent_paths", recentPath)
+		h.WriteResponse(w, "", err)
+		return err
 	}
 	if r.FormValue("update_programs_in_use") != "" {
 		prog := strings.TrimSpace(r.FormValue("program"))

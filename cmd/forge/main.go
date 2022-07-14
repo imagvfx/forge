@@ -215,6 +215,7 @@ func main() {
 	mux.HandleFunc("/api/sub-entries", api.Handler(api.handleSubEntries))
 	mux.HandleFunc("/api/search-entries", api.Handler(api.handleSearchEntries))
 	mux.HandleFunc("/api/add-entry", api.Handler(api.handleAddEntry))
+	mux.HandleFunc("/api/get-entry", api.Handler(api.handleGetEntry))
 	mux.HandleFunc("/api/rename-entry", api.Handler(api.handleRenameEntry))
 	mux.HandleFunc("/api/delete-entry", api.Handler(api.handleDeleteEntry))
 	mux.HandleFunc("/api/count-all-sub-entries", api.Handler(api.handleCountAllSubEntries))
