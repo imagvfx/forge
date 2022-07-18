@@ -321,6 +321,7 @@ type UserSetting struct {
 	PickedProperty              map[string]string
 	QuickSearches               []StringKV
 	PinnedPaths                 []string
+	RecentPaths                 []string
 	ProgramsInUse               []string
 	UpdateMarkerLasts           int
 	SearchResultExpand          bool

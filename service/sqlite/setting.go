@@ -122,6 +122,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 					s.PinnedPaths = append(s.PinnedPaths, ent.Path)
 				}
 			}
+		case "recent_paths":
+			err = json.Unmarshal([]byte(value), &s.RecentPaths)
 		case "programs_in_use":
 			err = json.Unmarshal([]byte(value), &s.ProgramsInUse)
 		case "update_marker_lasts":
@@ -346,6 +348,21 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			pinnedIDs = append(pinnedIDs, id)
 		}
 		value, err = json.Marshal(pinnedIDs)
+		if err != nil {
+			return err
+		}
+	case "recent_paths":
+		path, ok := upd.Value.(forge.StringSliceArranger)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		key := func(a string) string { return a }
+		paths := forge.Arrange(setting.RecentPaths, path.Value, path.Index, key, false)
+		limit := 20
+		if len(paths) > limit {
+			paths = paths[:limit]
+		}
+		value, err = json.Marshal(paths)
 		if err != nil {
 			return err
 		}
