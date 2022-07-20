@@ -3,7 +3,6 @@ package sqlite
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -334,19 +333,9 @@ func deleteEnviron(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	ent, err := getEntry(tx, ctx, path)
+	_, err = getEntry(tx, ctx, path)
 	if err != nil {
 		return err
-	}
-	_, err = getDefaultEnviron(tx, ctx, ent.Type, name)
-	if err == nil {
-		return fmt.Errorf("cannot delete default environ of %q: %v", ent.Type, name)
-	}
-	if err != nil {
-		var e *forge.NotFoundError
-		if !errors.As(err, &e) {
-			return err
-		}
 	}
 	e, err := getEnviron(tx, ctx, path, name)
 	if err != nil {
