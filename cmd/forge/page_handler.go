@@ -204,6 +204,10 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 
 func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	isAdmin, err := h.server.IsAdmin(ctx, user)
+	if err != nil {
+		return err
+	}
 	setting, err := h.server.GetUserSetting(ctx, user)
 	if err != nil {
 		return err
@@ -645,6 +649,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	recipe := struct {
 		User                      string
+		UserIsAdmin               bool
 		UserSetting               *forge.UserSetting
 		Entry                     *forge.Entry
 		EntryByPath               map[string]*forge.Entry
@@ -671,6 +676,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		AllUsers                  []*forge.User
 	}{
 		User:                      user,
+		UserIsAdmin:               isAdmin,
 		UserSetting:               setting,
 		Entry:                     ent,
 		EntryByPath:               entryByPath,

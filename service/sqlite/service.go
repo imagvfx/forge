@@ -102,6 +102,14 @@ func (s *Service) RenameEntry(ctx context.Context, path, newName string) error {
 	return RenameEntry(s.db, ctx, path, newName)
 }
 
+func (s *Service) ArchiveEntry(ctx context.Context, path string) error {
+	return ArchiveEntry(s.db, ctx, path)
+}
+
+func (s *Service) UnarchiveEntry(ctx context.Context, path string) error {
+	return UnarchiveEntry(s.db, ctx, path)
+}
+
 func (s *Service) DeleteEntry(ctx context.Context, path string) error {
 	return DeleteEntry(s.db, ctx, path)
 }
@@ -180,6 +188,10 @@ func (s Service) UpdateAccess(ctx context.Context, upd forge.AccessUpdater) erro
 
 func (s *Service) DeleteAccess(ctx context.Context, path, name string) error {
 	return DeleteAccess(s.db, ctx, path, name)
+}
+
+func (s *Service) IsAdmin(ctx context.Context, user string) (bool, error) {
+	return IsAdmin(s.db, ctx, user)
 }
 
 func (s *Service) FindLogs(ctx context.Context, find forge.LogFinder) ([]*forge.Log, error) {

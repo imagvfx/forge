@@ -282,6 +282,30 @@ func (h *apiHandler) handleRenameEntry(ctx context.Context, w http.ResponseWrite
 	return nil
 }
 
+func (h *apiHandler) handleArchiveEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPath := r.FormValue("path")
+	err := h.server.ArchiveEntry(ctx, entPath)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
+func (h *apiHandler) handleUnarchiveEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPath := r.FormValue("path")
+	err := h.server.UnarchiveEntry(ctx, entPath)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	delFn := h.server.DeleteEntry

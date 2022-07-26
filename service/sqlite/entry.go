@@ -77,14 +77,22 @@ func FindEntries(db *sql.DB, ctx context.Context, find forge.EntryFinder) ([]*fo
 
 // when id is empty, it will find entries of root.
 func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*forge.Entry, error) {
+	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return nil, forge.Unauthorized("context user unspecified")
+	}
+	admin, err := isAdmin(tx, ctx, user)
+	if err != nil {
+		return nil, err
+	}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
+	if !admin {
+		keys = append(keys, "NOT entries.archived")
+	}
 	if find.ID != nil {
 		keys = append(keys, "entries.id=?")
 		vals = append(vals, *find.ID)
-	}
-	if !find.Archived {
-		keys = append(keys, "NOT entries.archived")
 	}
 	if find.Path != nil {
 		keys = append(keys, "entries.path=?")
@@ -183,6 +191,14 @@ func SearchEntries(db *sql.DB, ctx context.Context, search forge.EntrySearcher) 
 }
 
 func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
+	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return nil, forge.Unauthorized("context user unspecified")
+	}
+	admin, err := isAdmin(tx, ctx, user)
+	if err != nil {
+		return nil, err
+	}
 	if search.SearchRoot == "/" {
 		// Prevent search root become two slashes by adding slash again.
 		search.SearchRoot = ""
@@ -371,7 +387,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		WHERE %s AND %s AND %s
 	`
 	whereArchived := "NOT archived"
-	if search.Archived {
+	if admin {
 		whereArchived = "TRUE"
 	}
 	wherePath := "ents.path LIKE ?"
@@ -967,6 +983,114 @@ func updateEntryPath(tx *sql.Tx, ctx context.Context, path, newPath string) erro
 	}
 	if n != 1 {
 		return fmt.Errorf("want 1 property affected, got %v", n)
+	}
+	return nil
+}
+
+func ArchiveEntry(db *sql.DB, ctx context.Context, path string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = archiveEntry(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func archiveEntry(tx *sql.Tx, ctx context.Context, path string) error {
+	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	admin, err := isAdmin(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	if !admin {
+		return forge.Unauthorized("user doesn't have permission: %v", user)
+	}
+	toks := strings.Split(path, "/")
+	if len(toks) != 2 {
+		return fmt.Errorf("archive support only for root branches: %v", path)
+	}
+	if toks[0] != "" || toks[1] == "" {
+		return fmt.Errorf("archive support only for root branches: %v", path)
+	}
+	_, err = getEntry(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `
+		UPDATE entries
+		SET archived=1
+		WHERE path=? OR path GLOB ?
+	`,
+		path,
+		path+"/*",
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UnarchiveEntry(db *sql.DB, ctx context.Context, path string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = unarchiveEntry(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func unarchiveEntry(tx *sql.Tx, ctx context.Context, path string) error {
+	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	admin, err := isAdmin(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	if !admin {
+		return forge.Unauthorized("user doesn't have permission: %v", user)
+	}
+	toks := strings.Split(path, "/")
+	if len(toks) != 2 {
+		return fmt.Errorf("unarchive applies only for root branches: %v", path)
+	}
+	if toks[0] != "" || toks[1] == "" {
+		return fmt.Errorf("unarchive support only for root branches: %v", path)
+	}
+	_, err = getEntry(tx, ctx, path)
+	if err != nil {
+		return err
+	}
+	_, err = tx.ExecContext(ctx, `
+		UPDATE entries
+		SET archived=0
+		WHERE path=? OR path GLOB ?
+	`,
+		path,
+		path+"/*",
+	)
+	if err != nil {
+		return err
 	}
 	return nil
 }

@@ -87,6 +87,9 @@
 							{{pathLinks $.Entry.Path}}
 							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
 						]
+						{{if $.Entry.Archived}}
+						<div class="archivedLabel" style="font-size:0.8rem"> [Archived]
+						{{end}}
 						<div style="flex:1"> []
 						<div class="mainEntryFunctions"> [
 							<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
@@ -108,6 +111,23 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
+							{{if $.UserIsAdmin}}
+							{{if $.Entry.Archived}}
+							<form action="/api/unarchive-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<button id="unarchiveEntryButton" name="unarchive_entry" value="1" hidden> []
+								<label for="unarchiveEntryButton"> [Unarchive]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							{{else}}
+							<form action="/api/archive-entry" method="post"> [
+								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+								<button id="archiveEntryButton" name="archive_entry" value="1" hidden> []
+								<label for="archiveEntryButton"> [Archive]
+								<input readonly name="back_to_referer" type="hidden" value="1"> []
+							]
+							{{end}}
+							{{end}}
 							<label class="item-box" style="color:#A22;cursor:pointer" onclick="openDeleteEntryDialog('{{$.Entry.Path}}')"> [Delete]
 						]
 					]
@@ -347,6 +367,10 @@
 											{{$ent.Name}}
 											<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
 										]
+										{{if $ent.Archived}}
+										<div class="archivedLabel" style="font-size:0.6rem"> [Archived]
+										{{end}}
+
 									]
 									<div class="subEntryBottom"> [
 										<div class="subEntryBottomLeft"> [

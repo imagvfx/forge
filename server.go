@@ -120,6 +120,28 @@ func (s *Server) RenameEntry(ctx context.Context, path, newName string) error {
 	return nil
 }
 
+func (s *Server) ArchiveEntry(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("entry path not specified")
+	}
+	err := s.svc.ArchiveEntry(ctx, path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) UnarchiveEntry(ctx context.Context, path string) error {
+	if path == "" {
+		return fmt.Errorf("entry path not specified")
+	}
+	err := s.svc.UnarchiveEntry(ctx, path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) DeleteEntry(ctx context.Context, path string) error {
 	if path == "" {
 		return fmt.Errorf("entry path not specified")
@@ -611,6 +633,17 @@ func (s *Server) DeleteAccess(ctx context.Context, path string, accessor string)
 		return err
 	}
 	return nil
+}
+
+func (s *Server) IsAdmin(ctx context.Context, user string) (bool, error) {
+	if user == "" {
+		return false, fmt.Errorf("user not specified")
+	}
+	admin, err := s.svc.IsAdmin(ctx, user)
+	if err != nil {
+		return false, err
+	}
+	return admin, nil
 }
 
 func (s *Server) EntryLogs(ctx context.Context, path string) ([]*Log, error) {

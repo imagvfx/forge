@@ -27,6 +27,8 @@ type Service interface {
 	GetEntry(ctx context.Context, path string) (*Entry, error)
 	AddEntry(ctx context.Context, ent *Entry) error
 	RenameEntry(ctx context.Context, path string, newName string) error
+	ArchiveEntry(ctx context.Context, path string) error
+	UnarchiveEntry(ctx context.Context, path string) error
 	DeleteEntry(ctx context.Context, path string) error
 	DeleteEntryRecursive(ctx context.Context, path string) error
 	AddThumbnail(ctx context.Context, thumb *Thumbnail) error
@@ -47,6 +49,7 @@ type Service interface {
 	AddAccess(ctx context.Context, ac *Access) error
 	UpdateAccess(ctx context.Context, upd AccessUpdater) error
 	DeleteAccess(ctx context.Context, path string, name string) error
+	IsAdmin(ctx context.Context, user string) (bool, error)
 	FindLogs(ctx context.Context, find LogFinder) ([]*Log, error)
 	GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, error)
 	FindUsers(ctx context.Context, find UserFinder) ([]*User, error)

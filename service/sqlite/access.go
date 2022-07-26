@@ -242,6 +242,23 @@ func userAccessMode(tx *sql.Tx, ctx context.Context, path string) (*string, erro
 	return nil, nil
 }
 
+func IsAdmin(db *sql.DB, ctx context.Context, user string) (bool, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	defer tx.Rollback()
+	admin, err := isAdmin(tx, ctx, user)
+	if err != nil {
+		return false, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return false, err
+	}
+	return admin, nil
+}
+
 func isAdmin(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
 	if user == "system" {
 		// system will be implictly treated as admin.

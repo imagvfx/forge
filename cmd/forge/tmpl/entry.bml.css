@@ -638,6 +638,14 @@
 	color: #444;
 }
 
+.archivedLabel {
+	padding: 2px 4px;
+	border-radius: 2px;
+	background-color: #268;
+	font-size: 0.8rem;
+	color: white;
+}
+
 .statusDot {
 	width: 0.75rem;
 	height: 0.75rem;
