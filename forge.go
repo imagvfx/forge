@@ -13,6 +13,7 @@ type Entry struct {
 	ID           int
 	Path         string
 	Type         string
+	Archived     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	HasThumbnail bool
@@ -27,12 +28,14 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 		Path      string
 		Name      string
 		Type      string
+		Archived  bool
 		CreatedAt string
 		UpdatedAt string
 	}{
 		Path:      e.Path,
 		Name:      e.Name(),
 		Type:      e.Type,
+		Archived:  e.Archived,
 		CreatedAt: e.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: e.UpdatedAt.Format(time.RFC3339),
 	}
@@ -42,12 +45,14 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 type EntryFinder struct {
 	ID         *int
 	ParentPath *string
+	Archived   bool
 	Path       *string
 	Type       *string
 }
 
 type EntrySearcher struct {
 	SearchRoot string
+	Archived   bool
 	EntryType  string
 	Keywords   []string
 }

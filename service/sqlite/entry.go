@@ -21,6 +21,7 @@ func createEntriesTable(tx *sql.Tx) error {
 			path STRING NOT NULL UNIQUE,
 			type_id INTEGER NOT NULL,
 			created_at TIMESTAMP NOT NULL,
+			archived BOOLEAN NOT NULL,
 			FOREIGN KEY (parent_id) REFERENCES entries (id),
 			FOREIGN KEY (type_id) REFERENCES entry_types (id)
 		)
@@ -28,18 +29,28 @@ func createEntriesTable(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
+	_, err = tx.Exec(`ALTER TABLE entries ADD COLUMN archived NOT NULL DEFAULT false`)
+	if err != nil {
+		if !strings.Contains(err.Error(), "duplicate column name") {
+			return err
+		}
+	}
 	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_entries_path ON entries (path)`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_entries_path ON entries (archived)`)
 	return err
 }
 
 func addRootEntry(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO entries
-			(id, path, type_id, created_at)
+			(id, path, type_id, created_at, archived)
 		VALUES
-			(?, ?, ?, ?)
+			(?, ?, ?, ?, ?)
 	`,
-		1, "/", 1, time.Now().UTC(), // sqlite IDs are 1 based
+		1, "/", 1, time.Now().UTC(), false, // sqlite IDs are 1 based
 	)
 	if err != nil {
 		return err
@@ -72,6 +83,9 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 		keys = append(keys, "entries.id=?")
 		vals = append(vals, *find.ID)
 	}
+	if !find.Archived {
+		keys = append(keys, "NOT entries.archived")
+	}
 	if find.Path != nil {
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.Path)
@@ -93,6 +107,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 			entries.id,
 			entries.path,
 			entry_types.name,
+			entries.archived,
 			entries.created_at,
 			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
@@ -119,6 +134,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 			&e.ID,
 			&e.Path,
 			&e.Type,
+			&e.Archived,
 			&created,
 			&updated,
 			&thumbID,
@@ -196,7 +212,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			if idxColon == -1 && idxEqual == -1 {
 				// generic search; not tied to a property
 				subKeys = append(subKeys, `
-					(entries.path LIKE ? OR
+					(ents.path LIKE ? OR
 						(default_properties.name NOT LIKE '.%' AND
 							(
 								(default_properties.type!='user' AND properties.val LIKE ?) OR
@@ -252,7 +268,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						val = "%" + val + "%"
 					}
 					subVals = append(subVals, val)
-					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM entries WHERE %s path %s ?", not, eq))
+					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM ents WHERE %s path %s ?", not, eq))
 					continue
 				}
 				if k == "name" {
@@ -261,7 +277,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					eq = "LIKE"
 					val = "%/" + val
 					subVals = append(subVals, val)
-					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM entries WHERE %s path %s ?", not, eq))
+					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM ents WHERE %s path %s ?", not, eq))
 					continue
 				}
 				sub := ""
@@ -275,7 +291,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if sub != "" {
 					findParent = true
 					if sub != "(sub)" {
-						q += "entries.path LIKE ? AND"
+						q += "ents.path LIKE ? AND"
 						subVals = append(subVals, "%/"+sub)
 					}
 				}
@@ -324,42 +340,50 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		if len(subKeys) != 0 {
 			where = "WHERE " + strings.Join(subKeys, " AND ")
 		}
-		target := "entries"
+		target := "ents"
 		if findParent {
 			target = "parents"
 		}
 		subQuery := fmt.Sprintf(`
-			SELECT %s.id FROM entries
-			LEFT JOIN entries AS parents ON entries.parent_id=parents.id
-			LEFT JOIN properties ON entries.id=properties.entry_id
+			SELECT %s.id FROM ents
+			LEFT JOIN ents AS parents ON ents.parent_id=parents.id
+			LEFT JOIN properties ON ents.id=properties.entry_id
 			LEFT JOIN default_properties ON properties.default_id=default_properties.id
 			%v
 		`, target, where)
 		subQueries = append(subQueries, subQuery)
 	}
 	queryTmpl := `
+		WITH ents AS (
+			SELECT * FROM entries WHERE %s
+		)
 		SELECT
-			entries.id,
-			entries.path,
+			ents.id,
+			ents.path,
 			entry_types.name,
-			entries.created_at,
-			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
+			ents.archived,
+			ents.created_at,
+			(SELECT time FROM logs WHERE logs.entry_id=ents.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
-		FROM entries
-		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
-		LEFT JOIN entry_types ON entries.type_id = entry_types.id
-		WHERE  %s AND %s AND %s
+		FROM ents
+		LEFT JOIN thumbnails ON ents.id = thumbnails.entry_id
+		LEFT JOIN entry_types ON ents.type_id = entry_types.id
+		WHERE %s AND %s AND %s
 	`
-	wherePath := "entries.path LIKE ?"
+	whereArchived := "NOT archived"
+	if search.Archived {
+		whereArchived = "TRUE"
+	}
+	wherePath := "ents.path LIKE ?"
 	vals := []any{search.SearchRoot + `/%`}
 	whereType := "TRUE"
 	if search.EntryType != "" {
 		whereType = "entry_types.name=?"
 		vals = append(vals, search.EntryType)
 	}
-	whereSub := fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, " INTERSECT "))
+	whereSub := fmt.Sprintf("ents.id IN (%s)", strings.Join(subQueries, " INTERSECT "))
 	vals = append(vals, subVals...)
-	query := fmt.Sprintf(queryTmpl, wherePath, whereType, whereSub)
+	query := fmt.Sprintf(queryTmpl, whereArchived, wherePath, whereType, whereSub)
 	// We need these prints time to time. Do not delete.
 	// fmt.Println(query)
 	// fmt.Println(vals)
@@ -382,6 +406,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			&e.ID,
 			&e.Path,
 			&e.Type,
+			&e.Archived,
 			&created,
 			&updated,
 			&thumbID,
@@ -770,14 +795,16 @@ func addEntry(tx *sql.Tx, ctx context.Context, e *forge.Entry) error {
 			path,
 			type_id,
 			parent_id,
-			created_at
+			created_at,
+			archived
 		)
-		VALUES (?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?)
 	`,
 		e.Path,
 		typeID,
 		p.ID,
 		time.Now().UTC(),
+		false,
 	)
 	if err != nil {
 		return err
