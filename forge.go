@@ -32,6 +32,7 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 		Archived  bool
 		CreatedAt string
 		UpdatedAt string
+		Property  map[string]*Property
 	}{
 		Path:      e.Path,
 		Name:      e.Name(),
@@ -39,6 +40,7 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 		Archived:  e.Archived,
 		CreatedAt: e.CreatedAt.Format(time.RFC3339),
 		UpdatedAt: e.UpdatedAt.Format(time.RFC3339),
+		Property:  e.Property,
 	}
 	return json.Marshal(m)
 }
