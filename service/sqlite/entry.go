@@ -170,6 +170,16 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 		}
 		ents = append(ents, e)
 	}
+	for _, e := range ents {
+		e.Property = make(map[string]*forge.Property)
+		props, err := entryProperties(tx, ctx, e.Path)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range props {
+			e.Property[p.Name] = p
+		}
+	}
 	return ents, nil
 }
 
@@ -449,6 +459,16 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			continue
 		}
 		ents = append(ents, e)
+	}
+	for _, e := range ents {
+		e.Property = make(map[string]*forge.Property)
+		props, err := entryProperties(tx, ctx, e.Path)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range props {
+			e.Property[p.Name] = p
+		}
 	}
 	return ents, nil
 }

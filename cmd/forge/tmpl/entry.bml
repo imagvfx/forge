@@ -79,8 +79,7 @@
 				<div class="mainEntry entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div class="mainEntryTop"> [
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
-						{{$props := index $.EntryProperties $.Entry.Path}}
-						{{with $s := index $props "status"}}
+						{{with $s := index $.Entry.Property "status"}}
 						<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
 						{{end}}
 						<div class="mainEntryTitle"> [
@@ -170,10 +169,9 @@
 							]
 							<!-- Property / Environ / Access Items -->
 							<div class="mainEntryInfos"> [
-								{{$props := index $.EntryProperties $.Entry.Path}}
 								{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 								{{range $name := $propFilters}}
-								{{with $p := index $props $name}}
+								{{with $p := index $.Entry.Property $name}}
 								<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
@@ -189,7 +187,7 @@
 								{{end}}
 								{{end}}
 								{{range $name := $.MainEntryHiddenProperties}}
-								{{with $p := index $props $name}}
+								{{with $p := index $.Entry.Property $name}}
 								<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 									<div class="infoTop"> [
 										<div class="infoTitle"> [
@@ -333,12 +331,11 @@
 							{{if and $.ResultsFromSearch (eq $.UserSetting.EntryGroupBy "parent")}}
 							{{$parent := $group}}
 							{{$ent := index $.EntryByPath $parent}}
-							{{$props := index $.EntryProperties $parent}}
 							<div class="subEntryListFrom"> [
 								<img class="subEntryListExpander" src="/asset/down-arrow.svg" title="shift+click to collapse/expand all"> []
 								{{$entType}}s
 								from
-								{{with $s := index $props "status"}}
+								{{with $s := index $ent.Property "status"}}
 								<div class="statusDot statusLabeler" style="display:inline-block" data-sub="" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
 								{{end}}
 								<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
@@ -349,9 +346,8 @@
 							<div class="subEntryList"> [
 								{{$propFilters := index $.PropertyFilters $entType}}
 								{{range $k, $ent := $subEntries}}
-								{{$props := index $.EntryProperties $ent.Path}}
 								{{$possibleSubTypes := ""}}
-								{{with $t := index (index $.EntryProperties $ent.Path) ".sub_entry_types"}}
+								{{with $t := index $ent.Property ".sub_entry_types"}}
 								{{$possibleSubTypes = trim $t.Value}}
 								{{end}}
 								<div class="subEntry entry {{if eq $.UserSetting.SearchView ""}}expanded{{end}}" data-entry-path="{{$ent.Path}}" data-entry-type="{{$ent.Type}}" data-possible-sub-types={{$possibleSubTypes}}> [
@@ -360,7 +356,7 @@
 									<a class="parentLink" href="{{$parent}}"> [{{trimPrefix $parent (addString $.Entry.Path "/")}}]
 									{{end}}
 									<div class="subEntryTop"> [
-										{{with $s := index $props "status"}}
+										{{with $s := index $ent.Property "status"}}
 										<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 										{{end}}
 										<a class="subEntryName" href="{{$ent.Path}}"> [
@@ -392,7 +388,7 @@
 													<input readonly name="back_to_referer" type="hidden" value="1"> []
 												]
 											]
-											{{$assignee := index $props "assignee"}}
+											{{$assignee := index $ent.Property "assignee"}}
 											{{if $assignee}}
 											<input class="assigneeInput" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 											{{end}}
@@ -400,8 +396,7 @@
 											<div class="grandSubArea"> [
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
-													{{$props := index $.EntryProperties $gs.Path}}
-													<div class="summaryDot summaryLabeler statusSelector grandSubEntry" data-sub="{{$gs.Name}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $props "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $props "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
+													<div class="summaryDot summaryLabeler statusSelector grandSubEntry" data-sub="{{$gs.Name}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
 													{{end}}
 													<div class="summaryDot grandSubAdderLoader"> [+]
 												]
@@ -416,7 +411,7 @@
 										]
 										<div class="subEntryProperties"> [
 											{{range $name := $propFilters}}
-											{{with $p := index $props $name}}
+											{{with $p := index $ent.Property $name}}
 											<div class="subEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 												<div class="subEntryInfoTop"> [
 													<div class="infoTitle"> [

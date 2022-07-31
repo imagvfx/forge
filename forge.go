@@ -17,6 +17,7 @@ type Entry struct {
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 	HasThumbnail bool
+	Property     map[string]*Property
 }
 
 func (e *Entry) Name() string {

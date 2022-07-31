@@ -265,14 +265,9 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	// Organize the sub entries by type and by parent.
 	subEntsByTypeByGroup := make(map[string]map[string][]*forge.Entry) // map[type]map[parent]
-	entProps := make(map[string]map[string]*forge.Property)
-	entProps[path] = make(map[string]*forge.Property)
-	for _, p := range props {
-		entProps[path][p.Name] = p
-	}
 	if !resultsFromSearch {
 		// It might not have any sub entry, still entry page needs the sub type labels.
-		p := entProps[path][".sub_entry_types"]
+		p := ent.Property[".sub_entry_types"]
 		if p != nil {
 			for _, subtyp := range strings.Split(p.Value, ",") {
 				if subtyp != "" {
@@ -311,19 +306,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 					return err
 				}
 				entryByPath[parent] = p
-				if parent != ent.Path {
-					props, err := h.server.EntryProperties(ctx, parent)
-					if err != nil {
-						var e *forge.NotFoundError
-						if !errors.As(err, &e) {
-							return err
-						}
-					}
-					entProps[parent] = make(map[string]*forge.Property)
-					for _, p := range props {
-						entProps[parent][p.Name] = p
-					}
-				}
 			}
 			if e.Path == "/" {
 				parent = ""
@@ -335,24 +317,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			subEntsByTypeByGroup[e.Type] = byGroup
 		}
 	}
-	for _, e := range subEnts {
-		// subProps
-		props, err := h.server.EntryProperties(ctx, e.Path)
-		if err != nil {
-			return err
-		}
-		propmap := make(map[string]*forge.Property)
-		for _, p := range props {
-			propmap[p.Name] = p
-		}
-		entProps[e.Path] = propmap
-	}
 	statusSummary := make(map[string]map[string]int)
 	for typ, byType := range subEntsByTypeByGroup {
 		num := make(map[string]int)
 		for _, byGroup := range byType {
 			for _, ent := range byGroup {
-				if stat := entProps[ent.Path]["status"]; stat != nil {
+				if stat := ent.Property["status"]; stat != nil {
 					num[stat.Value] += 1
 				} else {
 					num[""] += 1
@@ -398,11 +368,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				if sortProp == "" {
 					return 0
 				}
-				aProp := entProps[a.Path][sortProp]
+				aProp := a.Property[sortProp]
 				if aProp == nil {
 					return -1
 				}
-				bProp := entProps[b.Path][sortProp]
+				bProp := b.Property[sortProp]
 				if bProp == nil {
 					return 1
 				}
@@ -526,7 +496,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		mainEntryVisibleProp[p] = true
 	}
 	mainEntryHiddenProps := make([]string, 0)
-	for _, p := range entProps[path] {
+	for _, p := range ent.Property {
 		if !mainEntryVisibleProp[p.Name] {
 			mainEntryHiddenProps = append(mainEntryHiddenProps, p.Name)
 		}
@@ -562,18 +532,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			return err
 		}
 		for _, gs := range gsubEnts {
-			if _, ok := entProps[gs.Path]; !ok {
-				entProps[gs.Path] = make(map[string]*forge.Property)
-				props, err := h.server.EntryProperties(ctx, gs.Path)
-				if err != nil {
-					return err
-				}
-				for _, p := range props {
-					entProps[gs.Path][p.Name] = p
-				}
-			}
 			sortProp := entrySortProp[gs.Type]
-			if entProps[gs.Path][sortProp] == nil {
+			if gs.Property[sortProp] == nil {
 				entrySortProp[gs.Type] = ""
 			}
 		}
@@ -659,7 +619,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch         bool
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
-		EntryProperties           map[string]map[string]*forge.Property
 		ShowGrandSub              map[string]bool
 		GrandSubEntries           map[string][]*forge.Entry
 		PropertyTypes             []string
@@ -686,7 +645,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
-		EntryProperties:           entProps,
 		ShowGrandSub:              showGrandSub,
 		GrandSubEntries:           grandSubEntries,
 		PropertyTypes:             forge.PropertyTypes(),
