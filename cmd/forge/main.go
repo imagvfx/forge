@@ -213,6 +213,7 @@ func main() {
 	mux.HandleFunc("/api/update-global", api.Handler(api.handleUpdateGlobal))
 	mux.HandleFunc("/api/delete-global", api.Handler(api.handleDeleteGlobal))
 	mux.HandleFunc("/api/sub-entries", api.Handler(api.handleSubEntries))
+	mux.HandleFunc("/api/parent-entries", api.Handler(api.handleParentEntries))
 	mux.HandleFunc("/api/search-entries", api.Handler(api.handleSearchEntries))
 	mux.HandleFunc("/api/add-entry", api.Handler(api.handleAddEntry))
 	mux.HandleFunc("/api/get-entry", api.Handler(api.handleGetEntry))

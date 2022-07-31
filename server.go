@@ -49,6 +49,23 @@ func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) 
 	return ents, nil
 }
 
+// ParentEntries returns parent entries from root to a given entry (but without the entry).
+func (s *Server) ParentEntries(ctx context.Context, path string) ([]*Entry, error) {
+	if path == "" {
+		return nil, fmt.Errorf("entry path not specified")
+	}
+	ents, err := s.svc.FindEntries(ctx, EntryFinder{
+		ChildPath: &path,
+	})
+	sort.Slice(ents, func(i, j int) bool {
+		return strings.Compare(ents[i].Path, ents[j].Path) < 0
+	})
+	if err != nil {
+		return nil, err
+	}
+	return ents, nil
+}
+
 func (s *Server) SearchEntries(ctx context.Context, path, entryType, query string) ([]*Entry, error) {
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")

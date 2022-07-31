@@ -219,6 +219,16 @@ func (h *apiHandler) handleSubEntries(ctx context.Context, w http.ResponseWriter
 	return nil
 }
 
+func (h *apiHandler) handleParentEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.FormValue("path")
+	ents, err := h.server.ParentEntries(ctx, path)
+	h.WriteResponse(w, ents, err)
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleSearchEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	from := r.FormValue("from")
 	typ := r.FormValue("type")

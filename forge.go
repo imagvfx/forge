@@ -46,6 +46,7 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 type EntryFinder struct {
 	ID         *int
 	ParentPath *string
+	ChildPath  *string
 	Path       *string
 	Type       *string
 }
