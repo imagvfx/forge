@@ -137,9 +137,14 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		session["user"] = user
-		// session["state"] was created for login. Need to clear it for possible re-login.
+		// clear session info that was created for the login process.
 		session["state"] = ""
 		appKey := session["app_session_key"]
+		session["app_session_key"] = ""
+		err = setSession(w, session)
+		if err != nil {
+			return err
+		}
 		if appKey != "" {
 			encoded, err := secureCookie.Encode("session", session)
 			if err != nil {
@@ -152,10 +157,6 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			h.apps.SendSession(appKey, sess)
 			http.Redirect(w, r, "/app-login-completed", http.StatusSeeOther)
 			return nil
-		}
-		err = setSession(w, session)
-		if err != nil {
-			return err
 		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return nil
