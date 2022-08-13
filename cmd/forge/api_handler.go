@@ -73,6 +73,12 @@ func (h *apiHandler) handleAppLogin(ctx context.Context, w http.ResponseWriter, 
 	return nil
 }
 
+func (h *apiHandler) handleGetBaseEntryTypes(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	types, err := h.server.FindBaseEntryTypes(ctx)
+	h.WriteResponse(w, types, err)
+	return nil
+}
+
 func (h *apiHandler) handleAddEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	name := r.FormValue("name")
 	err := h.server.AddEntryType(ctx, name)
@@ -153,6 +159,13 @@ func (h *apiHandler) handleDeleteDefault(ctx context.Context, w http.ResponseWri
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}
+	return nil
+}
+
+func (h *apiHandler) handleGetGlobals(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entType := r.FormValue("entry_type")
+	globals, err := h.server.Globals(ctx, entType)
+	h.WriteResponse(w, globals, err)
 	return nil
 }
 
