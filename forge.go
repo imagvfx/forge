@@ -347,6 +347,20 @@ type UserSettingUpdater struct {
 	Value any
 }
 
+// UserDataSection includes some or all user data in a section.
+// Unlike UserSetting, it could have arbitrary section and data,
+// Parsing the data is left up to the clients.
+type UserDataSection struct {
+	Section string
+	Data    map[string]string
+}
+
+type UserDataFinder struct {
+	User    string
+	Section *string
+	Key     *string
+}
+
 type StringKV struct {
 	K string
 	V string

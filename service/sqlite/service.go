@@ -226,6 +226,30 @@ func (s *Service) UpdateUserSetting(ctx context.Context, upd forge.UserSettingUp
 	return UpdateUserSetting(s.db, ctx, upd)
 }
 
+func (s *Service) AddUserData(ctx context.Context, user, section, key, value string) error {
+	return AddUserData(s.db, ctx, user, section, key, value)
+}
+
+func (s *Service) FindUserData(ctx context.Context, find forge.UserDataFinder) ([]*forge.UserDataSection, error) {
+	return FindUserData(s.db, ctx, find)
+}
+
+func (s *Service) GetUserDataSection(ctx context.Context, user, section string) (*forge.UserDataSection, error) {
+	return GetUserDataSection(s.db, ctx, user, section)
+}
+
+func (s *Service) GetUserData(ctx context.Context, user, section, key string) (string, error) {
+	return GetUserData(s.db, ctx, user, section, key)
+}
+
+func (s *Service) UpdateUserData(ctx context.Context, user, section, key, value string) error {
+	return UpdateUserData(s.db, ctx, user, section, key, value)
+}
+
+func (s *Service) DeleteUserData(ctx context.Context, user, section, key string) error {
+	return DeleteUserData(s.db, ctx, user, section, key)
+}
+
 func (s *Service) FindGroups(ctx context.Context, find forge.GroupFinder) ([]*forge.Group, error) {
 	return FindGroups(s.db, ctx, find)
 }

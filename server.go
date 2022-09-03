@@ -761,6 +761,54 @@ func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value 
 	return nil
 }
 
+func (s *Server) AddUserData(ctx context.Context, user, section, key, value string) error {
+	err := s.svc.AddUserData(ctx, user, section, key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) FindUserData(ctx context.Context, find UserDataFinder) ([]*UserDataSection, error) {
+	data, err := s.svc.FindUserData(ctx, find)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (s *Server) GetUserDataSection(ctx context.Context, user, section string) (*UserDataSection, error) {
+	sec, err := s.svc.GetUserDataSection(ctx, user, section)
+	if err != nil {
+		return nil, err
+	}
+	return sec, nil
+}
+
+func (s *Server) GetUserData(ctx context.Context, user, section, key string) (string, error) {
+	value, err := s.svc.GetUserData(ctx, user, section, key)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
+func (s *Server) UpdateUserData(ctx context.Context, user, section, key, value string) error {
+	err := s.svc.UpdateUserData(ctx, user, section, key, value)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) DeleteUserData(ctx context.Context, user, section, key string) error {
+	err := s.svc.DeleteUserData(ctx, user, section, key)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
 	groups, err := s.svc.FindGroups(ctx, GroupFinder{})
 	if err != nil {

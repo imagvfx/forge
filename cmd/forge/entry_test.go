@@ -185,6 +185,65 @@ var testDeletes = []testDelete{
 	},
 }
 
+type testUserData struct {
+	label   string
+	ctxUser string
+	user    string
+	section string
+	key     string
+	value   string
+	wantErr error
+}
+
+var userDataCases = []testUserData{
+	// assumes the context user is admin@imagvfx.com
+	{
+		label:   "option1",
+		user:    "admin@imagvfx.com",
+		section: "app1",
+		key:     "option1",
+		value:   "1",
+	},
+	{
+		label:   "option2",
+		user:    "admin@imagvfx.com",
+		section: "app1",
+		key:     "option2",
+		value:   "0",
+	},
+	{
+		label:   "option3",
+		user:    "admin@imagvfx.com",
+		section: "app1",
+		key:     "option3",
+		value:   "",
+	},
+	{
+		label:   "different user",
+		user:    "reader@imagvfx.com",
+		section: "app1",
+		key:     "option3",
+		value:   "",
+		wantErr: errors.New("cannot add user data to another user"),
+	},
+	{
+		label:   "no section",
+		user:    "admin@imagvfx.com",
+		section: "",
+		key:     "option1",
+		value:   "",
+		wantErr: errors.New("user data section cannot be empty"),
+	},
+	{
+		label:   "no key",
+		user:    "admin@imagvfx.com",
+		section: "app1",
+		key:     "",
+		value:   "",
+		wantErr: errors.New("user data key cannot be empty"),
+	},
+}
+
 func TestAddEntries(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
@@ -330,5 +389,46 @@ func TestAddEntries(t *testing.T) {
 		if !equalError(delete.wantErr, err) {
 			t.Fatalf("delete %q: want err %q, got %q", delete.path, errorString(delete.wantErr), errorString(err))
 		}
+	}
+
+	// test user data
+	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
+	for _, c := range userDataCases {
+		err := server.AddUserData(ctx, c.user, c.section, c.key, c.value)
+		if !equalError(c.wantErr, err) {
+			t.Fatalf("add %q: want err %q, got %q", c.label, errorString(c.wantErr), errorString(err))
+		}
+		if c.wantErr != nil {
+			continue
+		}
+		value, err := server.GetUserData(ctx, c.user, c.section, c.key)
+		if err != nil {
+			t.Fatalf("get %q: %v", c.label, err)
+		}
+		if value != c.value {
+			t.Fatalf("get %q: want %q, got %q", c.label, c.value, value)
+		}
+		err = server.UpdateUserData(ctx, c.user, c.section, c.key, "")
+		if err != nil {
+			t.Fatalf("update %q: %v", c.label, err)
+		}
+		value, err = server.GetUserData(ctx, c.user, c.section, c.key)
+		if err != nil {
+			t.Fatalf("get after update %q: %v", c.label, err)
+		}
+		if value != "" {
+			t.Fatalf("get after update %q: want empty string, got %q", c.label, value)
+		}
+		err = server.DeleteUserData(ctx, c.user, c.section, c.key)
+		if err != nil {
+			t.Fatalf("delete %q: %v", c.label, err)
+		}
+	}
+	data, err := server.FindUserData(ctx, forge.UserDataFinder{User: "admin@imagvfx.com"})
+	if err != nil {
+		t.Fatalf("find: %v", err)
+	}
+	if len(data) != 0 {
+		t.Fatalf("find: want section length 0, got %v", len(data))
 	}
 }

@@ -58,6 +58,12 @@ type Service interface {
 	GetUser(ctx context.Context, user string) (*User, error)
 	GetUserSetting(ctx context.Context, user string) (*UserSetting, error)
 	UpdateUserSetting(ctx context.Context, upd UserSettingUpdater) error
+	AddUserData(ctx context.Context, user, section, key, value string) error
+	FindUserData(ctx context.Context, find UserDataFinder) ([]*UserDataSection, error)
+	GetUserDataSection(ctx context.Context, user, section string) (*UserDataSection, error)
+	GetUserData(ctx context.Context, user, section, key string) (string, error)
+	UpdateUserData(ctx context.Context, user, section, key, value string) error
+	DeleteUserData(ctx context.Context, user, section, key string) error
 	FindGroups(ctx context.Context, find GroupFinder) ([]*Group, error)
 	AddGroup(ctx context.Context, g *Group) error
 	UpdateGroup(ctx context.Context, upd GroupUpdater) error
