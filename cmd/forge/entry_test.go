@@ -243,12 +243,11 @@ var userDataCases = []testUserData{
 		wantErr: errors.New("user data key cannot be empty"),
 	},
 	{
-		label:   "same key",
+		label:   "update option1",
 		user:    "admin@imagvfx.com",
 		section: "app1",
 		key:     "option1",
 		value:   "",
-		wantErr: errors.New("UNIQUE constraint failed: user_data.user_id, user_data.section, user_data.key"),
 	},
 }
 
@@ -402,7 +401,7 @@ func TestAddEntries(t *testing.T) {
 	// test user data
 	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	for _, c := range userDataCases {
-		err := server.AddUserData(ctx, c.user, c.section, c.key, c.value)
+		err := server.SetUserData(ctx, c.user, c.section, c.key, c.value)
 		if !equalError(c.wantErr, err) {
 			t.Fatalf("add %q: want err %q, got %q", c.label, errorString(c.wantErr), errorString(err))
 		}
@@ -416,7 +415,7 @@ func TestAddEntries(t *testing.T) {
 		if value != c.value {
 			t.Fatalf("get %q: want %q, got %q", c.label, c.value, value)
 		}
-		err = server.UpdateUserData(ctx, c.user, c.section, c.key, "")
+		err = server.SetUserData(ctx, c.user, c.section, c.key, "")
 		if err != nil {
 			t.Fatalf("update %q: %v", c.label, err)
 		}

@@ -225,11 +225,6 @@ func (s *Service) GetUserSetting(ctx context.Context, user string) (*forge.UserS
 func (s *Service) UpdateUserSetting(ctx context.Context, upd forge.UserSettingUpdater) error {
 	return UpdateUserSetting(s.db, ctx, upd)
 }
-
-func (s *Service) AddUserData(ctx context.Context, user, section, key, value string) error {
-	return AddUserData(s.db, ctx, user, section, key, value)
-}
-
 func (s *Service) FindUserData(ctx context.Context, find forge.UserDataFinder) ([]*forge.UserDataSection, error) {
 	return FindUserData(s.db, ctx, find)
 }
@@ -242,8 +237,8 @@ func (s *Service) GetUserData(ctx context.Context, user, section, key string) (s
 	return GetUserData(s.db, ctx, user, section, key)
 }
 
-func (s *Service) UpdateUserData(ctx context.Context, user, section, key, value string) error {
-	return UpdateUserData(s.db, ctx, user, section, key, value)
+func (s *Service) SetUserData(ctx context.Context, user, section, key, value string) error {
+	return SetUserData(s.db, ctx, user, section, key, value)
 }
 
 func (s *Service) DeleteUserData(ctx context.Context, user, section, key string) error {

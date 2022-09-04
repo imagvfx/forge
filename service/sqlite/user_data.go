@@ -113,6 +113,9 @@ func findUserData(tx *sql.Tx, ctx context.Context, find forge.UserDataFinder) ([
 	return data, nil
 }
 
+// GetUserData returns a user data section from the sql file.
+// NOTE: It doesn't raise error even if the section doesn't exists in user_data table.
+// It returns default a default *forge.UserDataSection, instead.
 func GetUserDataSection(db *sql.DB, ctx context.Context, user, section string) (*forge.UserDataSection, error) {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
@@ -142,13 +145,19 @@ func getUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) (
 	if err != nil {
 		return nil, err
 	}
-	if len(data) == 0 || data[0].Section != section {
-		return nil, forge.NotFound("user data section is not exists: %v", section)
+	if len(data) == 0 {
+		return &forge.UserDataSection{Section: section, Data: make(map[string]string)}, nil
 	}
 	sec := data[0]
+	if sec.Section != section {
+		return nil, fmt.Errorf("got wrong section of user_data: want %v, got %v", section, sec.Section)
+	}
 	return sec, nil
 }
 
+// GetUserData returns a user data from the sql file.
+// NOTE: It doesn't raise error even if the key (even the section) doesn't exists in user_data table.
+// It returns an empty string, instead.
 func GetUserData(db *sql.DB, ctx context.Context, user, section, key string) (string, error) {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
@@ -175,10 +184,13 @@ func getUserData(tx *sql.Tx, ctx context.Context, user, section, key string) (st
 	if err != nil {
 		return "", err
 	}
-	if len(data) == 0 || data[0].Section != section {
-		return "", forge.NotFound("user data is not exists: %v/%v", section, key)
+	if len(data) == 0 {
+		return "", nil
 	}
 	sec := data[0]
+	if sec.Section != section {
+		return "", fmt.Errorf("got wrong section of user_data: want %v, got %v", section, sec.Section)
+	}
 	value, ok := sec.Data[key]
 	if !ok {
 		return "", forge.NotFound("user data is not exists: %v/%v", section, key)
@@ -186,7 +198,10 @@ func getUserData(tx *sql.Tx, ctx context.Context, user, section, key string) (st
 	return value, nil
 }
 
-func AddUserData(db *sql.DB, ctx context.Context, user, section, key, value string) error {
+// SetUserData sets a user data to the sql file.
+// It adds if the user data is not exists.
+// It will update the value instead, if the user data is already exists.
+func SetUserData(db *sql.DB, ctx context.Context, user, section, key, value string) error {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
 		return forge.Unauthorized("context user unspecified")
@@ -199,7 +214,7 @@ func AddUserData(db *sql.DB, ctx context.Context, user, section, key, value stri
 		return err
 	}
 	defer tx.Rollback()
-	err = addUserData(tx, ctx, user, section, key, value)
+	err = setUserData(tx, ctx, user, section, key, value)
 	if err != nil {
 		return err
 	}
@@ -210,7 +225,7 @@ func AddUserData(db *sql.DB, ctx context.Context, user, section, key, value stri
 	return nil
 }
 
-func addUserData(tx *sql.Tx, ctx context.Context, user, section, key, value string) error {
+func setUserData(tx *sql.Tx, ctx context.Context, user, section, key, value string) error {
 	if section == "" {
 		return fmt.Errorf("user data section cannot be empty")
 	}
@@ -229,8 +244,10 @@ func addUserData(tx *sql.Tx, ctx context.Context, user, section, key, value stri
 			value
 		)
 		VALUES (?, ?, ?, ?)
+		ON CONFLICT (user_id, section, key) DO
+		UPDATE SET value=?
 	`,
-		userID, section, key, value,
+		userID, section, key, value, value,
 	)
 	if err != nil {
 		return err
@@ -238,53 +255,9 @@ func addUserData(tx *sql.Tx, ctx context.Context, user, section, key, value stri
 	return nil
 }
 
-func UpdateUserData(db *sql.DB, ctx context.Context, user, section, key, value string) error {
-	ctxUser := forge.UserNameFromContext(ctx)
-	if ctxUser == "" {
-		return forge.Unauthorized("context user unspecified")
-	}
-	if ctxUser != user {
-		return forge.Unauthorized("cannot update another user's data")
-	}
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	err = updateUserData(tx, ctx, user, section, key, value)
-	if err != nil {
-		return err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func updateUserData(tx *sql.Tx, ctx context.Context, user, section, key, value string) error {
-	userID, err := getUserID(tx, ctx, user)
-	if err != nil {
-		return err
-	}
-	_, err = getUserData(tx, ctx, user, section, key)
-	if err != nil {
-		return err
-	}
-	_, err = tx.ExecContext(ctx, `
-		UPDATE user_data
-		SET
-			value=?
-		WHERE user_id=? AND section=? AND key=?
-	`,
-		value, userID, section, key,
-	)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
+// DeleteUserData deletes a user data from the sql file.
+// NOTE: It will not return an error even the user data wasn't existed.
+// The user should check it explicitly, if needed.
 func DeleteUserData(db *sql.DB, ctx context.Context, user, section, key string) error {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
@@ -311,10 +284,6 @@ func DeleteUserData(db *sql.DB, ctx context.Context, user, section, key string) 
 
 func deleteUserData(tx *sql.Tx, ctx context.Context, user, section, key string) error {
 	userID, err := getUserID(tx, ctx, user)
-	if err != nil {
-		return err
-	}
-	_, err = getUserData(tx, ctx, user, section, key)
 	if err != nil {
 		return err
 	}

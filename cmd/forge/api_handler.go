@@ -887,16 +887,6 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 	return nil
 }
 
-func (h *apiHandler) handleAddUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := r.FormValue("user")
-	section := r.FormValue("section")
-	key := r.FormValue("key")
-	value := r.FormValue("value")
-	err := h.server.AddUserData(ctx, user, section, key, value)
-	h.WriteResponse(w, nil, err)
-	return nil
-}
-
 func (h *apiHandler) handleGetUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := r.FormValue("user")
 	section := r.FormValue("section")
@@ -905,12 +895,12 @@ func (h *apiHandler) handleGetUserDataSection(ctx context.Context, w http.Respon
 	return nil
 }
 
-func (h *apiHandler) handleUpdateUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleSetUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := r.FormValue("user")
 	section := r.FormValue("section")
 	key := r.FormValue("key")
 	value := r.FormValue("value")
-	err := h.server.UpdateUserData(ctx, user, section, key, value)
+	err := h.server.SetUserData(ctx, user, section, key, value)
 	h.WriteResponse(w, nil, err)
 	return nil
 }
