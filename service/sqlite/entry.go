@@ -39,7 +39,7 @@ func createEntriesTable(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_entries_path ON entries (archived)`)
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_entries_archived ON entries (archived)`)
 	return err
 }
 
