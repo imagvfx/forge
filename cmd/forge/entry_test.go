@@ -242,6 +242,14 @@ var userDataCases = []testUserData{
 		value:   "",
 		wantErr: errors.New("user data key cannot be empty"),
 	},
+	{
+		label:   "same key",
+		user:    "admin@imagvfx.com",
+		section: "app1",
+		key:     "option1",
+		value:   "",
+		wantErr: errors.New("UNIQUE constraint failed: user_data.user_id, user_data.section, user_data.key"),
+	},
 }
 
 func TestAddEntries(t *testing.T) {
@@ -418,6 +426,11 @@ func TestAddEntries(t *testing.T) {
 		}
 		if value != "" {
 			t.Fatalf("get after update %q: want empty string, got %q", c.label, value)
+		}
+	}
+	for _, c := range userDataCases {
+		if c.wantErr != nil {
+			continue
 		}
 		err = server.DeleteUserData(ctx, c.user, c.section, c.key)
 		if err != nil {

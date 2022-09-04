@@ -19,6 +19,7 @@ func createUserDataTable(tx *sql.Tx) error {
 			key STRING NOT NULL,
 			value STRING NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
+			UNIQUE (user_id, section, key)
 		)
 	`)
 	if err != nil {
