@@ -24,7 +24,7 @@ func createUserDataTable(tx *sql.Tx) error {
 	if err != nil {
 		return err
 	}
-	_, err = tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_user_data_user_id_section ON user_data (user_id, section)`)
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_user_data_user_id_section ON user_data (user_id, section)`)
 	return err
 }
 
