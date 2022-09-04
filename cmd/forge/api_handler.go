@@ -887,6 +887,34 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 	return nil
 }
 
+func (h *apiHandler) handleAddUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	section := r.FormValue("section")
+	key := r.FormValue("key")
+	value := r.FormValue("value")
+	err := h.server.AddUserData(ctx, user, section, key, value)
+	h.WriteResponse(w, nil, err)
+	return nil
+}
+
+func (h *apiHandler) handleGetUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	section := r.FormValue("section")
+	sec, err := h.server.GetUserDataSection(ctx, user, section)
+	h.WriteResponse(w, sec, err)
+	return nil
+}
+
+func (h *apiHandler) handleUpdateUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	section := r.FormValue("section")
+	key := r.FormValue("key")
+	value := r.FormValue("value")
+	err := h.server.UpdateUserData(ctx, user, section, key, value)
+	h.WriteResponse(w, nil, err)
+	return nil
+}
+
 // handleCheckBulkUpdate checks what will happen when bulk update of entries processed from uploaded excel file.
 //
 // The result shows what entries will be added, and what entries will be updated in the following format.
