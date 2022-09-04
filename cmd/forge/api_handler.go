@@ -66,6 +66,11 @@ func (h *apiHandler) WriteResponse(w http.ResponseWriter, m any, e error) {
 	}
 }
 
+func (h *apiHandler) handleNotFound(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	h.WriteResponse(w, nil, fmt.Errorf("api not found: %s", r.URL))
+	return nil
+}
+
 func (h *apiHandler) handleAppLogin(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	key := r.FormValue("key")
 	sess, err := h.apps.RecieveSession(key)

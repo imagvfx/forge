@@ -202,6 +202,7 @@ func main() {
 	mux.HandleFunc("/types", page.Handler(page.handleEntryTypes))
 	mux.HandleFunc("/types/", page.Handler(page.handleEachEntryType))
 	mux.HandleFunc("/setting", page.Handler(page.handleSetting))
+	mux.HandleFunc("/api/", api.Handler(api.handleNotFound))
 	mux.HandleFunc("/api/app-login", api.Handler(api.handleAppLogin))
 	mux.HandleFunc("/api/get-base-entry-types", api.Handler(api.handleGetBaseEntryTypes))
 	mux.HandleFunc("/api/add-entry-type", api.Handler(api.handleAddEntryType))
