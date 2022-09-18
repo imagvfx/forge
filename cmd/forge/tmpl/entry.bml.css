@@ -14,6 +14,7 @@
 	padding: 0 0.1rem;
 	font-size: 0.7rem;
 	color:#DDD;
+	background-color: inherit;
 }
 
 #pinnedPathDeleteButton.prepareDrop {
@@ -31,6 +32,7 @@
 	padding: 0 0.1rem;
 	font-size: 0.7rem;
 	color:#DDD;
+	background-color: inherit;
 }
 
 #quickSearchDeleteButton.prepareDrop {
