@@ -671,7 +671,7 @@ window.onload = function() {
 	let pinnedPaths = document.getElementsByClassName("pinnedPathLink");
 	for (let pp of pinnedPaths) {
 		pp.onclick = function(event) {
-			window.location.href = pp.dataset.link;
+			window.location.href = pp.dataset.path;
 		}
 		pp.ondragstart = function(event) {
 			event.dataTransfer.effectAllowed = "move";
@@ -714,7 +714,7 @@ window.onload = function() {
 					console.log("unable to find drop target from pinned paths");
 					return;
 				}
-				updatePinnedPath(pp.innerText, at);
+				updatePinnedPath(pp.dataset.path, at);
 			}
 			let del = document.getElementById("pinnedPathDeleteButton");
 			del.classList.remove("nodisplay");
@@ -736,7 +736,7 @@ window.onload = function() {
 			del.ondrop = function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				updatePinnedPath(pp.innerText, -1);
+				updatePinnedPath(pp.dataset.path, -1);
 			}
 		}
 		pp.ondragend = function(event) {

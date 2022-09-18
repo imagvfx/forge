@@ -21,7 +21,7 @@
 					]
 					<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
 						{{range $i, $p := $.UserSetting.PinnedPaths}}
-						<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-link="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
+						<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-path="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
 						{{end}}
 					]
 				]
