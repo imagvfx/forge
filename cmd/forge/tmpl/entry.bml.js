@@ -721,8 +721,7 @@ window.onload = function() {
 			del.ondragenter = function(ev) {
 				ev.preventDefault();
 				ev.dataTransfer.dropEffect = "move";
-				del.style.color = "#A22";
-				del.style.border = "1px solid #A22";
+				del.classList.add("prepareDrop");
 			}
 			del.ondragover = function(ev) {
 				ev.preventDefault();
@@ -730,12 +729,12 @@ window.onload = function() {
 			del.ondragleave = function(ev) {
 				ev.preventDefault();
 				ev.dataTransfer.dropEffect = "none";
-				del.style.color = "#DDD";
-				del.style.border = "1px solid #DDD";
+				del.classList.remove("prepareDrop");
 			}
 			del.ondrop = function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
+				// updatePinnedPath reloads the page.
 				updatePinnedPath(pp.dataset.path, -1);
 			}
 		}

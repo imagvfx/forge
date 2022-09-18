@@ -17,7 +17,7 @@
 					<!-- Pinned Path -->
 					<div style="display:flex;padding:1.5rem;align-items:center;"> [
 						<div style="font-size:1rem;color:#555;margin-right:0.5rem;"> [Pinned]
-						<div id="pinnedPathDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
+						<div id="pinnedPathDeleteButton" class="nodisplay"> [del]
 					]
 					<div id="pinnedPathDropZone" style="padding:0 1.5rem;font-size:0.9rem;"> [
 						{{range $i, $p := $.UserSetting.PinnedPaths}}
