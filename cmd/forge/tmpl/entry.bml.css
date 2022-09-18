@@ -25,6 +25,19 @@
 	text-decoration: underline;
 }
 
+#quickSearchDeleteButton {
+	border-radius: 0.1rem;
+	border: 1px solid #DDD;
+	padding: 0 0.1rem;
+	font-size: 0.7rem;
+	color:#DDD;
+}
+
+#quickSearchDeleteButton.prepareDrop {
+	color: #A22;
+	border: 1px solid #A22;
+}
+
 .search-box-left {
 	appearance: none;
 	-webkit-appearance: none;

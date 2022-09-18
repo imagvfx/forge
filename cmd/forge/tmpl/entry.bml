@@ -37,7 +37,7 @@
 					<div id="quickSearch"> [
 						<div style="display:flex;margin-bottom:0.5rem;"> [
 							<div id="quickSearchLabel" style="font-size:0.8rem;color:#AAA;margin-right:1rem;"> [quick search]
-							<div id="quickSearchDeleteButton" class="nodisplay" style="border-radius:0.1rem;border:1px solid #DDD;padding:0 0.1rem;font-size:0.7rem;color:#DDD;"> [del]
+							<div id="quickSearchDeleteButton" class="nodisplay"> [del]
 						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 							{{range $i, $search := $.UserSetting.QuickSearches -}}
