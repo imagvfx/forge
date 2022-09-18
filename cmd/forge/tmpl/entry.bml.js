@@ -835,7 +835,7 @@ window.onload = function() {
 					console.log("unable to find drop target from quicksearches");
 					return;
 				}
-				updateQuickSearch(qs.innerText, at);
+				updateQuickSearch(qs.dataset.key, at);
 			}
 			let del = document.getElementById("quickSearchDeleteButton");
 			del.classList.remove("nodisplay");
@@ -857,7 +857,7 @@ window.onload = function() {
 			del.ondrop = function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				updateQuickSearch(qs.innerText, -1);
+				updateQuickSearch(qs.dataset.key, -1);
 			}
 		}
 		qs.ondragend = function(event) {

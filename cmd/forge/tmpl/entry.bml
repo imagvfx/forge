@@ -41,7 +41,7 @@
 						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 							{{range $i, $search := $.UserSetting.QuickSearches -}}
-							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#555;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
+							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#555;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-key="{{$search.K}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
 							{{- end}}
 						]
 					]
