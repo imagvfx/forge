@@ -725,6 +725,8 @@ window.onload = function() {
 			}
 			del.ondragover = function(ev) {
 				ev.preventDefault();
+				ev.dataTransfer.dropEffect = "move";
+				del.classList.add("prepareDrop");
 			}
 			del.ondragleave = function(ev) {
 				ev.preventDefault();
@@ -845,6 +847,8 @@ window.onload = function() {
 			}
 			del.ondragover = function(ev) {
 				ev.preventDefault();
+				ev.dataTransfer.dropEffect = "move";
+				del.classList.add("prepareDrop");
 			}
 			del.ondragleave = function(ev) {
 				ev.preventDefault();
