@@ -639,6 +639,13 @@ func (h *apiHandler) handleAddThumbnail(ctx context.Context, w http.ResponseWrit
 	return nil
 }
 
+func (h *apiHandler) handleGetThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPath := r.FormValue("path")
+	thumb, err := h.server.GetThumbnail(ctx, entPath)
+	h.WriteResponse(w, thumb, err)
+	return nil
+}
+
 func (h *apiHandler) handleUpdateThumbnail(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	KiB := int64(1 << 10)

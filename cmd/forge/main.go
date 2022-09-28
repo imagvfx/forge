@@ -234,6 +234,7 @@ func main() {
 	mux.HandleFunc("/api/delete-environ", api.Handler(api.handleDeleteEnviron))
 	mux.HandleFunc("/api/add-thumbnail", api.Handler(api.handleAddThumbnail))
 	mux.HandleFunc("/api/update-thumbnail", api.Handler(api.handleUpdateThumbnail))
+	mux.HandleFunc("/api/get-thumbnail", api.Handler(api.handleGetThumbnail))
 	mux.HandleFunc("/api/delete-thumbnail", api.Handler(api.handleDeleteThumbnail))
 	mux.HandleFunc("/api/add-access", api.Handler(api.handleAddAccess))
 	mux.HandleFunc("/api/update-access", api.Handler(api.handleUpdateAccess))
