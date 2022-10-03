@@ -26,21 +26,23 @@ func (e *Entry) Name() string {
 
 func (e *Entry) MarshalJSON() ([]byte, error) {
 	m := struct {
-		Path      string
-		Name      string
-		Type      string
-		Archived  bool
-		CreatedAt string
-		UpdatedAt string
-		Property  map[string]*Property
+		Path         string
+		Name         string
+		Type         string
+		Archived     bool
+		CreatedAt    string
+		UpdatedAt    string
+		HasThumbnail bool
+		Property     map[string]*Property
 	}{
-		Path:      e.Path,
-		Name:      e.Name(),
-		Type:      e.Type,
-		Archived:  e.Archived,
-		CreatedAt: e.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: e.UpdatedAt.Format(time.RFC3339),
-		Property:  e.Property,
+		Path:         e.Path,
+		Name:         e.Name(),
+		Type:         e.Type,
+		Archived:     e.Archived,
+		CreatedAt:    e.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:    e.UpdatedAt.Format(time.RFC3339),
+		HasThumbnail: e.HasThumbnail,
+		Property:     e.Property,
 	}
 	return json.Marshal(m)
 }
