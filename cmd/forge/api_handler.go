@@ -680,6 +680,13 @@ func (h *apiHandler) handleDeleteThumbnail(ctx context.Context, w http.ResponseW
 	return nil
 }
 
+func (h *apiHandler) handleGetSessionUser(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	h.WriteResponse(w, u, err)
+	return nil
+}
+
 func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	called := r.FormValue("called")
 	name := forge.UserNameFromContext(ctx)
