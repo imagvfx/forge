@@ -148,6 +148,27 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 	settings := make([]*forge.UserSetting, 0, len(setting))
 	for _, s := range setting {
 		// set default values
+		if s.EntryPagePropertyFilter == nil {
+			s.EntryPagePropertyFilter = make(map[string]string)
+		}
+		if s.EntryPageSortProperty == nil {
+			s.EntryPageSortProperty = make(map[string]string)
+		}
+		if s.PickedProperty == nil {
+			s.PickedProperty = make(map[string]string)
+		}
+		if s.QuickSearches == nil {
+			s.QuickSearches = make([]forge.StringKV, 0)
+		}
+		if s.PinnedPaths == nil {
+			s.PinnedPaths = make([]string, 0)
+		}
+		if s.RecentPaths == nil {
+			s.RecentPaths = make([]string, 0)
+		}
+		if s.ProgramsInUse == nil {
+			s.ProgramsInUse = make([]string, 0)
+		}
 		if s.UpdateMarkerLasts < 0 {
 			s.UpdateMarkerLasts = 1
 		}
