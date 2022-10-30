@@ -249,7 +249,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		if searchEntryType != "" || searchQuery != "" {
 			resultsFromSearch = true
-			subEnts, err = h.server.SearchEntries(ctx, path, searchEntryType, searchQuery)
+			subEnts, err = h.server.SearchEntries(ctx, path, "type="+searchEntryType+" "+searchQuery)
 			if err != nil {
 				return err
 			}

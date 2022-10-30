@@ -66,33 +66,12 @@ func (s *Server) ParentEntries(ctx context.Context, path string) ([]*Entry, erro
 	return ents, nil
 }
 
-func (s *Server) SearchEntries(ctx context.Context, path, entryType, query string) ([]*Entry, error) {
+func (s *Server) SearchEntries(ctx context.Context, path, query string) ([]*Entry, error) {
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")
 	}
-	if entryType == "" && query == "" {
-		// Even though it's possible technically, it will show too many.
-		return nil, fmt.Errorf("need search query")
-	}
-	if entryType != "" {
-		found := false
-		entTypes, err := s.svc.FindEntryTypes(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, t := range entTypes {
-			if t == entryType {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return nil, fmt.Errorf("unknown entry type: %v", entryType)
-		}
-	}
 	ents, err := s.svc.SearchEntries(ctx, EntrySearcher{
 		SearchRoot: path,
-		EntryType:  entryType,
 		Keywords:   strings.Fields(query),
 	})
 	if err != nil {

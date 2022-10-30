@@ -57,7 +57,6 @@ type EntryFinder struct {
 
 type EntrySearcher struct {
 	SearchRoot string
-	EntryType  string
 	Keywords   []string
 }
 

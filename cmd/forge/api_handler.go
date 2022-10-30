@@ -251,7 +251,10 @@ func (h *apiHandler) handleSearchEntries(ctx context.Context, w http.ResponseWri
 	from := r.FormValue("from")
 	typ := r.FormValue("type")
 	q := r.FormValue("q")
-	ents, err := h.server.SearchEntries(ctx, from, typ, q)
+	if typ != "" {
+		q += "type=" + typ + " "
+	}
+	ents, err := h.server.SearchEntries(ctx, from, q)
 	h.WriteResponse(w, ents, err)
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)

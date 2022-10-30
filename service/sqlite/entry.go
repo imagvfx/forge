@@ -209,6 +209,40 @@ func SearchEntries(db *sql.DB, ctx context.Context, search forge.EntrySearcher) 
 	return ents, nil
 }
 
+type where struct {
+	Key     string
+	Val     string
+	Exact   bool
+	Exclude bool
+}
+
+func (w where) Equal() string {
+	if w.Exact {
+		return "="
+	}
+	return "LIKE"
+}
+
+func (w where) Not() string {
+	if !w.Exclude {
+		return ""
+	}
+	if w.Exact {
+		return "!"
+	}
+	return "NOT "
+}
+
+func (w where) Value() string {
+	if w.Exact {
+		return w.Val
+	}
+	if w.Val == "" {
+		return w.Val
+	}
+	return `%` + w.Val + `%`
+}
+
 func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
 	user := forge.UserNameFromContext(ctx)
 	if user == "" {
@@ -222,203 +256,222 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		// Prevent search root become two slashes by adding slash again.
 		search.SearchRoot = ""
 	}
-	keywords := make([]string, 0, len(search.Keywords))
+	var (
+		whPath *where
+		whName *where
+		whType *where
+	)
+	wheres := make([]where, 0, len(search.Keywords))
 	for _, kwd := range search.Keywords {
 		kwd = strings.TrimSpace(kwd)
 		if kwd == "" {
 			continue
 		}
-		keywords = append(keywords, kwd)
+		wh := where{}
+		idxColon := strings.Index(kwd, ":")
+		idxEqual := strings.Index(kwd, "=")
+		if idxColon == -1 && idxEqual == -1 {
+			// Generic search
+			wh.Val = kwd
+			wheres = append(wheres, wh)
+			continue
+		}
+		if idxColon == -1 {
+			idxColon = len(kwd)
+		}
+		if idxEqual == -1 {
+			idxEqual = len(kwd)
+		}
+		idx := idxColon
+		if idxEqual < idxColon {
+			idx = idxEqual
+			wh.Exact = true
+		}
+		k := kwd[:idx]
+		if len(k) != 0 && k[len(k)-1] == '!' {
+			k = k[:len(k)-1]
+			wh.Exclude = true
+		}
+		if k == "" {
+			// Invalid search. Having ':' or '=' without the keyword.
+			continue
+		}
+		wh.Key = k
+		wh.Val = kwd[idx+1:] // exclude colon or equal
+		// special keywords those aren't actual properties.
+		// multiple queries on special keywords aren't supported yet and will pick up the last one.
+		if k == "path" {
+			whPath = &wh
+			continue
+		}
+		if k == "name" {
+			whName = &wh
+			continue
+		}
+		if k == "type" {
+			whType = &wh
+			continue
+		}
+		wheres = append(wheres, wh)
 	}
-	if len(keywords) == 0 {
-		// at least one loop needed
-		keywords = append(keywords, "")
+	if len(wheres) == 0 && whPath == nil && whName == nil && whType == nil {
+		return nil, nil
 	}
 	subQueries := make([]string, 0)
 	// vals will contain info for entire queries.
 	subVals := make([]any, 0)
-	for _, kwd := range keywords {
+	for _, wh := range wheres {
+		key := wh.Key
+		rawval := wh.Val
+		val := wh.Value()
+		eq := wh.Equal()
 		findParent := false
 		subKeys := make([]string, 0)
-		// redundant, but needed in every loop for INTERSECT
-		if kwd != "" {
-			idxColon := strings.Index(kwd, ":")
-			idxEqual := strings.Index(kwd, "=")
-			if idxColon == -1 && idxEqual == -1 {
-				// generic search; not tied to a property
-				subKeys = append(subKeys, `
-					(ents.path LIKE ? OR
-						(default_properties.name NOT LIKE '.%' AND
-							(
-								(default_properties.type!='user' AND properties.val LIKE ?) OR
-								(default_properties.type='user' AND properties.id IN
-									(SELECT properties.id FROM properties
-										LEFT JOIN accessors ON properties.val=accessors.id
-										LEFT JOIN default_properties ON properties.default_id=default_properties.id
-										WHERE default_properties.type='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
-									)
-								)
-							)
-						)
-					)
-				`)
-				kwdl := `%` + kwd + `%`
-				pathl := search.SearchRoot + `/%` + kwd
-				if strings.HasSuffix(kwd, "/") {
-					pathl += "%"
-				}
-				subVals = append(subVals, pathl, kwdl, kwdl, kwdl)
-			} else {
-				// Check which is appeared earlier.
-				if idxColon == -1 {
-					idxColon = len(kwd)
-				}
-				if idxEqual == -1 {
-					idxEqual = len(kwd)
-				}
-				idx := idxColon
-				exactSearch := false
-				if idxEqual < idxColon {
-					idx = idxEqual
-					exactSearch = true
-				}
-				k := kwd[:idx]
-				notSearch := false
-				if len(k) != 0 && k[len(k)-1] == '!' {
-					notSearch = true
-					k = k[:len(k)-1]
-				}
-				val := kwd[idx+1:] // exclude colon or equal
-				eq := "="
-				if !exactSearch {
-					eq = "LIKE"
-				}
-				not := ""
-				if notSearch {
-					not = "NOT"
-				}
-				// special keywords those aren't contained in properties table.
-				if k == "path" {
-					if !exactSearch {
-						val = "%" + val + "%"
-					}
-					subVals = append(subVals, val)
-					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM ents WHERE %s path %s ?", not, eq))
-					continue
-				}
-				if k == "name" {
-					// Sliently change from in-exactSearch to exactSearch.
-					// Sqlite cannot perform it without support of REGEXP which should be installed separately.
-					eq = "LIKE"
-					val = "%/" + val
-					subVals = append(subVals, val)
-					subQueries = append(subQueries, fmt.Sprintf("SELECT id FROM ents WHERE %s path %s ?", not, eq))
-					continue
-				}
-				sub := ""
-				toks := strings.SplitN(k, ".", 2)
-				if len(toks) == 2 {
-					sub = toks[0]
-					k = toks[1]
-				}
-				q := fmt.Sprintf("(default_properties.name=? AND ")
-				subVals = append(subVals, k)
-				if sub != "" {
-					findParent = true
-					if sub != "(sub)" {
-						q += "ents.path LIKE ? AND"
-						subVals = append(subVals, "%/"+sub)
-					}
-				}
-				q += " " + not + " ("
-				vs := strings.Split(val, ",")
-				for i, v := range vs {
-					if i != 0 {
-						q += " OR "
-					}
-					vl := v
-					if !exactSearch {
-						vl = "%" + v + "%"
-					}
-					userWhere := ""
-					whereVals := make([]any, 0)
-					if v != "" {
-						userWhere = fmt.Sprintf("(accessors.called %s ? OR accessors.name %s ?)", eq, eq)
-						whereVals = append(whereVals, vl, vl)
-					} else {
-						userWhere = "(accessors.id IS NULL)"
-						if !exactSearch {
-							userWhere = "TRUE"
-						}
-					}
-					vq := fmt.Sprintf(`
+		if wh.Key == "" {
+			// Generic search. Not tied to a property.
+			subKeys = append(subKeys, `
+				(entries.path LIKE ? OR
+					(default_properties.name NOT LIKE '.%' AND
 						(
-							(default_properties.type!='user' AND properties.val %s ?) OR
+							(default_properties.type!='user' AND properties.val LIKE ?) OR
 							(default_properties.type='user' AND properties.id IN
 								(SELECT properties.id FROM properties
 									LEFT JOIN accessors ON properties.val=accessors.id
 									LEFT JOIN default_properties ON properties.default_id=default_properties.id
-									WHERE default_properties.type='user' AND %s
+									WHERE default_properties.type='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
 								)
 							)
 						)
-					`, eq, userWhere)
-					subVals = append(subVals, vl)
-					subVals = append(subVals, whereVals...)
-					q += vq
-				}
-				q += "))"
-				subKeys = append(subKeys, q)
+					)
+				)
+			`)
+			pathl := search.SearchRoot + `/%` + rawval
+			if strings.HasSuffix(pathl, "/") {
+				pathl += `%`
 			}
+			subVals = append(subVals, pathl, val, val, val)
+		} else {
+			sub := ""
+			toks := strings.SplitN(key, ".", 2)
+			if len(toks) == 2 {
+				sub = toks[0]
+				key = toks[1]
+			}
+			q := fmt.Sprintf("(default_properties.name=? AND ")
+			subVals = append(subVals, key)
+			if sub != "" {
+				findParent = true
+				if sub != "(sub)" {
+					q += "entries.path LIKE ? AND"
+					subVals = append(subVals, "%/"+sub)
+				}
+			}
+			not := ""
+			if wh.Exclude {
+				not = "NOT"
+			}
+			q += " " + not + " ("
+			vs := strings.Split(rawval, ",")
+			for i, v := range vs {
+				if i != 0 {
+					q += " OR "
+				}
+				vl := v
+				if !wh.Exact {
+					vl = "%" + v + "%"
+				}
+				userWhere := ""
+				whereVals := make([]any, 0)
+				if v != "" {
+					userWhere = fmt.Sprintf("(accessors.called %s ? OR accessors.name %s ?)", eq, eq)
+					whereVals = append(whereVals, vl, vl)
+				} else {
+					userWhere = "(accessors.id IS NULL)"
+					if !wh.Exact {
+						userWhere = "TRUE"
+					}
+				}
+				vq := fmt.Sprintf(`
+					(
+						(default_properties.type!='user' AND properties.val %s ?) OR
+						(default_properties.type='user' AND properties.id IN
+							(SELECT properties.id FROM properties
+								LEFT JOIN accessors ON properties.val=accessors.id
+								LEFT JOIN default_properties ON properties.default_id=default_properties.id
+								WHERE default_properties.type='user' AND %s
+							)
+						)
+					)
+				`, eq, userWhere)
+				subVals = append(subVals, vl)
+				subVals = append(subVals, whereVals...)
+				q += vq
+			}
+			q += "))"
+			subKeys = append(subKeys, q)
 		}
 		where := ""
 		if len(subKeys) != 0 {
 			where = "WHERE " + strings.Join(subKeys, " AND ")
 		}
-		target := "ents"
+		target := "entries"
 		if findParent {
 			target = "parents"
 		}
 		subQuery := fmt.Sprintf(`
-			SELECT %s.id FROM ents
-			LEFT JOIN ents AS parents ON ents.parent_id=parents.id
-			LEFT JOIN properties ON ents.id=properties.entry_id
+			SELECT %s.id FROM entries
+			LEFT JOIN entries AS parents ON entries.parent_id=parents.id
+			LEFT JOIN properties ON entries.id=properties.entry_id
 			LEFT JOIN default_properties ON properties.default_id=default_properties.id
+			LEFT JOIN entry_types ON entries.type_id = entry_types.id
 			%v
 		`, target, where)
 		subQueries = append(subQueries, subQuery)
 	}
 	queryTmpl := `
-		WITH ents AS (
-			SELECT * FROM entries WHERE %s
-		)
 		SELECT
-			ents.id,
-			ents.path,
+			entries.id,
+			entries.path,
 			entry_types.name,
-			ents.archived,
-			ents.created_at,
-			(SELECT time FROM logs WHERE logs.entry_id=ents.id ORDER BY id DESC LIMIT 1),
+			entries.archived,
+			entries.created_at,
+			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
 			thumbnails.id
-		FROM ents
-		LEFT JOIN thumbnails ON ents.id = thumbnails.entry_id
-		LEFT JOIN entry_types ON ents.type_id = entry_types.id
-		WHERE %s AND %s AND %s
+		FROM entries
+		LEFT JOIN entry_types ON entries.type_id = entry_types.id
+		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
+		WHERE %s AND %s AND %s AND %s AND %s AND %s
 	`
-	whereArchived := "NOT archived"
-	if admin {
-		whereArchived = "TRUE"
+	vals := make([]any, 0)
+	whereArchived := "TRUE"
+	if !admin {
+		whereArchived = "entries.archived=0"
 	}
-	wherePath := "ents.path LIKE ?"
-	vals := []any{search.SearchRoot + `/%`}
 	whereType := "TRUE"
-	if search.EntryType != "" {
-		whereType = "entry_types.name=?"
-		vals = append(vals, search.EntryType)
+	if whType != nil {
+		whereType = "entry_types.name " + whType.Not() + whType.Equal() + " ?"
+		vals = append(vals, whType.Value())
 	}
-	whereSub := fmt.Sprintf("ents.id IN (%s)", strings.Join(subQueries, " INTERSECT "))
-	vals = append(vals, subVals...)
-	query := fmt.Sprintf(queryTmpl, whereArchived, wherePath, whereType, whereSub)
+	whereRoot := "entries.path LIKE ?"
+	vals = append(vals, search.SearchRoot+`/%`)
+	wherePath := "TRUE"
+	if whPath != nil {
+		wherePath = "entries.path " + whPath.Not() + whPath.Equal() + " ?"
+		vals = append(vals, whPath.Value())
+	}
+	whereName := "TRUE"
+	if whName != nil {
+		// Need in-exact search.
+		whName.Exact = false
+		whereName = "entries.path " + whName.Not() + whName.Equal() + " ?"
+		vals = append(vals, "%/"+whName.Value())
+	}
+	whereSub := "TRUE"
+	if len(subQueries) != 0 {
+		whereSub = fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, " INTERSECT "))
+		vals = append(vals, subVals...)
+	}
+	query := fmt.Sprintf(queryTmpl, whereArchived, whereType, whereRoot, wherePath, whereName, whereSub)
 	// We need these prints time to time. Do not delete.
 	// fmt.Println(query)
 	// fmt.Println(vals)
