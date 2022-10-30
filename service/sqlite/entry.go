@@ -317,19 +317,19 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	if len(wheres) == 0 && whPath == nil && whName == nil && whType == nil {
 		return nil, nil
 	}
-	subQueries := make([]string, 0)
+	innerQueries := make([]string, 0)
 	// vals will contain info for entire queries.
-	subVals := make([]any, 0)
+	innerVals := make([]any, 0)
 	for _, wh := range wheres {
 		key := wh.Key
 		rawval := wh.Val
 		val := wh.Value()
 		eq := wh.Equal()
 		findParent := false
-		subKeys := make([]string, 0)
+		innerKeys := make([]string, 0)
 		if wh.Key == "" {
 			// Generic search. Not tied to a property.
-			subKeys = append(subKeys, `
+			innerKeys = append(innerKeys, `
 				(entries.path LIKE ? OR
 					(default_properties.name NOT LIKE '.%' AND
 						(
@@ -349,7 +349,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			if strings.HasSuffix(pathl, "/") {
 				pathl += `%`
 			}
-			subVals = append(subVals, pathl, val, val, val)
+			innerVals = append(innerVals, pathl, val, val, val)
 		} else {
 			sub := ""
 			toks := strings.SplitN(key, ".", 2)
@@ -358,12 +358,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				key = toks[1]
 			}
 			q := fmt.Sprintf("(default_properties.name=? AND ")
-			subVals = append(subVals, key)
+			innerVals = append(innerVals, key)
 			if sub != "" {
 				findParent = true
 				if sub != "(sub)" {
 					q += "entries.path LIKE ? AND"
-					subVals = append(subVals, "%/"+sub)
+					innerVals = append(innerVals, "%/"+sub)
 				}
 			}
 			not := ""
@@ -403,22 +403,22 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						)
 					)
 				`, eq, userWhere)
-				subVals = append(subVals, vl)
-				subVals = append(subVals, whereVals...)
+				innerVals = append(innerVals, vl)
+				innerVals = append(innerVals, whereVals...)
 				q += vq
 			}
 			q += "))"
-			subKeys = append(subKeys, q)
+			innerKeys = append(innerKeys, q)
 		}
 		where := ""
-		if len(subKeys) != 0 {
-			where = "WHERE " + strings.Join(subKeys, " AND ")
+		if len(innerKeys) != 0 {
+			where = "WHERE " + strings.Join(innerKeys, " AND ")
 		}
 		target := "entries"
 		if findParent {
 			target = "parents"
 		}
-		subQuery := fmt.Sprintf(`
+		innerQuery := fmt.Sprintf(`
 			SELECT %s.id FROM entries
 			LEFT JOIN entries AS parents ON entries.parent_id=parents.id
 			LEFT JOIN properties ON entries.id=properties.entry_id
@@ -426,7 +426,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			LEFT JOIN entry_types ON entries.type_id = entry_types.id
 			%v
 		`, target, where)
-		subQueries = append(subQueries, subQuery)
+		innerQueries = append(innerQueries, innerQuery)
 	}
 	queryTmpl := `
 		SELECT
@@ -466,12 +466,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		whereName = "entries.path " + whName.Not() + whName.Equal() + " ?"
 		vals = append(vals, "%/"+whName.Value())
 	}
-	whereSub := "TRUE"
-	if len(subQueries) != 0 {
-		whereSub = fmt.Sprintf("entries.id IN (%s)", strings.Join(subQueries, " INTERSECT "))
-		vals = append(vals, subVals...)
+	whereInner := "TRUE"
+	if len(innerQueries) != 0 {
+		whereInner = fmt.Sprintf("entries.id IN (%s)", strings.Join(innerQueries, " INTERSECT "))
+		vals = append(vals, innerVals...)
 	}
-	query := fmt.Sprintf(queryTmpl, whereArchived, whereType, whereRoot, wherePath, whereName, whereSub)
+	query := fmt.Sprintf(queryTmpl, whereArchived, whereType, whereRoot, wherePath, whereName, whereInner)
 	// We need these prints time to time. Do not delete.
 	// fmt.Println(query)
 	// fmt.Println(vals)
