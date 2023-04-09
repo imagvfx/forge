@@ -607,6 +607,37 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			break
 		}
 	}
+	var prevEntry *forge.Entry
+	var nextEntry *forge.Entry
+	if !resultsFromSearch && ent.Path != "/" {
+		// Normal entry page
+		siblings, err := h.server.SubEntries(ctx, filepath.Dir(ent.Path))
+		if err != nil {
+			return err
+		}
+		if len(siblings) != 1 {
+			sort.Slice(siblings, func(i, j int) bool {
+				return siblings[i].Path < siblings[j].Path
+			})
+			idx := -1
+			for i := range siblings {
+				if siblings[i].Path == ent.Path {
+					idx = i
+					break
+				}
+			}
+			p := idx - 1
+			if p < 0 {
+				p = len(siblings) - 1
+			}
+			n := idx + 1
+			if n >= len(siblings) {
+				n = 0
+			}
+			prevEntry = siblings[p]
+			nextEntry = siblings[n]
+		}
+	}
 	allUsers, err := h.server.Users(ctx)
 	if err != nil {
 		return err
@@ -617,6 +648,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		UserSetting               *forge.UserSetting
 		Entry                     *forge.Entry
 		EntryByPath               map[string]*forge.Entry
+		PrevEntry                 *forge.Entry
+		NextEntry                 *forge.Entry
 		EntryPinned               bool
 		SearchEntryType           string
 		SearchQuery               string
@@ -643,6 +676,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		UserSetting:               setting,
 		Entry:                     ent,
 		EntryByPath:               entryByPath,
+		PrevEntry:                 prevEntry,
+		NextEntry:                 nextEntry,
 		EntryPinned:               entryPinned,
 		SearchEntryType:           searchEntryType,
 		SearchQuery:               searchQuery,

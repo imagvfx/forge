@@ -644,6 +644,14 @@
 	visibility: hidden;
 }
 
+.prevNextLink {
+	color: #AAA;
+}
+
+.prevNextLink:not(.disabled):hover {
+	color: #44A;
+}
+
 .pathLink {
 	color: #44A;
 }
