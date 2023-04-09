@@ -909,20 +909,45 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 	return nil
 }
 
+func (h *apiHandler) handleAddUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	section := r.FormValue("section")
+	err := h.server.AddUserDataSection(ctx, user, section)
+	h.WriteResponse(w, nil, err)
+	return nil
+}
+
 func (h *apiHandler) handleGetUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := r.FormValue("user")
+	user := forge.UserNameFromContext(ctx)
 	section := r.FormValue("section")
 	sec, err := h.server.GetUserDataSection(ctx, user, section)
 	h.WriteResponse(w, sec, err)
 	return nil
 }
 
+func (h *apiHandler) handleDeleteUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	section := r.FormValue("section")
+	err := h.server.DeleteUserDataSection(ctx, user, section)
+	h.WriteResponse(w, nil, err)
+	return nil
+}
+
 func (h *apiHandler) handleSetUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	user := r.FormValue("user")
+	user := forge.UserNameFromContext(ctx)
 	section := r.FormValue("section")
 	key := r.FormValue("key")
 	value := r.FormValue("value")
 	err := h.server.SetUserData(ctx, user, section, key, value)
+	h.WriteResponse(w, nil, err)
+	return nil
+}
+
+func (h *apiHandler) handleDeleteUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	section := r.FormValue("section")
+	key := r.FormValue("key")
+	err := h.server.DeleteUserData(ctx, user, section, key)
 	h.WriteResponse(w, nil, err)
 	return nil
 }

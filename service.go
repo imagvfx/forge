@@ -59,7 +59,9 @@ type Service interface {
 	GetUserSetting(ctx context.Context, user string) (*UserSetting, error)
 	UpdateUserSetting(ctx context.Context, upd UserSettingUpdater) error
 	FindUserData(ctx context.Context, find UserDataFinder) ([]*UserDataSection, error)
+	AddUserDataSection(ctx context.Context, user, section string) error
 	GetUserDataSection(ctx context.Context, user, section string) (*UserDataSection, error)
+	DeleteUserDataSection(ctx context.Context, user, section string) error
 	GetUserData(ctx context.Context, user, section, key string) (string, error)
 	SetUserData(ctx context.Context, user, section, key, value string) error
 	DeleteUserData(ctx context.Context, user, section, key string) error

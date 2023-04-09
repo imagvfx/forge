@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -101,7 +102,9 @@ func findUserData(tx *sql.Tx, ctx context.Context, find forge.UserDataFinder) ([
 				Data:    make(map[string]string),
 			}
 		}
-		secs[section].Data[key] = value
+		if key != "" {
+			secs[section].Data[key] = value
+		}
 	}
 	data := make([]*forge.UserDataSection, 0)
 	for _, s := range secs {
@@ -113,9 +116,59 @@ func findUserData(tx *sql.Tx, ctx context.Context, find forge.UserDataFinder) ([
 	return data, nil
 }
 
-// GetUserData returns a user data section from the sql file.
-// NOTE: It doesn't raise error even if the section doesn't exists in user_data table.
-// It returns default a default *forge.UserDataSection, instead.
+func AddUserDataSection(db *sql.DB, ctx context.Context, user, section string) error {
+	ctxUser := forge.UserNameFromContext(ctx)
+	if ctxUser == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	if ctxUser != user {
+		return forge.Unauthorized("cannot get another user's data")
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = addUserDataSection(tx, ctx, user, section)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func addUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) error {
+	if section == "" {
+		return fmt.Errorf("user data section cannot be empty")
+	}
+	userID, err := getUserID(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	_, err = getUserDataSection(tx, ctx, user, section)
+	if err == nil {
+		return fmt.Errorf("user data section is already exists")
+	}
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO user_data (
+			user_id,
+			section,
+			key,
+			value
+		)
+		VALUES (?, ?, '', '')
+	`,
+		userID, section,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetUserDataSection(db *sql.DB, ctx context.Context, user, section string) (*forge.UserDataSection, error) {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
@@ -141,16 +194,17 @@ func GetUserDataSection(db *sql.DB, ctx context.Context, user, section string) (
 }
 
 func getUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) (*forge.UserDataSection, error) {
-	data, err := findUserData(tx, ctx, forge.UserDataFinder{User: user, Section: &section})
+	key := ""
+	data, err := findUserData(tx, ctx, forge.UserDataFinder{User: user, Section: &section, Key: &key})
 	if err != nil {
 		return nil, err
 	}
 	if len(data) == 0 {
-		return &forge.UserDataSection{Section: section, Data: make(map[string]string)}, nil
+		return nil, forge.NotFound("user data section is not exists: %v/%v", section, key)
 	}
 	sec := data[0]
 	if sec.Section != section {
-		return nil, fmt.Errorf("got wrong section of user_data: want %v, got %v", section, sec.Section)
+		return nil, fmt.Errorf("got wrong user data section: want %v, got %v", section, sec.Section)
 	}
 	return sec, nil
 }
@@ -180,6 +234,9 @@ func GetUserData(db *sql.DB, ctx context.Context, user, section, key string) (st
 }
 
 func getUserData(tx *sql.Tx, ctx context.Context, user, section, key string) (string, error) {
+	if key == "" {
+		return "", fmt.Errorf("user data key cannot be empty")
+	}
 	data, err := findUserData(tx, ctx, forge.UserDataFinder{User: user, Section: &section, Key: &key})
 	if err != nil {
 		return "", err
@@ -207,7 +264,7 @@ func SetUserData(db *sql.DB, ctx context.Context, user, section, key, value stri
 		return forge.Unauthorized("context user unspecified")
 	}
 	if ctxUser != user {
-		return forge.Unauthorized("cannot add user data to another user")
+		return forge.Unauthorized("cannot set user-data to another user")
 	}
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
@@ -283,6 +340,9 @@ func DeleteUserData(db *sql.DB, ctx context.Context, user, section, key string) 
 }
 
 func deleteUserData(tx *sql.Tx, ctx context.Context, user, section, key string) error {
+	if key == "" {
+		return fmt.Errorf("user data key cannot be empty")
+	}
 	userID, err := getUserID(tx, ctx, user)
 	if err != nil {
 		return err
@@ -292,6 +352,53 @@ func deleteUserData(tx *sql.Tx, ctx context.Context, user, section, key string) 
 		WHERE user_id=? AND section=? AND key=?
 	`,
 		userID, section, key,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteUserDataSection(db *sql.DB, ctx context.Context, user, section string) error {
+	ctxUser := forge.UserNameFromContext(ctx)
+	if ctxUser == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	if ctxUser != user {
+		return forge.Unauthorized("cannot delete another user's data")
+	}
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	err = deleteUserDataSection(tx, ctx, user, section)
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) error {
+	userID, err := getUserID(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	_, err = getUserDataSection(tx, ctx, user, section)
+	if err != nil {
+		if !errors.As(err, &forge.NotFoundError{}) {
+			return fmt.Errorf("user data section is not exists")
+		}
+	}
+	_, err = tx.ExecContext(ctx, `
+		DELETE FROM user_data
+		WHERE user_id=? AND section=?
+	`,
+		userID, section,
 	)
 	if err != nil {
 		return err

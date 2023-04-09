@@ -1,0 +1,235 @@
+<!doctype html>
+<html> [
+	<head> [
+		<style> [`{{template "style.css"}}`]
+	]
+	<body> [
+		{{template "nav.bml" $}}
+		<div class="main"> [
+			<div class="one"> [
+				<div id="section" data-section="{{$.Section.Section}}"> [
+					<h1 class="sectionTitle"> [User Data / {{$.Section.Section}}]
+					<a id="deleteSectionButton"> [delete]
+				]
+				<div id="userDataAdder"> [
+					<input id="addKeyInput" placeholder="add key" autocomplete="off"> []
+				]
+				{{range $key, $value := $.Section.Data}}
+				<div class="userData"> [
+					<div class="keySection"> [
+						<button class="deleteDataButton" data-key="{{$key}}"> [<hr>]
+						<div class="dataKey"> [{{$key}}]
+					]
+					<div class="valueSection"> [
+						<textarea class="dataEdit" data-key="{{$key}}" autocomplete="off"> [{{$value}}]
+						<button class="updateDataButton" data-key="{{$key}}"> [Update]
+					]
+				]
+				{{end}}
+			]
+			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
+				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
+			]
+		]
+	]
+]
+
+<style> [`
+textarea {
+	font-size: 0.9rem;
+}
+
+#section {
+	display: flex;
+	justify-content: space-between;
+}
+
+#userDataAdder {
+	margin-bottom: 2rem;
+}
+
+#deleteSectionButton {
+	cursor: pointer;
+	color: #A22;
+	height: fit-content;
+}
+
+.userData {
+	margin-bottom: 1.2rem;
+}
+
+.keySection {
+	display: flex;
+	align-items: center;
+	margin-bottom: 0.2rem;
+}
+
+.valueSection {
+	display: flex;
+	gap: 0.2rem;
+}
+
+.dataKey {
+	display: inline-block;
+	margin-right: 0.2rem;
+}
+
+.dataEdit {
+	width: 30rem;
+	height: 1.1rem;
+	max-height: 10rem;
+}
+
+#addUserDataInput {
+	display: block;
+}
+
+.deleteDataButton {
+	cursor: pointer;
+	width: 0.7rem;
+	height: 0.7rem;
+	margin-right: 0.2rem;
+	font-size: 0.7rem;
+	border: 1px solid #AAAAAA;
+	border-radius: 2px;
+	display: flex;
+	justify-content: center;
+	align-items:center;
+	padding: 0;
+}
+
+.deleteDataButton hr {
+	background-color: #AAA;
+	width: 0.3rem;
+	height: 1.5px;
+	border: 0;
+}
+
+.deleteDataButton:hover hr {
+	background-color: #A22;
+}
+
+.updateDataButton {
+	height: 1.5rem;
+	margin: 0.1rem;
+}
+`]
+
+<script> [`
+"use strict";
+
+window.onload = function() {
+	let section = document.getElementById("section").dataset.section;
+	let addKeyInp = document.getElementById("addKeyInput");
+	addKeyInp.onkeydown = function(ev) {
+		if (ev.key == "Enter") {
+			setUserData(section, addKeyInp.value, "");
+		}
+	}
+	let dataEdits = document.getElementsByClassName("dataEdit");
+	for (let edit of dataEdits) {
+		edit.oninput = function(ev) {
+			edit.style.height = "auto";
+			edit.style.height = String(edit.scrollHeight) + "px";
+		}
+		edit.onkeydown = function(ev) {
+			if ((ev.ctrlKey || ev.metaKey) && ev.key == "Enter") {
+				setUserData(section, edit.dataset.key, edit.value);
+			}
+		}
+	}
+	let updateDataButtons = document.getElementsByClassName("updateDataButton");
+	for (let btn of updateDataButtons) {
+		btn.onclick = function() {
+			let edit = document.querySelector(`.dataEdit[data-key="${btn.dataset.key}"]`);
+			setUserData(section, btn.dataset.key, edit.value);
+		}
+	}
+	let deleteDataButtons = document.getElementsByClassName("deleteDataButton");
+	for (let btn of deleteDataButtons) {
+		btn.onclick = function() {
+			deleteUserData(section, btn.dataset.key);
+		}
+	}
+	let deleteSectionBtn = document.getElementById("deleteSectionButton");
+	deleteSectionBtn.onclick = function() {
+		deleteUserDataSection(section);
+	}
+}
+
+function setUserData(section, key, value) {
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	formData.append("section", section);
+	formData.append("key", key);
+	formData.append("value", value);
+	req.open("post", "/api/set-user-data");
+	req.send(formData);
+	// TODO: show the error response to user
+	req.onload = function() {
+		if (req.status != 200) {
+			printErrorStatus(req.responseText);
+			return;
+		}
+		location.reload();
+	}
+	req.onerror = function() {
+		printErrorStatus(req.responseText);
+	}
+}
+
+function deleteUserData(section, key, value) {
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	formData.append("section", section);
+	formData.append("key", key);
+	req.open("post", "/api/delete-user-data");
+	req.send(formData);
+	// TODO: show the error response to user
+	req.onload = function() {
+		if (req.status != 200) {
+			printErrorStatus(req.responseText);
+			return;
+		}
+		location.reload();
+	}
+	req.onerror = function() {
+		printErrorStatus(req.responseText);
+	}
+}
+
+function deleteUserDataSection(section) {
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	formData.append("section", section);
+	req.open("post", "/api/delete-user-data-section");
+	req.send(formData);
+	// TODO: show the error response to user
+	req.onload = function() {
+		if (req.status != 200) {
+			printErrorStatus(req.responseText);
+			return;
+		}
+		location.replace("/setting");
+	}
+	req.onerror = function() {
+		printErrorStatus(req.responseText);
+	}
+}
+
+function printStatus(s) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.remove("error");
+	statusBar.innerHTML = s;
+}
+
+function printErrorStatus(e) {
+	let statusBar = document.getElementById("statusBar");
+	statusBar.classList.add("error");
+	statusBar.innerHTML = e;
+}
+
+function clearStatus() {
+	printStatus("");
+}
+`]

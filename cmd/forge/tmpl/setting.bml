@@ -38,6 +38,18 @@
 							<button class="button" name="update_copy_path_remap" type="submit" value="1" > [Update]
 						]
 					]
+					<div style="height:2rem"> []
+					<h2> [
+						User Data Sections
+					]
+					<input id="addUserDataSectionInput" placeholder="add section"> []
+					<br>
+					<div style="font:1.2px"> [
+						{{range $i, $data := $.UserData -}}
+						{{- if ne $i 0}}, {{end -}}
+						<a href="/user-data/{{$data.Section}}">{{$data.Section}}</a>
+						{{- end}}
+					]
 				]
 			]
 		]
@@ -46,7 +58,7 @@
 
 <style> [`
 .inputLabel {
-	width: 10rem;
+	width: 12rem;
 	box-sizing: border-box;
 }
 .input {
@@ -63,4 +75,40 @@
 	margin-left: 1rem;
 	box-sizing: border-box;
 }
+#addUserDataSectionInput {
+	display: block;
+}
+`]
+
+<script> [`
+"use strict";
+
+window.onload = function() {
+	let inp = document.getElementById("addUserDataSectionInput");
+	inp.onkeydown = function(ev) {
+		if (ev.key == "Enter") {
+			addUserDataSection(inp.value);
+		}
+	}
+}
+
+function addUserDataSection(section) {
+	let req = new XMLHttpRequest();
+	let formData = new FormData();
+	formData.append("section", section);
+	req.open("post", "/api/add-user-data-section");
+	req.send(formData);
+	// TODO: show the error response to user
+	req.onload = function() {
+		if (req.status != 200) {
+			printErrorStatus(req.responseText);
+			return;
+		}
+		location.reload();
+	}
+	req.onerror = function() {
+		printErrorStatus(req.responseText);
+	}
+}
+
 `]

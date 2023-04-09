@@ -740,12 +740,12 @@ func (s *Server) UpdateUserSetting(ctx context.Context, user, key string, value 
 	return nil
 }
 
-func (s *Server) FindUserData(ctx context.Context, find UserDataFinder) ([]*UserDataSection, error) {
-	data, err := s.svc.FindUserData(ctx, find)
+func (s *Server) AddUserDataSection(ctx context.Context, user, section string) error {
+	err := s.svc.AddUserDataSection(ctx, user, section)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return data, nil
+	return nil
 }
 
 func (s *Server) GetUserDataSection(ctx context.Context, user, section string) (*UserDataSection, error) {
@@ -754,6 +754,22 @@ func (s *Server) GetUserDataSection(ctx context.Context, user, section string) (
 		return nil, err
 	}
 	return sec, nil
+}
+
+func (s *Server) DeleteUserDataSection(ctx context.Context, user, section string) error {
+	err := s.svc.DeleteUserDataSection(ctx, user, section)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Server) FindUserData(ctx context.Context, find UserDataFinder) ([]*UserDataSection, error) {
+	data, err := s.svc.FindUserData(ctx, find)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 func (s *Server) GetUserData(ctx context.Context, user, section, key string) (string, error) {

@@ -903,17 +903,48 @@ func (h *pageHandler) handleSetting(ctx context.Context, w http.ResponseWriter, 
 	if err != nil {
 		return err
 	}
+	data, err := h.server.FindUserData(ctx, forge.UserDataFinder{User: user})
+	if err != nil {
+		return err
+	}
+	// TODO: change User as *forge.User in every templates
+	recipe := struct {
+		User     string
+		I        *forge.User
+		Setting  *forge.UserSetting
+		UserData []*forge.UserDataSection
+	}{
+		User:     user,
+		I:        u,
+		Setting:  setting,
+		UserData: data,
+	}
+	err = Tmpl.ExecuteTemplate(w, "setting.bml", recipe)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *pageHandler) handleUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	section := strings.TrimPrefix(r.URL.Path, "/user-data/")
+	data, err := h.server.FindUserData(ctx, forge.UserDataFinder{User: user, Section: &section})
+	if err != nil {
+		return err
+	}
+	if len(data) != 1 {
+		return forge.NotFound("not found user data section: " + section)
+	}
 	// TODO: change User as *forge.User in every templates
 	recipe := struct {
 		User    string
-		I       *forge.User
-		Setting *forge.UserSetting
+		Section *forge.UserDataSection
 	}{
 		User:    user,
-		I:       u,
-		Setting: setting,
+		Section: data[0],
 	}
-	err = Tmpl.ExecuteTemplate(w, "setting.bml", recipe)
+	err = Tmpl.ExecuteTemplate(w, "user-data.bml", recipe)
 	if err != nil {
 		return err
 	}
