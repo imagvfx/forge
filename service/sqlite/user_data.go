@@ -194,13 +194,12 @@ func GetUserDataSection(db *sql.DB, ctx context.Context, user, section string) (
 }
 
 func getUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) (*forge.UserDataSection, error) {
-	key := ""
-	data, err := findUserData(tx, ctx, forge.UserDataFinder{User: user, Section: &section, Key: &key})
+	data, err := findUserData(tx, ctx, forge.UserDataFinder{User: user, Section: &section})
 	if err != nil {
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, forge.NotFound("user data section is not exists: %v/%v", section, key)
+		return nil, forge.NotFound("user data section is not exists: %v", section)
 	}
 	sec := data[0]
 	if sec.Section != section {
