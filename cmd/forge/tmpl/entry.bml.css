@@ -89,6 +89,7 @@
 	font-size: 1.2rem;
 	font-weight: bold;
 	display: flex;
+	flex-wrap: wrap;
 }
 
 .mainEntryFunctions {
@@ -546,6 +547,7 @@
 
 .subEntryTop {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.3rem;
 }
