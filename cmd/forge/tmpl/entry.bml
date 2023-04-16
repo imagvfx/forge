@@ -33,7 +33,7 @@
 			]
 			<div class="right"> [
 				<!-- Search Related -->
-				<div style="display:flex;flex-wrap:wrap;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
+				<div style="display:flex;flex-wrap:wrap;gap:1rem;padding:1.5rem;background-color:#F4F4F4;border-bottom:1.5px solid #EEE;"> [
 					<div style="flex:3;"> [
 					<div style="font-size:2rem"> [
 						<a href="/{{topName $.Entry.Path}}"> [<b> [{{topName $.Entry.Path}}]]
@@ -63,7 +63,7 @@
 								{{end}}
 								{{end}}
 							]
-							<input name="search_query" type="text" class="search-box-center" style="flex:1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
+							<input name="search_query" type="text" class="search-box-center" size="10" style="flex:1;min-width:8rem" placeholder="search" value="{{$.SearchQuery}}"> []
 							<button class="search-box-right" style="background-color:inherit"> [Go]
 						]
 						{{if $.ResultsFromSearch}}
