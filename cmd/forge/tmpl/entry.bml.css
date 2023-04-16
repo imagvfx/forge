@@ -101,11 +101,12 @@
 
 .mainEntryBottom {
 	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
 	min-height: 6rem;
 }
 
 .mainEntryThumbnailContainer {
-	margin-right: 1rem;
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
