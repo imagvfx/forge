@@ -281,7 +281,8 @@
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 2rem;
+	row-gap: 0.5rem;
+	column-gap: 2rem;
 	margin-top: 1rem;
 	margin-bottom: 1rem;
 }
