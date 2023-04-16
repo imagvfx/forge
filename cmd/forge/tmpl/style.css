@@ -52,3 +52,9 @@ a:hover {
 .nodisplay {
 	display: none !important
 }
+
+@media (max-width: 769px) {
+	.hideOnSmallScreen {
+		display: none;
+	}
+}

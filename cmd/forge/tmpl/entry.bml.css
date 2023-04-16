@@ -249,6 +249,7 @@
 	min-width: max-content;
 	padding: 0 6px;
 	color: #444;
+	gap: 0.2rem;
 }
 
 .statusCounter:hover {
