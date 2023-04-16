@@ -442,46 +442,6 @@
 					{{$i = inc $i}}
 					{{end}}
 				]
-				<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:1;"> [
-					<div id="infoUpdater" class="infoModifier nodisplay"> [
-						<div class="infoModifierTopBar" style="background-color:#E0EEEE;"> [
-							<div class="entryLabel" style=""> []
-							<div class="closeButton" style="background-color:#BDD;"> [&#x2715]
-						]
-						<div style="display:flex;gap:0.5rem;padding:0.7rem;"> [
-							<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
-							<form class="valueForm" action="/api/update-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-								<input name="path" class="entryInput" type="hidden"> []
-								<input name="name" class="nameInput" type="hidden"> []
-								<input name="ctg" class="categoryInput" type="hidden"> []
-								<input name="type" class="typeInput typeHolder" type="hidden"> []
-								<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
-								<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="width:5rem"> [Update]
-							]
-						]
-					]
-					<div id="infoAdder" class="infoModifier nodisplay"> [
-						<div class="infoModifierTopBar" style="background-color:#F5E0E0;"> [
-							<div class="entryLabel" style=""> []
-							<div class="closeButton" style="background-color:#ECC;"> [&#x2715]
-						]
-						<div style="display:flex;gap:0.5rem;padding:0.7rem;background-color:inherit;"> [
-							<form class="valueForm" action="/api/add-environ" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-								<input name="path" class="entryInput" type="hidden"> []
-								<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
-								<input name="ctg" class="categoryInput" type="hidden"> []
-								<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-								<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
-								<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="width:5rem"> [Add]
-							]
-						]
-					]
-					<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
-				]
 				<div id="infoContextMenu" class="invisible" style="position:absolute;display:flex;flex-direction:column;width:4rem;padding:0.3rem 0.6rem;gap:0.3rem;border:1px solid #AAA;border-radius:2px;background-color:#F4F4F4;font-size:0.75rem;"> [
 					<a class="infoHistory" style="color:black;"> [History]
 					<a class="infoDelete" style="color:#A22;cursor:pointer;"> [Delete]
@@ -518,7 +478,48 @@
 				<div id="statusLabel" class="nodisplay"> []
 				{{end}}
 			]
+			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:1;"> [
+				<div id="infoUpdater" class="infoModifier nodisplay"> [
+					<div class="infoModifierTopBar" style="background-color:#E0EEEE;"> [
+						<div class="entryLabel" style=""> []
+						<div class="closeButton" style="background-color:#BDD;"> [&#x2715]
+					]
+					<div style="display:flex;gap:0.5rem;padding:0.7rem;"> [
+						<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
+						<form class="valueForm" action="/api/update-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+							<input name="path" class="entryInput" type="hidden"> []
+							<input name="name" class="nameInput" type="hidden"> []
+							<input name="ctg" class="categoryInput" type="hidden"> []
+							<input name="type" class="typeInput typeHolder" type="hidden"> []
+							<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
+							<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button style="width:5rem"> [Update]
+						]
+					]
+				]
+				<div id="infoAdder" class="infoModifier nodisplay"> [
+					<div class="infoModifierTopBar" style="background-color:#F5E0E0;"> [
+						<div class="entryLabel" style=""> []
+						<div class="closeButton" style="background-color:#ECC;"> [&#x2715]
+					]
+					<div style="display:flex;gap:0.5rem;padding:0.7rem;background-color:inherit;"> [
+						<form class="valueForm" action="/api/add-environ" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
+							<input name="path" class="entryInput" type="hidden"> []
+							<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
+							<input name="ctg" class="categoryInput" type="hidden"> []
+							<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
+							<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
+							<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button style="width:5rem"> [Add]
+						]
+					]
+				]
+				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
+			]
 		]
+
 		<div id="deleteEntryDialogBackground" class="dialogBackground invisible"> [
 			<div id="deleteEntryDialog" class="dialog"> [
 				<div class="title"> [Delete Entry]
