@@ -584,16 +584,16 @@
 }
 
 .thumbnailViewExpander {
-	width: 0.4rem;
-	height: 0.4rem;
+	width: 0.5rem;
+	height: 0.5rem;
 	padding: 2px;
 	align-self: flex-end;
-	filter: invert(95%);
+	filter: invert(93%);
 	user-select: none;
 }
 
 .thumbnailViewExpander:hover {
-	filter: invert(70%) sepia(100%) hue-rotate(180deg) saturate(2);
+	filter: invert(70%) sepia(100%) hue-rotate(180deg) saturate(2.5);
 }
 
 .subEntry:not(:hover) .thumbnailViewExpander {
