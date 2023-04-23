@@ -49,7 +49,7 @@
 	border: 1px solid #CCC;
 	border-radius: 3px 0 0 3px;
 	padding: 0.3rem;
-	font-size:0.9rem;
+	font-size:0.85rem;
 }
 
 .search-box-center {
@@ -62,7 +62,7 @@
 	border-left: 0;
 	border-right: 0;
 	padding: 0.3rem;
-	font-size:0.9rem;
+	font-size:0.85rem;
 }
 
 .search-box-right {
@@ -74,7 +74,7 @@
 	border: 1px solid #CCC;
 	border-radius: 0 3px 3px 0;
 	padding: 0.3rem;
-	font-size:0.9rem;
+	font-size:0.85rem;
 }
 
 .mainEntryTop {
