@@ -903,6 +903,15 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_show_archived") != "" {
+		val := strings.TrimSpace(r.FormValue("show"))
+		show, _ := strconv.ParseBool(val)
+		user := forge.UserNameFromContext(ctx)
+		err := h.server.UpdateUserSetting(ctx, user, "show_archived", show)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}

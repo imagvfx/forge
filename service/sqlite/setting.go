@@ -136,6 +136,8 @@ func findUserSettings(tx *sql.Tx, ctx context.Context, find forge.UserSettingFin
 			err = json.Unmarshal([]byte(value), &s.EntryGroupBy)
 		case "copy_path_remap":
 			err = json.Unmarshal([]byte(value), &s.CopyPathRemap)
+		case "show_archived":
+			err = json.Unmarshal([]byte(value), &s.ShowArchived)
 		default:
 			// It may have legacy settings, nothing to do with them.
 			continue
@@ -207,6 +209,35 @@ func getUserSetting(tx *sql.Tx, ctx context.Context, user string) (*forge.UserSe
 		return &forge.UserSetting{User: user}, nil
 	}
 	return settings[0], nil
+}
+
+// getUserSettingShowArchived internally used in findEntries/searchEntries to avoid infinite recursion
+// due to 'pinned_paths_v2' user setting, which calls getEntryById that calls findEntries.
+//
+// TODO: I need to resolve the base reason. Maybe shouldn't call getEntry in findUserSetting.
+func getUserSettingShowArchived(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			user_settings.value
+		FROM user_settings
+		LEFT JOIN accessors ON user_settings.user_id = accessors.id
+		WHERE accessors.name=? AND user_settings.key='show_archived'`,
+		user,
+	)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+	show := false
+	for rows.Next() {
+		err := rows.Scan(
+			&show,
+		)
+		if err != nil {
+			return false, err
+		}
+	}
+	return show, nil
 }
 
 func UpdateUserSetting(db *sql.DB, ctx context.Context, upd forge.UserSettingUpdater) error {
@@ -440,6 +471,15 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
 		value, err = json.Marshal(remap)
+		if err != nil {
+			return err
+		}
+	case "show_archived":
+		show, ok := upd.Value.(bool)
+		if !ok {
+			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
+		}
+		value, err = json.Marshal(show)
 		if err != nil {
 			return err
 		}

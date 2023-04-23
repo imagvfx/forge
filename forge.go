@@ -336,6 +336,7 @@ type UserSetting struct {
 	SearchView                  string
 	EntryGroupBy                string
 	CopyPathRemap               string
+	ShowArchived                bool
 }
 
 type UserSettingFinder struct {

@@ -38,6 +38,15 @@
 							<button class="button" name="update_copy_path_remap" type="submit" value="1" > [Update]
 						]
 					]
+					<br>
+					<form action="/api/update-user-setting" method="post"> [
+						<div style="display:flex;"> [
+							<div class="inputLabel"> [Show Archived]
+							<input class="input" name="show" type="text" placeholder="true/false" value="{{$.Setting.ShowArchived}}" autocomplete="off"> []
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button class="button" name="update_show_archived" type="submit" value="1"> [Update]
+						]
+					]
 					<div style="height:2rem"> []
 					<h2> [
 						User Data Sections

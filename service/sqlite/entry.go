@@ -81,13 +81,17 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 	if user == "" {
 		return nil, forge.Unauthorized("context user unspecified")
 	}
+	showArchived, err := getUserSettingShowArchived(tx, ctx, user)
+	if err != nil {
+		return nil, err
+	}
 	admin, err := isAdmin(tx, ctx, user)
 	if err != nil {
 		return nil, err
 	}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
-	if !admin {
+	if !admin || !showArchived {
 		keys = append(keys, "NOT entries.archived")
 	}
 	if find.ID != nil {
@@ -247,6 +251,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	user := forge.UserNameFromContext(ctx)
 	if user == "" {
 		return nil, forge.Unauthorized("context user unspecified")
+	}
+	showArchived, err := getUserSettingShowArchived(tx, ctx, user)
+	if err != nil {
+		return nil, err
 	}
 	admin, err := isAdmin(tx, ctx, user)
 	if err != nil {
@@ -444,7 +452,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	`
 	vals := make([]any, 0)
 	whereArchived := "TRUE"
-	if !admin {
+	if !admin || !showArchived {
 		whereArchived = "entries.archived=0"
 	}
 	whereType := "TRUE"
