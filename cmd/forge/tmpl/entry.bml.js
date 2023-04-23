@@ -1,6 +1,12 @@
 "use strict";
 
 window.onload = function() {
+	let infoValues = document.querySelectorAll(".infoValue")
+	for (let info of infoValues) {
+		if (info.scrollHeight > info.clientHeight) {
+			info.style.borderLeft = "1px dashed #ccc";
+		}
+	}
 	document.onclick = function(event) {
 		if (event.target.classList.contains("pathText")) {
 			let p = event.target;
@@ -231,6 +237,16 @@ window.onload = function() {
 				} else {
 					c.dataset.expanded = ""
 				}
+			}
+		}
+		let subEntryInfoTop = event.target.closest(".subEntryInfoTop");
+		if (subEntryInfoTop) {
+			let info = subEntryInfoTop.closest(".subEntryInfo");
+			let val = info.querySelector(".infoValue");
+			if (val.classList.contains("expand")) {
+				val.classList.remove("expand");
+			} else {
+				val.classList.add("expand");
 			}
 		}
 		let hide = false;

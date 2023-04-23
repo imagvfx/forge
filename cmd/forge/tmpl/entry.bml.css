@@ -371,6 +371,13 @@
 	padding: 1px;
 	font-size: 0.8rem;
 	overflow-wrap: break-word;
+	max-height: 10rem;
+	overflow: auto;
+	scrollbar-width: none;
+}
+
+.infoValue.expand {
+	max-height: none;
 }
 
 .infoValue.invalid {
