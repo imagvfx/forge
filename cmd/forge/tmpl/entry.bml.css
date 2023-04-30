@@ -371,13 +371,16 @@
 	padding: 1px;
 	font-size: 0.8rem;
 	overflow-wrap: break-word;
-	max-height: 10rem;
 	overflow: auto;
 	scrollbar-width: thin;
 	scrollbar-color: #ddd transparent;
 }
 
-.infoValue.expand {
+.subEntryArea .infoValue {
+	max-height: 10rem;
+}
+
+.subEntryArea.expandProperty .infoValue {
 	max-height: none;
 }
 
@@ -456,18 +459,23 @@
 }
 
 .subEntryListOptions {
-	height: 1.5rem;
+	height: 1.6rem;
 	border: 1px solid #DDD;
 	border-radius: 4px;
-	padding: 1px;
+	padding: 3px;
 	overflow: clip;
 	display:flex;
-	gap:1px;
+	gap: 0.2rem;
 	background-color: #EEE;
 }
 
+.subEntryListSeparator {
+	border-right: 1px solid #DDDDDD;
+	margin: 0 0.2rem;
+}
+
 .subEntryListOption {
-	width: 1.5rem;
+	width: 1.6rem;
 	border: 1px solid #E4E4E4;
 	border-radius: 3px;
 	background-color: #FAFAFA;
@@ -506,10 +514,19 @@
 .subEntryListOption.editModeOption {
 	background-image: url("/asset/edit-mode.svg");
 	background-size: 0.85rem;
-	margin-right: 2px;
 }
 
 .subEntryArea.editMode .subEntryListOption.editModeOption {
+	background-color: #eefaff;
+	border: 1px solid #88AADD;
+}
+
+.subEntryListOption.expandPropertyOption {
+	background-image: url("/asset/expand-property.svg");
+	background-size: 0.9rem;
+}
+
+.subEntryArea.expandProperty .subEntryListOption.expandPropertyOption {
 	background-color: #eefaff;
 	border: 1px solid #88AADD;
 }

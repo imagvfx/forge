@@ -143,6 +143,16 @@ window.onload = function() {
 				}
 				return;
 			}
+			opt = event.target.closest(".subEntryListOption.expandPropertyOption");
+			if (opt) {
+				let subEntArea = document.querySelector(".subEntryArea");
+				if (subEntArea.classList.contains("expandProperty")) {
+					subEntArea.classList.remove("expandProperty");
+				} else {
+					subEntArea.classList.add("expandProperty");
+				}
+				return;
+			}
 		}
 		let expander = event.target.closest(".propertyExpander");
 		if (expander) {
