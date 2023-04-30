@@ -373,7 +373,8 @@
 	overflow-wrap: break-word;
 	max-height: 10rem;
 	overflow: auto;
-	scrollbar-width: none;
+	scrollbar-width: thin;
+	scrollbar-color: #ddd transparent;
 }
 
 .infoValue.expand {
