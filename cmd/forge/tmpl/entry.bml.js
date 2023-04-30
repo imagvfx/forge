@@ -128,6 +128,21 @@ window.onload = function() {
 				req.send(formData);
 				return;
 			}
+			opt = event.target.closest(".subEntryListOption.editModeOption");
+			if (opt) {
+				let subEntArea = document.querySelector(".subEntryArea");
+				if (subEntArea.classList.contains("editMode")) {
+					subEntArea.classList.remove("editMode");
+					removeClass(subEntArea, "lastClicked");
+					removeClass(subEntArea, "temporary");
+					removeClass(subEntArea, "selected");
+					printStatus("normal mode");
+				} else {
+					subEntArea.classList.add("editMode");
+					printStatus("edit mode");
+				}
+				return;
+			}
 		}
 		let expander = event.target.closest(".propertyExpander");
 		if (expander) {

@@ -503,6 +503,17 @@
 	display: none;
 }
 
+.subEntryListOption.editModeOption {
+	background-image: url("/asset/edit-mode.svg");
+	background-size: 0.85rem;
+	margin-right: 2px;
+}
+
+.subEntryArea.editMode .subEntryListOption.editModeOption {
+	background-color: #eefaff;
+	border: 1px solid #88AADD;
+}
+
 .subEntryListOption.groupByOption {
 	width: auto;
 }
