@@ -95,40 +95,7 @@ window.onload = function() {
 		}
 		let options = event.target.closest(".subEntryListOptions");
 		if (options) {
-			let opt = event.target.closest(".subEntryListOption.expandOption");
-			if (opt) {
-				if (opt.dataset.disabled == "1") {
-					// don't shrink.
-					return;
-				}
-				if (opt.dataset.value == "") {
-					opt.dataset.value = "1";
-				} else {
-					opt.dataset.value = "";
-				}
-				let area = event.target.closest(".subEntryArea");
-				let conts = area.querySelectorAll(".subEntryListContainer");
-				for (let c of conts) {
-					c.dataset.expanded = opt.dataset.value;
-				}
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
-				formData.append("update_search_result_expand", "1");
-				formData.append("expand", opt.dataset.value);
-				req.open("post", "/api/update-user-setting");
-				req.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
-						printErrorStatus(req.responseText);
-						return;
-					}
-				}
-				req.send(formData);
-				return;
-			}
-			opt = event.target.closest(".subEntryListOption.viewOption");
+			let opt = event.target.closest(".subEntryListOption.viewOption");
 			if (opt) {
 				if (opt.dataset.value != "thumbnail") {
 					opt.dataset.value = "thumbnail";

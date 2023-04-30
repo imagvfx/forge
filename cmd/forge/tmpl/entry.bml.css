@@ -451,10 +451,6 @@
 	overflow: hidden;
 }
 
-.subEntryArea .subEntryListContainer[data-expanded=""] .subEntryList {
-	display: none;
-}
-
 .subEntryArea.editMode .subEntryList {
 	border: 1px solid #D0D0D0;
 }
@@ -493,15 +489,6 @@
 
 .subEntryListOption[data-disabled="1"] {
 	opacity: 0.3;
-}
-
-.subEntryListOption.expandOption {
-	background-image: url("/asset/down-arrow.svg");
-	background-size: 10px;
-}
-
-.subEntryListOption.expandOption[data-value=""] {
-	rotate: 270deg;
 }
 
 .subEntryListOption.viewOption img {
