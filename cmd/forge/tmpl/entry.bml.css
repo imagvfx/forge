@@ -652,16 +652,16 @@
 	border-radius: 2px;
 	font-weight: bold;
 	border: 1px solid #FFF0;
-	font-size: 0.5rem;
+	font-size: 0.65rem;
 	// Due to the font-size difference, I had to manually match it's height to
 	// .subEntryInfo.infoTitle with padding.
-	padding: 0.2rem 0.2rem 0.1rem 0.2rem;
+	padding: 0.15rem 0.2rem 0rem 0.2rem;
 }
 
 .subEntryInfoHistoryLink:hover {
 	color: #AAA;
 	text-decoration: none !important;
-	border: 1px solid #EEE;
+	border: 1px solid #e8e8e8;
 }
 
 .subEntryArea.editMode .subEntryInfoHistoryLink:hover {
