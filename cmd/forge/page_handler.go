@@ -204,6 +204,10 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 
 func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	isAdmin, err := h.server.IsAdmin(ctx, user)
 	if err != nil {
 		return err
@@ -643,7 +647,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		return err
 	}
 	recipe := struct {
-		User                      string
+		User                      *forge.User
 		UserIsAdmin               bool
 		UserSetting               *forge.UserSetting
 		Entry                     *forge.Entry
@@ -671,7 +675,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		BaseEntryTypes            []string
 		AllUsers                  []*forge.User
 	}{
-		User:                      user,
+		User:                      u,
 		UserIsAdmin:               isAdmin,
 		UserSetting:               setting,
 		Entry:                     ent,
@@ -708,6 +712,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 
 func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	path := r.FormValue("path")
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
@@ -727,13 +735,13 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			history = append(history, l)
 		}
 		recipe := struct {
-			User     string
+			User     *forge.User
 			Entry    *forge.Entry
 			Category string
 			Name     string
 			History  []*forge.Log
 		}{
-			User:     user,
+			User:     u,
 			Entry:    ent,
 			Category: ctg,
 			Name:     name,
@@ -753,11 +761,11 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			l.When = l.When.Local()
 		}
 		recipe := struct {
-			User  string
+			User  *forge.User
 			Entry *forge.Entry
 			Logs  []*forge.Log
 		}{
-			User:  user,
+			User:  u,
 			Entry: ent,
 			Logs:  logs,
 		}
@@ -796,16 +804,20 @@ func (h *pageHandler) handleThumbnail(ctx context.Context, w http.ResponseWriter
 
 func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	users, err := h.server.Users(ctx)
 	if err != nil {
 		return err
 	}
 	recipe := struct {
-		User    string
+		User    *forge.User
 		Users   []*forge.User
 		Members map[string][]*forge.Member
 	}{
-		User:  user,
+		User:  u,
 		Users: users,
 	}
 	err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)
@@ -817,6 +829,10 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 
 func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	groups, err := h.server.FindAllGroups(ctx)
 	if err != nil {
 		return err
@@ -830,11 +846,11 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 		members[g.Name] = mems
 	}
 	recipe := struct {
-		User    string
+		User    *forge.User
 		Groups  []*forge.Group
 		Members map[string][]*forge.Member
 	}{
-		User:    user,
+		User:    u,
 		Groups:  groups,
 		Members: members,
 	}
@@ -847,15 +863,19 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 
 func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	typeNames, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
 		return err
 	}
 	recipe := struct {
-		User           string
+		User           *forge.User
 		EntryTypeNames []string
 	}{
-		User:           user,
+		User:           u,
 		EntryTypeNames: typeNames,
 	}
 	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
@@ -867,6 +887,10 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 
 func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	toks := strings.Split(r.URL.Path, "/")
 	tname := toks[2]
 	if tname == "" {
@@ -915,10 +939,10 @@ func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWr
 		types = append(types, t)
 	}
 	recipe := struct {
-		User       string
+		User       *forge.User
 		EntryTypes []*EntryType
 	}{
-		User:       user,
+		User:       u,
 		EntryTypes: types,
 	}
 	err = Tmpl.ExecuteTemplate(w, "type.bml", recipe)
@@ -942,15 +966,12 @@ func (h *pageHandler) handleSetting(ctx context.Context, w http.ResponseWriter, 
 	if err != nil {
 		return err
 	}
-	// TODO: change User as *forge.User in every templates
 	recipe := struct {
-		User     string
-		I        *forge.User
+		User     *forge.User
 		Setting  *forge.UserSetting
 		UserData []*forge.UserDataSection
 	}{
-		User:     user,
-		I:        u,
+		User:     u,
 		Setting:  setting,
 		UserData: data,
 	}
@@ -963,6 +984,10 @@ func (h *pageHandler) handleSetting(ctx context.Context, w http.ResponseWriter, 
 
 func (h *pageHandler) handleUserData(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
+	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
 	section := strings.TrimPrefix(r.URL.Path, "/user-data/")
 	data, err := h.server.FindUserData(ctx, forge.UserDataFinder{User: user, Section: &section})
 	if err != nil {
@@ -973,10 +998,10 @@ func (h *pageHandler) handleUserData(ctx context.Context, w http.ResponseWriter,
 	}
 	// TODO: change User as *forge.User in every templates
 	recipe := struct {
-		User    string
+		User    *forge.User
 		Section *forge.UserDataSection
 	}{
-		User:    user,
+		User:    u,
 		Section: data[0],
 	}
 	err = Tmpl.ExecuteTemplate(w, "user-data.bml", recipe)

@@ -5,7 +5,7 @@
 	<a style="margin-left:2rem;color:#FFF" href="/groups"> [group]
 	<div style="flex:1"> []
 	<div style="font-size:0.9rem;"> [
-		<a href="/setting" style="color:#FFF;margin-right:0.2rem;"> [{{$.User}}]
+		<a href="/setting" style="color:#FFF;margin-right:0.2rem;"> [{{if $.User.Called}}{{$.User.Called}}{{else}}{{$.User.Name}}{{end}}]
 		<a style="color:#777" href="/logout"> [(logout)]
 	]
 ]

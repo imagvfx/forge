@@ -14,7 +14,7 @@
 					<form action="/api/update-user-called" method="post"> [
 						<div style="display:flex;"> [
 							<div class="inputLabel"> [Name] <!-- internal representation is User.Called -->
-							<input class="input" name="called" type="text" placeholder="name" value="{{$.I.Called}}"> []
+							<input class="input" name="called" type="text" placeholder="name" value="{{$.User.Called}}"> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button class="button" type="submit"> [Update]
 						]
