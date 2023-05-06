@@ -1,8 +1,10 @@
 <div style="padding:0.5rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;background-color:black"> [
 	<a style="margin-right:4rem;color:#FFF;font-size:1.5rem" href="/"> [forge]
-	<a style="margin-left:2rem;color:#FFF" href="/types"> [entry]
-	<a style="margin-left:2rem;color:#FFF" href="/users"> [user]
-	<a style="margin-left:2rem;color:#FFF" href="/groups"> [group]
+	{{if $.UserIsAdmin}}
+	<a style="margin-right:2rem;color:#FFF" href="/types"> [entry]
+	<a style="margin-right:2rem;color:#FFF" href="/groups"> [group]
+	{{end}}
+	<a style="color:#FFF" href="/users"> [users]
 	<div style="flex:1"> []
 	<div style="font-size:0.9rem;"> [
 		<a href="/setting" style="color:#FFF;margin-right:0.2rem;"> [{{if $.User.Called}}{{$.User.Called}}{{else}}{{$.User.Name}}{{end}}]

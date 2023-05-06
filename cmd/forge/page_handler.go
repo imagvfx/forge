@@ -716,6 +716,10 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 	if err != nil {
 		return err
 	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
+	if err != nil {
+		return err
+	}
 	path := r.FormValue("path")
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
@@ -735,17 +739,19 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			history = append(history, l)
 		}
 		recipe := struct {
-			User     *forge.User
-			Entry    *forge.Entry
-			Category string
-			Name     string
-			History  []*forge.Log
+			User        *forge.User
+			UserIsAdmin bool
+			Entry       *forge.Entry
+			Category    string
+			Name        string
+			History     []*forge.Log
 		}{
-			User:     u,
-			Entry:    ent,
-			Category: ctg,
-			Name:     name,
-			History:  history,
+			User:        u,
+			UserIsAdmin: isAdmin,
+			Entry:       ent,
+			Category:    ctg,
+			Name:        name,
+			History:     history,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry-item-history.bml", recipe)
 		if err != nil {
@@ -761,13 +767,15 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			l.When = l.When.Local()
 		}
 		recipe := struct {
-			User  *forge.User
-			Entry *forge.Entry
-			Logs  []*forge.Log
+			User        *forge.User
+			UserIsAdmin bool
+			Entry       *forge.Entry
+			Logs        []*forge.Log
 		}{
-			User:  u,
-			Entry: ent,
-			Logs:  logs,
+			User:        u,
+			UserIsAdmin: isAdmin,
+			Entry:       ent,
+			Logs:        logs,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry-logs.bml", recipe)
 		if err != nil {
@@ -808,17 +816,23 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
+	if err != nil {
+		return err
+	}
 	users, err := h.server.Users(ctx)
 	if err != nil {
 		return err
 	}
 	recipe := struct {
-		User    *forge.User
-		Users   []*forge.User
-		Members map[string][]*forge.Member
+		User        *forge.User
+		UserIsAdmin bool
+		Users       []*forge.User
+		Members     map[string][]*forge.Member
 	}{
-		User:  u,
-		Users: users,
+		User:        u,
+		UserIsAdmin: isAdmin,
+		Users:       users,
 	}
 	err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)
 	if err != nil {
@@ -830,6 +844,10 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
 	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -846,13 +864,15 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 		members[g.Name] = mems
 	}
 	recipe := struct {
-		User    *forge.User
-		Groups  []*forge.Group
-		Members map[string][]*forge.Member
+		User        *forge.User
+		UserIsAdmin bool
+		Groups      []*forge.Group
+		Members     map[string][]*forge.Member
 	}{
-		User:    u,
-		Groups:  groups,
-		Members: members,
+		User:        u,
+		UserIsAdmin: isAdmin,
+		Groups:      groups,
+		Members:     members,
 	}
 	err = Tmpl.ExecuteTemplate(w, "groups.bml", recipe)
 	if err != nil {
@@ -867,15 +887,21 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 	if err != nil {
 		return err
 	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
+	if err != nil {
+		return err
+	}
 	typeNames, err := h.server.FindBaseEntryTypes(ctx)
 	if err != nil {
 		return err
 	}
 	recipe := struct {
 		User           *forge.User
+		UserIsAdmin    bool
 		EntryTypeNames []string
 	}{
 		User:           u,
+		UserIsAdmin:    isAdmin,
 		EntryTypeNames: typeNames,
 	}
 	err = Tmpl.ExecuteTemplate(w, "types.bml", recipe)
@@ -888,6 +914,10 @@ func (h *pageHandler) handleEntryTypes(ctx context.Context, w http.ResponseWrite
 func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
 	u, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
 	if err != nil {
 		return err
 	}
@@ -939,11 +969,13 @@ func (h *pageHandler) handleEachEntryType(ctx context.Context, w http.ResponseWr
 		types = append(types, t)
 	}
 	recipe := struct {
-		User       *forge.User
-		EntryTypes []*EntryType
+		User        *forge.User
+		UserIsAdmin bool
+		EntryTypes  []*EntryType
 	}{
-		User:       u,
-		EntryTypes: types,
+		User:        u,
+		UserIsAdmin: isAdmin,
+		EntryTypes:  types,
 	}
 	err = Tmpl.ExecuteTemplate(w, "type.bml", recipe)
 	if err != nil {
@@ -958,6 +990,10 @@ func (h *pageHandler) handleSetting(ctx context.Context, w http.ResponseWriter, 
 	if err != nil {
 		return err
 	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
+	if err != nil {
+		return err
+	}
 	setting, err := h.server.GetUserSetting(ctx, user)
 	if err != nil {
 		return err
@@ -967,13 +1003,15 @@ func (h *pageHandler) handleSetting(ctx context.Context, w http.ResponseWriter, 
 		return err
 	}
 	recipe := struct {
-		User     *forge.User
-		Setting  *forge.UserSetting
-		UserData []*forge.UserDataSection
+		User        *forge.User
+		UserIsAdmin bool
+		Setting     *forge.UserSetting
+		UserData    []*forge.UserDataSection
 	}{
-		User:     u,
-		Setting:  setting,
-		UserData: data,
+		User:        u,
+		UserIsAdmin: isAdmin,
+		Setting:     setting,
+		UserData:    data,
 	}
 	err = Tmpl.ExecuteTemplate(w, "setting.bml", recipe)
 	if err != nil {
@@ -988,6 +1026,10 @@ func (h *pageHandler) handleUserData(ctx context.Context, w http.ResponseWriter,
 	if err != nil {
 		return err
 	}
+	isAdmin, err := h.server.IsAdmin(ctx, user)
+	if err != nil {
+		return err
+	}
 	section := strings.TrimPrefix(r.URL.Path, "/user-data/")
 	data, err := h.server.FindUserData(ctx, forge.UserDataFinder{User: user, Section: &section})
 	if err != nil {
@@ -998,11 +1040,13 @@ func (h *pageHandler) handleUserData(ctx context.Context, w http.ResponseWriter,
 	}
 	// TODO: change User as *forge.User in every templates
 	recipe := struct {
-		User    *forge.User
-		Section *forge.UserDataSection
+		User        *forge.User
+		UserIsAdmin bool
+		Section     *forge.UserDataSection
 	}{
-		User:    u,
-		Section: data[0],
+		User:        u,
+		UserIsAdmin: isAdmin,
+		Section:     data[0],
 	}
 	err = Tmpl.ExecuteTemplate(w, "user-data.bml", recipe)
 	if err != nil {
