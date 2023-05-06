@@ -409,11 +409,11 @@
 	filter: invert(50%) sepia(100%) hue-rotate(180deg) saturate(3);
 }
 
-.subEntryListContainer[data-expanded=""] .subEntryListExpander {
+.subEntryListContainer[data-hide="1"] .subEntryListExpander {
 	rotate: -90deg;
 }
 
-.subEntryListContainer[data-expanded="1"] .subEntryListExpander {
+.subEntryListContainer[data-hide=""] .subEntryListExpander {
 	rotate: 0deg;
 }
 
@@ -452,6 +452,10 @@
 	background-color: #F4F4F4;
 	gap: 1px;
 	overflow: hidden;
+}
+
+.subEntryListContainer[data-hide="1"] .subEntryList {
+	display: none;
 }
 
 .subEntryArea.editMode .subEntryList {

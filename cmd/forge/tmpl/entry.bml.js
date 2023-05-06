@@ -216,12 +216,12 @@ window.onload = function() {
 				let area = event.target.closest(".subEntryArea");
 				conts = area.querySelectorAll(".subEntryListContainer");
 			}
-			let expanded = cont.dataset.expanded;
+			let hide = cont.dataset.hide;
 			for (let c of conts) {
-				if (!expanded) {
-					c.dataset.expanded = "1"
+				if (!hide) {
+					c.dataset.hide = "1"
 				} else {
-					c.dataset.expanded = ""
+					c.dataset.hide = ""
 				}
 			}
 		}
