@@ -611,12 +611,13 @@
 }
 
 .thumbnailViewExpander {
-	width: 0.5rem;
-	height: 0.5rem;
+	width: 0.45rem;
+	height: 0.45rem;
 	padding: 2px;
 	align-self: flex-end;
-	filter: invert(93%);
+	filter: invert(90%);
 	user-select: none;
+	cursor: pointer;
 }
 
 .thumbnailViewExpander:hover {
