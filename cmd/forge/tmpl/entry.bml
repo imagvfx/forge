@@ -340,7 +340,7 @@
 						]
 						{{range $group, $subEntries := $entsByGroup}}
 						{{if $subEntries}}
-						<div class="subEntryListContainer" data-expanded="{{if (or (not $.ResultsFromSearch) $.UserSetting.SearchResultExpand)}}1{{end}}"> [
+						<div class="subEntryListContainer"> [
 							{{if and $.ResultsFromSearch (eq $.UserSetting.EntryGroupBy "parent")}}
 							{{$parent := $group}}
 							{{$ent := index $.EntryByPath $parent}}

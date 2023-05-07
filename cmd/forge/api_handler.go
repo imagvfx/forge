@@ -859,18 +859,6 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 		h.WriteResponse(w, "", err)
 		return err
 	}
-	if r.FormValue("update_search_result_expand") != "" {
-		val := strings.TrimSpace(r.FormValue("expand"))
-		expand := false
-		if val != "" {
-			expand = true
-		}
-		user := forge.UserNameFromContext(ctx)
-		err := h.server.UpdateUserSetting(ctx, user, "search_result_expand", expand)
-		if err != nil {
-			return err
-		}
-	}
 	if r.FormValue("update_search_view") != "" {
 		view := strings.TrimSpace(r.FormValue("view"))
 		user := forge.UserNameFromContext(ctx)

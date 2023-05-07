@@ -332,7 +332,6 @@ type UserSetting struct {
 	RecentPaths                 []string
 	ProgramsInUse               []string
 	UpdateMarkerLasts           int
-	SearchResultExpand          bool
 	SearchView                  string
 	EntryGroupBy                string
 	CopyPathRemap               string
