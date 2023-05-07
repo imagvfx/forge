@@ -12,9 +12,9 @@
 			data-copy-path-remap-from="{{remapFrom $.UserSetting.CopyPathRemap}}"
 			data-copy-path-remap-to="{{remapTo $.UserSetting.CopyPathRemap}}"
 			data-current-select-status-menu=""> [
-			<div class="left"> [
+			<div class="left {{if $.UserSetting.EntryPageHideSideMenu}}hideSideMenu{{end}}"> [
 				<div id="sideMenu"> [
-					<div id="sideMenuHideButton" data-hide=""> [
+					<div id="sideMenuHideButton"> [
 						<div id="sideMenuHide"> [&lt&lt]
 						<div id="sideMenuShow"> [&gt&gt]
 					]

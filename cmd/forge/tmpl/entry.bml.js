@@ -22,11 +22,31 @@ window.onload = function() {
 		if (hideBtn) {
 			let left = hideBtn.closest(".left");
 			let content = left.querySelector("#sideMenuContent");
-			if (left.classList.contains("hideSideMenu")) {
+			let hidden = left.classList.contains("hideSideMenu")
+			if (hidden) {
 				left.classList.remove("hideSideMenu");
 			} else {
 				left.classList.add("hideSideMenu");
 			}
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("update_entry_page_hide_side_menu", "1");
+			let hide = "1"
+			if (hidden) {
+				hide = "0"
+			}
+			formData.append("hide", hide);
+			req.open("post", "/api/update-user-setting");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+			}
+			req.send(formData);
 			return;
 		}
 		let counter = event.target.closest(".statusCounter");

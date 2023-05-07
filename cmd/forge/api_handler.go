@@ -712,6 +712,18 @@ func (h *apiHandler) handleGetUserSetting(ctx context.Context, w http.ResponseWr
 
 func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// NOTE: don't use make, maps not for the update should be nil
+	if r.FormValue("update_entry_page_hide_side_menu") != "" {
+		v := r.FormValue("hide")
+		hide, err := strconv.ParseBool(v)
+		if err != nil {
+			return err
+		}
+		user := forge.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "entry_page_hide_side_menu", hide)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_entry_page_selected_category") != "" {
 		selCategory := r.FormValue("category")
 		user := forge.UserNameFromContext(ctx)

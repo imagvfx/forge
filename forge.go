@@ -321,6 +321,7 @@ type UserUpdater struct {
 type UserSetting struct {
 	ID                          int
 	User                        string
+	EntryPageHideSideMenu       bool
 	EntryPageSelectedCategory   string
 	EntryPageShowHiddenProperty string
 	EntryPageSearchEntryType    string
