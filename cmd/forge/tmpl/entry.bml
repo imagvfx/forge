@@ -69,7 +69,7 @@
 								{{end}}
 								{{end}}
 							]
-							<input name="search_query" type="text" class="search-box-center" size="10" style="flex :1;min-width:10rem" placeholder="search" value="{{$.SearchQuery}}"> []
+							<input name="search_query" type="text" class="search-box-center" size="6" style="flex :1;min-width:6rem" placeholder="search" value="{{$.SearchQuery}}"> []
 							<button class="search-box-right" style="background-color:inherit"> [Go]
 						]
 						{{if $.ResultsFromSearch}}
