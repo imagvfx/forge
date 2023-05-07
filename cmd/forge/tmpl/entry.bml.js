@@ -22,14 +22,10 @@ window.onload = function() {
 		if (hideBtn) {
 			let left = hideBtn.closest(".left");
 			let content = left.querySelector("#sideMenuContent");
-			if (hideBtn.dataset.hide) {
-				hideBtn.dataset.hide = "";
-				left.style.width = "16rem";
-				content.classList.remove("nodisplay");
+			if (left.classList.contains("hideSideMenu")) {
+				left.classList.remove("hideSideMenu");
 			} else {
-				hideBtn.dataset.hide = "1"
-				left.style.width = "0";
-				content.classList.add("nodisplay");
+				left.classList.add("hideSideMenu");
 			}
 			return;
 		}

@@ -10,6 +10,10 @@
 	width: 16rem;
 }
 
+.left.hideSideMenu {
+	width: 0;
+}
+
 #sideMenu {
 	position: sticky;
 	top: 0;
@@ -41,16 +45,20 @@
 	margin-left: 0.2rem;
 }
 
-#sideMenuHideButton[data-hide="1"] #sideMenuHide {
+.left.hideSideMenu #sideMenuHide {
 	display: none;
 }
 
-#sideMenuHideButton[data-hide=""] #sideMenuShow {
+.left:not(.hideSideMenu) #sideMenuShow {
 	display: none;
 }
 
 #sideMenuContent {
 	padding-top: 1rem;
+}
+
+.left.hideSideMenu #sideMenuContent {
+	display: none;
 }
 
 .pinnedPathLink:hover {
