@@ -141,7 +141,7 @@
 							<label class="item-box" style="color:#A22;cursor:pointer" onclick="openDeleteEntryDialog('{{$.Entry.Path}}')"> [Delete]
 						]
 					]
-					<div class="mainEntryBottom"> [
+					<div class="mainEntryBottom" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
 						<div class="mainEntryThumbnailContainer"> [
 							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
 							<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex"> [
@@ -162,7 +162,7 @@
 								]
 							]
 						]
-						<div class="mainEntryInfoContainer" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
+						<div class="mainEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
@@ -178,76 +178,76 @@
 									<div class="infoAdder"> [+]
 								]
 							]
-							<!-- Property / Environ / Access Items -->
-							<div class="mainEntryInfos"> [
-								{{$propFilters := index $.PropertyFilters $.Entry.Type}}
-								{{range $name := $propFilters}}
-								{{with $p := index $.Entry.Property $name}}
-								<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-									<div class="infoTop"> [
-										<div class="infoTitle"> [
-											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
-										]
-										<div style="width:1rem;"> []
-										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+						]
+						<!-- Property / Environ / Access Items -->
+						<div class="mainEntryInfos"> [
+							{{$propFilters := index $.PropertyFilters $.Entry.Type}}
+							{{range $name := $propFilters}}
+							{{with $p := index $.Entry.Property $name}}
+							<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+								<div class="infoTop"> [
+									<div class="infoTitle"> [
+										<div> [{{$p.Name}}]
+										<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 									]
-									<div style="width:1rem"> []
-									<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Eval}}{{$p.ValueError}}]
+									<div style="width:1rem;"> []
+									<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
 								]
-								{{end}}
-								{{end}}
-								{{range $name := $.MainEntryHiddenProperties}}
-								{{with $p := index $.Entry.Property $name}}
-								<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-									<div class="infoTop"> [
-										<div class="infoTitle"> [
-											<div class="hiddenPropertyIcon"> []
-											<div> [{{$p.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
-										]
-										<div style="width:1rem;"> []
-										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
-									]
-									<div style="width:1rem"> []
-									<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Eval}}{{$p.ValueError}}]
-								]
-								{{end}}
-								{{end}}
-								{{range $e := $.Environs}}
-								<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
-									<div class="infoTop"> [
-										{{if ne $e.EntryPath $.Entry.Path}}
-										<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]
-										{{end}}
-										<div class="infoTitle"> [
-											<div> [{{$e.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
-										]
-										<div style="width:1rem"> []
-										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
-									]
-									<div style="height:0.2rem"> []
-									<div class="{{if $e.ValueError}}invalid{{end}} infoValue"> [{{brLines $e.Eval}}{{$e.ValueError}}]
-								]
-								{{end}}
-								{{range $a := $.AccessList}}
-								<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
-									<div class="infoTop"> [
-										{{if ne $a.EntryPath $.Entry.Path}}
-										<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]
-										{{end}}
-										<div class="infoTitle"> [
-											<div> [{{$a.Name}}]
-											<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
-										]
-										<div style="width:1rem"> []
-										<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
-									]
-									<div class="infoValue"> [{{$a.Value}}]
-								]
-								{{end}}
+								<div style="width:1rem"> []
+								<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Eval}}{{$p.ValueError}}]
 							]
+							{{end}}
+							{{end}}
+							{{range $name := $.MainEntryHiddenProperties}}
+							{{with $p := index $.Entry.Property $name}}
+							<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+								<div class="infoTop"> [
+									<div class="infoTitle"> [
+										<div class="hiddenPropertyIcon"> []
+										<div> [{{$p.Name}}]
+										<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
+									]
+									<div style="width:1rem;"> []
+									<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+								]
+								<div style="width:1rem"> []
+								<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Eval}}{{$p.ValueError}}]
+							]
+							{{end}}
+							{{end}}
+							{{range $e := $.Environs}}
+							<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
+								<div class="infoTop"> [
+									{{if ne $e.EntryPath $.Entry.Path}}
+									<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]
+									{{end}}
+									<div class="infoTitle"> [
+										<div> [{{$e.Name}}]
+										<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
+									]
+									<div style="width:1rem"> []
+									<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+								]
+								<div style="height:0.2rem"> []
+								<div class="{{if $e.ValueError}}invalid{{end}} infoValue"> [{{brLines $e.Eval}}{{$e.ValueError}}]
+							]
+							{{end}}
+							{{range $a := $.AccessList}}
+							<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
+								<div class="infoTop"> [
+									{{if ne $a.EntryPath $.Entry.Path}}
+									<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]
+									{{end}}
+									<div class="infoTitle"> [
+										<div> [{{$a.Name}}]
+										<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
+									]
+									<div style="width:1rem"> []
+									<div class="infoContextMenuLoader"> [&middot;&middot;&middot;]
+								]
+								<div class="infoValue"> [{{$a.Value}}]
+							]
+							{{end}}
 						]
 					]
 				]

@@ -171,16 +171,16 @@ window.onload = function() {
 		}
 		let expander = event.target.closest(".propertyExpander");
 		if (expander) {
-			let cont = document.querySelector(".mainEntryInfoContainer");
-			if (cont.dataset.showHidden == "") {
-				cont.dataset.showHidden = "1";
+			let bottom = document.querySelector(".mainEntryBottom");
+			if (bottom.dataset.showHidden == "") {
+				bottom.dataset.showHidden = "1";
 			} else {
-				cont.dataset.showHidden = "";
+				bottom.dataset.showHidden = "";
 			}
 			let req = new XMLHttpRequest();
 			let formData = new FormData();
 			formData.append("update_entry_page_show_hidden_property", "1");
-			formData.append("show_hidden", cont.dataset.showHidden);
+			formData.append("show_hidden", bottom.dataset.showHidden);
 			req.open("post", "/api/update-user-setting");
 			req.onerror = function() {
 				printErrorStatus("network error occurred. please check whether the server is down.");
@@ -1731,7 +1731,7 @@ function submitUpdaterOrAdder(ev, input) {
 }
 
 function showCategoryInfos(ctg) {
-	let cont = document.querySelector(".mainEntryInfoContainer");
+	let cont = document.querySelector(".mainEntryBottom");
 	if (cont.dataset.selectedCategory == ctg) {
 		ctg = ""
 	}

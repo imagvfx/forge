@@ -166,14 +166,12 @@
 }
 
 .mainEntryInfoContainer {
-	flex: 1;
 	display: flex;
 }
 
 .mainEntryInfoCategoryToggles {
 	font-size: 0.75rem;
 	color: #555;
-	margin-right: 0.8rem;
 	user-select: none;
 }
 
@@ -883,35 +881,35 @@
 	background-color: #EEE;
 }
 
-.mainEntryInfoContainer[data-selected-category="property"] .infoCategoryToggle[data-category="property"] {
+.mainEntryBottom[data-selected-category="property"] .infoCategoryToggle[data-category="property"] {
 	background-color:#E0EEEE;
 }
 
-.mainEntryInfoContainer[data-selected-category="environ"] .infoCategoryToggle[data-category="environ"] {
+.mainEntryBottom[data-selected-category="environ"] .infoCategoryToggle[data-category="environ"] {
 	background-color:#E0EEEE;
 }
 
-.mainEntryInfoContainer[data-selected-category="access"] .infoCategoryToggle[data-category="access"] {
+.mainEntryBottom[data-selected-category="access"] .infoCategoryToggle[data-category="access"] {
 	background-color:#E0EEEE;
 }
 
-.mainEntryInfoContainer[data-selected-category=""] .mainEntryInfo {
+.mainEntryBottom[data-selected-category=""] .mainEntryInfo {
 	display: none;
 }
 
-.mainEntryInfoContainer[data-selected-category="property"] .mainEntryInfo:not([data-category="property"]) {
+.mainEntryBottom[data-selected-category="property"] .mainEntryInfo:not([data-category="property"]) {
 	display: none;
 }
 
-.mainEntryInfoContainer[data-selected-category="environ"] .mainEntryInfo:not([data-category="environ"]) {
+.mainEntryBottom[data-selected-category="environ"] .mainEntryInfo:not([data-category="environ"]) {
 	display: none;
 }
 
-.mainEntryInfoContainer[data-selected-category="access"] .mainEntryInfo:not([data-category="access"]) {
+.mainEntryBottom[data-selected-category="access"] .mainEntryInfo:not([data-category="access"]) {
 	display: none;
 }
 
-.mainEntryInfoContainer[data-selected-category="property"]:not([data-show-hidden="1"]) .mainEntryInfo.hiddenProperty {
+.mainEntryBottom[data-selected-category="property"]:not([data-show-hidden="1"]) .mainEntryInfo.hiddenProperty {
 	display: none;
 }
 
@@ -941,7 +939,7 @@
 	filter: opacity(40%);
 }
 
-.mainEntryInfoContainer[data-show-hidden="1"] .propertyExpander {
+.mainEntryBottom[data-show-hidden="1"] .propertyExpander {
 	background-image: url("/asset/up-arrow.svg");
 }
 
