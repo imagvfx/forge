@@ -4,6 +4,55 @@
 	flex: 1;
 }
 
+.left {
+	background-color: #FAFAFA;
+	border-right: 1.5px solid #EEE;
+	width: 16rem;
+}
+
+#sideMenu {
+	position: sticky;
+	top: 0;
+}
+
+#sideMenuHideButton {
+	border-radius: 0 0 1rem 0;
+	border-right: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+	background-color: #FAFAFA;
+	padding: 0.2rem;
+	width: 1.4rem;
+	display: flex;
+	justify-content: start;
+	align-items: center;
+	height: 0.8rem;
+	font-size: 0.5rem;
+	cursor: pointer;
+	position: absolute;
+	user-select: none;
+	opacity: 0.2;
+}
+
+#sideMenuHideButton:hover {
+	opacity: 1;
+}
+
+#sideMenuHideButton > div {
+	margin-left: 0.2rem;
+}
+
+#sideMenuHideButton[data-hide="1"] #sideMenuHide {
+	display: none;
+}
+
+#sideMenuHideButton[data-hide=""] #sideMenuShow {
+	display: none;
+}
+
+#sideMenuContent {
+	padding-top: 1rem;
+}
+
 .pinnedPathLink:hover {
 	text-decoration: underline;
 }

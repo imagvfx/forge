@@ -18,6 +18,21 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
+		let hideBtn = event.target.closest("#sideMenuHideButton");
+		if (hideBtn) {
+			let left = hideBtn.closest(".left");
+			let content = left.querySelector("#sideMenuContent");
+			if (hideBtn.dataset.hide) {
+				hideBtn.dataset.hide = "";
+				left.style.width = "16rem";
+				content.classList.remove("nodisplay");
+			} else {
+				hideBtn.dataset.hide = "1"
+				left.style.width = "0";
+				content.classList.add("nodisplay");
+			}
+			return;
+		}
 		let counter = event.target.closest(".statusCounter");
 		if (counter) {
 			let group = counter.closest(".statusGroup");

@@ -12,22 +12,28 @@
 			data-copy-path-remap-from="{{remapFrom $.UserSetting.CopyPathRemap}}"
 			data-copy-path-remap-to="{{remapTo $.UserSetting.CopyPathRemap}}"
 			data-current-select-status-menu=""> [
-			<div style="width:16rem;background-color:#FAFAFA;border-right:1.5px solid #EEE;" class="left"> [
-				<div style="position:sticky;top:0;display:flex;flex-direction:column;"> [
-					<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:1.5rem 1.2rem;"> [
-						<a class="prevNextLink {{if not $.PrevEntry}}disabled{{end}}" href="{{if $.PrevEntry}}{{$.PrevEntry.Path}}{{end}}"> [Prev]
-						<a class="prevNextLink {{if not $.NextEntry}}disabled{{end}}" href="{{if $.NextEntry}}{{$.NextEntry.Path}}{{end}}"> [Next]
+			<div class="left"> [
+				<div id="sideMenu"> [
+					<div id="sideMenuHideButton" data-hide=""> [
+						<div id="sideMenuHide"> [&lt&lt]
+						<div id="sideMenuShow"> [&gt&gt]
 					]
-					<hr style="margin:0 1rem 0 1rem;border:0;border-bottom:1.5px solid #EEE;"> []
-					<!-- Pinned Path -->
-					<div style="display:flex;padding:1.5rem 1.2rem;align-items:center;flex:1;"> [
-						<div style="font-size:1rem;color:#555;margin-right:0.5rem;"> [Pinned]
-						<div id="pinnedPathDeleteButton" class="nodisplay"> [del]
-					]
-					<div id="pinnedPathDropZone" style="padding:0 1.2rem;font-size:0.9rem;"> [
-						{{range $i, $p := $.UserSetting.PinnedPaths}}
-						<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-path="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
-						{{end}}
+					<div id="sideMenuContent"> [
+						<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:1.5rem 1.2rem;"> [
+							<a class="prevNextLink {{if not $.PrevEntry}}disabled{{end}}" href="{{if $.PrevEntry}}{{$.PrevEntry.Path}}{{end}}"> [Prev]
+							<a class="prevNextLink {{if not $.NextEntry}}disabled{{end}}" href="{{if $.NextEntry}}{{$.NextEntry.Path}}{{end}}"> [Next]
+						]
+						<hr style="margin:0 1rem 0 1rem;border:0;border-bottom:1.5px solid #EEE;"> []
+						<!-- Pinned Path -->
+						<div style="display:flex;padding:1.5rem 1.2rem;align-items:center;flex:1;"> [
+							<div style="font-size:1rem;color:#555;margin-right:0.5rem;"> [Pinned]
+							<div id="pinnedPathDeleteButton" class="nodisplay"> [del]
+						]
+						<div id="pinnedPathDropZone" style="padding:0 1.2rem;font-size:0.9rem;"> [
+							{{range $i, $p := $.UserSetting.PinnedPaths}}
+							<div id="pinnedPath-{{$p}}" class="pinnedPathLink" draggable="true" data-path="{{$p}}" data-idx="{{$i}}" style="margin:0.2rem 0;cursor:pointer;color:#555"> [{{$p}}]
+							{{end}}
+						]
 					]
 				]
 			]
