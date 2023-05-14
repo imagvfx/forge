@@ -152,7 +152,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	p.Value, err = validateProperty(tx, ctx, p.EntryPath, p.Name, p.Type, p.Value)
+	p.Value, err = validateProperty(tx, ctx, p, p.Value)
 	if err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.Value != nil {
-		updRawValue, err := validateProperty(tx, ctx, upd.EntryPath, p.Name, p.Type, *upd.Value)
+		updRawValue, err := validateProperty(tx, ctx, p, *upd.Value)
 		if err != nil {
 			return err
 		}

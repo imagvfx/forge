@@ -16,12 +16,12 @@ import (
 
 // validateProperty validates a property with related infos.
 // `entry` can be an empty string when it is a default (not related to a specific entry).
-func validateProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, val string) (string, error) {
-	handled, val, err := validateSpecialProperty(tx, ctx, entry, name, typ, val)
+func validateProperty(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
+	handled, val, err := validateSpecialProperty(tx, ctx, p, val)
 	if handled {
 		return val, err
 	}
-	validateFn := map[string]func(*sql.Tx, context.Context, string, string) (string, error){
+	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property, string) (string, error){
 		"timecode":   validateTimecode,
 		"text":       validateText,
 		"user":       validateUser,
@@ -29,12 +29,13 @@ func validateProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, val str
 		"entry_name": validateEntryName,
 		"date":       validateDate,
 		"int":        validateInt,
+		"tag":        validateTag,
 	}
-	validate := validateFn[typ]
+	validate := validateFn[p.Type]
 	if validate == nil {
-		return "", fmt.Errorf("unknown type of property: %v", typ)
+		return "", fmt.Errorf("unknown type of property: %v", p.Type)
 	}
-	val, err = validate(tx, ctx, entry, val)
+	val, err = validate(tx, ctx, p, val)
 	if err != nil {
 		return "", err
 	}
@@ -43,8 +44,8 @@ func validateProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, val str
 
 // validateSpecialProperty validates special properties those Forge treats specially.
 // For normal properties, it will return the input value unmodified.
-func validateSpecialProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, val string) (bool, string, error) {
-	// TODO: .sub_entry_types
+func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (bool, string, error) {
+	name := p.Name
 	switch name {
 	case ".predefined_sub_entries":
 		val, err := func() (string, error) {
@@ -87,12 +88,12 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, entry, name, typ, 
 	return false, val, nil
 }
 
-func validateText(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateText(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
 	val = strings.ReplaceAll(val, "\r\n", "\n")
 	return val, nil
 }
 
-func validateUser(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateUser(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
 	if val == "" {
 		return "", nil
 	}
@@ -104,7 +105,7 @@ func validateUser(tx *sql.Tx, ctx context.Context, entry, val string) (string, e
 	return val, nil
 }
 
-func validateTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
 	// 00:00:00:00
 	if val == "" {
 		// unset
@@ -134,7 +135,8 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (strin
 	return val, nil
 }
 
-func validateEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
+	entry := p.EntryPath
 	// It will save 'val' entry as it's id.
 	if val == "" {
 		// unset
@@ -157,14 +159,14 @@ func validateEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (stri
 }
 
 // Entry name property accepts path of an entry and returns it's name.
-func validateEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateEntryName(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
 	// It will save 'val' entry as it's id.
 	// So validation process is same with 'validateEntryPath'.
 	// Difference comes from evaluation.
-	return validateEntryPath(tx, ctx, entry, val)
+	return validateEntryPath(tx, ctx, p, val)
 }
 
-func validateDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
 	if val == "" {
 		// unset
 		return "", nil
@@ -197,7 +199,7 @@ func validateDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, e
 	return val, nil
 }
 
-func validateInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, error) {
+func validateInt(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
 	if val == "" {
 		// unset
 		return "", nil
