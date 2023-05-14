@@ -222,7 +222,7 @@ var userDataCases = []testUserData{
 		section: "app1",
 		key:     "option3",
 		value:   "",
-		wantErr: errors.New("cannot add user data to another user"),
+		wantErr: errors.New("cannot set user-data to another user"),
 	},
 	{
 		label:   "no section",
