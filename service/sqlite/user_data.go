@@ -389,7 +389,8 @@ func deleteUserDataSection(tx *sql.Tx, ctx context.Context, user, section string
 	}
 	_, err = getUserDataSection(tx, ctx, user, section)
 	if err != nil {
-		if !errors.As(err, &forge.NotFoundError{}) {
+		var e *forge.NotFoundError
+		if !errors.As(err, &e) {
 			return fmt.Errorf("user data section is not exists")
 		}
 	}
