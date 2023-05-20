@@ -15,13 +15,13 @@ import (
 )
 
 // validateProperty validates a property with related infos.
-// `entry` can be an empty string when it is a default (not related to a specific entry).
-func validateProperty(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
-	handled, val, err := validateSpecialProperty(tx, ctx, p, val)
+// It saves the result to p.RawValue when it has processed well.
+func validateProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+	handled, err := validateSpecialProperty(tx, ctx, p)
 	if handled {
-		return val, err
+		return err
 	}
-	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property, string) (string, error){
+	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property) error{
 		"timecode":   validateTimecode,
 		"text":       validateText,
 		"user":       validateUser,
@@ -29,32 +29,26 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p *forge.Property, val st
 		"entry_name": validateEntryName,
 		"date":       validateDate,
 		"int":        validateInt,
-		"tag":        validateTag,
 	}
 	validate := validateFn[p.Type]
 	if validate == nil {
-		return "", fmt.Errorf("unknown type of property: %v", p.Type)
+		return fmt.Errorf("unknown type of property: %v", p.Type)
 	}
-	val, err = validate(tx, ctx, p, val)
-	if err != nil {
-		return "", err
-	}
-	return val, nil
+	return validate(tx, ctx, p)
 }
 
 // validateSpecialProperty validates special properties those Forge treats specially.
 // For normal properties, it will return the input value unmodified.
-func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (bool, string, error) {
-	name := p.Name
-	switch name {
+func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) (bool, error) {
+	switch p.Name {
 	case ".predefined_sub_entries":
-		val, err := func() (string, error) {
+		err := func() error {
 			subNameType := make(map[string]int)
-			for _, nt := range strings.Split(val, ",") {
+			for _, nt := range strings.Split(p.Value, ",") {
 				nt = strings.TrimSpace(nt)
 				toks := strings.Split(nt, ":")
 				if len(toks) != 2 {
-					return "", fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
+					return fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
 				}
 				sub := strings.TrimSpace(toks[0])
 				typ := strings.TrimSpace(toks[1])
@@ -63,9 +57,9 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property,
 				if err != nil {
 					var e *forge.NotFoundError
 					if !errors.As(err, &e) {
-						return "", err
+						return err
 					}
-					return "", fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+					return fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries", typ)
 				}
 				subNameType[sub] = id
 			}
@@ -74,42 +68,45 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property,
 				subNames = append(subNames, sub)
 			}
 			sort.Slice(subNames, func(i, j int) bool { return subNames[i] < subNames[j] })
-			val = ""
+			val := ""
 			for i, sub := range subNames {
 				if i != 0 {
 					val += ", "
 				}
 				val += sub + ":" + strconv.Itoa(subNameType[sub])
 			}
-			return val, nil
+			p.RawValue = val
+			return nil
 		}()
-		return true, val, err
+		return true, err
 	}
-	return false, val, nil
+	return false, nil
 }
 
-func validateText(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
-	val = strings.ReplaceAll(val, "\r\n", "\n")
-	return val, nil
+func validateText(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+	p.RawValue = strings.ReplaceAll(p.Value, "\r\n", "\n")
+	return nil
 }
 
-func validateUser(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
-	if val == "" {
-		return "", nil
+func validateUser(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+	if p.Value == "" {
+		p.RawValue = ""
+		return nil
 	}
-	id, err := getUserID(tx, ctx, val)
+	id, err := getUserID(tx, ctx, p.Value)
 	if err != nil {
-		return "", err
+		return err
 	}
-	val = strconv.Itoa(id)
-	return val, nil
+	p.RawValue = strconv.Itoa(id)
+	return nil
 }
 
-func validateTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
+func validateTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	// 00:00:00:00
-	if val == "" {
+	if p.Value == "" {
 		// unset
-		return "", nil
+		p.RawValue = ""
+		return nil
 	}
 	// Need 8 digits in what ever form.
 	isDigit := map[string]bool{
@@ -117,59 +114,62 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property, val st
 		"5": true, "6": true, "7": true, "8": true, "9": true,
 	}
 	tc := ""
-	for _, r := range val {
+	for _, r := range p.Value {
 		ch := string(r)
 		if isDigit[ch] {
 			tc += ch
 		}
 	}
 	if len(tc) != 8 {
-		return "", fmt.Errorf("invalid timecode string: %v", val)
+		return fmt.Errorf("invalid timecode string: %v", p.Value)
 	}
-	val = strings.Join(
+	p.RawValue = strings.Join(
 		[]string{
 			tc[0:2], tc[2:4], tc[4:6], tc[6:8],
 		},
 		":",
 	)
-	return val, nil
+	return nil
 }
 
-func validateEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
-	entry := p.EntryPath
+func validateEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	// It will save 'val' entry as it's id.
-	if val == "" {
+	if p.Value == "" {
 		// unset
-		return "", nil
+		p.RawValue = ""
+		return nil
 	}
-	if val == "." {
+	if p.Value == "." {
 		// "." indicates the entry itself.
 		// Note that it doesn't require 'entry' path, so "." can be used in defaults.
-		return "0", nil
+		p.RawValue = "0"
+		return nil
 	}
-	if !path.IsAbs(val) {
+	if !path.IsAbs(p.Value) {
 		// make abs path
-		val = path.Join(entry, val)
+		p.Value = path.Join(p.EntryPath, p.Value)
 	}
-	id, err := getEntryID(tx, ctx, val)
+	id, err := getEntryID(tx, ctx, p.Value)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return strconv.Itoa(id), nil
+	p.RawValue = strconv.Itoa(id)
+	return nil
 }
 
 // Entry name property accepts path of an entry and returns it's name.
-func validateEntryName(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
+func validateEntryName(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	// It will save 'val' entry as it's id.
 	// So validation process is same with 'validateEntryPath'.
 	// Difference comes from evaluation.
-	return validateEntryPath(tx, ctx, p, val)
+	return validateEntryPath(tx, ctx, p)
 }
 
-func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
-	if val == "" {
+func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+	if p.Value == "" {
 		// unset
-		return "", nil
+		p.RawValue = ""
+		return nil
 	}
 	// Need 8 digits in what ever form.
 	isDigit := map[string]bool{
@@ -177,16 +177,16 @@ func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property, val string
 		"5": true, "6": true, "7": true, "8": true, "9": true,
 	}
 	date := ""
-	for _, r := range val {
+	for _, r := range p.Value {
 		ch := string(r)
 		if isDigit[ch] {
 			date += ch
 		}
 	}
 	if len(date) != 8 {
-		return "", fmt.Errorf("invalid date string: want yyyy/mm/dd, got %v", val)
+		return fmt.Errorf("invalid date string: want yyyy/mm/dd, got %v", p.Value)
 	}
-	val = strings.Join(
+	val := strings.Join(
 		[]string{
 			date[0:4], date[4:6], date[6:8],
 		},
@@ -194,19 +194,22 @@ func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property, val string
 	)
 	_, err := time.Parse("2006/01/02", val)
 	if err != nil {
-		return "", fmt.Errorf("invalid date string: %v", err)
+		return fmt.Errorf("invalid date string: %v", err)
 	}
-	return val, nil
+	p.RawValue = val
+	return nil
 }
 
-func validateInt(tx *sql.Tx, ctx context.Context, p *forge.Property, val string) (string, error) {
-	if val == "" {
+func validateInt(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+	if p.Value == "" {
 		// unset
-		return "", nil
+		p.RawValue = ""
+		return nil
 	}
-	n, err := strconv.Atoi(val)
+	n, err := strconv.Atoi(p.Value)
 	if err != nil {
-		return "", fmt.Errorf("cannot convert to int: %v", val)
+		return fmt.Errorf("cannot convert to int: %v", p.Value)
 	}
-	return strconv.Itoa(n), nil
+	p.RawValue = strconv.Itoa(n)
+	return nil
 }

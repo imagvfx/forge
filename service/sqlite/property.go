@@ -152,7 +152,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	p.Value, err = validateProperty(tx, ctx, p, p.Value)
+	err = validateProperty(tx, ctx, p)
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	`,
 		entryID,
 		d.ID,
-		p.Value,
+		p.RawValue,
 		time.Now().UTC(),
 	)
 	if err != nil {
@@ -193,7 +193,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 		Category:  "property",
 		Name:      p.Name,
 		Type:      p.Type,
-		Value:     p.Value,
+		Value:     p.RawValue,
 	})
 	if err != nil {
 		return err
@@ -262,14 +262,15 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.Value != nil {
-		updRawValue, err := validateProperty(tx, ctx, p, *upd.Value)
+		old := p.RawValue
+		p.Value = *upd.Value
+		err := validateProperty(tx, ctx, p)
 		if err != nil {
 			return err
 		}
-		if p.RawValue != updRawValue {
+		if p.RawValue != old {
 			keys = append(keys, "val=?")
-			vals = append(vals, updRawValue)
-			p.Value = *upd.Value // for logging
+			vals = append(vals, p.RawValue)
 		}
 	}
 	if len(keys) == 0 {
@@ -306,7 +307,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 		Category:  "property",
 		Name:      p.Name,
 		Type:      p.Type,
-		Value:     p.Value,
+		Value:     p.RawValue,
 	})
 	if err != nil {
 		return nil

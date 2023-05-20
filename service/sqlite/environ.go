@@ -176,7 +176,7 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	e.Value, err = validateProperty(tx, ctx, &forge.Property{EntryPath: e.EntryPath, Name: e.Name, Type: e.Type}, e.Value)
+	err = validateProperty(tx, ctx, e)
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *forge.Property) error {
 		entryID,
 		e.Name,
 		e.Type,
-		e.Value,
+		e.RawValue,
 		time.Now().UTC(),
 	)
 	if err != nil {
@@ -256,14 +256,15 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.Value != nil {
-		*upd.Value, err = validateProperty(tx, ctx, &forge.Property{EntryPath: upd.EntryPath, Name: e.Name, Type: e.Type}, *upd.Value)
+		p := &forge.Property{EntryPath: upd.EntryPath, Name: e.Name, Type: e.Type, Value: *upd.Value}
+		err = validateProperty(tx, ctx, p)
 		if err != nil {
 			return err
 		}
-		if e.RawValue != *upd.Value {
+		if e.RawValue != p.RawValue {
 			keys = append(keys, "val=?")
-			vals = append(vals, *upd.Value)
-			e.Value = *upd.Value // for logging
+			vals = append(vals, p.RawValue)
+			e.RawValue = p.RawValue
 		}
 	}
 	if len(keys) == 0 {
@@ -300,7 +301,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 		Category:  "environ",
 		Name:      e.Name,
 		Type:      e.Type,
-		Value:     e.Value,
+		Value:     e.RawValue,
 	})
 	if err != nil {
 		return err

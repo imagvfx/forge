@@ -429,7 +429,7 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 	if err != nil {
 		return err
 	}
-	_, err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: d.Type}, d.Value)
+	err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value})
 	if err != nil {
 		return err
 	}
@@ -485,7 +485,8 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 	if err != nil {
 		return err
 	}
-	_, err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: d.Type}, d.Value)
+	p := &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}
+	err = validateProperty(tx, ctx, p)
 	if err != nil {
 		return err
 	}
@@ -501,7 +502,7 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 		typeID,
 		d.Name,
 		d.Type,
-		d.Value,
+		p.RawValue,
 	)
 	if err != nil {
 		return err
@@ -706,12 +707,13 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 		if upd.Type != nil {
 			typ = *upd.Type
 		}
-		*upd.Value, err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: typ}, *upd.Value)
+		p := &forge.Property{Name: d.Name, Type: typ, Value: *upd.Value}
+		err = validateProperty(tx, ctx, p)
 		if err != nil {
 			return err
 		}
 		keys = append(keys, "value=?")
-		vals = append(vals, *upd.Value)
+		vals = append(vals, p.Value)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "property", upd.Name)
