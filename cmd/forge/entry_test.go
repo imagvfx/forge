@@ -40,6 +40,7 @@ type testDefault struct {
 var testDefaults = []testDefault{
 	{typ: "show", ctg: "property", k: "sup", t: "user", v: ""},
 	{typ: "shot", ctg: "property", k: "cg", t: "text", v: ""},
+	{typ: "shot", ctg: "property", k: "direction", t: "text", v: ""},
 	{typ: "shot", ctg: "property", k: "due", t: "date", v: ""},
 	{typ: "shot", ctg: "property", k: "timecode", t: "timecode", v: ""},
 	{typ: "shot", ctg: "property", k: "duration", t: "int", v: ""},
@@ -90,6 +91,7 @@ type testProperty struct {
 	path    string
 	k, t, v string
 	want    error
+	expect  string
 }
 
 var testUpdateProps = []testProperty{
@@ -104,12 +106,19 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress"},
 	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter"},
 	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com"},
+	// above properties for search.
+
+	// below for pure validation. I mean, don't use these in search
+	{path: "/test/shot/cg/0010", k: "direction", v: ""},
+	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\n", expect: "title\n\n"},
 	{path: "/test/shot/cg/0010", k: "due", v: ""},
 	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21"},
+	{path: "/test/shot/cg/0010", k: "due", v: "20230521", expect: "2023/05/21"},
 	{path: "/test/shot/cg/0010", k: "due", v: "2023/99/99", want: errors.New("invalid date string: parsing time \"2023/99/99\": month out of range")},
 	{path: "/test/shot/cg/0010", k: "due", v: "2023", want: errors.New("invalid date string: want yyyy/mm/dd, got 2023")},
 	{path: "/test/shot/cg/0010", k: "timecode", v: ""},
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00"},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00000000", expect: "00:00:00:00"},
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00", want: errors.New("invalid timecode string: 00:00")},
 	{path: "/test/shot/cg/0010", k: "duration", v: ""},
 	{path: "/test/shot/cg/0010", k: "duration", v: "24"},
@@ -332,8 +341,12 @@ func TestAddEntries(t *testing.T) {
 		if err != nil {
 			t.Fatalf("couldn't get updated property: %v", err)
 		}
-		if got.Value != prop.v {
-			t.Fatalf("want value %q, got %q", prop.v, got.Value)
+		expect := prop.v
+		if prop.expect != "" {
+			expect = prop.expect
+		}
+		if got.Value != expect {
+			t.Fatalf("want value %q, got %q", expect, got.Value)
 		}
 	}
 
