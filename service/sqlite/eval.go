@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -18,8 +17,8 @@ import (
 // It also performs basic validation in case the value in db is outdated.
 // Invalid value can come from manual modification of db, or formatting change to property type.
 // Eg. It once saved string path of an entry for entry_path, but now saves the id.
-func evalProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (string, string, error) {
-	evalFn := map[string]func(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error){
+func evalProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	evalFn := map[string]func(tx *sql.Tx, ctx context.Context, p *forge.Property){
 		"timecode":   evalTimecode,
 		"text":       evalText,
 		"user":       evalUser,
@@ -28,89 +27,105 @@ func evalProperty(tx *sql.Tx, ctx context.Context, entry, typ, val string) (stri
 		"date":       evalDate,
 		"int":        evalInt,
 	}
-	eval := evalFn[typ]
+	eval := evalFn[p.Type]
 	if eval == nil {
-		return "", "", fmt.Errorf("unknown type of property: %v", typ)
+		p.ValueError = fmt.Errorf("unknown type of property: %v", p.Type)
+		return
 	}
-	if val == "" {
+	if p.RawValue == "" {
 		// empty string is always accepted
-		return "", "", nil
+		return
 	}
-	return eval(tx, ctx, entry, val)
+	eval(tx, ctx, p)
 }
 
-func evalText(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
-	return val, val, nil
+func evalText(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	val := p.RawValue
+	p.Eval = val
+	p.Value = val
 }
 
-func evalUser(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
-	id, err := strconv.Atoi(val)
+func evalUser(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	id, err := strconv.Atoi(p.RawValue)
 	if err != nil {
-		return "", "", err
+		p.ValueError = err
+		return
 	}
 	u, err := getUserByID(tx, ctx, id)
 	if err != nil {
-		return "", "", err
+		p.ValueError = err
+		return
 	}
 	called := u.Called
 	if called == "" {
 		called = u.Name
 	}
-	return called, u.Name, nil
+	p.Eval = called
+	p.Value = u.Name
 }
 
-func evalTimecode(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
+func evalTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	// 00:00:00:00
+	val := p.RawValue
 	if len(val) != 11 {
-		return "", "", fmt.Errorf("invalid value for timecode: %v", val)
+		p.ValueError = fmt.Errorf("invalid value for timecode: %v", val)
+		return
 	}
 	if val[2] != ':' && val[5] != ':' && val[8] != ':' {
-		return "", "", fmt.Errorf("invalid value for timecode: %v", val)
+		p.ValueError = fmt.Errorf("invalid value for timecode: %v", val)
+		return
 	}
 	for i := 0; i < 12; i += 3 {
 		_, err := strconv.Atoi(val[i : i+2])
 		if err != nil {
-			return "", "", fmt.Errorf("invalid value for timecode: %v", val)
+			p.ValueError = fmt.Errorf("invalid value for timecode: %v", val)
+			return
 		}
 	}
-	return val, val, nil
+	p.Eval = val
+	p.Value = val
 }
 
-func evalEntryPath(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
-	id, err := strconv.Atoi(val)
+func evalEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	id, err := strconv.Atoi(p.RawValue)
 	if err != nil {
-		return "", "", err
+		p.ValueError = err
+		return
 	}
 	if id == 0 {
 		// 0 is a special id that indicates the entry itself.
-		return entry, ".", nil
+		p.Eval = p.EntryPath
+		p.Value = "."
+		return
 	}
 	ent, err := getEntryByID(tx, ctx, id)
 	if err != nil {
-		return "", "", err
+		p.ValueError = err
+		return
 	}
-	pth, err := filepath.Rel(entry, ent.Path)
+	pth, err := filepath.Rel(p.EntryPath, ent.Path)
 	if err != nil {
-		return "", "", err
+		p.ValueError = err
+		return
 	}
-	return ent.Path, pth, nil
+	p.Eval = ent.Path
+	p.Value = pth
 }
 
-func evalEntryName(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
-	eval, val, err := evalEntryPath(tx, ctx, entry, val)
-	if err != nil {
-		return "", "", err
-	}
-	return path.Base(eval), val, nil
+func evalEntryName(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	evalEntryPath(tx, ctx, p)
 }
 
-func evalDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
+func evalDate(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	// 2006/01/02
+	val := p.RawValue
 	if len(val) != 10 {
-		return "", "", fmt.Errorf("invalid value for date: %v", val)
+		p.ValueError = fmt.Errorf("invalid value for date: %v", val)
+		return
 	}
 	if val[4] != '/' && val[6] != '/' {
-		return "", "", fmt.Errorf("invalid value for date: %v", val)
+		p.ValueError = fmt.Errorf("invalid value for date: %v", val)
+		return
 	}
 	blocks := [][2]int{
 		{0, 4},  // 2006
@@ -122,26 +137,33 @@ func evalDate(tx *sql.Tx, ctx context.Context, entry, val string) (string, strin
 		end := b[1]
 		_, err := strconv.Atoi(val[start:end])
 		if err != nil {
-			return "", "", fmt.Errorf("invalid value for date: %v", val)
+			p.ValueError = fmt.Errorf("invalid value for date: %v", val)
+			return
 		}
 	}
-	return val, val, nil
+	p.Eval = val
+	p.Value = val
 }
 
-func evalInt(tx *sql.Tx, ctx context.Context, entry, val string) (string, string, error) {
+func evalInt(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	val := p.RawValue
 	_, err := strconv.Atoi(val)
 	if err != nil {
-		return "", "", fmt.Errorf("invalid value for int: %v", val)
+		p.ValueError = fmt.Errorf("invalid value for int: %v", val)
+		return
 	}
-	return val, val, nil
+	p.Eval = val
+	p.Value = val
 }
 
 // evalSpecialProperty evaluates special properties that starts with dot (.).
 // For normal properties, it will return the input value unmodified.
 //
 // TODO: Match the arugments to other eval functions?
-func evalSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (string, string, error) {
+func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	// TODO: .sub_entry_types
+	name := p.Name
+	val := p.RawValue
 	switch name {
 	case ".predefined_sub_entries":
 		subNameType := make(map[string]string)
@@ -149,22 +171,26 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (str
 			nt = strings.TrimSpace(nt)
 			toks := strings.Split(nt, ":")
 			if len(toks) != 2 {
-				return "", "", fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
+				p.ValueError = fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
+				return
 			}
 			sub := strings.TrimSpace(toks[0])
 			typeID := strings.TrimSpace(toks[1])
 			id, err := strconv.Atoi(typeID)
 			if err != nil {
-				return "", "", fmt.Errorf("invalid entry type id for '%v' in .predefined_sub_entries: %v", name, typeID)
+				p.ValueError = fmt.Errorf("invalid entry type id for '%v' in .predefined_sub_entries: %v", name, typeID)
+				return
 			}
 			// Internally it saves with entry type id. Get the type name.
 			typ, err := getEntryTypeByID(tx, ctx, id)
 			if err != nil {
 				var e *forge.NotFoundError
 				if !errors.As(err, &e) {
-					return "", "", err
+					p.ValueError = err
+					return
 				}
-				return "", "", fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+				p.ValueError = fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+				return
 			}
 			subNameType[sub] = typ
 		}
@@ -180,7 +206,10 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, name, val string) (str
 			}
 			val += sub + ":" + subNameType[sub]
 		}
-		return val, val, nil
+		p.Eval = val
+		p.Value = val
+		return
 	}
-	return val, val, nil
+	p.Eval = val
+	p.Value = val
 }

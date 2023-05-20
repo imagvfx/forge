@@ -101,9 +101,9 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 			return nil, fmt.Errorf("find properties: %w", err)
 		}
 		if strings.HasPrefix(p.Name, ".") {
-			p.Eval, p.Value, p.ValueError = evalSpecialProperty(tx, ctx, p.Name, p.RawValue)
+			evalSpecialProperty(tx, ctx, p)
 		} else {
-			p.Eval, p.Value, p.ValueError = evalProperty(tx, ctx, p.EntryPath, p.Type, p.RawValue)
+			evalProperty(tx, ctx, p)
 		}
 		props = append(props, p)
 	}

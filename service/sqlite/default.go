@@ -169,7 +169,9 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find forge.DefaultFi
 			return nil, err
 		}
 		if strings.HasPrefix(d.Name, ".") {
-			_, d.Value, _ = evalSpecialProperty(tx, ctx, d.Name, d.Value)
+			p := &forge.Property{Name: d.Name, RawValue: d.Value}
+			evalSpecialProperty(tx, ctx, p)
+			d.Value = p.Value
 			// TODO: what should I do when there was an evaluation error?
 		}
 		defaults = append(defaults, d)
