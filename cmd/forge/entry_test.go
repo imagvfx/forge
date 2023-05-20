@@ -40,6 +40,9 @@ type testDefault struct {
 var testDefaults = []testDefault{
 	{typ: "show", ctg: "property", k: "sup", t: "user", v: ""},
 	{typ: "shot", ctg: "property", k: "cg", t: "text", v: ""},
+	{typ: "shot", ctg: "property", k: "due", t: "date", v: ""},
+	{typ: "shot", ctg: "property", k: "timecode", t: "timecode", v: ""},
+	{typ: "shot", ctg: "property", k: "duration", t: "int", v: ""},
 	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
 	{typ: "part", ctg: "property", k: "status", t: "text", v: ""},
 	{typ: "part", ctg: "property", k: "direction", t: "text", v: ""},
@@ -101,6 +104,17 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress"},
 	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter"},
 	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com"},
+	{path: "/test/shot/cg/0010", k: "due", v: ""},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21"},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023/99/99", want: errors.New("invalid date string: parsing time \"2023/99/99\": month out of range")},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023", want: errors.New("invalid date string: want yyyy/mm/dd, got 2023")},
+	{path: "/test/shot/cg/0010", k: "timecode", v: ""},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00"},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00", want: errors.New("invalid timecode string: 00:00")},
+	{path: "/test/shot/cg/0010", k: "duration", v: ""},
+	{path: "/test/shot/cg/0010", k: "duration", v: "24"},
+	{path: "/test/shot/cg/0010", k: "duration", v: "24.1", want: errors.New("cannot convert to int: 24.1")},
+	{path: "/test/shot/cg/0010", k: "duration", v: "not a number", want: errors.New("cannot convert to int: not a number")},
 }
 
 type testSearch struct {
