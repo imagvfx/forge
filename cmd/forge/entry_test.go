@@ -325,6 +325,16 @@ func TestAddEntries(t *testing.T) {
 		if !equalError(prop.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
 		}
+		if prop.want != nil {
+			continue
+		}
+		got, err := server.GetProperty(ctx, prop.path, prop.k)
+		if err != nil {
+			t.Fatalf("couldn't get updated property: %v", err)
+		}
+		if got.Value != prop.v {
+			t.Fatalf("want value %q, got %q", prop.v, got.Value)
+		}
 	}
 
 	// test renames and revert it back.
