@@ -1705,7 +1705,7 @@ function submitUpdaterOrAdder(ev, input) {
 								let a = document.createElement("a");
 								a.classList.add("tagLink");
 								a.href = "?search=1&search_query="+j.Msg.Name+"="+encodeURIComponent(line)
-								let text = document.createTextNode("*"+line);
+								let text = document.createTextNode(line);
 								a.appendChild(text);
 								valueElem.appendChild(a);
 							}
