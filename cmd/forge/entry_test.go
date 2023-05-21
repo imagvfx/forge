@@ -43,6 +43,7 @@ var testDefaults = []testDefault{
 	{typ: "shot", ctg: "property", k: "direction", t: "text", v: ""},
 	{typ: "shot", ctg: "property", k: "due", t: "date", v: ""},
 	{typ: "shot", ctg: "property", k: "timecode", t: "timecode", v: ""},
+	{typ: "shot", ctg: "property", k: "tag", t: "tag", v: ""},
 	{typ: "shot", ctg: "property", k: "duration", t: "int", v: ""},
 	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
 	{typ: "part", ctg: "property", k: "status", t: "text", v: ""},
@@ -124,6 +125,15 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "duration", v: "24"},
 	{path: "/test/shot/cg/0010", k: "duration", v: "24.1", want: errors.New("cannot convert to int: 24.1")},
 	{path: "/test/shot/cg/0010", k: "duration", v: "not a number", want: errors.New("cannot convert to int: not a number")},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+a", expect: "a\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+b", expect: "a\nb\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-a", expect: "b\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "*b/c", expect: "c\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "ab", expect: "c\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "*b/c", expect: "c\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+a,b", expect: "a_b\nc\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-a/b", expect: "c\n"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+a\n+b", expect: "a\nb\nc\n"},
 }
 
 type testSearch struct {

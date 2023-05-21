@@ -33,6 +33,7 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 		"entry_name": validateEntryName,
 		"date":       validateDate,
 		"int":        validateInt,
+		"tag":        validateTag,
 	}
 	validate := validateFn[p.Type]
 	if validate == nil {
@@ -215,5 +216,62 @@ func validateInt(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 		return fmt.Errorf("cannot convert to int: %v", p.Value)
 	}
 	p.RawValue = strconv.Itoa(n)
+	return nil
+}
+
+func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
+	have := make(map[string]bool)
+	if old != nil {
+		for _, v := range strings.Split(old.RawValue, "\n") {
+			if strings.TrimSpace(v) == "" {
+				continue
+			}
+			have[v] = true
+		}
+	}
+	lines := strings.Split(p.Value, "\n")
+	for _, ln := range lines {
+		ln = strings.TrimSpace(ln)
+		if len(ln) == 0 {
+			continue
+		}
+		op := ln[0]
+		v := strings.TrimSpace(ln[1:])
+		if len(v) == 0 {
+			continue
+		}
+		v = strings.TrimSpace(v)
+		v = strings.ReplaceAll(v, " ", "_")
+		v = strings.ReplaceAll(v, ",", "_") // avoid comma in a tag for search like 'tag:a,b,c'
+		switch op {
+		case '+':
+			// add
+			v = strings.ReplaceAll(v, "/", "_")
+			have[v] = true
+		case '-':
+			// remove
+			v = strings.ReplaceAll(v, "/", "_")
+			delete(have, v)
+		case '*':
+			// replace
+			toks := strings.Split(v, "/")
+			if len(toks) != 2 {
+				return fmt.Errorf("replace a tag needs *old/new form")
+			}
+			old := toks[0]
+			new := toks[1]
+			if !have[old] {
+				continue
+			}
+			delete(have, old)
+			have[new] = true
+		}
+	}
+	newlines := make([]string, 0, len(have))
+	for v := range have {
+		newlines = append(newlines, v+"\n")
+	}
+	sort.Strings(newlines)
+	p.RawValue = strings.Join(newlines, "")
 	return nil
 }
