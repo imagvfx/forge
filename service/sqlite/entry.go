@@ -388,6 +388,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if !wh.Exact {
 					vl = "%" + v + "%"
 				}
+				tagGlob := "'*" + v + "*'"
+				if wh.Exact {
+					tagGlob = "'*' || char(10) || '" + v + "' || char(10) || '*'"
+				}
 				userWhere := ""
 				whereVals := make([]any, 0)
 				if v != "" {
@@ -401,7 +405,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				vq := fmt.Sprintf(`
 					(
-						(default_properties.type!='user' AND properties.val %s ?) OR
+						(default_properties.type!='tag' AND default_properties.type!='user' AND properties.val %s ?) OR
+						(default_properties.type='tag' AND properties.val GLOB %s) OR
 						(default_properties.type='user' AND properties.id IN
 							(SELECT properties.id FROM properties
 								LEFT JOIN accessors ON properties.val=accessors.id
@@ -410,7 +415,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 							)
 						)
 					)
-				`, eq, userWhere)
+				`, eq, tagGlob, userWhere)
 				innerVals = append(innerVals, vl)
 				innerVals = append(innerVals, whereVals...)
 				q += vq
