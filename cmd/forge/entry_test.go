@@ -96,6 +96,34 @@ type testProperty struct {
 }
 
 var testUpdateProps = []testProperty{
+	// below for pure validation. clean-up after set.
+	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\n", expect: "title\n\n"},
+	{path: "/test/shot/cg/0010", k: "direction", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21", expect: "2023/05/21"},
+	{path: "/test/shot/cg/0010", k: "due", v: "20230521", expect: "2023/05/21"},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023/99/99", want: errors.New("invalid date string: parsing time \"2023/99/99\": month out of range")},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023", want: errors.New("invalid date string: want yyyy/mm/dd, got 2023")},
+	{path: "/test/shot/cg/0010", k: "due", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00", expect: "00:00:00:00"},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00000000", expect: "00:00:00:00"},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00", want: errors.New("invalid timecode string: 00:00")},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "duration", v: "24", expect: "24"},
+	{path: "/test/shot/cg/0010", k: "duration", v: "24.1", want: errors.New("cannot convert to int: 24.1")},
+	{path: "/test/shot/cg/0010", k: "duration", v: "not a number", want: errors.New("cannot convert to int: not a number")},
+	{path: "/test/shot/cg/0010", k: "duration", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+a", expect: "a"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+b", expect: "a\nb"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-a", expect: "b"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-b\n+c", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-b\n+c", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "ab", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+a,b", expect: "a_b\nc"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-a,b", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+a\n+b", expect: "a\nb\nc"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-a\n-b\n-c", expect: ""},
+
+	// below properties for search.
 	{path: "/test", k: "sup", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
 	{path: "/test/shot/cg/0010", k: "cg", v: "remove", expect: "remove"},
 	{path: "/test/shot/cg/0010/match", k: "status", v: "omit", expect: "omit"},
@@ -107,33 +135,6 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress", expect: "inprogress"},
 	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter", expect: "make the whole scene brighter"},
 	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com", expect: "reader@imagvfx.com"},
-	// above properties for search.
-
-	// below for pure validation. I mean, don't use these in search
-	{path: "/test/shot/cg/0010", k: "direction", v: "", expect: ""},
-	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\n", expect: "title\n\n"},
-	{path: "/test/shot/cg/0010", k: "due", v: "", expect: ""},
-	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21", expect: "2023/05/21"},
-	{path: "/test/shot/cg/0010", k: "due", v: "20230521", expect: "2023/05/21"},
-	{path: "/test/shot/cg/0010", k: "due", v: "2023/99/99", want: errors.New("invalid date string: parsing time \"2023/99/99\": month out of range")},
-	{path: "/test/shot/cg/0010", k: "due", v: "2023", want: errors.New("invalid date string: want yyyy/mm/dd, got 2023")},
-	{path: "/test/shot/cg/0010", k: "timecode", v: "", expect: ""},
-	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00", expect: "00:00:00:00"},
-	{path: "/test/shot/cg/0010", k: "timecode", v: "00000000", expect: "00:00:00:00"},
-	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00", want: errors.New("invalid timecode string: 00:00")},
-	{path: "/test/shot/cg/0010", k: "duration", v: "", expect: ""},
-	{path: "/test/shot/cg/0010", k: "duration", v: "24", expect: "24"},
-	{path: "/test/shot/cg/0010", k: "duration", v: "24.1", want: errors.New("cannot convert to int: 24.1")},
-	{path: "/test/shot/cg/0010", k: "duration", v: "not a number", want: errors.New("cannot convert to int: not a number")},
-	{path: "/test/shot/cg/0010", k: "tag", v: "+a", expect: "a"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "+b", expect: "a\nb"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "-a", expect: "b"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "-b\n+c", expect: "c"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "-b\n+c", expect: "c"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "ab", expect: "c"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "+a,b", expect: "a_b\nc"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "-a,b", expect: "c"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "+a\n+b", expect: "a\nb\nc"},
 }
 
 type testSearch struct {
