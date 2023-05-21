@@ -126,6 +126,9 @@ var testUpdateProps = []testProperty{
 	// below properties for search.
 	{path: "/test", k: "sup", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
 	{path: "/test/shot/cg/0010", k: "cg", v: "remove", expect: "remove"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "+due=2023/05/21\n+important", expect: "due=2023/05/21\nimportant"},
+	{path: "/test/shot/cg/0020", k: "tag", v: "+due=2023/08/12", expect: "due=2023/08/12"},
+	{path: "/test/shot/cg/0030", k: "tag", v: "+test", expect: "test"},
 	{path: "/test/shot/cg/0010/match", k: "status", v: "omit", expect: "omit"},
 	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "", expect: ""},
 	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "not-exist@imagvfx.com", want: errors.New("user not found: not-exist@imagvfx.com")},
@@ -190,6 +193,14 @@ var testSearches = []testSearch{
 	{path: "/", query: "type=shot name=0010", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", query: "type=shot name!=0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 	{path: "/", query: "type=part name=ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani"}},
+	{path: "/", query: "tag=due=2023/05/21", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "tag!=due=2023/05/21", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "tag:due", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
+	{path: "/", query: "tag!:due", wantRes: []string{"/test/shot/cg/0030"}},
+	{path: "/", query: "tag:due tag=important", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "tag=important", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "tag!=important", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "tag=important,test", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
 }
 
 type testRename struct {
