@@ -16,12 +16,16 @@ import (
 
 // validateProperty validates a property with related infos.
 // It saves the result to p.RawValue when it has processed well.
-func validateProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
-	handled, err := validateSpecialProperty(tx, ctx, p)
+func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
+	if p == nil {
+		return fmt.Errorf("unable to validate nil property")
+	}
+	// note that 'old' will be nil, if there is no previous value
+	handled, err := validateSpecialProperty(tx, ctx, p, old)
 	if handled {
 		return err
 	}
-	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property) error{
+	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property, *forge.Property) error{
 		"timecode":   validateTimecode,
 		"text":       validateText,
 		"user":       validateUser,
@@ -34,12 +38,12 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error 
 	if validate == nil {
 		return fmt.Errorf("unknown type of property: %v", p.Type)
 	}
-	return validate(tx, ctx, p)
+	return validate(tx, ctx, p, old)
 }
 
 // validateSpecialProperty validates special properties those Forge treats specially.
 // For normal properties, it will return the input value unmodified.
-func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) (bool, error) {
+func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) (bool, error) {
 	switch p.Name {
 	case ".predefined_sub_entries":
 		err := func() error {
@@ -83,12 +87,12 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property)
 	return false, nil
 }
 
-func validateText(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	p.RawValue = strings.ReplaceAll(p.Value, "\r\n", "\n")
 	return nil
 }
 
-func validateUser(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateUser(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	if p.Value == "" {
 		p.RawValue = ""
 		return nil
@@ -101,7 +105,7 @@ func validateUser(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	return nil
 }
 
-func validateTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateTimecode(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	// 00:00:00:00
 	if p.Value == "" {
 		// unset
@@ -132,7 +136,7 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, p *forge.Property) error 
 	return nil
 }
 
-func validateEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateEntryPath(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	// It will save 'val' entry as it's id.
 	if p.Value == "" {
 		// unset
@@ -158,14 +162,14 @@ func validateEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property) error
 }
 
 // Entry name property accepts path of an entry and returns it's name.
-func validateEntryName(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateEntryName(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	// It will save 'val' entry as it's id.
 	// So validation process is same with 'validateEntryPath'.
 	// Difference comes from evaluation.
-	return validateEntryPath(tx, ctx, p)
+	return validateEntryPath(tx, ctx, p, old)
 }
 
-func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	if p.Value == "" {
 		// unset
 		p.RawValue = ""
@@ -200,7 +204,7 @@ func validateDate(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	return nil
 }
 
-func validateInt(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
+func validateInt(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	if p.Value == "" {
 		// unset
 		p.RawValue = ""

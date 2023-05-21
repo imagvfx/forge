@@ -152,7 +152,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	err = validateProperty(tx, ctx, p)
+	err = validateProperty(tx, ctx, p, nil)
 	if err != nil {
 		return err
 	}
@@ -255,20 +255,20 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	if err != nil {
 		return err
 	}
-	p, err := getProperty(tx, ctx, upd.EntryPath, upd.Name)
+	old, err := getProperty(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
+	p := &forge.Property{EntryPath: upd.EntryPath, Name: upd.Name, Type: old.Type}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.Value != nil {
-		old := p.RawValue
 		p.Value = *upd.Value
-		err := validateProperty(tx, ctx, p)
+		err := validateProperty(tx, ctx, p, old)
 		if err != nil {
 			return err
 		}
-		if p.RawValue != old {
+		if p.RawValue != old.RawValue {
 			keys = append(keys, "val=?")
 			vals = append(vals, p.RawValue)
 		}
@@ -278,7 +278,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	}
 	keys = append(keys, "updated_at=?")
 	vals = append(vals, time.Now().UTC())
-	vals = append(vals, p.ID) // for where clause
+	vals = append(vals, old.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE properties
 		SET `+strings.Join(keys, ", ")+`

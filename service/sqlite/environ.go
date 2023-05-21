@@ -176,7 +176,7 @@ func addEnviron(tx *sql.Tx, ctx context.Context, e *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	err = validateProperty(tx, ctx, e)
+	err = validateProperty(tx, ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -249,22 +249,22 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 	if err != nil {
 		return err
 	}
-	e, err := getEnviron(tx, ctx, upd.EntryPath, upd.Name)
+	old, err := getEnviron(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
 	}
+	e := &forge.Property{EntryPath: upd.EntryPath, Name: upd.Name, Type: old.Type}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.Value != nil {
-		p := &forge.Property{EntryPath: upd.EntryPath, Name: e.Name, Type: e.Type, Value: *upd.Value}
-		err = validateProperty(tx, ctx, p)
+		e.Value = *upd.Value
+		err = validateProperty(tx, ctx, e, old)
 		if err != nil {
 			return err
 		}
-		if e.RawValue != p.RawValue {
+		if e.RawValue != old.RawValue {
 			keys = append(keys, "val=?")
-			vals = append(vals, p.RawValue)
-			e.RawValue = p.RawValue
+			vals = append(vals, e.RawValue)
 		}
 	}
 	if len(keys) == 0 {
@@ -272,7 +272,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 	}
 	keys = append(keys, "updated_at=?")
 	vals = append(vals, time.Now().UTC())
-	vals = append(vals, e.ID) // for where clause
+	vals = append(vals, old.ID) // for where clause
 	result, err := tx.ExecContext(ctx, `
 		UPDATE environs
 		SET `+strings.Join(keys, ", ")+`

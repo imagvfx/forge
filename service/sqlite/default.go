@@ -429,7 +429,7 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 	if err != nil {
 		return err
 	}
-	err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value})
+	err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}, nil)
 	if err != nil {
 		return err
 	}
@@ -486,7 +486,7 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 		return err
 	}
 	p := &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}
-	err = validateProperty(tx, ctx, p)
+	err = validateProperty(tx, ctx, p, nil)
 	if err != nil {
 		return err
 	}
@@ -708,7 +708,7 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 			typ = *upd.Type
 		}
 		p := &forge.Property{Name: d.Name, Type: typ, Value: *upd.Value}
-		err = validateProperty(tx, ctx, p)
+		err = validateProperty(tx, ctx, p, nil)
 		if err != nil {
 			return err
 		}
