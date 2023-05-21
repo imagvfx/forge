@@ -241,30 +241,17 @@ func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 			continue
 		}
 		v = strings.TrimSpace(v)
-		v = strings.ReplaceAll(v, " ", "_")
+		v = strings.ReplaceAll(v, " ", "_") // no space in tag for equal-search
+		v = strings.ReplaceAll(v, "+", "_") // avoid confuse caused by op vs val
+		v = strings.ReplaceAll(v, "-", "_") // avoid confuse caused by op vs val
 		v = strings.ReplaceAll(v, ",", "_") // avoid comma in a tag for search like 'tag:a,b,c'
 		switch op {
 		case '+':
 			// add
-			v = strings.ReplaceAll(v, "/", "_")
 			have[v] = true
 		case '-':
 			// remove
-			v = strings.ReplaceAll(v, "/", "_")
 			delete(have, v)
-		case '*':
-			// replace
-			toks := strings.Split(v, "/")
-			if len(toks) != 2 {
-				return fmt.Errorf("replace a tag needs *old/new form")
-			}
-			old := toks[0]
-			new := toks[1]
-			if !have[old] {
-				continue
-			}
-			delete(have, old)
-			have[new] = true
 		}
 	}
 	newlines := make([]string, 0, len(have))

@@ -128,11 +128,11 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "tag", v: "+a", expect: "a"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "+b", expect: "a\nb"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "-a", expect: "b"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "*b/c", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-b\n+c", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-b\n+c", expect: "c"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "ab", expect: "c"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "*b/c", expect: "c"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "+a,b", expect: "a_b\nc"},
-	{path: "/test/shot/cg/0010", k: "tag", v: "-a/b", expect: "c"},
+	{path: "/test/shot/cg/0010", k: "tag", v: "-a,b", expect: "c"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "+a\n+b", expect: "a\nb\nc"},
 }
 
