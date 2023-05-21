@@ -96,33 +96,33 @@ type testProperty struct {
 }
 
 var testUpdateProps = []testProperty{
-	{path: "/test", k: "sup", v: "admin@imagvfx.com"},
-	{path: "/test/shot/cg/0010", k: "cg", v: "remove"},
-	{path: "/test/shot/cg/0010/match", k: "status", v: "omit"},
-	{path: "/test/shot/cg/0010/ani", k: "assignee", v: ""},
+	{path: "/test", k: "sup", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
+	{path: "/test/shot/cg/0010", k: "cg", v: "remove", expect: "remove"},
+	{path: "/test/shot/cg/0010/match", k: "status", v: "omit", expect: "omit"},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "", expect: ""},
 	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "not-exist@imagvfx.com", want: errors.New("user not found: not-exist@imagvfx.com")},
-	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "admin@imagvfx.com"},
-	{path: "/test/shot/cg/0010/ani", k: "status", v: "done"},
-	{path: "/test/shot/cg/0010/lgt", k: "assignee", v: "admin@imagvfx.com"},
-	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress"},
-	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter"},
-	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com"},
+	{path: "/test/shot/cg/0010/ani", k: "assignee", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
+	{path: "/test/shot/cg/0010/ani", k: "status", v: "done", expect: "done"},
+	{path: "/test/shot/cg/0010/lgt", k: "assignee", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
+	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress", expect: "inprogress"},
+	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter", expect: "make the whole scene brighter"},
+	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com", expect: "reader@imagvfx.com"},
 	// above properties for search.
 
 	// below for pure validation. I mean, don't use these in search
-	{path: "/test/shot/cg/0010", k: "direction", v: ""},
+	{path: "/test/shot/cg/0010", k: "direction", v: "", expect: ""},
 	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\n", expect: "title\n\n"},
-	{path: "/test/shot/cg/0010", k: "due", v: ""},
-	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21"},
+	{path: "/test/shot/cg/0010", k: "due", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21", expect: "2023/05/21"},
 	{path: "/test/shot/cg/0010", k: "due", v: "20230521", expect: "2023/05/21"},
 	{path: "/test/shot/cg/0010", k: "due", v: "2023/99/99", want: errors.New("invalid date string: parsing time \"2023/99/99\": month out of range")},
 	{path: "/test/shot/cg/0010", k: "due", v: "2023", want: errors.New("invalid date string: want yyyy/mm/dd, got 2023")},
-	{path: "/test/shot/cg/0010", k: "timecode", v: ""},
-	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00"},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00", expect: "00:00:00:00"},
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00000000", expect: "00:00:00:00"},
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00", want: errors.New("invalid timecode string: 00:00")},
-	{path: "/test/shot/cg/0010", k: "duration", v: ""},
-	{path: "/test/shot/cg/0010", k: "duration", v: "24"},
+	{path: "/test/shot/cg/0010", k: "duration", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "duration", v: "24", expect: "24"},
 	{path: "/test/shot/cg/0010", k: "duration", v: "24.1", want: errors.New("cannot convert to int: 24.1")},
 	{path: "/test/shot/cg/0010", k: "duration", v: "not a number", want: errors.New("cannot convert to int: not a number")},
 	{path: "/test/shot/cg/0010", k: "tag", v: "+a", expect: "a"},
@@ -351,12 +351,8 @@ func TestAddEntries(t *testing.T) {
 		if err != nil {
 			t.Fatalf("couldn't get updated property: %v", err)
 		}
-		expect := prop.v
-		if prop.expect != "" {
-			expect = prop.expect
-		}
-		if got.Value != expect {
-			t.Fatalf("want value %q, got %q", expect, got.Value)
+		if got.Value != prop.expect {
+			t.Fatalf("want value %q, got %q", prop.expect, got.Value)
 		}
 	}
 
