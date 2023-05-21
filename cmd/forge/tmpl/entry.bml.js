@@ -1696,19 +1696,34 @@ function submitUpdaterOrAdder(ev, input) {
 						let value = j.Msg.Value;
 						infoElem.dataset.value = value;
 						let evaled = j.Msg.Eval;
-						for (let line of evaled.split("\n")) {
-							line = line.trim();
-							if (line == "") {
-								valueElem.innerHTML += "<br>"
-								continue
+						if (j.Msg.Type == "tag") {
+							for (let line of evaled.split("\n")) {
+								if (valueElem.innerHTML != "") {
+									valueElem.innerHTML += "<br>"
+								}
+								line = line.trim();
+								let a = document.createElement("a");
+								a.classList.add("tagLink");
+								a.href = "?search=1&search_query="+j.Msg.Name+"="+encodeURIComponent(line)
+								let text = document.createTextNode("*"+line);
+								a.appendChild(text);
+								valueElem.appendChild(a);
 							}
-							let div = document.createElement("div");
-							let text = document.createTextNode(line);
-							div.appendChild(text);
-							if (line.startsWith("/")) {
-								div.classList.add("pathText");
+						} else {
+							for (let line of evaled.split("\n")) {
+								line = line.trim();
+								if (line == "") {
+									valueElem.innerHTML += "<br>"
+									continue
+								}
+								let div = document.createElement("div");
+								let text = document.createTextNode(line);
+								div.appendChild(text);
+								if (line.startsWith("/")) {
+									div.classList.add("pathText");
+								}
+								valueElem.appendChild(div);
 							}
-							valueElem.appendChild(div);
 						}
 						// remove possible 'invalid' class
 						valueElem.classList.remove("invalid");

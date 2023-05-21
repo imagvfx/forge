@@ -756,6 +756,21 @@
 	cursor: pointer;
 }
 
+.tagLink {
+	display: inline-block;
+	border-radius: 2px;
+	border: 1px solid #ccc;
+	margin: 2px 0;
+	padding: 0 2px;
+	background-color: #eef0fa;
+	font-size:0.7rem;
+	color: #444;
+}
+
+.tagLink:hover {
+	text-decoration: none;
+}
+
 .parentLink {
 	font-size: 0.7rem;
 	background-color: #EEE;
