@@ -388,9 +388,15 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if !wh.Exact {
 					vl = "%" + v + "%"
 				}
-				tagGlob := "'*" + v + "*'"
+				tagGlob := ""
 				if wh.Exact {
-					tagGlob = "'*' || char(10) || '" + v + "' || char(10) || '*'"
+					if v == "" {
+						tagGlob = "''"
+					} else {
+						tagGlob = "'*' || char(10) || '" + v + "' || char(10) || '*'"
+					}
+				} else {
+					tagGlob = "'*" + v + "*'"
 				}
 				userWhere := ""
 				whereVals := make([]any, 0)
