@@ -158,8 +158,8 @@ func evalInt(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 }
 
 func evalTag(tx *sql.Tx, ctx context.Context, p *forge.Property) {
-	p.Eval = p.RawValue
-	p.Value = p.RawValue
+	p.Eval = strings.TrimSpace(p.RawValue)
+	p.Value = strings.TrimSpace(p.RawValue)
 }
 
 // evalSpecialProperty evaluates special properties that starts with dot (.).

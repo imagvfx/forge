@@ -269,9 +269,9 @@ func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 	}
 	newlines := make([]string, 0, len(have))
 	for v := range have {
-		newlines = append(newlines, v+"\n")
+		newlines = append(newlines, v)
 	}
 	sort.Strings(newlines)
-	p.RawValue = strings.Join(newlines, "")
+	p.RawValue = "\n" + strings.Join(newlines, "\n") + "\n"
 	return nil
 }
