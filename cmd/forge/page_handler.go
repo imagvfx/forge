@@ -122,13 +122,18 @@ var pageHandlerFuncs = template.FuncMap{
 		// Modify both, if needed.
 		t := ""
 		lines := strings.Split(s, "\n")
-		for i, line := range lines {
+		i := 0
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line == "" {
+				continue
+			}
 			if i != 0 {
 				t += "<br>"
 			}
-			line = strings.TrimSpace(line)
 			q := template.URLQueryEscaper(line)
 			t += "<a class='tagLink' href='?search=1&search_query=" + prop + "=" + q + "'>" + line + "</a>"
+			i++
 		}
 		return template.HTML(t)
 	},
