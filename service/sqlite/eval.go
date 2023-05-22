@@ -115,6 +115,8 @@ func evalEntryPath(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 
 func evalEntryName(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	evalEntryPath(tx, ctx, p)
+	p.Eval = filepath.Base(p.Eval)
+	p.Value = filepath.Base(p.Value)
 }
 
 func evalDate(tx *sql.Tx, ctx context.Context, p *forge.Property) {
