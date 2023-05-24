@@ -117,7 +117,7 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return template.HTML(t)
 	},
-	"tagLines": func(prop, s string) template.HTML {
+	"tagLinks": func(show, prop, s string) template.HTML {
 		// Similar code is in tmpl/entry.bml.js for in-place update.
 		// Modify both, if needed.
 		t := ""
@@ -128,11 +128,8 @@ var pageHandlerFuncs = template.FuncMap{
 			if line == "" {
 				continue
 			}
-			if i != 0 {
-				t += "<br>"
-			}
 			q := template.URLQueryEscaper(line)
-			t += "<a class='tagLink' href='?search=1&search_query=" + prop + "=" + q + "'>" + line + "</a>"
+			t += "<a class='tagLink' href='/" + show + "?search=1&search_query=" + prop + "=" + q + "'>" + line + "</a>"
 			i++
 		}
 		return template.HTML(t)

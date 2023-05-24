@@ -435,7 +435,7 @@
 													<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
 												]
 												{{if eq $p.Type "tag"}}
-												<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{tagLines $p.Name $p.Eval}}{{$p.ValueError}}]
+												<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{tagLinks (topName $ent.Path) $p.Name $p.Eval}}{{$p.ValueError}}]
 												{{else}}
 												<div class="{{if $p.ValueError}}invalid{{end}} infoValue"> [{{brLines $p.Eval}}{{$p.ValueError}}]
 												{{end}}
