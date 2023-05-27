@@ -39,7 +39,7 @@ func (w where) Equal() string {
 	if w.Exact {
 		return "="
 	}
-	return "LIKE"
+	return "GLOB"
 }
 
 func (w where) Not() string {
@@ -59,7 +59,7 @@ func (w where) Value() string {
 	if w.Val == "" {
 		return w.Val
 	}
-	return `%` + w.Val + `%`
+	return `*` + w.Val + `*`
 }
 
 func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
@@ -153,24 +153,24 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		if wh.Key == "" {
 			// Generic search. Not tied to a property.
 			innerKeys = append(innerKeys, `
-				(entries.path LIKE ? OR
-					(default_properties.name NOT LIKE '.%' AND
+				(entries.path GLOB ? OR
+					(default_properties.name NOT GLOB '.*' AND
 						(
-							(default_properties.type!='user' AND properties.val LIKE ?) OR
+							(default_properties.type!='user' AND properties.val GLOB ?) OR
 							(default_properties.type='user' AND properties.id IN
 								(SELECT properties.id FROM properties
 									LEFT JOIN accessors ON properties.val=accessors.id
 									LEFT JOIN default_properties ON properties.default_id=default_properties.id
-									WHERE default_properties.type='user' AND (accessors.called LIKE ? OR accessors.name LIKE ?)
+									WHERE default_properties.type='user' AND (accessors.called GLOB ? OR accessors.name GLOB ?)
 								)
 							)
 						)
 					)
 				)
 			`)
-			pathl := search.SearchRoot + `/%` + rawval
+			pathl := search.SearchRoot + `/*` + rawval
 			if strings.HasSuffix(pathl, "/") {
-				pathl += `%`
+				pathl += `*`
 			}
 			innerVals = append(innerVals, pathl, val, val, val)
 		} else {
@@ -185,8 +185,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			if sub != "" {
 				findParent = true
 				if sub != "(sub)" {
-					q += "entries.path LIKE ? AND"
-					innerVals = append(innerVals, "%/"+sub)
+					q += "entries.path GLOB ? AND"
+					innerVals = append(innerVals, "*/"+sub)
 				}
 			}
 			not := ""
@@ -201,7 +201,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				vl := v
 				if !wh.Exact {
-					vl = "%" + v + "%"
+					vl = "*" + v + "*"
 				}
 				tagGlob := ""
 				if wh.Exact {
@@ -286,8 +286,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		whereType = "entry_types.name " + whType.Not() + whType.Equal() + " ?"
 		vals = append(vals, whType.Value())
 	}
-	whereRoot := "entries.path LIKE ?"
-	vals = append(vals, search.SearchRoot+`/%`)
+	whereRoot := "entries.path GLOB ?"
+	vals = append(vals, search.SearchRoot+`/*`)
 	wherePath := "TRUE"
 	if whPath != nil {
 		wherePath = "entries.path " + whPath.Not() + whPath.Equal() + " ?"
@@ -298,7 +298,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		// Need in-exact search.
 		whName.Exact = false
 		whereName = "entries.path " + whName.Not() + whName.Equal() + " ?"
-		vals = append(vals, "%/"+whName.Value())
+		vals = append(vals, "*/"+whName.Value())
 	}
 	whereInner := "TRUE"
 	if len(innerQueries) != 0 {
@@ -368,5 +368,3 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	}
 	return ents, nil
 }
-
-
