@@ -168,9 +168,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					)
 				)
 			`)
-			pathl := search.SearchRoot + `/*` + rawval
-			if strings.HasSuffix(pathl, "/") {
-				pathl += `*`
+			pathl := rawval + "*"
+			if !strings.HasPrefix(rawval, "/") {
+				// relative path
+				pathl = search.SearchRoot + "*" + rawval + "*"
 			}
 			innerVals = append(innerVals, pathl, val, val, val)
 		} else {
