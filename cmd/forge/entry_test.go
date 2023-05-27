@@ -45,6 +45,8 @@ var testDefaults = []testDefault{
 	{typ: "shot", ctg: "property", k: "timecode", t: "timecode", v: ""},
 	{typ: "shot", ctg: "property", k: "tag", t: "tag", v: ""},
 	{typ: "shot", ctg: "property", k: "duration", t: "int", v: ""},
+	{typ: "shot", ctg: "property", k: "SHOT_PATH", t: "entry_path", v: ""},
+	{typ: "shot", ctg: "property", k: "SHOT", t: "entry_name", v: ""},
 	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
 	{typ: "part", ctg: "property", k: "status", t: "text", v: ""},
 	{typ: "part", ctg: "property", k: "direction", t: "text", v: ""},
@@ -122,6 +124,8 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "tag", v: "-a,b", expect: "c"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "+a\n+b", expect: "a\nb\nc"},
 	{path: "/test/shot/cg/0010", k: "tag", v: "-a\n-b\n-c", expect: ""},
+	{path: "/test/shot/cg/0010", k: "SHOT_PATH", v: ".", expect: "/test/shot/cg/0010"},
+	{path: "/test/shot/cg/0010", k: "SHOT", v: ".", expect: "0010"},
 
 	// below properties for search.
 	{path: "/test", k: "sup", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
