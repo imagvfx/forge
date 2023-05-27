@@ -123,6 +123,19 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		wh.Val = kwd[idx+1:] // exclude colon or equal
 		// special keywords those aren't actual properties.
 		// multiple queries on special keywords aren't supported yet and will pick up the last one.
+		if k == "from" {
+			if wh.Val == "" {
+				continue
+			}
+			if wh.Val[0] == '/' {
+				search.SearchRoot = strings.TrimRight(wh.Val, "/ ")
+			}
+			if wh.Val == "." {
+				continue
+			}
+			// invalid 'from'
+			continue
+		}
 		if k == "path" {
 			whPath = &wh
 			continue
