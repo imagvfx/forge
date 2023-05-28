@@ -1,27 +1,6 @@
 "use strict";
 
 window.onload = function() {
-	let searchForm = document.querySelector("#searchForm");
-	searchForm.onsubmit = function(ev) {
-		let formData = new FormData(searchForm);
-		let from = "";
-		let toks = formData.get("search_query").split(" ");
-		for (let t of toks) {
-			if (t.startsWith("from:") || t.startsWith("from=")) {
-				from = t.slice(5);
-			}
-		}
-		from = from.trim();
-		if (from) {
-			if (from == "/") {
-				searchForm.action = "/";
-			} else if (from == ".") {
-				searchForm.action = window.location.pathname;
-			} else {
-				searchForm.action = from.replace(/[/]*$/, "");
-			}
-		}
-	}
 	document.onclick = function(event) {
 		if (event.target.classList.contains("pathText")) {
 			let p = event.target;
@@ -829,10 +808,7 @@ window.onload = function() {
 			// I've had hard time when I drag quickSearchLink while it is 'a' tag.
 			// At first glance qs.ondragstart seemed to work consitently, then the link is clicked instead.
 			// Hope I got peace by making quickSearchLink 'div'.
-			let param = new URLSearchParams(qs.dataset.link);
-			document.querySelector(".search-box-left").value = param.get("search_entry_type");
-			document.querySelector(".search-box-center").value = param.get("search_query");
-			document.querySelector(".search-box-right").click();
+			window.location.href = qs.dataset.link;
 			return;
 		}
 		qs.ondragstart = function(event) {
