@@ -91,23 +91,20 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			continue
 		}
 		wh := where{}
-		idxColon := strings.Index(kwd, ":")
-		idxEqual := strings.Index(kwd, "=")
-		if idxColon == -1 && idxEqual == -1 {
-			// Generic search
+		idx := len(kwd)
+		for _, cmp := range ":=" {
+			i := strings.Index(kwd, string(cmp))
+			if i != -1 && i < idx {
+				idx = i
+			}
+		}
+		if idx == len(kwd) {
 			wh.Val = kwd
 			wheres = append(wheres, wh)
 			continue
 		}
-		if idxColon == -1 {
-			idxColon = len(kwd)
-		}
-		if idxEqual == -1 {
-			idxEqual = len(kwd)
-		}
-		idx := idxColon
-		if idxEqual < idxColon {
-			idx = idxEqual
+		cmp := kwd[idx]
+		if cmp == '=' {
 			wh.Exact = true
 		}
 		k := kwd[:idx]
