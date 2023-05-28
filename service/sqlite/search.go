@@ -296,10 +296,11 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	}
 	whereName := "TRUE"
 	if whName != nil {
-		// Need in-exact search.
+		// workaround of glob limitation.
+		// user should provide the exact name.
 		whName.Exact = false
 		whereName = "entries.path " + whName.Not() + whName.Equal() + " ?"
-		vals = append(vals, "*/"+whName.Value())
+		vals = append(vals, "*/"+whName.Val)
 	}
 	whereInner := "TRUE"
 	if len(innerQueries) != 0 {
