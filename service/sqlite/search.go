@@ -150,6 +150,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		eq := wh.Equal()
 		findParent := false
 		innerKeys := make([]string, 0)
+
 		if wh.Key == "" {
 			// Generic search. Not tied to a property.
 			innerKeys = append(innerKeys, `
@@ -175,6 +176,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			}
 			innerVals = append(innerVals, pathl, val, val, val)
 		} else {
+			// keyword search
 			sub := ""
 			toks := strings.SplitN(key, ".", 2)
 			if len(toks) == 2 {
@@ -197,6 +199,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			q += " " + not + " ("
 			vs := strings.Split(rawval, ",")
 			for i, v := range vs {
+				// multiple values separated by comma
 				if i != 0 {
 					q += " OR "
 				}
