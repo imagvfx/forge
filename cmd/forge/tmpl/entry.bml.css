@@ -442,6 +442,10 @@
 	max-height: none;
 }
 
+.infoValue.expand {
+	max-height: none;
+}
+
 .infoValue.invalid {
 	color: rgba(150, 15, 15, 0.7);
 }

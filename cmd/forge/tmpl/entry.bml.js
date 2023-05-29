@@ -1277,6 +1277,13 @@ window.onload = function() {
 	for (let t of infoTitles) {
 		t.onclick = function(event) {
 			if (subEntArea.contains(t) && !subEntArea.classList.contains("editMode")) {
+				let info = t.closest(".subEntryInfo");
+				let val = info.querySelector(".infoValue");
+				if (val.classList.contains("expand")) {
+					val.classList.remove("expand");
+				} else {
+					val.classList.add("expand")
+				}
 				return;
 			}
 			let info = parentWithClass(t, "info");
