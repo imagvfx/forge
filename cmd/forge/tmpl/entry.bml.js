@@ -953,6 +953,12 @@ window.onload = function() {
 				alreadyHandled = true;
 				return;
 			}
+			if (!event.target.closest(".infoTitle, .statusSelector")) {
+				// browsers couldn't distinguish scrolling by click-drag and holding mouse down,
+				// so it errornously enters editMode when scrolling. let's avoid that by
+				// narrowing hold down area.
+				return;
+			}
 			// Two conditions should met to turn on editMode.
 			// User holding mouse down for reasonable duration,
 			// and mouse movement should be relatively small. (to distinguish it from text selection)
