@@ -97,42 +97,37 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return template.JS(string(b)), nil
 	},
-	"brLines": func(s string) template.HTML {
-		// Similar code is in tmpl/entry.bml.js for in-place update.
-		// Modify both, if needed.
+	"infoValueElement": func(p *forge.Property) template.HTML {
+		// If you are going to modify this function,
+		// You should also modify 'refreshInfoValue' function in tmpl/entry.bml.js.
+		if p.ValueError != nil {
+			return template.HTML("<div class='invalid infoValue'>" + p.ValueError.Error() + "</div>")
+		}
+		show := strings.Split(p.EntryPath, "/")[1]
 		t := ""
-		lines := strings.Split(s, "\n")
+		lines := strings.Split(p.Eval, "\n")
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
 			if line == "" {
-				t += "<br>"
 				continue
 			}
-			line = template.HTMLEscapeString(line)
-			if strings.HasPrefix(line, "/") {
-				t += "<div class='pathText'>" + line + "</div>"
+			if p.Type == "tag" {
+				q := template.URLQueryEscaper(line)
+				t += "<a class='tagLink' href='/" + show + "?search=1&search_query=" + p.Name + "=" + q + "'>" + line + "</a>"
 			} else {
-				t += "<div>" + line + "</div>"
+				if line == "" {
+					t += "<br>"
+					continue
+				}
+				line = template.HTMLEscapeString(line)
+				if strings.HasPrefix(line, "/") {
+					t += "<div class='pathText'>" + line + "</div>"
+				} else {
+					t += "<div>" + line + "</div>"
+				}
 			}
 		}
-		return template.HTML(t)
-	},
-	"tagLinks": func(show, prop, s string) template.HTML {
-		// Similar code is in tmpl/entry.bml.js for in-place update.
-		// Modify both, if needed.
-		t := ""
-		lines := strings.Split(s, "\n")
-		i := 0
-		for _, line := range lines {
-			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
-			}
-			q := template.URLQueryEscaper(line)
-			t += "<a class='tagLink' href='/" + show + "?search=1&search_query=" + prop + "=" + q + "'>" + line + "</a>"
-			i++
-		}
-		return template.HTML(t)
+		return template.HTML("<div class='infoValue'>" + t + "</div>")
 	},
 	"toURL": func(s string) template.URL {
 		return template.URL(s)

@@ -1683,69 +1683,7 @@ function submitUpdaterOrAdder(ev, input) {
 						return;
 					}
 					for (let path of submitEntPaths) {
-						let infoElem = document.querySelector(`.info[data-entry-path='${path}'][data-category='${ctg}'][data-name='${name}']`);
-						if (!infoElem) {
-							continue
-						}
-						let valueElem = infoElem.querySelector(".infoValue");
-						// Update the value.
-						//
-						// Similar code is registered as a template function in page_handler.go
-						// Modify both, if needed.
-						valueElem.innerHTML = "";
-						let value = j.Msg.Value;
-						infoElem.dataset.value = value;
-						let evaled = j.Msg.Eval;
-						if (j.Msg.Type == "tag") {
-							let show = "";
-							let toks = path.split("/");
-							if (toks.length != 1) {
-								show = toks[1];
-							}
-							for (let line of evaled.split("\n")) {
-								line = line.trim();
-								let a = document.createElement("a");
-								a.classList.add("tagLink");
-								a.href = "/"+show+"?search=1&search_query="+j.Msg.Name+"="+encodeURIComponent(line)
-								let text = document.createTextNode(line);
-								a.appendChild(text);
-								valueElem.appendChild(a);
-							}
-						} else {
-							for (let line of evaled.split("\n")) {
-								line = line.trim();
-								if (line == "") {
-									valueElem.innerHTML += "<br>"
-									continue
-								}
-								let div = document.createElement("div");
-								let text = document.createTextNode(line);
-								div.appendChild(text);
-								if (line.startsWith("/")) {
-									div.classList.add("pathText");
-								}
-								valueElem.appendChild(div);
-							}
-						}
-						// remove possible 'invalid' class
-						valueElem.classList.remove("invalid");
-
-						// Look UpdatedAt to check it was actually updated.
-						// It might not, if new value is same as the old one.
-						let updated = new Date(j.Msg.UpdatedAt);
-						let now = Date.now();
-						let delta = (now - updated);
-						let day = 24 * 60 * 60 * 1000;
-						if (delta <= day) {
-							let dot = infoElem.querySelector(".recentlyUpdatedDot");
-							let ent = dot.closest(".entry");
-							let entDot = ent.querySelector(".recentlyUpdatedDot.forEntry");
-							for (let d of [dot, entDot]) {
-								d.dataset.updatedAt = j.Msg.UpdatedAt;
-								d.title = "updated just now";
-								d.classList.remove("invisible");
-							}
-						}
+						refreshInfoValue(path, ctg, name, j.Msg);
 					}
 					printStatus("done");
 				} else {
@@ -1761,6 +1699,71 @@ function submitUpdaterOrAdder(ev, input) {
 	req.open(form.method, form.action);
 	req.send(formData);
 	marker.classList.remove("invisible");
+}
+
+function refreshInfoValue(path, ctg, name, p) {
+	// If you are going to modify this function,
+	// You should also modify 'infoValueElement' handler function in page_handler.go.
+
+	let infoElem = document.querySelector(`.info[data-entry-path='${path}'][data-category='${ctg}'][data-name='${name}']`);
+	if (!infoElem) {
+		return
+	}
+	let valueElem = infoElem.querySelector(".infoValue");
+	valueElem.innerHTML = "";
+	let value = p.Value;
+	infoElem.dataset.value = value;
+	let evaled = p.Eval;
+	if (p.Type == "tag") {
+		let show = "";
+		let toks = path.split("/");
+		if (toks.length != 1) {
+			show = toks[1];
+		}
+		for (let line of evaled.split("\n")) {
+			line = line.trim();
+			let a = document.createElement("a");
+			a.classList.add("tagLink");
+			a.href = "/"+show+"?search=1&search_query="+p.Name+"="+encodeURIComponent(line)
+			let text = document.createTextNode(line);
+			a.appendChild(text);
+			valueElem.appendChild(a);
+		}
+	} else {
+		for (let line of evaled.split("\n")) {
+			line = line.trim();
+			if (line == "") {
+				valueElem.innerHTML += "<br>"
+				continue
+			}
+			let div = document.createElement("div");
+			let text = document.createTextNode(line);
+			div.appendChild(text);
+			if (line.startsWith("/")) {
+				div.classList.add("pathText");
+			}
+			valueElem.appendChild(div);
+		}
+	}
+	// remove possible 'invalid' class
+	valueElem.classList.remove("invalid");
+
+	// Look UpdatedAt to check it was actually updated.
+	// It might not, if new value is same as the old one.
+	let updated = new Date(p.UpdatedAt);
+	let now = Date.now();
+	let delta = (now - updated);
+	let day = 24 * 60 * 60 * 1000;
+	if (delta <= day) {
+		let dot = infoElem.querySelector(".recentlyUpdatedDot");
+		let ent = dot.closest(".entry");
+		let entDot = ent.querySelector(".recentlyUpdatedDot.forEntry");
+		for (let d of [dot, entDot]) {
+			d.dataset.updatedAt = p.UpdatedAt;
+			d.title = "updated just now";
+			d.classList.remove("invisible");
+		}
+	}
 }
 
 function showCategoryInfos(ctg) {
