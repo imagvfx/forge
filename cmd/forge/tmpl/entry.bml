@@ -13,11 +13,11 @@
 			data-copy-path-remap-to="{{remapTo $.UserSetting.CopyPathRemap}}"
 			data-current-select-status-menu=""> [
 			<div class="left {{if $.UserSetting.EntryPageHideSideMenu}}hideSideMenu{{end}}"> [
+				<div id="sideMenuHideButton"> [
+					<div id="sideMenuHide"> [&lt&lt]
+					<div id="sideMenuShow"> [&gt&gt]
+				]
 				<div id="sideMenu"> [
-					<div id="sideMenuHideButton"> [
-						<div id="sideMenuHide"> [&lt&lt]
-						<div id="sideMenuShow"> [&gt&gt]
-					]
 					<div id="sideMenuContent"> [
 						<div style="display:flex;justify-content:space-between;font-size:0.8rem;padding:1.5rem 1.2rem;"> [
 							<a class="prevNextLink {{if not $.PrevEntry}}disabled{{end}}" href="{{if $.PrevEntry}}{{$.PrevEntry.Path}}{{end}}"> [Prev]

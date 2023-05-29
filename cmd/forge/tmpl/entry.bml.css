@@ -35,6 +35,7 @@
 	position: absolute;
 	user-select: none;
 	opacity: 0.2;
+	z-index: 1;
 }
 
 #sideMenuHideButton:hover {
