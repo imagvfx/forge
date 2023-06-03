@@ -843,6 +843,10 @@
 	user-select: none;
 }
 
+.summaryDot.my:before {
+	content: "@";
+}
+
 .grandSubEntries {
 	display: flex;
 	gap: 0.1rem;

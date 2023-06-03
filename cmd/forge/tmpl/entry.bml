@@ -409,7 +409,7 @@
 											<div class="grandSubArea"> [
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
-													<div class="summaryDot summaryLabeler statusSelector grandSubEntry" data-sub="{{$gs.Name}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
+													<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector grandSubEntry" data-sub="{{$gs.Name}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
 													{{end}}
 													<div class="summaryDot grandSubAdderLoader"> [+]
 												]
