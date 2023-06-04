@@ -591,13 +591,12 @@
 }
 
 .subEntryListOption.expandPropertyOption {
-	background-image: url("/asset/expand-property.svg");
+	background-image: url("/asset/shrink-property.svg");
 	background-size: 0.9rem;
 }
 
-.subEntryArea.expandProperty .subEntryListOption.expandPropertyOption {
-	background-color: #eefaff;
-	border: 1px solid #88AADD;
+.subEntryListOption.expandPropertyOption[data-expand="true"] {
+	background-image: url("/asset/expand-property.svg");
 }
 
 .subEntryListOption.groupByOption {

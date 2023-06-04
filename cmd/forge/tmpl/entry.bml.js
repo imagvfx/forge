@@ -177,11 +177,28 @@ window.onload = function() {
 			opt = event.target.closest(".subEntryListOption.expandPropertyOption");
 			if (opt) {
 				let subEntArea = document.querySelector(".subEntryArea");
-				if (subEntArea.classList.contains("expandProperty")) {
+				if (opt.dataset.expand == "true") {
 					subEntArea.classList.remove("expandProperty");
+					opt.dataset.expand = "false";
 				} else {
 					subEntArea.classList.add("expandProperty");
+					opt.dataset.expand = "true";
 				}
+				let req = new XMLHttpRequest();
+				let formData = new FormData();
+				formData.append("update_entry_page_expand_property", "1");
+				formData.append("expand", opt.dataset.expand);
+				req.open("post", "/api/update-user-setting");
+				req.onerror = function() {
+					printErrorStatus("network error occurred. please check whether the server is down.");
+				}
+				req.onload = function() {
+					if (req.status != 200) {
+						printErrorStatus(req.responseText);
+						return;
+					}
+				}
+				req.send(formData);
 				return;
 			}
 		}

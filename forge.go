@@ -324,6 +324,7 @@ type UserSetting struct {
 	EntryPageHideSideMenu       bool
 	EntryPageSelectedCategory   string
 	EntryPageShowHiddenProperty string
+	EntryPageExpandProperty     bool
 	EntryPageSearchEntryType    string
 	EntryPagePropertyFilter     map[string]string
 	EntryPageSortProperty       map[string]string

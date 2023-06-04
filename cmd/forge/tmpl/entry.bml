@@ -252,7 +252,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
+				<div class="subEntryArea {{if $.UserSetting.EntryPageExpandProperty}}expandProperty{{end}}" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption editModeOption" title="turn on/off edit-mode" data-value=""> []
 						<div class="subEntryListSeparator"> []
@@ -260,7 +260,7 @@
 							<img class="normalViewOption" src="/asset/normal-view.svg"> []
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []
 						]
-						<div class="subEntryListOption expandPropertyOption" title="expand/shrink property" data-value=""> []
+						<div class="subEntryListOption expandPropertyOption" title="expand/shrink property" data-expand="{{$.UserSetting.EntryPageExpandProperty}}"> []
 						<div class="flexSpacer"> []
 						<select class="subEntryListOption groupByOption" {{if not $.ResultsFromSearch}}data-disabled="1" disabled{{end}}> [
 							<option value="" {{if eq $.UserSetting.EntryGroupBy ""}}selected{{end}}> [(group by)]

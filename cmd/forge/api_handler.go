@@ -740,6 +740,18 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_entry_page_expand_property") != "" {
+		v := r.FormValue("expand")
+		expand, err := strconv.ParseBool(v)
+		if err != nil {
+			return err
+		}
+		user := forge.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "entry_page_expand_property", expand)
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_filter") != "" {
 		entryType := r.FormValue("entry_page_entry_type")
 		filter := r.FormValue("entry_page_property_filter")
