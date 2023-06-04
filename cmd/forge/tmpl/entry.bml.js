@@ -202,8 +202,8 @@ window.onload = function() {
 				return;
 			}
 		}
-		let expander = event.target.closest(".propertyExpander");
-		if (expander) {
+		let show_hidden = event.target.closest(".showHiddenProperty");
+		if (show_hidden) {
 			let bottom = document.querySelector(".mainEntryBottom");
 			if (bottom.dataset.showHidden == "") {
 				bottom.dataset.showHidden = "1";
@@ -227,7 +227,7 @@ window.onload = function() {
 			req.send(formData);
 			return;
 		}
-		expander = event.target.closest(".thumbnailViewExpander");
+		let expander = event.target.closest(".thumbnailViewExpander");
 		if (expander) {
 			let thisEnt = expander.closest(".subEntry");
 			let expand = !thisEnt.classList.contains("expanded");

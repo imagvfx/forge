@@ -167,7 +167,7 @@
 							<div class="mainEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
 									<div class="infoSelector"> [Property ({{len $.Properties}})]
-									<div class="propertyExpander" data-expand=""> []
+									<div class="showHiddenProperty"> []
 								]
 								<div class="infoCategoryToggle" data-category="environ"> [
 									<div class="infoSelector"> [Environ ({{len $.Environs}})]

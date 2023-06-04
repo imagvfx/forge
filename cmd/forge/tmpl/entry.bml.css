@@ -963,7 +963,7 @@
 	color: #555;
 }
 
-.propertyExpander {
+.showHiddenProperty {
 	width: 5px;
 	padding: 0.3rem;
 	background-image: url("/asset/down-arrow.svg");
@@ -974,7 +974,7 @@
 	filter: opacity(40%);
 }
 
-.mainEntryBottom[data-show-hidden="1"] .propertyExpander {
+.mainEntryBottom[data-show-hidden="1"] .showHiddenProperty {
 	background-image: url("/asset/up-arrow.svg");
 }
 
