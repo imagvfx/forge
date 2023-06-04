@@ -85,13 +85,9 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 	if err != nil {
 		return nil, err
 	}
-	admin, err := isAdmin(tx, ctx, user)
-	if err != nil {
-		return nil, err
-	}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
-	if !admin || !showArchived {
+	if !showArchived {
 		keys = append(keys, "NOT entries.archived")
 	}
 	if find.ID != nil {

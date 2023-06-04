@@ -71,10 +71,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	if err != nil {
 		return nil, err
 	}
-	admin, err := isAdmin(tx, ctx, user)
-	if err != nil {
-		return nil, err
-	}
 	if search.SearchRoot == "/" {
 		// Prevent search root become two slashes by adding slash again.
 		search.SearchRoot = ""
@@ -279,7 +275,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	`
 	vals := make([]any, 0)
 	whereArchived := "TRUE"
-	if !admin || !showArchived {
+	if !showArchived {
 		whereArchived = "entries.archived=0"
 	}
 	whereType := "TRUE"
