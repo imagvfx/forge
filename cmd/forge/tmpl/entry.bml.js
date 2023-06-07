@@ -459,7 +459,7 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
-		if (event.target.closest(".subEntryList, #footer") == null) {
+		if (event.target.closest("#downloadAsExcelButton, .subEntryList, #footer") == null) {
 			let subEntArea = document.querySelector(".subEntryArea");
 			if (subEntArea.classList.contains("editMode")) {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
@@ -706,6 +706,92 @@ window.onload = function() {
 		uploadExcelInput.onchange = function() {
 			let uploadExcelForm = document.getElementById("uploadExcelForm");
 			uploadExcelForm.submit();
+		}
+	}
+	let downloadAsExcelButton = document.getElementById("downloadAsExcelButton");
+	if (downloadAsExcelButton != null) {
+		downloadAsExcelButton.onclick = function() {
+			let editMode = false;
+			let subEntArea = document.querySelector(".subEntryArea");
+			if (subEntArea.classList.contains("editMode")) {
+				editMode = true;
+			}
+			let ents = document.querySelectorAll(".subEntry");
+			if (ents.length == 0) {
+				printErrorStatus("no sub-entry exists");
+				return;
+			}
+			let paths = [];
+			for (let ent of ents) {
+				if (window.getComputedStyle(ent).display == "none") {
+					// invisible entry shouldn't be exported.
+					continue
+				}
+				if (editMode && !ent.classList.contains("selected")) {
+					continue;
+				}
+				paths.push(ent.dataset.entryPath);
+			}
+			console.log(paths);
+			if (paths.length == 0) {
+				printErrorStatus("no sub-entry selected");
+				return;
+			}
+			let formData = new FormData();
+			for (let path of paths) {
+				formData.append("paths", path);
+			}
+			let req = new XMLHttpRequest();
+			req.responseType = "blob";
+			req.open("post", "/download-as-excel");
+			req.send(formData);
+			req.onload = function() {
+				if (req.status != 200) {
+					let r = new FileReader();
+					r.onload = function() {
+						printErrorStatus(r.result);
+					}
+					r.readAsText(req.response);
+					return;
+				}
+				let disposition = req.getResponseHeader('Content-Disposition');
+				if (!disposition) {
+					printErrorStatus("reponse does not contain excel file");
+					return;
+				}
+				if (disposition.indexOf("attachment") == -1) {
+					printErrorStatus("reponse does not contain excel file");
+					return;
+				}
+				let downloadURL = window.URL.createObjectURL(req.response);
+				let dateString = function(d) {
+					function pad(n) {
+						if (n < 10) {
+							return "0" + n.toString();
+						}
+						return n.toString();
+					}
+					let ymd = [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join("-");
+					let hms = [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join("-");
+					let date = ymd + "T" + hms;
+					return date;
+				}
+				let d = new Date();
+				let a = document.createElement("a");
+				a.href = downloadURL;
+				let suffix = ""
+				if (editMode) {
+					suffix = "-selected"
+				}
+				a.download = "forge-" + dateString(d) + suffix + ".xlsx";
+				a.click();
+				setTimeout(function() {
+					URL.revokeObjectURL(downloadURL);
+				}, 100)
+			}
+			req.onerror = function(err) {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
 		}
 	}
 	let pinnedPaths = document.getElementsByClassName("pinnedPathLink");

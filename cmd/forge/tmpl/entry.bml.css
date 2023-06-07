@@ -276,8 +276,6 @@
 }
 
 .statusGroup {
-	margin-top: 1rem;
-	margin-bottom: 1rem;
 }
 
 .statusGroupLabel {
@@ -335,6 +333,17 @@
 }
 {{end}}
 {{end}}
+
+.subEntryFunctions {
+	font-size: 0.7rem;
+	display: flex;
+	margin-bottom: 2rem;
+}
+
+#downloadAsExcelButton {
+	display: inline-block;
+	cursor: pointer;
+}
 
 .subEntryTypeBar {
 	display: flex;
@@ -536,6 +545,7 @@
 	display:flex;
 	gap: 0.2rem;
 	background-color: #EEE;
+	margin-bottom: 1rem;
 }
 
 .subEntryListSeparator {

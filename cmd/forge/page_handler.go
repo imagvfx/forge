@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/imagvfx/forge"
+	"github.com/xuri/excelize/v2"
 )
 
 type pageHandler struct {
@@ -1064,5 +1065,118 @@ func (h *pageHandler) handleUserData(ctx context.Context, w http.ResponseWriter,
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	_, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
+
+	// not really know what is happening, but r.ParseForm cannot populate formdata to r.Form.
+	// this is a temporal alternative.
+	r.FormValue("paths")
+
+	paths, ok := r.PostForm["paths"]
+	if !ok {
+		return fmt.Errorf("please specify paths")
+	}
+	ents := make(map[string][]*forge.Entry)
+	for _, pth := range paths {
+		ent, err := h.server.GetEntry(ctx, pth)
+		if err != nil {
+			return err
+		}
+		if ents[ent.Type] == nil {
+			ents[ent.Type] = make([]*forge.Entry, 0)
+		}
+		ents[ent.Type] = append(ents[ent.Type], ent)
+	}
+	propsExport := make(map[string][]string)     // [type][]property
+	numProps := make(map[string]int)             // [type]number-of-props
+	propIndex := make(map[string]map[string]int) // [type][property]index
+	for typ := range ents {
+		var props []string
+		globals, err := h.server.Globals(ctx, typ)
+		if err != nil {
+			return err
+		}
+		for _, g := range globals {
+			if g.Name == "property_filter" {
+				props = strings.Fields(g.Value)
+				break
+			}
+		}
+		if props == nil {
+			props = make([]string, 0)
+			defs, err := h.server.Defaults(ctx, typ)
+			if err != nil {
+				return err
+			}
+			for _, d := range defs {
+				if d.Category != "property" {
+					continue
+				}
+				props = append(props, d.Name)
+			}
+		}
+		propsExport[typ] = props
+	}
+	for typ, props := range propsExport {
+		numProps[typ] = len(props)
+		propIndex[typ] = make(map[string]int)
+		for i, p := range props {
+			propIndex[typ][p] = i
+		}
+	}
+	xl := excelize.NewFile()
+	sheet_idx := 0
+	for typ, typeEnts := range ents {
+		if sheet_idx == 0 {
+			xl.SetSheetName("Sheet1", typ)
+		} else {
+			xl.NewSheet(typ)
+		}
+		sheet, err := xl.NewStreamWriter(typ)
+		if err != nil {
+			return err
+		}
+
+		cell, err := excelize.CoordinatesToCellName(1, 1)
+		if err != nil {
+			return err
+		}
+		labels := make([]any, numProps[typ]+2)
+		labels[0] = "path"
+		labels[1] = "name"
+		for i, prop := range propsExport[typ] {
+			labels[i+2] = prop
+		}
+		sheet.SetRow(cell, labels)
+
+		for i, ent := range typeEnts {
+			row := make([]any, numProps[typ]+2)
+			row[0] = filepath.Dir(ent.Path)
+			row[1] = filepath.Base(ent.Path)
+			for prop, p := range ent.Property {
+				idx, ok := propIndex[typ][prop]
+				if ok {
+					row[idx+2] = p.Value
+				}
+			}
+			cell, err := excelize.CoordinatesToCellName(1, i+2)
+			if err != nil {
+				return err
+			}
+			sheet.SetRow(cell, row)
+		}
+		sheet.Flush()
+		sheet_idx++
+	}
+	w.Header().Set("Content-Type", "application/vnd.ms-excel")
+	w.Header().Set("Content-Disposition", "attachment;") // filename should be set in the client script.
+	xl.WriteTo(w)
 	return nil
 }

@@ -294,6 +294,11 @@
 						{{end}}
 						{{end}}
 					]
+					<div class="subEntryFunctions"> [
+						<div style="flex:1"> []
+						<div id="downloadAsExcelButton"> [Download]
+					]
+
 					{{$i := 0}}
 					{{range $entType, $entsByGroup := $.SubEntriesByTypeByGroup}}
 					<div class="subEntryListForType" data-entry-type="{{$entType}}"> [
