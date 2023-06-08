@@ -1161,7 +1161,7 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		}
 		labels := make([]any, numProps[typ]+3)
 		labels[0] = "thumbnail"
-		labels[1] = "path"
+		labels[1] = "parent"
 		labels[2] = "name"
 		for i, prop := range propsExport[typ] {
 			labels[i+3] = prop
