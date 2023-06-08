@@ -979,20 +979,19 @@ func (h *apiHandler) handleDeleteUserData(ctx context.Context, w http.ResponseWr
 // Entries not in any of the list is already match with given data.
 // Msg is null when Err is not empty.
 //
-// {
-// 	"Err": "",
-// 	"Msg": {
-// 		"add": {
-// 			"{entry-type}": ["{entry}", ...],
-// 			...
-// 		}
-// 		"update": {
-// 			"{entry-type}": ["{entry}", ...],
-// 			...
-// 		}
-// 	}
-// }
-//
+//	{
+//		"Err": "",
+//		"Msg": {
+//			"add": {
+//				"{entry-type}": ["{entry}", ...],
+//				...
+//			}
+//			"update": {
+//				"{entry-type}": ["{entry}", ...],
+//				...
+//			}
+//		}
+//	}
 func (h *apiHandler) handleDryRunBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	// TODO
 	return nil
@@ -1006,12 +1005,11 @@ func (h *apiHandler) handleDryRunBulkUpdate(ctx context.Context, w http.Response
 //
 // The result shows an error if it happened during the process.
 //
-// {
-// 	"Err": "",
-// }
+//	{
+//		"Err": "",
+//	}
 //
 // NOTE: With non-empty "dryrun" form-value, like "dryrun=1", it will perform handleDryRunBulkUpdate and return it's result instead.
-//
 func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	KiB := int64(1 << 10)
 	r.ParseMultipartForm(100 * KiB) // 100KiB buffer size
@@ -1142,32 +1140,35 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			if err != nil {
 				return err
 			}
-			_, thumb, err := xlr.GetPicture(sheet, thumbCell)
+			thumbs, err := xlr.GetPictures(sheet, thumbCell)
 			if err != nil {
 				return err
 			}
 			// If the cell isn't containing an image, thumb will get empty []byte.
-			if len(thumb) != 0 {
-				thumbReader := bytes.NewBuffer(thumb)
-				img, _, err := image.Decode(thumbReader)
+			var thumb excelize.Picture
+			if len(thumbs) != 0 {
+				thumb = thumbs[0]
+			}
+			if len(thumb.File) == 0 {
+				continue
+			}
+			r := bytes.NewBuffer(thumb.File)
+			img, _, err := image.Decode(r)
+			if err != nil {
+				// Error on thumbnail parsing shouldn't interrupt whole update process.
+				// This is an TEMPORARY fix.
+				// TODO: think better way to handle these errors
+				log.Printf("failed to decode image on %v/%v: %v\n", parent, name, err)
+			}
+			if ent.HasThumbnail {
+				err = h.server.UpdateThumbnail(ctx, entPath, img)
 				if err != nil {
-					// Error on thumbnail parsing shouldn't interrupt whole update process.
-					// This is an TEMPORARY fix.
-					// TODO: think better way to handle these errors
-					log.Printf("failed to decode image on %v/%v: %v\n", parent, name, err)
+					return err
 				}
-				if err == nil {
-					if ent.HasThumbnail {
-						err = h.server.UpdateThumbnail(ctx, entPath, img)
-						if err != nil {
-							return err
-						}
-					} else {
-						err = h.server.AddThumbnail(ctx, entPath, img)
-						if err != nil {
-							return err
-						}
-					}
+			} else {
+				err = h.server.AddThumbnail(ctx, entPath, img)
+				if err != nil {
+					return err
 				}
 			}
 		}

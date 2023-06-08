@@ -1083,7 +1083,8 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 	if !ok {
 		return fmt.Errorf("please specify paths")
 	}
-	ents := make(map[string][]*forge.Entry)
+	ents := make(map[string][]*forge.Entry)        // [type][]entry
+	thumbnail := make(map[string]*forge.Thumbnail) // [path]thumbnail
 	for _, pth := range paths {
 		ent, err := h.server.GetEntry(ctx, pth)
 		if err != nil {
@@ -1093,6 +1094,14 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 			ents[ent.Type] = make([]*forge.Entry, 0)
 		}
 		ents[ent.Type] = append(ents[ent.Type], ent)
+		th, err := h.server.GetThumbnail(ctx, pth)
+		if err != nil {
+			var notFound *forge.NotFoundError
+			if !errors.As(err, &notFound) {
+				return err
+			}
+		}
+		thumbnail[pth] = th
 	}
 	propsExport := make(map[string][]string)     // [type][]property
 	numProps := make(map[string]int)             // [type]number-of-props
@@ -1143,36 +1152,60 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		if err != nil {
 			return err
 		}
+		// fit width for thumbnails, 16 here isn't sized in pixel.
+		sheet.SetColWidth(1, 1, 16)
 
 		cell, err := excelize.CoordinatesToCellName(1, 1)
 		if err != nil {
 			return err
 		}
-		labels := make([]any, numProps[typ]+2)
-		labels[0] = "path"
-		labels[1] = "name"
+		labels := make([]any, numProps[typ]+3)
+		labels[0] = "thumbnail"
+		labels[1] = "path"
+		labels[2] = "name"
 		for i, prop := range propsExport[typ] {
-			labels[i+2] = prop
+			labels[i+3] = prop
 		}
 		sheet.SetRow(cell, labels)
 
-		for i, ent := range typeEnts {
-			row := make([]any, numProps[typ]+2)
-			row[0] = filepath.Dir(ent.Path)
-			row[1] = filepath.Base(ent.Path)
+		row := 1
+		for _, ent := range typeEnts {
+			row++
+			// thumbnail at first column
+			thumb := thumbnail[ent.Path]
+			if thumb != nil {
+				thumbCell, err := excelize.CoordinatesToCellName(1, row)
+				if err != nil {
+					return err
+				}
+				err = xl.AddPictureFromBytes(typ, thumbCell, &excelize.Picture{
+					Extension: ".png", // thumbnails in forge always saved as png
+					File:      thumb.Data,
+					// It has a bug on scaling images, let's keep our eyes on the new release of excelize.
+					Format: &excelize.GraphicOptions{ScaleX: 0.335, ScaleY: 0.19},
+				})
+				if err != nil {
+					return err
+				}
+			}
+			// row data from second column
+			data := make([]any, numProps[typ]+2)
+			data[0] = filepath.Dir(ent.Path)
+			data[1] = filepath.Base(ent.Path)
 			for prop, p := range ent.Property {
 				idx, ok := propIndex[typ][prop]
 				if ok {
-					row[idx+2] = p.Value
+					data[idx+2] = p.Value
 				}
 			}
-			cell, err := excelize.CoordinatesToCellName(1, i+2)
+			cell, err := excelize.CoordinatesToCellName(2, row)
 			if err != nil {
 				return err
 			}
-			sheet.SetRow(cell, row)
+			sheet.SetRow(cell, data, excelize.RowOpts{Height: 54})
 		}
 		sheet.Flush()
+
 		sheet_idx++
 	}
 	w.Header().Set("Content-Type", "application/vnd.ms-excel")
