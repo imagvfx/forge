@@ -102,12 +102,6 @@
 						{{end}}
 						<div style="flex:1"> []
 						<div class="mainEntryFunctions"> [
-							<form id="uploadExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
-								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<input id="uploadExcelInput" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
-								<label for="uploadExcelInput" class="uploadExcelButton" style="cursor:pointer;"> [Update With Excel]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-							]
 							<form action="/api/update-user-setting" method="POST"> [
 								<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
 								<input name="pinned_path_at" type="hidden" value="{{if $.EntryPinned}}-1{{else}}{{len $.UserSetting.PinnedPaths}}{{end}}"> []
@@ -296,6 +290,12 @@
 					]
 					<div class="subEntryFunctions"> [
 						<div style="flex:1"> []
+						<form id="updateExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input id="updateExcelFile" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
+							<label for="updateExcelFile" class="uploadExcelButton" style="cursor:pointer;"> [Update]
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
 						<div id="downloadAsExcelButton"> [Download]
 					]
 

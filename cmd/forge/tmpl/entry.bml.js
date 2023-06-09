@@ -701,11 +701,11 @@ window.onload = function() {
 			resizeTextArea(input);
 		}
 	}
-	let uploadExcelInput = document.getElementById("uploadExcelInput");
-	if (uploadExcelInput != null) {
-		uploadExcelInput.onchange = function() {
-			let uploadExcelForm = document.getElementById("uploadExcelForm");
-			uploadExcelForm.submit();
+	let updateExcelFile = document.getElementById("updateExcelFile");
+	if (updateExcelFile != null) {
+		updateExcelFile.onchange = function() {
+			let updateExcelForm = document.getElementById("updateExcelForm");
+			updateExcelForm.submit();
 		}
 	}
 	let downloadAsExcelButton = document.getElementById("downloadAsExcelButton");
