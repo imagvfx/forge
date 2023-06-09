@@ -1058,7 +1058,6 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		return fmt.Errorf("'parent' field not found")
 	}
 	// To check the ancestor with db only once.
-	knownAncestor := make(map[string]bool)
 	valueRows := rows[1:]
 	for n, cols := range valueRows {
 		if len(cols) == 0 {
@@ -1088,37 +1087,9 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			// Maybe it wouldn't sufficient to prevent disaster, but better than nothing.
 			return fmt.Errorf("cannot create a direct child of root from bulk update")
 		}
-		ancestors := make([]string, 0)
-		anc := ""
-		for _, p := range strings.Split(parent, "/")[1:] {
-			anc += "/" + p
-			ancestors = append(ancestors, anc)
-		}
-		for _, anc := range ancestors {
-			if knownAncestor[anc] {
-				continue
-			}
-			_, err = h.server.GetEntry(ctx, anc)
-			if err != nil {
-				e := &forge.NotFoundError{}
-				if !errors.As(err, &e) {
-					return err
-				}
-				err := h.server.AddEntry(ctx, anc, "")
-				if err != nil {
-					return err
-				}
-			}
-			knownAncestor[anc] = true
-		}
 		name := cols[nameIdx]
 		if name == "" {
 			return fmt.Errorf("'name' field empty")
-		}
-		_, err = h.server.GetEntry(ctx, parent)
-		if err != nil {
-			// parent should exist already.
-			return err
 		}
 		entPath := path.Clean(path.Join(parent, name))
 		ent, err := h.server.GetEntry(ctx, entPath)
