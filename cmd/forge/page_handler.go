@@ -1083,8 +1083,10 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 	if !ok {
 		return fmt.Errorf("please specify paths")
 	}
-	ents := make(map[string][]*forge.Entry)        // [type][]entry
-	thumbnail := make(map[string]*forge.Thumbnail) // [path]thumbnail
+	ents := make(map[string][]*forge.Entry)              // [type][]entry
+	thumbnail := make(map[string]*forge.Thumbnail)       // [path]thumbnail
+	allSubEntry := make(map[string]map[string]bool)      // [type][sub-entry]
+	subEntry := make(map[string]map[string]*forge.Entry) // [path][sub-entry]entry
 	for _, pth := range paths {
 		ent, err := h.server.GetEntry(ctx, pth)
 		if err != nil {
@@ -1102,6 +1104,27 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 			}
 		}
 		thumbnail[pth] = th
+		if allSubEntry[ent.Type] == nil {
+			allSubEntry[ent.Type] = make(map[string]bool)
+		}
+		subs, err := h.server.SubEntries(ctx, pth)
+		if err != nil {
+			return err
+		}
+		subEntry[pth] = make(map[string]*forge.Entry)
+		for _, sub := range subs {
+			subName := filepath.Base(sub.Path)
+			allSubEntry[ent.Type][subName] = true
+			subEntry[pth][subName] = sub
+		}
+	}
+	sortedSubEntries := make(map[string][]string)
+	for typ, sub := range allSubEntry {
+		for name := range sub {
+			sortedSubEntries[typ] = append(sortedSubEntries[typ], name)
+		}
+		// TODO: sort by default order?
+		sort.Strings(sortedSubEntries[typ])
 	}
 	propsExport := make(map[string][]string)     // [type][]property
 	numProps := make(map[string]int)             // [type]number-of-props
@@ -1166,6 +1189,9 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		for i, prop := range propsExport[typ] {
 			labels[i+3] = prop
 		}
+		for _, sub := range sortedSubEntries[typ] {
+			labels = append(labels, "sub:"+sub)
+		}
 		sheet.SetRow(cell, labels)
 
 		row := 1
@@ -1197,6 +1223,37 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 				if ok {
 					data[idx+2] = p.Value
 				}
+			}
+			// NOTE: export of sub-entry properties is for management convinience,
+			// so data could be manipulated before it is written.
+			for _, sub := range sortedSubEntries[ent.Type] {
+				subEnt, ok := subEntry[ent.Path][sub]
+				if !ok {
+					data = append(data, "")
+					continue
+				}
+				cellData := ""
+				assignee := subEnt.Property["assignee"]
+				if assignee == nil || assignee.Value == "" {
+					cellData += "(assignee)"
+				} else {
+					cellData += assignee.Eval // yes, Eval.
+				}
+				cellData += "\n"
+				status := subEnt.Property["status"]
+				if status == nil || status.Value == "" {
+					cellData += "(none)"
+				} else {
+					cellData += status.Value
+				}
+				cellData += "\n"
+				due := subEnt.Property["due"]
+				if due == nil || due.Value == "" {
+					cellData += "(due)"
+				} else {
+					cellData += assignee.Value
+				}
+				data = append(data, cellData)
 			}
 			cell, err := excelize.CoordinatesToCellName(2, row)
 			if err != nil {
