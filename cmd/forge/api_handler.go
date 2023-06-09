@@ -1135,41 +1135,38 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		}
 		// Update the entry's thumbnail.
 		if thumbnailIdx != -1 {
-			// Excel coordinate starts from 1.
-			thumbCell, err := excelize.CoordinatesToCellName(thumbnailIdx+1, row+1)
-			if err != nil {
-				return err
-			}
-			thumbs, err := xlr.GetPictures(sheet, thumbCell)
-			if err != nil {
-				return err
-			}
-			// If the cell isn't containing an image, thumb will get empty []byte.
-			var thumb excelize.Picture
-			if len(thumbs) != 0 {
-				thumb = thumbs[0]
-			}
-			if len(thumb.File) == 0 {
-				continue
-			}
-			r := bytes.NewBuffer(thumb.File)
-			img, _, err := image.Decode(r)
-			if err != nil {
-				// Error on thumbnail parsing shouldn't interrupt whole update process.
-				// This is an TEMPORARY fix.
-				// TODO: think better way to handle these errors
-				log.Printf("failed to decode image on %v/%v: %v\n", parent, name, err)
-			}
-			if ent.HasThumbnail {
-				err = h.server.UpdateThumbnail(ctx, entPath, img)
+			err := func() error {
+				// Excel coordinate starts from 1.
+				thumbCell, err := excelize.CoordinatesToCellName(thumbnailIdx+1, row+1)
 				if err != nil {
 					return err
 				}
-			} else {
-				err = h.server.AddThumbnail(ctx, entPath, img)
+				thumbs, err := xlr.GetPictures(sheet, thumbCell)
 				if err != nil {
 					return err
 				}
+				if len(thumbs) == 0 {
+					return nil
+				}
+				thumb := thumbs[0]
+				r := bytes.NewBuffer(thumb.File)
+				img, _, err := image.Decode(r)
+				if err != nil {
+					// Error on thumbnail parsing shouldn't interrupt whole update process.
+					// This is an TEMPORARY fix.
+					// TODO: think better way to handle these errors
+					log.Printf("failed to decode image on %v/%v: %v\n", parent, name, err)
+					return nil
+				}
+				if ent.HasThumbnail {
+					err = h.server.UpdateThumbnail(ctx, entPath, img)
+				} else {
+					err = h.server.AddThumbnail(ctx, entPath, img)
+				}
+				return err
+			}()
+			if err != nil {
+				return err
 			}
 		}
 		// Update the entry's properties.
