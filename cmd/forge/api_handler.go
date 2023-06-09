@@ -1018,6 +1018,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		return err
 	}
 	defer file.Close()
+	addMode := false
+	if r.FormValue("add") != "" {
+		addMode = true
+	}
 	xlr, err := excelize.OpenReader(file)
 	if err != nil {
 		return err
@@ -1123,9 +1127,13 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			if !errors.As(err, &e) {
 				return err
 			}
-			err := h.server.AddEntry(ctx, entPath, "")
-			if err != nil {
-				return err
+			if addMode {
+				err := h.server.AddEntry(ctx, entPath, "")
+				if err != nil {
+					return err
+				}
+			} else {
+				return fmt.Errorf("add a new entry is not allowed in update mode: %s", entPath)
 			}
 			// To check entry type, need to get the entry.
 			ent, err = h.server.GetEntry(ctx, entPath)

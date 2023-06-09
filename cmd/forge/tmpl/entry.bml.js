@@ -701,6 +701,13 @@ window.onload = function() {
 			resizeTextArea(input);
 		}
 	}
+	let addExcelFile = document.getElementById("addExcelFile");
+	if (addExcelFile != null) {
+		addExcelFile.onchange = function() {
+			let addExcelForm = document.getElementById("addExcelForm");
+			addExcelForm.submit();
+		}
+	}
 	let updateExcelFile = document.getElementById("updateExcelFile");
 	if (updateExcelFile != null) {
 		updateExcelFile.onchange = function() {

@@ -290,10 +290,17 @@
 					]
 					<div class="subEntryFunctions"> [
 						<div style="flex:1"> []
+						<form id="addExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
+							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
+							<input name="add" type="hidden" value="1"> []
+							<input id="addExcelFile" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
+							<label id="forAddExcelFile" for="addExcelFile" style="cursor:pointer;"> [Add]
+							<input readonly name="back_to_referer" type="hidden" value="1"> []
+						]
 						<form id="updateExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
 							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input id="updateExcelFile" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
-							<label for="updateExcelFile" class="uploadExcelButton" style="cursor:pointer;"> [Update]
+							<label id="forUpdateExcelFile" for="updateExcelFile" style="cursor:pointer;"> [Update]
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 						<div id="downloadAsExcelButton"> [Download]

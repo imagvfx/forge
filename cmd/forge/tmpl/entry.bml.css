@@ -341,9 +341,30 @@
 	gap: 0.7rem;
 }
 
+#forAddExcelFile {
+	color: #666;
+}
+
+#forAddExcelFile:hover {
+	color: #822;
+}
+
+#forUpdateExcelFile {
+	color: #666;
+}
+
+#forUpdateExcelFile:hover {
+	color: #002;
+}
+
 #downloadAsExcelButton {
 	display: inline-block;
 	cursor: pointer;
+	color: #666;
+}
+
+#downloadAsExcelButton:hover {
+	color: #002;
 }
 
 .subEntryTypeBar {
