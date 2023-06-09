@@ -1159,11 +1159,16 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 					return nil
 				}
 				if ent.HasThumbnail {
-					err = h.server.UpdateThumbnail(ctx, entPath, img)
-				} else {
-					err = h.server.AddThumbnail(ctx, entPath, img)
+					orig, err := h.server.GetThumbnail(ctx, entPath)
+					if err != nil {
+						return err
+					}
+					if bytes.Equal(thumb.File, orig.Data) {
+						return nil
+					}
+					return h.server.UpdateThumbnail(ctx, entPath, img)
 				}
-				return err
+				return h.server.AddThumbnail(ctx, entPath, img)
 			}()
 			if err != nil {
 				return err
