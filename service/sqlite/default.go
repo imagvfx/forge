@@ -455,7 +455,7 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 		return err
 	}
 	d.ID = int(id)
-	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType})
+	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType, Archived: true})
 	if err != nil {
 		return err
 	}
@@ -512,7 +512,7 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 		return err
 	}
 	d.ID = int(id)
-	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType})
+	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType, Archived: true})
 	if err != nil {
 		return err
 	}
@@ -583,7 +583,7 @@ func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 		return err
 	}
 	d.ID = int(id)
-	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType})
+	entries, err := findEntries(tx, ctx, forge.EntryFinder{Type: &d.EntryType, Archived: true})
 	if err != nil {
 		return err
 	}

@@ -64,6 +64,15 @@ func FindEntries(db *sql.DB, ctx context.Context, find forge.EntryFinder) ([]*fo
 		return nil, err
 	}
 	defer tx.Rollback()
+	user := forge.UserNameFromContext(ctx)
+	if user == "" {
+		return nil, forge.Unauthorized("context user unspecified")
+	}
+	archived, err := getUserSettingShowArchived(tx, ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	find.Archived = archived
 	ents, err := findEntries(tx, ctx, find)
 	if err != nil {
 		return nil, err
@@ -81,13 +90,9 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 	if user == "" {
 		return nil, forge.Unauthorized("context user unspecified")
 	}
-	showArchived, err := getUserSettingShowArchived(tx, ctx, user)
-	if err != nil {
-		return nil, err
-	}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
-	if !showArchived {
+	if !find.Archived {
 		keys = append(keys, "NOT entries.archived")
 	}
 	if find.ID != nil {
@@ -252,7 +257,7 @@ func GetEntry(db *sql.DB, ctx context.Context, path string) (*forge.Entry, error
 }
 
 func getEntry(tx *sql.Tx, ctx context.Context, path string) (*forge.Entry, error) {
-	ents, err := findEntries(tx, ctx, forge.EntryFinder{Path: &path})
+	ents, err := findEntries(tx, ctx, forge.EntryFinder{Path: &path, Archived: true})
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +268,7 @@ func getEntry(tx *sql.Tx, ctx context.Context, path string) (*forge.Entry, error
 }
 
 func getEntryByID(tx *sql.Tx, ctx context.Context, id int) (*forge.Entry, error) {
-	ents, err := findEntries(tx, ctx, forge.EntryFinder{ID: &id})
+	ents, err := findEntries(tx, ctx, forge.EntryFinder{ID: &id, Archived: true})
 	if err != nil {
 		return nil, err
 	}
@@ -938,7 +943,7 @@ func DeleteEntryRecursive(db *sql.DB, ctx context.Context, path string) error {
 }
 
 func deleteEntryR(tx *sql.Tx, ctx context.Context, path string) error {
-	subEnts, err := findEntries(tx, ctx, forge.EntryFinder{ParentPath: &path})
+	subEnts, err := findEntries(tx, ctx, forge.EntryFinder{ParentPath: &path, Archived: true})
 	if err != nil {
 		return err
 	}
