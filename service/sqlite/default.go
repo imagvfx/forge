@@ -956,6 +956,20 @@ func DeleteDefault(db *sql.DB, ctx context.Context, entryType, ctg, name string)
 }
 
 func deleteDefaultProperty(tx *sql.Tx, ctx context.Context, entryType, name string) error {
+	d, err := getDefaultProperty(tx, ctx, entryType, name)
+	if err != nil {
+		return nil
+	}
+	props, err := findProperties(tx, ctx, forge.PropertyFinder{DefaultID: &d.ID})
+	if err != nil {
+		return err
+	}
+	for _, p := range props {
+		err = deleteProperty(tx, ctx, p.EntryPath, p.Name)
+		if err != nil {
+			return err
+		}
+	}
 	typeID, err := getEntryTypeID(tx, ctx, entryType)
 	if err != nil {
 		return err

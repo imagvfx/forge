@@ -64,6 +64,10 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 		keys = append(keys, "entries.path=?")
 		vals = append(vals, *find.EntryPath)
 	}
+	if find.DefaultID != nil {
+		keys = append(keys, "properties.default_id=?")
+		vals = append(vals, *find.DefaultID)
+	}
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
@@ -99,6 +103,49 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 		)
 		if err != nil {
 			return nil, fmt.Errorf("find properties: %w", err)
+		}
+		if strings.HasPrefix(p.Name, ".") {
+			evalSpecialProperty(tx, ctx, p)
+		} else {
+			evalProperty(tx, ctx, p)
+		}
+		props = append(props, p)
+	}
+	return props, nil
+}
+
+func propertiesByDefaultID(tx *sql.Tx, ctx context.Context, defaultID int) ([]*forge.Property, error) {
+	rows, err := tx.QueryContext(ctx, `
+		SELECT
+			properties.id,
+			default_properties.name,
+			default_properties.type,
+			properties.val,
+			properties.updated_at,
+			entries.path
+		FROM properties
+		LEFT JOIN entries ON properties.entry_id = entries.id
+		LEFT JOIN default_properties ON properties.default_id = default_properties.id
+		WHERE properites.default_id=?`,
+		defaultID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	props := make([]*forge.Property, 0)
+	for rows.Next() {
+		p := &forge.Property{}
+		err := rows.Scan(
+			&p.ID,
+			&p.Name,
+			&p.Type,
+			&p.RawValue,
+			&p.UpdatedAt,
+			&p.EntryPath,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("properties from default id: %w", err)
 		}
 		if strings.HasPrefix(p.Name, ".") {
 			evalSpecialProperty(tx, ctx, p)
@@ -343,19 +390,9 @@ func deleteProperty(tx *sql.Tx, ctx context.Context, path, name string) error {
 	if err != nil {
 		return err
 	}
-	ent, err := getEntry(tx, ctx, path)
+	_, err = getEntry(tx, ctx, path)
 	if err != nil {
 		return err
-	}
-	_, err = getDefaultProperty(tx, ctx, ent.Type, name)
-	if err == nil {
-		return fmt.Errorf("cannot delete default property of %q: %v", ent.Type, name)
-	}
-	if err != nil {
-		var e *forge.NotFoundError
-		if !errors.As(err, &e) {
-			return err
-		}
 	}
 	p, err := getProperty(tx, ctx, path, name)
 	if err != nil {
