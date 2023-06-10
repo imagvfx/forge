@@ -35,13 +35,7 @@
 						<div style="height:0.5rem"> []
 						{{range $d := $t.Defaults}}
 						<div class="modifyForms"> [
-							<form class="deleteForm" action="/api/delete-default" method="post"> [
-								<input readonly name="entry_type" type="hidden" value="{{$t.Name}}"> []
-								<input readonly name="category" type="hidden" value="{{$d.Category}}"> []
-								<input readonly name="name" type="hidden" value="{{$d.Name}}"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="color:red" type="submit"> [-]
-							]
+							<button class="deleteButton" data-action="/api/delete-default" data-entry-type="{{$t.Name}}" data-category="{{$d.Category}}" data-name="{{$d.Name}}"> [-]
 							<form class="updateForm" action="/api/update-default" method="post"> [
 								<input hidden name="entry_type" value="{{$t.Name}}"> []
 								<input readonly class="firstVisible" name="category" type="text" value="{{$d.Category}}" style="width:6rem;"> []
@@ -55,13 +49,7 @@
 						{{end}}
 						{{range $g := $t.Globals}}
 						<div class="modifyForms"> [
-							<form class="deleteForm" action="/api/delete-global" method="post"> [
-								<input readonly name="entry_type" type="hidden" value="{{$t.Name}}"> []
-								<input readonly name="category" type="hidden" value="global"> []
-								<input readonly name="name" type="hidden" value="{{$g.Name}}"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
-								<button style="padding:0;color:red" type="submit"> [-]
-							]
+							<button class="deleteButton" data-action="/api/delete-global" data-entry-type="{{$t.Name}}" data-category="global" data-name="{{$g.Name}}"> [-]
 							<form class="updateForm" action="/api/update-global" method="post"> [
 								<input readonly name="entry_type" type="hidden" value="{{$t.Name}}"> []
 								<input readonly class="firstVisible" name="category" type="text" value="global" style="width:6rem;"> []
@@ -79,6 +67,19 @@
 			]
 			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
 				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
+			]
+		]
+		<div id="deleteDialogBackground" class="dialogBackground invisible"> [
+			<div id="deleteDialog" class="dialog"> [
+				<div class="title"> [Delete Entry]
+				<div class="content"> [
+					<div class="line"> [Do you really want to delete <div id="deleteName" class="red inline"> [] <div id="deleteCategory" class="inline"> []?]
+					<div id="deleteAlso" class="line"> [It will also delete properties from <div id="deleteEntryType" class="red inline"> [] entries.]
+				]
+				<div class="buttonBar"> [
+					<div class="confirmButton button" > [Delete]
+					<div class="cancelButton button"> [Cancel]
+				]
 			]
 		]
 	]
@@ -110,6 +111,10 @@
 .entryTypeDeleteButton:hover {
 	color: #AA2222;
 	border: 1px solid #AA2222;
+}
+
+.deleteButton {
+	color: red;
 }
 
 .subGroup {
@@ -167,6 +172,95 @@
 #statusBar.error {
 	color: #A22;
 }
+
+.dialogBackground {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(255,255,255,0.4);
+}
+
+.dialog {
+	display: flex;
+	flex-direction: column;
+	border-radius: 3px;
+	width: 24rem;
+	min-height: 16rem;
+	border: 1px solid #CCC;
+	box-shadow: 0 0 30px rgba(128,128,128,0.3);
+	background-color: #F8F8F8;
+}
+
+.dialog .title {
+	font-size: 1.1rem;
+	height: 1.3rem;
+	padding: 0.5rem;
+	border-radius: 2px 2px 0 0;
+	background-color: #A22;
+	color: white;"
+}
+
+.dialog .content {
+	flex: 1;
+	padding: 1rem;
+	background-color: #F8F8F8;
+	color: #222;
+}
+
+.content > div {
+	margin-bottom: 0.5rem;
+}
+
+.dialog .buttonBar {
+	padding: 0.3rem;
+	border-top: 1px solid #CCC;
+	border-radius: 0 0 2px 2px;
+	background-color: #EEE;
+	display: flex;
+	justify-content: right;
+	gap: 0.3rem;
+}
+
+.dialog .button {
+	height: 2rem;
+	width: 4.5rem;
+	border: 1px solid #AAA;
+	border-radius: 2px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 0.85rem;
+	color: #222;
+	cursor: pointer;
+}
+
+.dialog .confirmButton {
+	background-color: #F8F4F4;
+	color:#A22;
+}
+
+.dialog .confirmButton:hover {
+	background-color: #F8E0E0;
+}
+
+.dialog .cancelButton {
+	background-color: #F8F8F8;
+}
+
+.dialog .cancelButton:hover {
+	background-color: #F0F0F0;
+}
+
+.red {
+	color: #A22;
+}
+
+.inline {
+	display: inline-block;
+}
 `]
 
 <script> [`
@@ -182,8 +276,8 @@ window.onload = function() {
 			}
 		}
 	}
-	let deleteButtons = document.getElementsByClassName("entryTypeDeleteButton");
-	for (let btn of deleteButtons) {
+	let deleteTypeButtons = document.getElementsByClassName("entryTypeDeleteButton");
+	for (let btn of deleteTypeButtons) {
 		btn.onclick = function() {
 			let req = new XMLHttpRequest();
 			let formData = new FormData();
@@ -203,6 +297,22 @@ window.onload = function() {
 			}
 		}
 	}
+	let deleteButtons = document.getElementsByClassName("deleteButton");
+	for (let btn of deleteButtons) {
+		btn.onclick = function() {
+			let action = btn.dataset.action;
+			let type = btn.dataset.entryType;
+			let ctg = btn.dataset.category;
+			let name = btn.dataset.name;
+			openDeleteDialog(action, type, ctg, name);
+		}
+	}
+	document.onkeydown = function(event) {
+		if (event.key == "Escape") {
+			let bg = document.querySelector("#deleteDialogBackground");
+			bg.classList.add("invisible");
+		}
+	}
 }
 
 function printStatus(s) {
@@ -219,5 +329,46 @@ function printErrorStatus(e) {
 
 function clearStatus() {
 	printStatus("");
+}
+
+function openDeleteDialog(action, type, ctg, name) {
+	// The dialog itself is not hidden but the parent sets the visibility.
+	let bg = document.querySelector("#deleteDialogBackground");
+	let dlg = document.querySelector("#deleteDialog");
+	dlg.querySelector("#deleteEntryType").innerText = type;
+	dlg.querySelector("#deleteCategory").innerText = ctg;
+	dlg.querySelector("#deleteName").innerText = name;
+	let also = dlg.querySelector("#deleteAlso");
+	if (ctg != "property") {
+		also.classList.add("invisible");
+	} else {
+		also.classList.remove("invisible");
+	}
+	bg.classList.remove("invisible");
+	// cancel or confirm delete
+	dlg.querySelector(".cancelButton").onclick = function() {
+		bg.classList.add("invisible");
+	}
+	document.querySelector(".confirmButton").onclick = function() {
+		let req = new XMLHttpRequest();
+		let formData = new FormData();
+		formData.append("entry_type", type);
+		formData.append("category", ctg);
+		formData.append("name", name);
+		req.open("post", action);
+		req.send(formData);
+		req.onerror = function(err) {
+			printErrorStatus("network error occurred. please check whether the server is down.");
+			bg.classList.add("invisible");
+		}
+		req.onload = function() {
+			if (req.status != 200) {
+				printErrorStatus(req.responseText);
+				bg.classList.add("invisible");
+				return;
+			}
+			location.reload();
+		}
+	}
 }
 `]
