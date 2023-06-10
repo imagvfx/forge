@@ -1223,7 +1223,7 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 					Extension: ".png", // thumbnails in forge always saved as png
 					File:      thumb.Data,
 					// It has a bug on scaling images, let's keep our eyes on the new release of excelize.
-					Format: &excelize.GraphicOptions{ScaleX: 0.335, ScaleY: 0.19},
+					Format: &excelize.GraphicOptions{OffsetX: 1, OffsetY: 1, ScaleX: 0.33, ScaleY: 0.18},
 				})
 				if err != nil {
 					return err
