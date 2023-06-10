@@ -632,7 +632,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		if err != nil {
 			return err
 		}
-		if len(siblings) != 1 {
+		if len(siblings) > 1 {
 			sort.Slice(siblings, func(i, j int) bool {
 				return siblings[i].Path < siblings[j].Path
 			})
