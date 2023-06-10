@@ -1083,6 +1083,7 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 	if !ok {
 		return fmt.Errorf("please specify paths")
 	}
+	exposeSub := make(map[string]bool)
 	ents := make(map[string][]*forge.Entry)              // [type][]entry
 	thumbnail := make(map[string]*forge.Thumbnail)       // [path]thumbnail
 	allSubEntry := make(map[string]map[string]bool)      // [type][sub-entry]
@@ -1094,6 +1095,17 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		}
 		if ents[ent.Type] == nil {
 			ents[ent.Type] = make([]*forge.Entry, 0)
+			exposeSub[ent.Type] = false
+			glbs, err := h.server.Globals(ctx, ent.Type)
+			if err != nil {
+				return err
+			}
+			for _, g := range glbs {
+				if g.Name == "expose_sub_entries" {
+					exposeSub[ent.Type] = true
+					break
+				}
+			}
 		}
 		ents[ent.Type] = append(ents[ent.Type], ent)
 		th, err := h.server.GetThumbnail(ctx, pth)
@@ -1104,6 +1116,9 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 			}
 		}
 		thumbnail[pth] = th
+		if !exposeSub[ent.Type] {
+			continue
+		}
 		if allSubEntry[ent.Type] == nil {
 			allSubEntry[ent.Type] = make(map[string]bool)
 		}
@@ -1224,6 +1239,7 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 					data[idx+2] = p.Value
 				}
 			}
+
 			// NOTE: export of sub-entry properties is for management convinience,
 			// so data could be manipulated before it is written.
 			for _, sub := range sortedSubEntries[ent.Type] {
