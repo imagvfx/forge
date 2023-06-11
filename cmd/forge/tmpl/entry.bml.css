@@ -804,11 +804,13 @@
 	border-radius: 2px;
 	border: 1px solid #ccc;
 	margin: 2px;
-	padding: 1px 3px;
+	padding: 1px 3px !important;
 	background-color: #eef0fa;
 	font-size: 0.7rem;
 	color: #444;
 	word-wrap: anywhere;
+	cursor: pointer;
+	user-select: none;
 }
 
 .tagLink:hover {

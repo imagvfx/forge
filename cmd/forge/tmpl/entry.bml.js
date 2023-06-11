@@ -18,6 +18,60 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
+		if (event.target.classList.contains("tagLink")) {
+			let t = event.target;
+			let url = window.location.href;
+			let toks = url.split(/[?](.*)/s);
+			let path = toks[0];
+			let parm = toks[1];
+			let tag = t.dataset.tagName + "=" + t.dataset.tagValue;
+			let in_search = false;
+			let already_exists = false;
+			let prev_query = false;
+			if (parm) {
+				for (let p of parm.split("&")) {
+					if (p == "search=1") {
+						in_search = true;
+						continue;
+					}
+					let toks = p.split(/=(.*)/s);
+					if (toks.length == 1) {
+						continue
+					}
+					if (toks[0] != "search_query") {
+						continue
+					}
+					if (toks[1] == "") {
+						break
+					}
+					prev_query = true;
+					let query = toks[1].replaceAll("+", " ");
+					let fields = decodeURIComponent(query).split(" ");
+					if (fields) {
+						for (let f of fields) {
+							if (f == tag) {
+								already_exists = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			let new_url = path;
+			if (!in_search) {
+				new_url += "?search=1&search_query=";
+			} else {
+				new_url += "?" + parm;
+			}
+			if (!already_exists) {
+				if (prev_query) {
+					new_url += "+"
+				}
+				new_url += encodeURIComponent(tag)
+			}
+			window.location.href = new_url;
+			return;
+		}
 		let hideBtn = event.target.closest("#sideMenuHideButton");
 		if (hideBtn) {
 			let left = hideBtn.closest(".left");

@@ -294,7 +294,7 @@
 						<div style="display:flex;flex-wrap:wrap;justify-content:end;"> [
 							<div style="flex:1"> []
 							{{range $v := $vals -}}
-							<a class="tagLink" title="{{$t}}={{$v}}" href="/{{topName $.Entry.Path}}?search=1&search_query={{$t}}={{$v}}"> [{{$v}}]
+							<div class="tagLink" title="{{$t}}={{$v}}" data-tag-name="{{$t}}" data-tag-value="{{$v}}"> [{{$v}}]
 							{{- end}}
 						]
 						{{end}}

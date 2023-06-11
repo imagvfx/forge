@@ -104,7 +104,6 @@ var pageHandlerFuncs = template.FuncMap{
 		if p.ValueError != nil {
 			return template.HTML("<div class='invalid infoValue'>" + p.ValueError.Error() + "</div>")
 		}
-		show := strings.Split(p.EntryPath, "/")[1]
 		t := ""
 		lines := strings.Split(p.Eval, "\n")
 		for _, line := range lines {
@@ -113,8 +112,8 @@ var pageHandlerFuncs = template.FuncMap{
 				continue
 			}
 			if p.Type == "tag" {
-				q := template.URLQueryEscaper(line)
-				t += "<a class='tagLink' href='/" + show + "?search=1&search_query=" + p.Name + "=" + q + "'>" + line + "</a>"
+				value := line
+				t += "<div class='tagLink' data-tag-name='" + p.Name + "' data-tag-value='" + value + "'>" + line + "</div>"
 			} else {
 				if line == "" {
 					t += "<br>"
