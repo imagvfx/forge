@@ -334,10 +334,14 @@
 {{end}}
 {{end}}
 
+.subEntryTags {
+	margin: 0.5rem 0;
+}
+
 .subEntryFunctions {
 	font-size: 0.7rem;
 	display: flex;
-	margin-bottom: 2rem;
+	margin: 0.5rem 0 1.5rem 0;
 	gap: 0.7rem;
 }
 
@@ -802,7 +806,7 @@
 	margin: 2px;
 	padding: 1px 3px;
 	background-color: #eef0fa;
-	font-size:0.7rem;
+	font-size: 0.7rem;
 	color: #444;
 	word-wrap: anywhere;
 }

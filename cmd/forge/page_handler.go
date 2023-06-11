@@ -352,6 +352,30 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		statusSummary[typ] = num
 	}
+	tag := make(map[string]map[string]bool)
+	for _, ent := range subEnts {
+		for _, p := range ent.Property {
+			if p.Type == "tag" {
+				if tag[p.Name] == nil {
+					tag[p.Name] = make(map[string]bool)
+				}
+				for _, v := range strings.Split(p.Value, "\n") {
+					if v == "" {
+						continue
+					}
+					tag[p.Name][v] = true
+				}
+			}
+		}
+	}
+	subEntryTags := make(map[string][]string)
+	for t, val := range tag {
+		subEntryTags[t] = make([]string, 0, len(val))
+		for v := range val {
+			subEntryTags[t] = append(subEntryTags[t], v)
+		}
+		sort.Strings(subEntryTags[t])
+	}
 	// Sort sub entries.
 	entrySortProp := make(map[string]string)
 	entrySortDesc := make(map[string]bool)
@@ -673,6 +697,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch         bool
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
+		SubEntryTags              map[string][]string
 		ShowGrandSub              map[string]bool
 		GrandSubEntries           map[string][]*forge.Entry
 		PropertyTypes             []string
@@ -701,6 +726,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
+		SubEntryTags:              subEntryTags,
 		ShowGrandSub:              showGrandSub,
 		GrandSubEntries:           grandSubEntries,
 		PropertyTypes:             forge.PropertyTypes(),

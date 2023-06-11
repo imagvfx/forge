@@ -288,6 +288,18 @@
 						{{end}}
 						{{end}}
 					]
+					<div class="subEntryTags"> [
+						{{range $t, $vals := $.SubEntryTags}}
+						{{if $vals}}
+						<div style="display:flex;flex-wrap:wrap;justify-content:end;"> [
+							<div style="flex:1"> []
+							{{range $v := $vals -}}
+							<a class="tagLink" title="{{$t}}={{$v}}" href="/{{topName $.Entry.Path}}?search=1&search_query={{$t}}={{$v}}"> [{{$v}}]
+							{{- end}}
+						]
+						{{end}}
+						{{end}}
+					]
 					<div class="subEntryFunctions"> [
 						<div style="flex:1"> []
 						<form id="addExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
@@ -305,7 +317,6 @@
 						]
 						<div id="downloadAsExcelButton"> [Download]
 					]
-
 					{{$i := 0}}
 					{{range $entType, $entsByGroup := $.SubEntriesByTypeByGroup}}
 					<div class="subEntryListForType" data-entry-type="{{$entType}}"> [
