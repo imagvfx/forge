@@ -1105,6 +1105,10 @@ window.onload = function() {
 				// not a left mouse button
 				return;
 			}
+			if (event.target.classList.contains("tagLink")) {
+				// it's moving to another page
+				return;
+			}
 			alreadyHandled = false;
 			if (subEntArea.classList.contains("editMode")) {
 				// prevent text selection
