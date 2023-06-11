@@ -20,11 +20,18 @@ window.onload = function() {
 		}
 		if (event.target.classList.contains("tagLink")) {
 			let t = event.target;
-			let url = window.location.href;
-			let toks = url.split(/[?](.*)/s);
-			let path = toks[0];
-			let parm = toks[1];
 			let tag = t.dataset.tagName + "=" + t.dataset.tagValue;
+			let path = window.location.pathname;
+			if (path != "/") {
+				path = path.split("/").slice(0, 1).join("/");
+			}
+			if (event.altKey || event.metaKey) {
+				let new_url = path + "?search=1&search_query=" + encodeURIComponent(tag);
+				window.location.href = new_url;
+				return;
+			}
+			let toks = window.location.href.split(/[?](.*)/s);
+			let parm = toks[1];
 			let in_search = false;
 			let already_exists = false;
 			let prev_query = false;
