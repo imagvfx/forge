@@ -23,7 +23,7 @@ window.onload = function() {
 			let tag = t.dataset.tagName + "=" + t.dataset.tagValue;
 			let path = window.location.pathname;
 			if (path != "/") {
-				path = path.split("/").slice(0, 1).join("/");
+				path = path.split("/").slice(0, 2).join("/");
 			}
 			if (event.altKey || event.metaKey) {
 				let new_url = path + "?search=1&search_query=" + encodeURIComponent(tag);
