@@ -15,7 +15,7 @@
 				]
 				<div> [
 				{{range $log := $.History}}
-					<div style="width:40rem;"> [
+					<div class="property"> [
 						<div style="display:flex;justify-content:space-between;align-items:end"> [
 							<div style="font-size:0.9rem;color:#222"> [{{$log.User}}]
 							<div style="font-size:0.7rem;color:#666"> [{{$log.When.Local.Format "2006/01/02 15:04:05"}}]
@@ -35,6 +35,10 @@
 <style> [```
 pre {
 	white-space: pre-wrap;
+}
+
+.property {
+	max-width: 60rem;
 }
 ```]
 <script> [```
