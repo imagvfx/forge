@@ -136,6 +136,18 @@ func getLogs(tx *sql.Tx, ctx context.Context, path, ctg, name string) ([]*forge.
 		Category:  &ctg,
 		Name:      &name,
 	})
+	for _, l := range logs {
+		p := &forge.Property{
+			Type:     l.Type,
+			RawValue: l.Value,
+		}
+		evalProperty(tx, ctx, p)
+		if p.ValueError != nil {
+			l.Value = "eval error: " + p.RawValue
+			continue
+		}
+		l.Value = p.Value
+	}
 	if err != nil {
 		return nil, err
 	}
