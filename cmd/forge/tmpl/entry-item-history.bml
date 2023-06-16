@@ -32,6 +32,11 @@
 	]
 ]
 
+<style> [```
+pre {
+	white-space: pre-wrap;
+}
+```]
 <script> [```
 "use strict";
 
