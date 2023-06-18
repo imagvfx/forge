@@ -62,6 +62,20 @@ func (w where) Value() string {
 	return `*` + w.Val + `*`
 }
 
+func (w where) Values() []string {
+	if w.Val == "" {
+		return nil
+	}
+	vals := make([]string, 0)
+	for _, v := range strings.Split(w.Val, ",") {
+		if !w.Exact {
+			v = "*" + v + "*"
+		}
+		vals = append(vals, v)
+	}
+	return vals
+}
+
 func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) ([]*forge.Entry, error) {
 	user := forge.UserNameFromContext(ctx)
 	if user == "" {
@@ -75,11 +89,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		// Prevent search root become two slashes by adding slash again.
 		search.SearchRoot = ""
 	}
-	var (
-		whPath *where
-		whName *where
-		whType *where
-	)
 	wheres := make([]where, 0, len(search.Keywords))
 	for _, kwd := range search.Keywords {
 		kwd = strings.TrimSpace(kwd)
@@ -116,21 +125,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		wh.Val = kwd[idx+1:] // exclude colon or equal
 		// special keywords those aren't actual properties.
 		// multiple queries on special keywords aren't supported yet and will pick up the last one.
-		if k == "path" {
-			whPath = &wh
-			continue
-		}
-		if k == "name" {
-			whName = &wh
-			continue
-		}
-		if k == "type" {
-			whType = &wh
-			continue
-		}
 		wheres = append(wheres, wh)
 	}
-	if len(wheres) == 0 && whPath == nil && whName == nil && whType == nil {
+	if len(wheres) == 0 {
 		return nil, nil
 	}
 	innerQueries := make([]string, 0)
@@ -168,8 +165,58 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				pathl = search.SearchRoot + "*" + rawval + "*"
 			}
 			innerVals = append(innerVals, pathl, val, val, val)
+		} else if key == "path" {
+			// special keyword "path"
+			vals := wh.Values()
+			if len(vals) != 0 {
+				q := "("
+				for i, v := range vals {
+					if i != 0 {
+						q += " OR "
+					}
+					q += "entries.path " + wh.Not() + wh.Equal() + " ?"
+					innerVals = append(innerVals, v)
+				}
+				q += ")"
+				innerKeys = append(innerKeys, q)
+			}
+		} else if key == "name" {
+			// special keyword "name"
+			// workaround to glob limitation.
+			// user should provide the exact name.
+			wh.Exact = false
+			vals := wh.Values()
+			if len(vals) != 0 {
+				q := "("
+				for i, v := range vals {
+					if i != 0 {
+						q += " OR "
+					}
+					q += "entries.path " + wh.Not() + wh.Equal() + " ?"
+					innerVals = append(innerVals, "*/"+v)
+				}
+				q += ")"
+				innerKeys = append(innerKeys, q)
+			}
+		} else if key == "type" {
+			// special keyword "type"
+			// could't think of in-exact type search
+			wh.Exact = true
+			vals := wh.Values()
+			if len(vals) != 0 {
+				q := "("
+				for i, v := range vals {
+					if i != 0 {
+						q += " OR "
+					}
+					q += "entry_types.name " + wh.Not() + wh.Equal() + " ?"
+					innerVals = append(innerVals, v)
+				}
+				q += ")"
+				innerKeys = append(innerKeys, q)
+			}
 		} else {
-			// keyword search
+			// generic keyword search
 			sub := ""
 			toks := strings.SplitN(key, ".", 2)
 			if len(toks) == 2 {
@@ -271,42 +318,26 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		FROM entries
 		LEFT JOIN entry_types ON entries.type_id = entry_types.id
 		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
-		WHERE %s AND %s AND %s AND %s AND %s AND %s
+		WHERE %s AND %s AND %s
 	`
 	vals := make([]any, 0)
 	whereArchived := "TRUE"
 	if !showArchived {
 		whereArchived = "entries.archived=0"
 	}
-	whereType := "TRUE"
-	if whType != nil {
-		whereType = "entry_types.name " + whType.Not() + whType.Equal() + " ?"
-		vals = append(vals, whType.Value())
-	}
 	whereRoot := "entries.path GLOB ?"
 	vals = append(vals, search.SearchRoot+`/*`)
-	wherePath := "TRUE"
-	if whPath != nil {
-		wherePath = "entries.path " + whPath.Not() + whPath.Equal() + " ?"
-		vals = append(vals, whPath.Value())
-	}
-	whereName := "TRUE"
-	if whName != nil {
-		// workaround of glob limitation.
-		// user should provide the exact name.
-		whName.Exact = false
-		whereName = "entries.path " + whName.Not() + whName.Equal() + " ?"
-		vals = append(vals, "*/"+whName.Val)
-	}
 	whereInner := "TRUE"
 	if len(innerQueries) != 0 {
 		whereInner = fmt.Sprintf("entries.id IN (%s)", strings.Join(innerQueries, " INTERSECT "))
 		vals = append(vals, innerVals...)
 	}
-	query := fmt.Sprintf(queryTmpl, whereArchived, whereType, whereRoot, wherePath, whereName, whereInner)
-	// We need these prints time to time. Do not delete.
-	// fmt.Println(query)
-	// fmt.Println(vals)
+	query := fmt.Sprintf(queryTmpl, whereArchived, whereRoot, whereInner)
+	if false {
+		// We need these prints time to time. Do not delete.
+		fmt.Println(query)
+		fmt.Println(vals)
+	}
 	valNeeds := strings.Count(query, "?")
 	if len(vals) != valNeeds {
 		return nil, fmt.Errorf("query doesn't get exact amount of values: got %v, want %v", len(vals), valNeeds)
