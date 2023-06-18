@@ -368,13 +368,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				if s == "" {
 					continue
 				}
-				toks := strings.Split(s, "|")
-				if len(toks) != 2 {
-					// invalid search
+				name, query, ok := strings.Cut(s, "|")
+				if !ok {
 					continue
 				}
-				name := toks[0]
-				query := toks[1]
 				showSearches = append(showSearches, [3]string{showPath, name, query})
 			}
 		}
