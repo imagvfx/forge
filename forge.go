@@ -158,7 +158,7 @@ func (p *Property) MarshalJSON() ([]byte, error) {
 		RawValue  string
 		UpdatedAt string
 	}{
-		Path:      p.EntryPath,
+		Path:      p.EntryPath, // TODO: change to EntryPath as like Property itself
 		Name:      p.Name,
 		Type:      p.Type,
 		Eval:      p.Eval,

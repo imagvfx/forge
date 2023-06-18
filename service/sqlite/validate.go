@@ -34,6 +34,7 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 		"date":       validateDate,
 		"int":        validateInt,
 		"tag":        validateTag,
+		"search":     validateSearch,
 	}
 	validate := validateFn[p.Type]
 	if validate == nil {
@@ -264,5 +265,36 @@ func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 		val = "\n" + val + "\n"
 	}
 	p.RawValue = val
+	return nil
+}
+
+func validateSearch(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
+	// search can have multiple search queries.
+	// part before '|' is name of a search query, after it is the query.
+	//
+	// ex)
+	// 	shots|type=shot
+	// 	assets|type=asset
+	// 	scene1 shots|type=shot path:/shot/scene1
+	// 	environ assets|type=asset path:/asset/environ
+	value := strings.TrimSpace(p.Value)
+	lines := strings.Split(value, "\n")
+	newlines := make([]string, 0, len(lines))
+	for _, ln := range lines {
+		ln = strings.TrimSpace(ln)
+		if ln == "" {
+			// allow empty line
+			newlines = append(newlines, ln)
+			continue
+		}
+		name, query, ok := strings.Cut(ln, "|")
+		if !ok {
+			return fmt.Errorf("search should be {name}|{query} form: got %s", ln)
+		}
+		name = strings.TrimSpace(name)
+		query = strings.TrimSpace(query)
+		newlines = append(newlines, name+"|"+query)
+	}
+	p.RawValue = strings.Join(newlines, "\n")
 	return nil
 }

@@ -58,7 +58,7 @@
 					]
 					]
 					<!-- Search Box -->
-					<div style="flex-basis:24rem;flex-grow:1;"> [
+					<div style="flex-basis:24rem;flex-grow:1;display:flex;flex-direction:column;"> [
 						<form action="/{{topName $.Entry.Path}}" style="display:flex;"> [
 							<input hidden name="search" value="1"> []
 							<select name="search_entry_type" class="search-box-left"> [
@@ -83,6 +83,15 @@
 							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 						{{end}}
+						<div style="flex:1"> []
+						<div class="showSearches" style="display:flex;flex-wrap:wrap;justify-content:end;"> [
+							{{range $s := $.ShowSearches}}
+							{{$show := index $s 0}}
+							{{$name := index $s 1}}
+							{{$query := index $s 2}}
+							<div class="searchLink" data-search-from={{$show}} data-search-query="{{$query}}"> [{{$name}}]
+							{{end}}
+						]
 					]
 				]
 				{{if not $.ResultsFromSearch}}

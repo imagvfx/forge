@@ -137,6 +137,10 @@
 	cursor: pointer;
 }
 
+.showSearches {
+	margin-top: 1rem;
+}
+
 .mainEntryTop {
 	display: flex;
 	flex-wrap: wrap;
@@ -797,6 +801,20 @@
 .pathText:hover {
 	text-decoration: underline;
 	cursor: pointer;
+}
+
+.searchLink {
+	display: inline-block;
+	border-radius: 2px;
+	border: 1px solid #cbb;
+	margin: 2px;
+	padding: 1px 3px !important;
+	background-color: #faeee8;
+	font-size: 0.7rem;
+	color: #544;
+	word-wrap: anywhere;
+	cursor: pointer;
+	user-select: none;
 }
 
 .tagLink {

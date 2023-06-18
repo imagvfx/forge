@@ -109,16 +109,18 @@ var pageHandlerFuncs = template.FuncMap{
 		for _, line := range lines {
 			line = strings.TrimSpace(line)
 			if line == "" {
+				t += "<br>"
 				continue
 			}
 			if p.Type == "tag" {
-				value := line
-				t += "<div class='tagLink' data-tag-name='" + p.Name + "' data-tag-value='" + value + "'>" + line + "</div>"
-			} else {
-				if line == "" {
-					t += "<br>"
+				t += "<div class='tagLink' data-tag-name='" + p.Name + "' data-tag-value='" + line + "'>" + line + "</div>"
+			} else if p.Type == "search" {
+				name, query, ok := strings.Cut(line, "|")
+				if !ok {
 					continue
 				}
+				t += "<div class='searchLink' data-search-from='" + p.EntryPath + "' data-search-query='" + query + "'>" + name + "</div>"
+			} else {
 				line = template.HTMLEscapeString(line)
 				if strings.HasPrefix(line, "/") {
 					t += "<div class='pathText'>" + line + "</div>"
@@ -350,6 +352,32 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			}
 		}
 		statusSummary[typ] = num
+	}
+	showSearches := make([][3]string, 0)
+	toks := strings.Split(ent.Path, "/")
+	if len(toks) > 1 {
+		// not at root path
+		showPath := strings.Join(toks[:2], "/")
+		show, err := h.server.GetEntry(ctx, showPath)
+		if err != nil {
+			return err
+		}
+		search, ok := show.Property["search"]
+		if ok {
+			for _, s := range strings.Split(search.Eval, "\n") {
+				if s == "" {
+					continue
+				}
+				toks := strings.Split(s, "|")
+				if len(toks) != 2 {
+					// invalid search
+					continue
+				}
+				name := toks[0]
+				query := toks[1]
+				showSearches = append(showSearches, [3]string{showPath, name, query})
+			}
+		}
 	}
 	tag := make(map[string]map[string]bool)
 	for _, ent := range subEnts {
@@ -696,6 +724,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch         bool
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
+		ShowSearches              [][3]string // [][from, name, query]
 		SubEntryTags              map[string][]string
 		ShowGrandSub              map[string]bool
 		GrandSubEntries           map[string][]*forge.Entry
@@ -725,6 +754,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
+		ShowSearches:              showSearches,
 		SubEntryTags:              subEntryTags,
 		ShowGrandSub:              showGrandSub,
 		GrandSubEntries:           grandSubEntries,

@@ -27,6 +27,7 @@ func evalProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 		"date":       evalDate,
 		"int":        evalInt,
 		"tag":        evalTag,
+		"search":     evalSearch,
 	}
 	eval := evalFn[p.Type]
 	if eval == nil {
@@ -162,6 +163,11 @@ func evalInt(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 func evalTag(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	p.Eval = strings.TrimSpace(p.RawValue)
 	p.Value = strings.TrimSpace(p.RawValue)
+}
+
+func evalSearch(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	p.Eval = p.RawValue
+	p.Value = p.RawValue
 }
 
 // evalSpecialProperty evaluates special properties that starts with dot (.).

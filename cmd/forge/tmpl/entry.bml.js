@@ -18,6 +18,12 @@ window.onload = function() {
 			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
 			return;
 		}
+		if (event.target.classList.contains("searchLink")) {
+			let query = encodeURIComponent(event.target.dataset.searchQuery);
+			let url = event.target.dataset.searchFrom + "?search=1&search_query=" + query;
+			window.location.href = url;
+			return;
+		}
 		if (event.target.classList.contains("tagLink")) {
 			let t = event.target;
 			let tag = t.dataset.tagName + "=" + t.dataset.tagValue;
@@ -1105,9 +1111,11 @@ window.onload = function() {
 				// not a left mouse button
 				return;
 			}
-			if (event.target.classList.contains("tagLink")) {
-				// it's moving to another page
-				return;
+			for (let cls of ["searchLink", "tagLink"]) {
+				if (event.target.classList.contains(cls)) {
+					// it's moving to another page
+					return;
+				}
 			}
 			alreadyHandled = false;
 			if (subEntArea.classList.contains("editMode")) {
@@ -1910,6 +1918,19 @@ function refreshInfoValue(path, ctg, name, p) {
 			let text = document.createTextNode(line);
 			a.appendChild(text);
 			valueElem.appendChild(a);
+		}
+	} else if (p.Type == "search") {
+		for (let line of evaled.split("\n")) {
+			line = line.trim();
+			let toks = line.split(/[|](.*)/s);
+			let name = toks[0];
+			let query = toks[1];
+			let div = document.createElement("div");
+			div.classList.add("searchLink");
+			div.dataset.searchFrom = p.Path;
+			div.dataset.searchQuery = query;
+			div.innerText = name;
+			valueElem.appendChild(div);
 		}
 	} else {
 		for (let line of evaled.split("\n")) {
