@@ -289,10 +289,16 @@ func validateSearch(tx *sql.Tx, ctx context.Context, p, old *forge.Property) err
 		}
 		name, query, ok := strings.Cut(ln, "|")
 		if !ok {
-			return fmt.Errorf("search should be {name}|{query} form: got %s", ln)
+			return fmt.Errorf("search should be name|query form: got %s", ln)
 		}
 		name = strings.TrimSpace(name)
 		query = strings.TrimSpace(query)
+		if name == "" {
+			return fmt.Errorf("search name shouldn't be empty: got %s", ln)
+		}
+		if query == "" {
+			return fmt.Errorf("search query shouldn't be empty: got %s", ln)
+		}
 		newlines = append(newlines, name+"|"+query)
 	}
 	p.RawValue = strings.Join(newlines, "\n")
