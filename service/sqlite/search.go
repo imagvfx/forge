@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -145,8 +146,32 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		findParent := false
 		innerKeys := make([]string, 0)
 		expandSpecialValue := func(v string) string {
-			if v == "@today" {
-				return time.Now().Local().Format("2006/01/02")
+			if strings.HasPrefix(v, "@today") {
+				day := time.Now().Local()
+				if v == "@today" {
+					return day.Format("2006/01/02")
+				}
+				// check it is @today+n, @today-n form
+				suffix := v[len("@today"):]
+				op := suffix[0]
+				n, err := strconv.Atoi(suffix[1:])
+				if err != nil {
+					return v
+				}
+				if n > 10000 {
+					// time.Hour is already a big number and
+					// if n is also too big, i.e 10000000000,
+					// ParseDuration will raise error.
+					// let's limit n to +- 10000
+					n = 10000
+				}
+				d := time.Duration(n) * 24 * time.Hour
+				if op == '+' {
+					day = day.Add(d)
+				} else {
+					day = day.Add(-d)
+				}
+				return day.Format("2006/01/02")
 			}
 			if v == "@user" {
 				return user
