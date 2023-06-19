@@ -30,6 +30,7 @@ func SearchEntries(db *sql.DB, ctx context.Context, search forge.EntrySearcher) 
 
 type where struct {
 	Key     string
+	Cmp     string
 	Val     string
 	Exact   bool
 	Exclude bool
@@ -98,7 +99,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		wh := where{}
 		cmp := ""
 		idx := len(kwd)
-		cmps := []string{"=", "!=", ":", "!:"}
+		cmps := []string{"=", "!=", ":", "!:", "<", ">"}
 		for _, c := range cmps {
 			i := strings.Index(kwd, c)
 			if i != -1 && i < idx {
@@ -125,6 +126,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			}
 		}
 		wh.Key = key
+		wh.Cmp = cmp
 		wh.Val = val // exclude colon or equal
 		// special keywords those aren't actual properties.
 		// multiple queries on special keywords aren't supported yet and will pick up the last one.
@@ -260,6 +262,20 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				} else {
 					tagGlob = "'*" + v + "*'"
 				}
+				dateCmp := ""
+				dateVal := ""
+				if wh.Cmp == "<" {
+					dateCmp = wh.Cmp
+					rest := "0000/00/00"
+					dateVal = v + rest[len(v):]
+				} else if wh.Cmp == ">" {
+					dateCmp = wh.Cmp
+					rest := "9999/99/99"
+					dateVal = v + rest[len(v):]
+				} else {
+					dateCmp = eq
+					dateVal = vl
+				}
 				userWhere := ""
 				whereVals := make([]any, 0)
 				if v != "" {
@@ -273,8 +289,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				vq := fmt.Sprintf(`
 					(
-						(default_properties.type!='tag' AND default_properties.type!='user' AND properties.val %s ?) OR
+						(default_properties.type!='tag' AND default_properties.type!='user' AND default_properties.type!='date' AND properties.val %s ?) OR
 						(default_properties.type='tag' AND properties.val GLOB %s) OR
+						(default_properties.type='date' AND properties.val %s ?) OR
 						(default_properties.type='user' AND properties.id IN
 							(SELECT properties.id FROM properties
 								LEFT JOIN accessors ON properties.val=accessors.id
@@ -283,8 +300,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 							)
 						)
 					)
-				`, eq, tagGlob, userWhere)
-				innerVals = append(innerVals, vl)
+				`, eq, tagGlob, dateCmp, userWhere)
+				innerVals = append(innerVals, vl, dateVal)
 				innerVals = append(innerVals, whereVals...)
 				q += vq
 			}

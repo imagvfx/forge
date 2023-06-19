@@ -142,6 +142,9 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010/lgt", k: "status", v: "inprogress", expect: "inprogress"},
 	{path: "/test/shot/cg/0010/lgt", k: "direction", v: "make the whole scene brighter", expect: "make the whole scene brighter"},
 	{path: "/test/shot/cg/0020/ani", k: "assignee", v: "reader@imagvfx.com", expect: "reader@imagvfx.com"},
+	{path: "/test/shot/cg/0010", k: "due", v: "2022/08/19", expect: "2022/08/19"},
+	{path: "/test/shot/cg/0020", k: "due", v: "2023/06/19", expect: "2023/06/19"},
+	{path: "/test/shot/cg/0030", k: "due", v: "2023/08/19", expect: "2023/08/19"},
 }
 
 type testSearch struct {
@@ -208,6 +211,18 @@ var testSearches = []testSearch{
 	{path: "/", query: "tag=important", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/", query: "tag!=important", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 	{path: "/", query: "tag=important,test", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
+	{path: "/", query: "due<", wantRes: []string{}},
+	{path: "/", query: "due>", wantRes: []string{}},
+	{path: "/", query: "due<2023", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "due>2022", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "due!:2023", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "due:2023", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "due:2022,2023", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "due:2023/06", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/", query: "due!=2023/06/19", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
+	{path: "/", query: "due=2023/06/19", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/", query: "due=", wantRes: []string{}},
+	{path: "/", query: "due!=", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
 }
 
 type testRename struct {
