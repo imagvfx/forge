@@ -248,10 +248,14 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if i != 0 {
 					q += " OR "
 				}
-				if v == "@today" {
+				switch v {
+				case "@today":
 					// only exact search available
 					wh.Exact = true
 					v = time.Now().Local().Format("2006/01/02")
+				case "@me":
+					wh.Exact = true
+					v = user
 				}
 				vl := v
 				if !wh.Exact {
