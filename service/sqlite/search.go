@@ -141,12 +141,21 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	for _, wh := range wheres {
 		key := wh.Key
 		rawval := wh.Val
-		val := wh.Value()
 		eq := wh.Equal()
 		findParent := false
 		innerKeys := make([]string, 0)
-
+		expandSpecialValue := func(v string) string {
+			if v == "@today" {
+				return time.Now().Local().Format("2006/01/02")
+			}
+			if v == "@user" {
+				return user
+			}
+			return v
+		}
 		if wh.Key == "" {
+			rawval := expandSpecialValue(rawval)
+			val := "*" + rawval + "*"
 			// Generic search. Not tied to a property.
 			innerKeys = append(innerKeys, `
 				(entries.path GLOB ? OR
@@ -248,15 +257,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if i != 0 {
 					q += " OR "
 				}
-				switch v {
-				case "@today":
-					// only exact search available
-					wh.Exact = true
-					v = time.Now().Local().Format("2006/01/02")
-				case "@me":
-					wh.Exact = true
-					v = user
-				}
+				v = expandSpecialValue(v)
 				vl := v
 				if !wh.Exact {
 					vl = "*" + v + "*"
