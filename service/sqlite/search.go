@@ -96,11 +96,14 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			continue
 		}
 		wh := where{}
+		cmp := ""
 		idx := len(kwd)
-		for _, cmp := range ":=" {
-			i := strings.Index(kwd, string(cmp))
+		cmps := []string{"=", "!=", ":", "!:"}
+		for _, c := range cmps {
+			i := strings.Index(kwd, c)
 			if i != -1 && i < idx {
 				idx = i
+				cmp = c
 			}
 		}
 		if idx == len(kwd) {
@@ -108,21 +111,21 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			wheres = append(wheres, wh)
 			continue
 		}
-		cmp := kwd[idx]
-		if cmp == '=' {
-			wh.Exact = true
-		}
-		k := kwd[:idx]
-		if len(k) != 0 && k[len(k)-1] == '!' {
-			k = k[:len(k)-1]
-			wh.Exclude = true
-		}
-		if k == "" {
+		key, val, _ := strings.Cut(kwd, cmp)
+		if key == "" {
 			// Invalid search. Having ':' or '=' without the keyword.
 			continue
 		}
-		wh.Key = k
-		wh.Val = kwd[idx+1:] // exclude colon or equal
+		for _, ch := range cmp {
+			if ch == '=' {
+				wh.Exact = true
+			}
+			if ch == '!' {
+				wh.Exclude = true
+			}
+		}
+		wh.Key = key
+		wh.Val = val // exclude colon or equal
 		// special keywords those aren't actual properties.
 		// multiple queries on special keywords aren't supported yet and will pick up the last one.
 		wheres = append(wheres, wh)
