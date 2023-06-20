@@ -300,11 +300,11 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				dateCmp := ""
 				dateVal := ""
 				if wh.Cmp == "<" {
-					dateCmp = wh.Cmp
+					dateCmp = "!= '' AND properties.val" + wh.Cmp
 					rest := "0000/00/00"
 					dateVal = v + rest[len(v):]
 				} else if wh.Cmp == ">" {
-					dateCmp = wh.Cmp
+					dateCmp = "!= '' AND properties.val" + wh.Cmp
 					rest := "9999/99/99"
 					dateVal = v + rest[len(v):]
 				} else {
