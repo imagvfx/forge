@@ -287,15 +287,15 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if !wh.Exact {
 					vl = "*" + v + "*"
 				}
-				tagGlob := ""
+				itemGlob := ""
 				if wh.Exact {
 					if v == "" {
-						tagGlob = "''"
+						itemGlob = "''"
 					} else {
-						tagGlob = "'*' || char(10) || '" + v + "' || char(10) || '*'"
+						itemGlob = "'*' || char(10) || '" + v + "' || char(10) || '*'"
 					}
 				} else {
-					tagGlob = "'*" + v + "*'"
+					itemGlob = "'*" + v + "*'"
 				}
 				dateCmp := ""
 				dateVal := ""
@@ -324,8 +324,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				vq := fmt.Sprintf(`
 					(
-						(default_properties.type!='tag' AND default_properties.type!='user' AND default_properties.type!='date' AND properties.val %s ?) OR
-						(default_properties.type='tag' AND properties.val GLOB %s) OR
+						(default_properties.type NOT IN ('tag', 'user', 'date') AND properties.val %s ?) OR
+						(default_properties.type IN ('tag') AND properties.val GLOB %s) OR
 						(default_properties.type='date' AND properties.val %s ?) OR
 						(default_properties.type='user' AND properties.id IN
 							(SELECT properties.id FROM properties
@@ -335,7 +335,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 							)
 						)
 					)
-				`, eq, tagGlob, dateCmp, userWhere)
+				`, eq, itemGlob, dateCmp, userWhere)
 				innerVals = append(innerVals, vl, dateVal)
 				innerVals = append(innerVals, whereVals...)
 				q += vq
