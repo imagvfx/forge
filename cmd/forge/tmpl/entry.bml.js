@@ -2,6 +2,18 @@
 
 window.onload = function() {
 	document.onclick = function(event) {
+		if (event.target.classList.contains("copyCurrentPathButton")) {
+			let mainEntry = event.target.closest(".mainEntry");
+			let ptxt = mainEntry.dataset.entryPath;
+			let succeeded = function() {
+				printStatus("entry path copied: " + ptxt);
+			}
+			let failed = function() {
+				printStatus("failed to copy entry path");
+			}
+			navigator.clipboard.writeText(ptxt).then(succeeded, failed);
+			return;
+		}
 		if (event.target.classList.contains("pathText")) {
 			let p = event.target;
 			let ptxt = p.textContent;

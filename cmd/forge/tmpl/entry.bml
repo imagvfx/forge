@@ -103,6 +103,7 @@
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
 							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
+							<div class="copyCurrentPathButton"> []
 						]
 						{{if $.Entry.Archived}}
 						<div class="archivedLabel" style="font-size:0.8rem"> [Archived]

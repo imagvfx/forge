@@ -156,6 +156,21 @@
 	flex-wrap: wrap;
 }
 
+.copyCurrentPathButton {
+	background-image: url("/asset/copy-path.svg");
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 1rem 1rem;
+	filter: invert(100%) brightness(7%) invert(100%);
+	width: 1.3rem;
+	height: 1.3rem;
+	cursor: pointer;
+}
+
+.copyCurrentPathButton:hover {
+	filter: invert(100%) brightness(45%) sepia(100%) hue-rotate(15deg) invert(100%);
+}
+
 .mainEntryFunctions {
 	display: flex;
 	align-self: start;
