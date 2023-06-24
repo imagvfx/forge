@@ -835,6 +835,24 @@
 	text-decoration: none;
 }
 
+.entryLink {
+	display: block;
+}
+
+.entryLink:hover {
+	text-decoration: none;
+}
+
+.entryLink:before {
+	content: "→ ";
+	color: #aaa;
+}
+
+.entryLink:hover:before {
+	content: "→ ";
+	color:#000;
+}
+
 .parentLink {
 	font-size: 0.7rem;
 	background-color: #EEE;

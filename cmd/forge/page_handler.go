@@ -114,6 +114,8 @@ var pageHandlerFuncs = template.FuncMap{
 			}
 			if p.Type == "tag" {
 				t += "<div class='tagLink' data-tag-name='" + p.Name + "' data-tag-value='" + line + "'>" + line + "</div>"
+			} else if p.Type == "entry_link" {
+				t += "<a class='entryLink' href='" + line + "'>" + line + "</a>"
 			} else if p.Type == "search" {
 				name, query, ok := strings.Cut(line, "|")
 				if !ok {

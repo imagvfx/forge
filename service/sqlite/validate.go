@@ -31,6 +31,7 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 		"user":       validateUser,
 		"entry_path": validateEntryPath,
 		"entry_name": validateEntryName,
+		"entry_link": validateEntryLink,
 		"date":       validateDate,
 		"int":        validateInt,
 		"tag":        validateTag,
@@ -169,6 +170,60 @@ func validateEntryName(tx *sql.Tx, ctx context.Context, p, old *forge.Property) 
 	// So validation process is same with 'validateEntryPath'.
 	// Difference comes from evaluation.
 	return validateEntryPath(tx, ctx, p, old)
+}
+
+func validateEntryLink(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
+	have := make(map[string]bool)
+	if old != nil {
+		for _, pth := range strings.Split(old.RawValue, "\n") {
+			if strings.TrimSpace(pth) == "" {
+				continue
+			}
+			have[pth] = true
+		}
+	}
+	lines := strings.Split(p.Value, "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+		op := line[0]
+		valid := false
+		for _, o := range "+-" {
+			if rune(op) == o {
+				valid = true
+				continue
+			}
+		}
+		if !valid {
+			continue
+		}
+		pth := strings.TrimSpace(line[1:])
+		if pth == "" {
+			continue
+		}
+		switch op {
+		case '+':
+			// add
+			have[pth] = true
+		case '-':
+			// remove
+			delete(have, pth)
+		}
+	}
+	pths := make([]string, 0, len(have))
+	for pth := range have {
+		pths = append(pths, pth)
+	}
+	sort.Strings(pths)
+	val := strings.Join(pths, "\n")
+	if val != "" {
+		// for line matching search in sqlite
+		val = "\n" + val + "\n"
+	}
+	p.RawValue = val
+	return nil
 }
 
 func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {

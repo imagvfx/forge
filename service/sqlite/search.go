@@ -324,8 +324,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				vq := fmt.Sprintf(`
 					(
-						(default_properties.type NOT IN ('tag', 'user', 'date') AND properties.val %s ?) OR
-						(default_properties.type IN ('tag') AND properties.val GLOB %s) OR
+						(default_properties.type NOT IN ('tag', 'entry_link', 'user', 'date') AND properties.val %s ?) OR
+						(default_properties.type IN ('tag', 'entry_link') AND properties.val GLOB %s) OR
 						(default_properties.type='date' AND properties.val %s ?) OR
 						(default_properties.type='user' AND properties.id IN
 							(SELECT properties.id FROM properties

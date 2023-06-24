@@ -1111,7 +1111,7 @@ window.onload = function() {
 				// not a left mouse button
 				return;
 			}
-			for (let cls of ["searchLink", "tagLink"]) {
+			for (let cls of ["searchLink", "tagLink", "entryLink"]) {
 				if (event.target.classList.contains(cls)) {
 					// it's moving to another page
 					return;
@@ -1916,6 +1916,19 @@ function refreshInfoValue(path, ctg, name, p) {
 			a.classList.add("tagLink");
 			a.href = "/"+show+"?search=1&search_query="+p.Name+"="+encodeURIComponent(line)
 			let text = document.createTextNode(line);
+			a.appendChild(text);
+			valueElem.appendChild(a);
+		}
+	} else if (p.Type == "entry_link") {
+		for (let line of evaled.split("\n")) {
+			let pth = line.trim();
+			if (pth == "") {
+				continue;
+			}
+			let a = document.createElement("a");
+			a.classList.add("entryLink");
+			a.href = pth
+			let text = document.createTextNode(pth);
 			a.appendChild(text);
 			valueElem.appendChild(a);
 		}
