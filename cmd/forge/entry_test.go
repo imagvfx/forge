@@ -45,6 +45,7 @@ var testDefaults = []testDefault{
 	{typ: "shot", ctg: "property", k: "timecode", t: "timecode", v: ""},
 	{typ: "shot", ctg: "property", k: "tag", t: "tag", v: ""},
 	{typ: "shot", ctg: "property", k: "duration", t: "int", v: ""},
+	{typ: "shot", ctg: "property", k: "asset", t: "entry_link", v: ""},
 	{typ: "shot", ctg: "property", k: "SHOT_PATH", t: "entry_path", v: ""},
 	{typ: "shot", ctg: "property", k: "SHOT", t: "entry_name", v: ""},
 	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
@@ -86,6 +87,11 @@ var testEntries = []testEntry{
 	{path: "/test/asset", typ: "category"},
 	{path: "/test/asset/char", typ: "group"},
 	{path: "/test/asset/char/yb", typ: "asset"},
+	{path: "/test/asset/char/human1", typ: "asset"},
+	{path: "/test/asset/char/human2", typ: "asset"},
+	{path: "/test/asset/char/android", typ: "asset"},
+	{path: "/test/asset/set", typ: "group"},
+	{path: "/test/asset/set/cabin", typ: "asset"},
 	// check case sensitive search for entries,
 	{path: "/TEST", typ: "show"},
 }
@@ -126,6 +132,20 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "tag", v: "-a\n-b\n-c", expect: ""},
 	{path: "/test/shot/cg/0010", k: "SHOT_PATH", v: ".", expect: "/test/shot/cg/0010"},
 	{path: "/test/shot/cg/0010", k: "SHOT", v: ".", expect: "0010"},
+	// some entry_link tests with thoughts
+	{path: "/test/shot/cg/0010", k: "asset", v: "+/test/asset/char/human1", expect: "/test/asset/char/human1"},
+	{path: "/test/shot/cg/0010", k: "asset", v: "-/test/asset/char/human1", expect: ""},
+	{path: "/test/shot/cg/0010", k: "asset", v: "-/test/asset/char/human1", expect: ""},
+	{path: "/test/shot/cg/0010", k: "asset", v: "+/test/asset/not-existing", expect: "/test/asset/not-existing"}, // not sure it should return error
+	{path: "/test/shot/cg/0010", k: "asset", v: "-/test/asset/not-existing", expect: ""},
+	{path: "/test/shot/cg/0010", k: "asset", v: "+github.com/kzmdstu/setup", expect: "github.com/kzmdstu/setup"}, // is it good thing to link other site?
+	{path: "/test/shot/cg/0010", k: "asset", v: "-github.com/kzmdstu/setup", expect: ""},
+	{path: "/test/shot/cg/0010", k: "asset", v: "+even;not!valid.domain!@#", expect: "even;not!valid.domain!@#"}, // let't think if I shouldn't accept this
+	{path: "/test/shot/cg/0010", k: "asset", v: "-even;not!valid.domain!@#", expect: ""},
+	{path: "/test/shot/cg/0010", k: "asset", v: "+ multiple\n\n +addition ", expect: "addition\nmultiple"},
+	{path: "/test/shot/cg/0010", k: "asset", v: "- multiple\n\n -subtraction ", expect: "addition"},
+	{path: "/test/shot/cg/0010", k: "asset", v: "no-op\n-addition", expect: ""},
+	{path: "/test/shot/cg/0010", k: "asset", v: "no-op\nand-no-op", expect: ""},
 
 	// below properties for search.
 	{path: "/test", k: "sup", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
@@ -145,6 +165,11 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "due", v: "2022/08/19", expect: "2022/08/19"},
 	{path: "/test/shot/cg/0020", k: "due", v: "2023/06/19", expect: "2023/06/19"},
 	{path: "/test/shot/cg/0030", k: "due", v: "2023/08/19", expect: "2023/08/19"},
+	{path: "/test/shot/cg/0020", k: "asset", v: "+/test/asset/char/human1", expect: "/test/asset/char/human1"},
+	{path: "/test/shot/cg/0020", k: "asset", v: "+/test/asset/char/human2", expect: "/test/asset/char/human1\n/test/asset/char/human2"},
+	{path: "/test/shot/cg/0030", k: "asset", v: "+/test/asset/char/human1", expect: "/test/asset/char/human1"},
+	{path: "/test/shot/cg/0030", k: "asset", v: "+/test/asset/char/human1", expect: "/test/asset/char/human1"},
+	{path: "/test/shot/cg/0030", k: "asset", v: "+/test/asset/set/cabin", expect: "/test/asset/char/human1\n/test/asset/set/cabin"},
 }
 
 type testSearch struct {
@@ -197,7 +222,7 @@ var testSearches = []testSearch{
 	{path: "/", query: "comp.x=val", wantRes: []string{}},
 	{path: "/test", query: "type=shot ani.status!=done", wantRes: []string{"/test/shot/cg/0020"}},
 	{path: "/test", query: "path:/test/shot", wantRes: []string{"/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020", "/test/shot/cg/0020/ani", "/test/shot/cg/0030"}},
-	{path: "/test", query: "path!:/test/shot", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/char/yb"}},
+	{path: "/test", query: "path!:/test/shot", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/char/android", "/test/asset/char/human1", "/test/asset/char/human2", "/test/asset/char/yb", "/test/asset/set", "/test/asset/set/cabin"}},
 	{path: "/test", query: "type=shot path=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/test", query: "type=shot path!=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 	{path: "/", query: "type=shot name=0010", wantRes: []string{"/test/shot/cg/0010"}},
@@ -223,6 +248,13 @@ var testSearches = []testSearch{
 	{path: "/", query: "due=2023/06/19", wantRes: []string{"/test/shot/cg/0020"}},
 	{path: "/", query: "due=", wantRes: []string{}},
 	{path: "/", query: "due!=", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "asset=", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "asset!=", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "asset=/test/asset/char/human1", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "asset=/test/asset/not-existing", wantRes: []string{}},
+	{path: "/", query: "asset:human", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "asset:/set/", wantRes: []string{"/test/shot/cg/0030"}},
+	{path: "/", query: "asset!:/set/", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
 }
 
 type testRename struct {
