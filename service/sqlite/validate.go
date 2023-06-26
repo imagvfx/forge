@@ -98,6 +98,9 @@ func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		return err
 	}
 	remap := setting.CopyPathRemap
+	// reverse the copy path mapping
+	// maybe it's worth having better mapping mechanism.
+	// but this is what I have now.
 	toks := strings.Split(remap, ";")
 	if len(toks) != 2 {
 		p.RawValue = val
@@ -109,9 +112,10 @@ func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		p.RawValue = val
 		return nil
 	}
-	// reverse the copy path mapping
-	// maybe it's worth having better mapping mechanism.
-	// but this is what I have now.
+	if remapFrom == "" || remapTo == "" {
+		// only one of remapFrom,remapTo is defined
+		return fmt.Errorf("user path mapping needs both from and to sides for now")
+	}
 	lines := strings.Split(val, "\n")
 	newLines := make([]string, 0, len(lines))
 	for _, line := range lines {
