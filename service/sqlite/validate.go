@@ -91,7 +91,37 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Prop
 }
 
 func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
-	p.RawValue = strings.ReplaceAll(p.Value, "\r\n", "\n")
+	val := strings.ReplaceAll(p.Value, "\r\n", "\n")
+	user := forge.UserNameFromContext(ctx)
+	setting, err := getUserSetting(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	remap := setting.CopyPathRemap
+	toks := strings.Split(remap, ";")
+	if len(toks) != 2 {
+		p.RawValue = val
+		return nil
+	}
+	remapFrom := strings.TrimSpace(toks[0])
+	remapTo := strings.TrimSpace(toks[1])
+	if remapFrom == "" && remapTo == "" {
+		p.RawValue = val
+		return nil
+	}
+	// reverse the copy path mapping
+	// maybe it's worth having better mapping mechanism.
+	// but this is what I have now.
+	lines := strings.Split(val, "\n")
+	newLines := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if strings.HasPrefix(line, remapTo) {
+			line = strings.Replace(line, remapTo, remapFrom, 1)
+		}
+		newLines = append(newLines, line)
+	}
+	val = strings.Join(newLines, "\n")
+	p.RawValue = val
 	return nil
 }
 
