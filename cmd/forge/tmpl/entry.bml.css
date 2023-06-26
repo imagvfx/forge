@@ -852,20 +852,20 @@
 
 .entryLink {
 	display: block;
+	color: #aaa;
 }
 
 .entryLink:hover {
 	text-decoration: none;
+	color:#44a;
 }
 
 .entryLink:before {
 	content: "→ ";
-	color: #aaa;
 }
 
 .entryLink:hover:before {
 	content: "→ ";
-	color:#000;
 }
 
 .parentLink {
