@@ -699,6 +699,31 @@ window.onload = function() {
 			printStatus(what + " selected");
 			return;
 		}
+		if (ctrlPressed && event.code == "KeyC") {
+			if (["INPUT", "TEXTAREA"].includes(event.target.nodeType)) {
+				return;
+			}
+			if (!subEntArea.classList.contains("editMode")) {
+				return;
+			}
+			let selEnts = document.querySelectorAll(".subEntry.selected");
+			if (selEnts.length == 0) {
+				return;
+			}
+			event.preventDefault();
+			let paths = "";
+			for (let ent of selEnts) {
+				paths += ent.dataset.entryPath + "\n";
+			}
+			let succeeded = function() {
+				printStatus(selEnts.length.toString() + " selected entry paths copied");
+			}
+			let failed = function() {
+				printStatus("failed to copy entry path");
+			}
+			navigator.clipboard.writeText(paths).then(succeeded, failed);
+			return;
+		}
 	}
 	document.onchange = function(event) {
 		if (event.target.closest(".propertyPickerName")) {
