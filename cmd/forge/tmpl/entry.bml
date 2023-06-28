@@ -61,7 +61,7 @@
 					<div style="flex-basis:24rem;flex-grow:1;display:flex;flex-direction:column;"> [
 						<form action="/{{topName $.Entry.Path}}" style="display:flex;"> [
 							<input hidden name="search" value="1"> []
-							<select name="search_entry_type" class="search-box-left"> [
+							<select name="search_entry_type" class="search-box-left searchTypeSelect {{if $.QueryHasType}}notEffected{{end}}"> [
 								<option value=""> [(any)]
 								{{range $t := $.BaseEntryTypes}}
 								{{if ne $t "root"}}

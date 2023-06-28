@@ -255,6 +255,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	search := r.FormValue("search")
 	searchEntryType := r.FormValue("search_entry_type")
 	searchQuery := r.FormValue("search_query")
+	queryHasType := false
 	if search != "" {
 		// User pressed search button,
 		// Note that it rather clear the search if every search field is emtpy.
@@ -270,7 +271,13 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		if searchEntryType != "" || searchQuery != "" {
 			resultsFromSearch = true
 			typeQuery := ""
-			if searchEntryType != "" {
+			for _, q := range strings.Fields(searchQuery) {
+				if strings.HasPrefix(q, "type=") || strings.HasPrefix(q, "type:") {
+					queryHasType = true
+					break
+				}
+			}
+			if !queryHasType && searchEntryType != "" {
 				typeQuery = "type=" + searchEntryType
 			}
 			subEnts, err = h.server.SearchEntries(ctx, path, typeQuery+" "+searchQuery)
@@ -720,6 +727,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		EntryPinned               bool
 		SearchEntryType           string
 		SearchQuery               string
+		QueryHasType              bool
 		ResultsFromSearch         bool
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
@@ -750,6 +758,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		EntryPinned:               entryPinned,
 		SearchEntryType:           searchEntryType,
 		SearchQuery:               searchQuery,
+		QueryHasType:              queryHasType,
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,

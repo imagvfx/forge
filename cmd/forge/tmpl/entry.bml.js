@@ -785,6 +785,10 @@ window.onload = function() {
 			nameInput.dataset.modified = "1";
 		}
 	}
+	let searchTypeSelect = document.querySelector(".searchTypeSelect");
+	searchTypeSelect.onchange = function() {
+		searchTypeSelect.classList.remove("notEffected");
+	}
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
 		input.autocomplete = "off";

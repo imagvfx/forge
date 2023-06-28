@@ -137,6 +137,11 @@
 	cursor: pointer;
 }
 
+.searchTypeSelect.notEffected {
+	color: #666;
+	text-decoration-line: line-through;
+}
+
 .showSearches {
 	margin-top: 1rem;
 }
