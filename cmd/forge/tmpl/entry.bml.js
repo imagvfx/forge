@@ -700,7 +700,7 @@ window.onload = function() {
 			return;
 		}
 		if (ctrlPressed && event.code == "KeyC") {
-			if (["INPUT", "TEXTAREA"].includes(event.target.nodeType)) {
+			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
 			if (!subEntArea.classList.contains("editMode")) {
