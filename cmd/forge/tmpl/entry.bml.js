@@ -718,6 +718,10 @@ window.onload = function() {
 				}
 				removeClass(subEntArea, "lastClicked");
 				removeClass(subEntArea, "temporary");
+				let firstSel = document.querySelector(".subEntry.selected");
+				if (firstSel) {
+					firstSel.classList.add("lastClicked");
+				}
 				printSelectionStatus();
 				return;
 			}
@@ -1279,7 +1283,8 @@ window.onload = function() {
 						}
 					}
 					let range = [];
-					for (let i in subEntries) {
+					let subEnts = document.getElementsByClassName("subEntry");
+					for (let i in subEnts) {
 						let e = subEntries[i];
 						if (e == ent || e == lastClicked) {
 							range.push(Number(i)); // wierd, but i is string
@@ -1294,8 +1299,8 @@ window.onload = function() {
 					}
 					let [from, to] = range;
 					for (let i = from; i <= to; i++) {
-						let e = subEntries[i];
-						if (window.getComputedStyle(e).display == "none") {
+						let e = subEnts[i];
+						if (e.classList.contains("hidden")) {
 							continue;
 						}
 						e.classList.add("temporary");
