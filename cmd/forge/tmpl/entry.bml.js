@@ -2500,6 +2500,16 @@ function reloadPropertyPicker(popup, prop) {
 			printErrorStatus(j.Err);
 			return;
 		}
+		if (valueInput) {
+			// remove, then create another one, to remove autoComplete binding.
+			// I couldn't find a better way.
+			valueInput.remove();
+			valueInput = document.createElement("textarea");
+			valueInput.classList.add("propertyPickerValue");
+			valueInput.autocomplete = "off";
+			let picker = popup.querySelector(".propertyPicker");
+			picker.appendChild(valueInput);
+		}
 		valueInput.value = j.Msg.Eval;
 		nameInput.dataset.type = j.Msg.Type;
 		nameInput.dataset.error = "";
