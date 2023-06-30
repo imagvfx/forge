@@ -2338,7 +2338,7 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 		}
 		let lsearch = search.toLowerCase();
 		// reset focus on further input.
-		let focus = -1;
+		focus = -1;
 		let menu = document.getElementById("userAutoCompleteMenu");
 		menu.classList.add("invisible");
 		menu.style.left = String(menuAt.left) + "px";
