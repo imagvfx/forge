@@ -141,6 +141,10 @@ window.onload = function() {
 				sum.dataset.selectedEntryType = entType;
 				sum.dataset.selectedStatus = status;
 			}
+			let hadSelectedEntries = false;
+			if (document.querySelector(".subEntry.selected")) {
+				hadSelectedEntries = true;
+			}
 			let forTypes = document.querySelectorAll(".subEntryListForType");
 			for (let forType of forTypes) {
 				let typ = forType.dataset.entryType;
@@ -201,6 +205,9 @@ window.onload = function() {
 				} else {
 					bar.style.removeProperty("display");
 				}
+			}
+			if (hadSelectedEntries) {
+				printSelectionStatus();
 			}
 			return;
 		}
@@ -678,16 +685,7 @@ window.onload = function() {
 				}
 				removeClass(subEntArea, "lastClicked");
 				removeClass(subEntArea, "temporary");
-				let what = "";
-				let nVis = visEnts.length;
-				if (nVis == 0) {
-					what = "no entry";
-				} else if (nVis == 1) {
-					what = "1 entry";
-				} else {
-					what = String(nVis) + " entries";
-				}
-				printStatus(what + " selected");
+				printSelectionStatus();
 				return;
 			}
 			if (ctrlPressed && event.code == "KeyC") {
@@ -1275,17 +1273,7 @@ window.onload = function() {
 						}
 					}
 				}
-				let what = "";
-				let entry = "entry"
-				let selEnts = document.querySelectorAll(".subEntry.selected");
-				if (selEnts.length == 0) {
-					what = "no entry";
-				} else if (selEnts.length == 1) {
-					what = "1 entry";
-				} else {
-					what = String(selEnts.length) + " entries";
-				}
-				printStatus(what + " selected");
+				printSelectionStatus();
 				if (document.querySelector(".subEntry.selected") == null) {
 					hideInfoModifier();
 				}
@@ -2169,6 +2157,20 @@ function printErrorStatus(e) {
 
 function clearStatus() {
 	printStatus("");
+}
+
+function printSelectionStatus() {
+	let sel = document.querySelectorAll(".subEntry.selected");
+	let what = "";
+	let n = sel.length;
+	if (n == 0) {
+		what = "no entry";
+	} else if (n == 1) {
+		what = "1 entry";
+	} else {
+		what = String(n) + " entries";
+	}
+	printStatus(what + " selected");
 }
 
 function showInfoModifier() {
