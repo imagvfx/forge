@@ -521,6 +521,10 @@
 	padding-bottom: 16rem;
 }
 
+.subEntryListContainer.hidden {
+	display: none;
+}
+
 .subEntryListExpander {
 	width: 10px;
 	padding: 2px;
@@ -671,6 +675,10 @@
 	padding: 0.6rem;
 	background-color: #FAFAFA;
 	outline: 1px solid #DDD;
+}
+
+.subEntry.hidden {
+	display: none;
 }
 
 .subEntry.expanded {

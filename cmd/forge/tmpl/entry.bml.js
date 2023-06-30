@@ -146,36 +146,37 @@ window.onload = function() {
 				let typ = forType.dataset.entryType;
 				for (let ent of forType.querySelectorAll(".subEntry")) {
 					if (sum.dataset.selected != "1") {
-						ent.style.removeProperty("display"); // show every entry
+						ent.classList.remove("hidden");
 						continue;
 					}
 					if (forType.dataset.entryType != entType) {
-						ent.style.display = "none"
+						ent.classList.add("hidden");
 						ent.classList.remove("selected");
 						continue;
 					}
 					let dot = ent.querySelector(".statusDot");
-					if (dot != null) {
+					if (dot) {
 						if (dot.dataset.value != sum.dataset.selectedStatus) {
-							ent.style.display = "none";
+							ent.classList.add("hidden");
 							ent.classList.remove("selected");
 							continue;
 						}
 					} else {
 						// Should work for entries of type that doesn't have status.
 						if (sum.dataset.selectedStatus != "") {
-							ent.style.display = "none";
+							ent.classList.add("hidden");
 							ent.classList.remove("selected");
 							continue;
 						}
 					}
-					ent.style.removeProperty("display"); // show
+					ent.classList.remove("hidden");
 				}
+				// also handle containers when user set 'group by' option.
 				let nTotal = 0;
 				for (let cnt of forType.querySelectorAll(".subEntryListContainer")) {
 					let n = 0;
 					for (let ent of cnt.querySelectorAll(".subEntry")) {
-						if (ent.style.display != "none") {
+						if (!ent.classList.contains("hidden")) {
 							n++;
 							nTotal++;
 						}
@@ -185,9 +186,9 @@ window.onload = function() {
 						count.innerText = "(" + String(n) + ")";
 					}
 					if (n == 0) {
-						cnt.style.display = "none";
+						cnt.classList.add("hidden");
 					} else {
-						cnt.style.removeProperty("display");
+						cnt.classList.remove("hidden");
 					}
 				}
 				let bar = forType.querySelector(".subEntryTypeBar");
@@ -671,20 +672,14 @@ window.onload = function() {
 			}
 			if (ctrlPressed && event.code == "KeyA") {
 				event.preventDefault();
-				let nVis = 0;
-				let selEnts = document.querySelectorAll(".subEntry");
-				for (let ent of selEnts) {
-					// Wierd way of checking it's visibility, but it is what it is.
-					let vis = ent.offsetWidth > 0 || ent.offsetHeight > 0;
-					if (vis) {
-						nVis++
-						ent.classList.add("selected");
-					}
+				let visEnts = document.querySelectorAll(".subEntry:not(.hidden)");
+				for (let ent of visEnts) {
+					ent.classList.add("selected");
 				}
 				removeClass(subEntArea, "lastClicked");
 				removeClass(subEntArea, "temporary");
 				let what = "";
-				let entry = "entry"
+				let nVis = visEnts.length;
 				if (nVis == 0) {
 					what = "no entry";
 				} else if (nVis == 1) {
