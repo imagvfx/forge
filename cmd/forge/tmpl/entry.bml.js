@@ -679,8 +679,17 @@ window.onload = function() {
 			}
 			if (ctrlPressed && event.code == "KeyA") {
 				event.preventDefault();
-				let visEnts = document.querySelectorAll(".subEntry:not(.hidden)");
-				for (let ent of visEnts) {
+				let selEnt = document.querySelector(".subEntry.selected");
+				if (!selEnt) {
+					let first = document.querySelector(".subEntry:not(.hidden)");
+					if (!first) {
+						return;
+					}
+					selEnt = first;
+				}
+				let typ = selEnt.dataset.entryType;
+				let typeEnts = document.querySelectorAll(`.subEntry:not(.hidden)[data-entry-type="${typ}"]`);
+				for (let ent of typeEnts) {
 					ent.classList.add("selected");
 				}
 				removeClass(subEntArea, "lastClicked");
