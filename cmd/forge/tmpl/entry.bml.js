@@ -1443,18 +1443,10 @@ window.onload = function() {
 			}
 			let onsuccess = function() {
 				let called = CalledByName[value];
-				if (!called) {
-					called = "";
-				}
-				input.value = called;
-				input.dataset.oldValue = called;
-				if (!called) {
-					return;
-				}
 				for (let ent of selectedEnts) {
-					let input = ent.getElementsByClassName("assigneeInput")[0];
-					input.dataset.oldValue = called;
-					input.value = called;
+					let inp = ent.getElementsByClassName("assigneeInput")[0];
+					inp.dataset.oldValue = called;
+					inp.value = called;
 				}
 			}
 			requestPropertyUpdate(ents, "assignee", value, onsuccess);
@@ -2326,6 +2318,7 @@ let AllUserLabels = [
 
 // pun intended
 let CalledByName = {
+	"": "",
 {{- range $u := $.AllUsers -}}
 	"{{$u.Name}}": "{{$u.Called}}",
 {{end}}
@@ -2402,6 +2395,10 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 				activate(items, focus);
 			}
 		} else if (event.key == "Enter") {
+			if (input.value == "") {
+				oncomplete("");
+				return;
+			}
 			if (items.length == 0) {
 				menu.replaceChildren();
 				menu.classList.add("invisible");
@@ -2461,7 +2458,7 @@ function requestPropertyUpdate(ents, prop, value, onsuccess) {
 			printErrorStatus(req.responseText);
 			return;
 		}
-		onsuccess()
+		onsuccess();
 		printStatus("done");
 	}
 }
