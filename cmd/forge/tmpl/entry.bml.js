@@ -697,6 +697,30 @@ window.onload = function() {
 				printSelectionStatus();
 				return;
 			}
+			if (ctrlPressed && event.code == "KeyI") {
+				event.preventDefault();
+				let selEnt = document.querySelector(".subEntry.selected");
+				if (!selEnt) {
+					let first = document.querySelector(".subEntry:not(.hidden)");
+					if (!first) {
+						return;
+					}
+					selEnt = first;
+				}
+				let typ = selEnt.dataset.entryType;
+				let typeEnts = document.querySelectorAll(`.subEntry:not(.hidden)[data-entry-type="${typ}"]`);
+				for (let ent of typeEnts) {
+					if (ent.classList.contains("selected")) {
+						ent.classList.remove("selected");
+					} else {
+						ent.classList.add("selected");
+					}
+				}
+				removeClass(subEntArea, "lastClicked");
+				removeClass(subEntArea, "temporary");
+				printSelectionStatus();
+				return;
+			}
 			if (ctrlPressed && event.code == "KeyC") {
 				event.preventDefault();
 				if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
