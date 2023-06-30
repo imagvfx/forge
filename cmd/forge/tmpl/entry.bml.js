@@ -662,67 +662,65 @@ window.onload = function() {
 			}
 			return;
 		}
-		if (event.code == "KeyA") {
-			if (!ctrlPressed) {
+		if (subEntArea.classList.contains("editMode")) {
+			// key binding for edit mode
+			let userEditables = ["TEXTAREA", "INPUT"];
+			if (userEditables.includes(event.target.tagName)) {
+				// even in edit mode, text editing in user-editables shouldn't be interupted.
 				return;
 			}
-			let userEditables = ["textarea", "input"];
-			if (userEditables.includes(event.target.tagName.toLowerCase())) {
-				return;
-			}
-			let subEntArea = document.querySelector(".subEntryArea");
-			if (!subEntArea.classList.contains("editMode")) {
-				return;
-			}
-			event.preventDefault();
-			let nVis = 0;
-			let selEnts = document.querySelectorAll(".subEntry");
-			for (let ent of selEnts) {
-				// Wierd way of checking it's visibility, but it is what it is.
-				let vis = ent.offsetWidth > 0 || ent.offsetHeight > 0;
-				if (vis) {
-					nVis++
-					ent.classList.add("selected");
+			if (ctrlPressed && event.code == "KeyA") {
+				event.preventDefault();
+				let nVis = 0;
+				let selEnts = document.querySelectorAll(".subEntry");
+				for (let ent of selEnts) {
+					// Wierd way of checking it's visibility, but it is what it is.
+					let vis = ent.offsetWidth > 0 || ent.offsetHeight > 0;
+					if (vis) {
+						nVis++
+						ent.classList.add("selected");
+					}
 				}
-			}
-			removeClass(subEntArea, "lastClicked");
-			removeClass(subEntArea, "temporary");
-			let what = "";
-			let entry = "entry"
-			if (nVis == 0) {
-				what = "no entry";
-			} else if (nVis == 1) {
-				what = "1 entry";
-			} else {
-				what = String(nVis) + " entries";
-			}
-			printStatus(what + " selected");
-			return;
-		}
-		if (ctrlPressed && event.code == "KeyC") {
-			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
+				removeClass(subEntArea, "lastClicked");
+				removeClass(subEntArea, "temporary");
+				let what = "";
+				let entry = "entry"
+				if (nVis == 0) {
+					what = "no entry";
+				} else if (nVis == 1) {
+					what = "1 entry";
+				} else {
+					what = String(nVis) + " entries";
+				}
+				printStatus(what + " selected");
 				return;
 			}
-			if (!subEntArea.classList.contains("editMode")) {
+			if (ctrlPressed && event.code == "KeyC") {
+				event.preventDefault();
+				if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
+					return;
+				}
+				if (!subEntArea.classList.contains("editMode")) {
+					return;
+				}
+				let selEnts = document.querySelectorAll(".subEntry.selected");
+				if (selEnts.length == 0) {
+					return;
+				}
+				event.preventDefault();
+				let paths = "";
+				for (let ent of selEnts) {
+					paths += ent.dataset.entryPath + "\n";
+				}
+				let succeeded = function() {
+					printStatus(selEnts.length.toString() + " selected entry paths copied");
+				}
+				let failed = function() {
+					printStatus("failed to copy entry path");
+				}
+				navigator.clipboard.writeText(paths).then(succeeded, failed);
 				return;
 			}
-			let selEnts = document.querySelectorAll(".subEntry.selected");
-			if (selEnts.length == 0) {
-				return;
-			}
-			event.preventDefault();
-			let paths = "";
-			for (let ent of selEnts) {
-				paths += ent.dataset.entryPath + "\n";
-			}
-			let succeeded = function() {
-				printStatus(selEnts.length.toString() + " selected entry paths copied");
-			}
-			let failed = function() {
-				printStatus("failed to copy entry path");
-			}
-			navigator.clipboard.writeText(paths).then(succeeded, failed);
-			return;
 		}
 	}
 	document.onchange = function(event) {
