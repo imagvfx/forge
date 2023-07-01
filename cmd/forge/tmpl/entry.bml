@@ -438,6 +438,23 @@
 											{{end}}
 											{{if index $.ShowGrandSub $ent.Type}}
 											<div class="grandSubArea"> [
+												{{if index $.SummaryGrandSub $ent.Type}}
+												{{$summary := statusSummary (index $.GrandSubEntries $ent.Path)}}
+												{{range $subType, $sum := $summary}}
+												<div class="statusGroup sub"> [
+												<div class="statusGroupChart sub"> [
+												{{with $n := index $sum ""}}
+													<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:white" title="{{$n}} (none) {{$subType}}"> []
+												{{end}}
+												{{range $status := index $.PossibleStatus $subType}}
+												{{with $n := index $sum $status.Name}}
+													<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:{{setAlphaToColor $status.Color 0.5}}" title="{{$n}} {{$status.Name}} {{$subType}}"> []
+												{{end}}
+												{{end}}
+												]
+												]
+												{{end}}
+												{{else}}
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
 													<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector grandSubEntry" data-sub="{{$gs.Name}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gs.Name}}]
@@ -448,6 +465,7 @@
 													<div class="grandSubAdderInput" contenteditable="true" style="flex:1;"> []
 													<div> [+]
 												]
+												{{end}}
 											]
 											{{end}}
 											<div class="flexSpacer"> []

@@ -130,6 +130,10 @@ window.onload = function() {
 		}
 		let counter = event.target.closest(".statusCounter");
 		if (counter) {
+			if (counter.classList.contains("sub")) {
+				// not supported yet
+				return;
+			}
 			let group = counter.closest(".statusGroup");
 			let sum = group.closest(".statusSummary");
 			let entType = group.dataset.entryType;

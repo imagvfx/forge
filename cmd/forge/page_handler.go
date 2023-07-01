@@ -167,6 +167,20 @@ var pageHandlerFuncs = template.FuncMap{
 		return false, nil
 	},
 	"dir": filepath.Dir,
+	"statusSummary": func(ents []*forge.Entry) map[string]map[string]int {
+		summary := make(map[string]map[string]int) // map[entryType][status]occurence
+		for _, ent := range ents {
+			if summary[ent.Type] == nil {
+				summary[ent.Type] = make(map[string]int)
+			}
+			stat := ""
+			if ent.Property["status"] != nil {
+				stat = ent.Property["status"].Eval
+			}
+			summary[ent.Type][stat]++
+		}
+		return summary
+	},
 }
 
 func httpStatusFromError(err error) int {
@@ -583,23 +597,32 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	// Get grand sub entries if needed.
 	grandSubEntries := make(map[string][]*forge.Entry)
 	showGrandSub := make(map[string]bool)
+	summaryGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
 		_, ok := showGrandSub[sub.Type]
 		if ok {
 			continue
 		}
-		g, err := h.server.GetGlobal(ctx, sub.Type, "expose_sub_entries")
+		// expose_sub_entries might have entry types to expose later.
+		_, err := h.server.GetGlobal(ctx, sub.Type, "expose_sub_entries")
 		if err != nil {
 			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
 				return err
 			}
+			continue
 		}
-		show := false
-		if g != nil {
-			show = true
+		showGrandSub[sub.Type] = true
+		// summary_sub_entries needs expose_sub_entries to effect
+		_, err = h.server.GetGlobal(ctx, sub.Type, "summary_sub_entries")
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+			continue
 		}
-		showGrandSub[sub.Type] = show
+		summaryGrandSub[sub.Type] = true
 	}
 	for _, sub := range subEnts {
 		if !showGrandSub[sub.Type] {
@@ -734,6 +757,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ShowSearches              [][3]string // [][from, name, query]
 		SubEntryTags              map[string][]string
 		ShowGrandSub              map[string]bool
+		SummaryGrandSub           map[string]bool
 		GrandSubEntries           map[string][]*forge.Entry
 		PropertyTypes             []string
 		MainEntryHiddenProperties []string
@@ -765,6 +789,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ShowSearches:              showSearches,
 		SubEntryTags:              subEntryTags,
 		ShowGrandSub:              showGrandSub,
+		SummaryGrandSub:           summaryGrandSub,
 		GrandSubEntries:           grandSubEntries,
 		PropertyTypes:             forge.PropertyTypes(),
 		MainEntryHiddenProperties: mainEntryHiddenProps,

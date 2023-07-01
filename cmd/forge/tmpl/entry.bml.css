@@ -321,6 +321,11 @@
 	user-select: none;
 }
 
+.statusGroupChart.sub {
+	height: 0.3rem;
+	margin: 0.3rem 0.1rem 0.1rem 0.1rem;
+}
+
 .statusCounter {
 	display: flex;
 	justify-content: center;
@@ -334,6 +339,14 @@
 
 .statusCounter:hover {
 	cursor: pointer;
+}
+
+.statusCounter.sub {
+	padding: 0;
+}
+
+.statusCounter.sub:hover {
+	cursor: initial;
 }
 
 {{range $entType, $status := $.PossibleStatus}}
