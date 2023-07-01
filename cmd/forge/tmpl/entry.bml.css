@@ -387,7 +387,7 @@
 }
 
 #forAddExcelFile:hover {
-	color: #822;
+	color: #a22;
 }
 
 #forUpdateExcelFile {
@@ -395,7 +395,7 @@
 }
 
 #forUpdateExcelFile:hover {
-	color: #002;
+	color: #00c;
 }
 
 #downloadAsExcelButton {
@@ -405,7 +405,7 @@
 }
 
 #downloadAsExcelButton:hover {
-	color: #002;
+	color: #00c;
 }
 
 .subEntryTypeBar {
