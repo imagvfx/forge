@@ -135,7 +135,7 @@
 							<form action="/api/archive-entry" method="post"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 								<button id="archiveEntryButton" name="archive_entry" value="1" hidden> []
-								<label for="archiveEntryButton"> [Archive]
+								<label for="archiveEntryButton" style="cursor:pointer;"> [Archive]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							{{end}}
