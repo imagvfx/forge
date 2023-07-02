@@ -105,7 +105,7 @@ function addUserDataSection(section) {
 	let req = new XMLHttpRequest();
 	let formData = new FormData();
 	formData.append("section", section);
-	req.open("post", "/api/add-user-data-section");
+	req.open("post", "/api/ensure-user-data-section");
 	req.send(formData);
 	// TODO: show the error response to user
 	req.onload = function() {

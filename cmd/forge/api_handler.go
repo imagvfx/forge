@@ -936,10 +936,20 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 	return nil
 }
 
-func (h *apiHandler) handleAddUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+func (h *apiHandler) handleEnsureUserDataSection(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := forge.UserNameFromContext(ctx)
 	section := r.FormValue("section")
-	err := h.server.AddUserDataSection(ctx, user, section)
+	_, err := h.server.GetUserDataSection(ctx, user, section)
+	if err == nil {
+		h.WriteResponse(w, nil, nil)
+		return nil
+	}
+	e := &forge.NotFoundError{}
+	if !errors.As(err, &e) {
+		h.WriteResponse(w, nil, err)
+		return nil
+	}
+	err = h.server.AddUserDataSection(ctx, user, section)
 	h.WriteResponse(w, nil, err)
 	return nil
 }

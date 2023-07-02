@@ -251,7 +251,7 @@ func main() {
 	mux.HandleFunc("/api/update-user-called", api.Handler(api.handleUpdateUserCalled))
 	mux.HandleFunc("/api/get-user-setting", api.Handler(api.handleGetUserSetting))
 	mux.HandleFunc("/api/update-user-setting", api.Handler(api.handleUpdateUserSetting))
-	mux.HandleFunc("/api/add-user-data-section", api.Handler(api.handleAddUserDataSection))
+	mux.HandleFunc("/api/ensure-user-data-section", api.Handler(api.handleEnsureUserDataSection))
 	mux.HandleFunc("/api/get-user-data-section", api.Handler(api.handleGetUserDataSection))
 	mux.HandleFunc("/api/delete-user-data-section", api.Handler(api.handleDeleteUserDataSection))
 	mux.HandleFunc("/api/set-user-data", api.Handler(api.handleSetUserData))
