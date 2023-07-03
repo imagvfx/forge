@@ -59,6 +59,35 @@ var pageHandlerFuncs = template.FuncMap{
 	"formatTime": func(t time.Time) string {
 		return t.Format(time.RFC3339)
 	},
+	"subEntryName": func(name string) template.HTML {
+		// wrap entry name after underscore or before camel cases
+		wasUnder := false
+		wasUpper := false
+		word := ""
+		words := make([]string, 0)
+		for _, r := range name {
+			s := string(r)
+			under := false
+			upper := false
+			if s == "_" {
+				under = true
+			} else if strings.ToUpper(s) == s {
+				upper = true
+			}
+			if (wasUnder && !under) || (!wasUpper && upper) {
+				words = append(words, word)
+				word = ""
+			}
+			wasUnder = under
+			wasUpper = upper
+			word += s
+		}
+		if word != "" {
+			words = append(words, word)
+		}
+		text := strings.Join(words, "<wbr>")
+		return template.HTML("<div>" + text + "</div>")
+	},
 	"pathLinks": func(path string) (template.HTML, error) {
 		if !strings.HasPrefix(path, "/") {
 			return "", fmt.Errorf("path should start with /")

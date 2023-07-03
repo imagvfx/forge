@@ -721,8 +721,7 @@
 
 .subEntryTop {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
+	align-items: start;
 	gap: 0.3rem;
 }
 
@@ -1261,6 +1260,8 @@
 .recentlyUpdatedDot.forEntry {
 	width: 4px;
 	height: 4px;
+	min-width: 4px;
+	min-height: 4px;
 }
 
 #userAutoCompleteMenu {
