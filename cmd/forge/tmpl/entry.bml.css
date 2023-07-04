@@ -149,7 +149,7 @@
 .mainEntryTop {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: center;
+	align-items: baseline;
 	margin-bottom: 1rem;
 	gap: 0.5rem;
 }
@@ -721,7 +721,7 @@
 
 .subEntryTop {
 	display: flex;
-	align-items: start;
+	align-items: baseline;
 	gap: 0.3rem;
 }
 
@@ -923,7 +923,6 @@
 .mainEntry .statusDot {
 	width: 0.8rem;
 	height: 0.8rem;
-	align-self: start;
 	margin: 2px 0;
 }
 
