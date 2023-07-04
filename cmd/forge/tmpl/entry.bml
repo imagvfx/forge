@@ -444,7 +444,7 @@
 												<div class="statusGroup sub"> [
 												<div class="statusGroupChart sub"> [
 												{{with $n := index $sum ""}}
-													<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:white" title="{{$n}} (none) {{$subType}}"> []
+													<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:#DDD8" title="{{$n}} (none) {{$subType}}"> []
 												{{end}}
 												{{range $status := index $.PossibleStatus $subType}}
 												{{with $n := index $sum $status.Name}}
