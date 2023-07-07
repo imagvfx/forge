@@ -19,11 +19,11 @@ import (
 func addEveryoneGroup(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO accessors
-			(is_group, name, called)
+			(is_group, name, called, disabled)
 		VALUES
-			(?, ?, ?)
+			(?, ?, ?, ?)
 	`,
-		true, "everyone", "Everyone",
+		true, "everyone", "Everyone", false,
 	)
 	if err != nil {
 		return err
@@ -38,11 +38,11 @@ func addEveryoneGroup(tx *sql.Tx) error {
 func addAdminGroup(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		INSERT OR IGNORE INTO accessors
-			(is_group, name, called)
+			(is_group, name, called, disabled)
 		VALUES
-			(?, ?, ?)
+			(?, ?, ?, ?)
 	`,
-		true, "admin", "Admin",
+		true, "admin", "Admin", false,
 	)
 	if err != nil {
 		return err
@@ -139,7 +139,7 @@ func getGroup(tx *sql.Tx, ctx context.Context, name string) (*forge.Group, error
 		return nil, err
 	}
 	if len(groups) == 0 {
-		return nil, forge.NotFound("group not found")
+		return nil, forge.NotFound("group not found: %v", name)
 	}
 	return groups[0], nil
 }
@@ -180,13 +180,15 @@ func addGroup(tx *sql.Tx, ctx context.Context, g *forge.Group) error {
 		INSERT INTO accessors (
 			is_group,
 			name,
-			called
+			called,
+			disabled
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		true,
 		g.Name,
 		g.Called,
+		false,
 	)
 	if err != nil {
 		return err

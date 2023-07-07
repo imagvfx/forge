@@ -14,7 +14,8 @@ func createAccessorsTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			is_group BOOL NOT NULL,
 			name STRING NOT NULL UNIQUE,
-			called STRING NOT NULL
+			called STRING NOT NULL,
+			disabled BOOL NOT NULL
 		)
 	`)
 	if err != nil {
@@ -38,7 +39,8 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*forge.Accessor,
 			id,
 			is_group,
 			name,
-			called
+			called,
+			disabled
 		FROM accessors
 		`+where+`
 	`,
@@ -57,6 +59,7 @@ func getAccessor(tx *sql.Tx, ctx context.Context, name string) (*forge.Accessor,
 		&a.IsGroup,
 		&a.Name,
 		&a.Called,
+		&a.Disabled,
 	)
 	if err != nil {
 		return nil, err
@@ -78,7 +81,8 @@ func getAccessorByID(tx *sql.Tx, ctx context.Context, id int) (*forge.Accessor, 
 			id,
 			is_group,
 			name,
-			called
+			called,
+			disabled
 		FROM accessors
 		`+where+`
 	`,
@@ -97,6 +101,7 @@ func getAccessorByID(tx *sql.Tx, ctx context.Context, id int) (*forge.Accessor, 
 		&a.IsGroup,
 		&a.Name,
 		&a.Called,
+		&a.Disabled,
 	)
 	if err != nil {
 		return nil, err

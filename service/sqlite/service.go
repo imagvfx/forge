@@ -210,8 +210,8 @@ func (s *Service) AddUser(ctx context.Context, u *forge.User) error {
 	return AddUser(s.db, ctx, u)
 }
 
-func (s *Service) UpdateUserCalled(ctx context.Context, user, called string) error {
-	return UpdateUserCalled(s.db, ctx, user, called)
+func (s *Service) UpdateUser(ctx context.Context, upd forge.UserUpdater) error {
+	return UpdateUser(s.db, ctx, upd)
 }
 
 func (s *Service) GetUser(ctx context.Context, user string) (*forge.User, error) {

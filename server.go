@@ -709,7 +709,10 @@ func (s *Server) UpdateUserCalled(ctx context.Context, user, called string) erro
 	if user == "" {
 		return fmt.Errorf("user not specified")
 	}
-	err := s.svc.UpdateUserCalled(ctx, user, called)
+	err := s.svc.UpdateUser(ctx, UserUpdater{
+		Name:   user,
+		Called: &called,
+	})
 	if err != nil {
 		return err
 	}

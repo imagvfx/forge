@@ -42,6 +42,10 @@ func findUsers(tx *sql.Tx, ctx context.Context, find forge.UserFinder) ([]*forge
 		keys = append(keys, "name=?")
 		vals = append(vals, *find.Name)
 	}
+	if find.Disabled != nil {
+		keys = append(keys, "disabled=?")
+		vals = append(vals, *find.Disabled)
+	}
 	where := ""
 	if len(keys) != 0 {
 		where = "WHERE " + strings.Join(keys, " AND ")
@@ -50,7 +54,8 @@ func findUsers(tx *sql.Tx, ctx context.Context, find forge.UserFinder) ([]*forge
 		SELECT
 			id,
 			name,
-			called
+			called,
+			disabled
 		FROM accessors
 		`+where+`
 		ORDER BY id ASC
@@ -68,6 +73,7 @@ func findUsers(tx *sql.Tx, ctx context.Context, find forge.UserFinder) ([]*forge
 			&u.ID,
 			&u.Name,
 			&u.Called,
+			&u.Disabled,
 		)
 		if err != nil {
 			return nil, err
@@ -190,13 +196,15 @@ func addUser(tx *sql.Tx, ctx context.Context, u *forge.User) error {
 		INSERT INTO accessors (
 			is_group,
 			name,
-			called
+			called,
+			disabled
 		)
-		VALUES (?, ?, ?)
+		VALUES (?, ?, ?, ?)
 	`,
 		false,
 		u.Name,
 		u.Called,
+		false,
 	)
 	if err != nil {
 		return err
@@ -228,20 +236,13 @@ func addUser(tx *sql.Tx, ctx context.Context, u *forge.User) error {
 	return nil
 }
 
-func UpdateUserCalled(db *sql.DB, ctx context.Context, user, called string) error {
+func UpdateUser(db *sql.DB, ctx context.Context, upd forge.UserUpdater) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	ctxUser := forge.UserNameFromContext(ctx)
-	if ctxUser == "" {
-		return forge.Unauthorized("context user unspecified")
-	}
-	if ctxUser != user {
-		return forge.Unauthorized("cannot change other user's information")
-	}
-	err = updateUserCalled(tx, ctx, user, called)
+	err = updateUser(tx, ctx, upd)
 	if err != nil {
 		return err
 	}
@@ -252,25 +253,54 @@ func UpdateUserCalled(db *sql.DB, ctx context.Context, user, called string) erro
 	return nil
 }
 
-func updateUserCalled(tx *sql.Tx, ctx context.Context, user, called string) error {
-	u, err := getUser(tx, ctx, user)
+func updateUser(tx *sql.Tx, ctx context.Context, upd forge.UserUpdater) error {
+	ctxUser := forge.UserNameFromContext(ctx)
+	if ctxUser == "" {
+		return forge.Unauthorized("context user unspecified")
+	}
+	if ctxUser != upd.Name {
+		admin, err := isAdmin(tx, ctx, ctxUser)
+		if err != nil {
+			return err
+		}
+		if !admin {
+			return fmt.Errorf("non-admin user cannot modify other user: %v", ctxUser)
+		}
+	}
+	u, err := getUser(tx, ctx, upd.Name)
 	if err != nil {
 		return err
 	}
-	called = strings.TrimSpace(called)
-	if strings.Contains(called, "\n") {
-		return fmt.Errorf("called shouldn't contain new line characters: %v", called)
+	keys := make([]string, 0)
+	vals := make([]any, 0)
+	if upd.Called != nil {
+		called := *upd.Called
+		called = strings.TrimSpace(called)
+		if strings.Contains(called, "\n") {
+			return fmt.Errorf("called shouldn't contain new line characters: %v", upd.Called)
+		}
+		if called != u.Called {
+			keys = append(keys, "called=?")
+			vals = append(vals, called)
+		}
 	}
-	if u.Called == called {
+	if upd.Disabled != nil {
+		disabled := *upd.Disabled
+		if disabled != u.Disabled {
+			keys = append(keys, "disabled=?")
+			vals = append(vals, disabled)
+		}
+	}
+	if len(keys) == 0 {
 		return nil
 	}
+	vals = append(vals, upd.Name)
 	result, err := tx.ExecContext(ctx, `
 		UPDATE accessors
-		SET called=?
+		SET `+strings.Join(keys, ", ")+`
 		WHERE is_group=0 AND name=?
 	`,
-		called,
-		user,
+		vals...,
 	)
 	if err != nil {
 		return err

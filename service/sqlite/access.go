@@ -143,9 +143,29 @@ func findAccessList(tx *sql.Tx, ctx context.Context, find forge.AccessFinder) ([
 	return acss, nil
 }
 
+func userEnabled(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
+	u, err := getAccessor(tx, ctx, user)
+	if err != nil {
+		return false, err
+	}
+	if u.IsGroup {
+		return false, fmt.Errorf("accessor is a group: %v", user)
+	}
+	enabled := !u.Disabled
+	return enabled, nil
+}
+
 // userRead returns an error if the user cannot read the entry.
 // It returns forge.NotFound error when the context user doesn't have read permission.
 func userRead(tx *sql.Tx, ctx context.Context, path string) error {
+	user := forge.UserNameFromContext(ctx)
+	enabled, err := userEnabled(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return fmt.Errorf("user disabled: %v", user)
+	}
 	if path == "/" {
 		// Everyone should be able to access root.
 		return nil
@@ -165,6 +185,14 @@ func userRead(tx *sql.Tx, ctx context.Context, path string) error {
 // It returns forge.NotFound error when the context user doesn't have read permission or
 // returns forge.Unauthorized error when the context user doesn't have write permission.
 func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
+	user := forge.UserNameFromContext(ctx)
+	enabled, err := userEnabled(tx, ctx, user)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return fmt.Errorf("user disabled: %v", user)
+	}
 	mode, err := userAccessMode(tx, ctx, path)
 	if err != nil {
 		return err

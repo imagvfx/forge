@@ -230,10 +230,11 @@ func AccessorTypes() []string {
 
 // Accessor is either a user or a group, that can be specified in entry access control list.
 type Accessor struct {
-	ID      int
-	IsGroup bool
-	Name    string
-	Called  string
+	ID       int
+	IsGroup  bool
+	Name     string
+	Called   string
+	Disabled bool
 }
 
 type Access struct {
@@ -303,21 +304,23 @@ type LogFinder struct {
 }
 
 type User struct {
-	ID     int
-	Name   string
-	Called string
+	ID       int
+	Name     string
+	Called   string
+	Disabled string
 }
 
 type UserFinder struct {
-	ID     *int
-	Name   *string
-	Called *string
+	ID       *int
+	Name     *string
+	Called   *string
+	Disabled *bool
 }
 
 type UserUpdater struct {
-	ID     int
-	Name   *string
-	Called *string
+	Name     string
+	Called   *string
+	Disabled *string
 }
 
 type UserSetting struct {
