@@ -307,7 +307,7 @@ type User struct {
 	ID       int
 	Name     string
 	Called   string
-	Disabled string
+	Disabled bool
 }
 
 type UserFinder struct {
@@ -320,7 +320,7 @@ type UserFinder struct {
 type UserUpdater struct {
 	Name     string
 	Called   *string
-	Disabled *string
+	Disabled *bool
 }
 
 type UserSetting struct {

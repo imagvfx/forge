@@ -719,6 +719,20 @@ func (s *Server) UpdateUserCalled(ctx context.Context, user, called string) erro
 	return nil
 }
 
+func (s *Server) UpdateUserDisabled(ctx context.Context, user string, disabled bool) error {
+	if user == "" {
+		return fmt.Errorf("user not specified")
+	}
+	err := s.svc.UpdateUser(ctx, UserUpdater{
+		Name:     user,
+		Disabled: &disabled,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) GetUserSetting(ctx context.Context, user string) (*UserSetting, error) {
 	if user == "" {
 		return nil, fmt.Errorf("user not specified")

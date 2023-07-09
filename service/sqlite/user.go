@@ -285,6 +285,13 @@ func updateUser(tx *sql.Tx, ctx context.Context, upd forge.UserUpdater) error {
 		}
 	}
 	if upd.Disabled != nil {
+		admin, err := isAdmin(tx, ctx, upd.Name)
+		if err != nil {
+			return err
+		}
+		if admin {
+			return fmt.Errorf("admin user cannot be disabled: %v", upd.Name) // or enabled, too
+		}
 		disabled := *upd.Disabled
 		if disabled != u.Disabled {
 			keys = append(keys, "disabled=?")

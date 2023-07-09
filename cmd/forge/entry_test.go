@@ -45,6 +45,21 @@ var testUpdateUserCalled = []updateUserCalled{
 	{name: "user-without-domain", updateErr: fmt.Errorf("user not found")},
 }
 
+type updateUserDisabled struct {
+	name     string
+	disabled bool
+	wantErr  error
+}
+
+var testUpdateUserDisabled = []updateUserDisabled{
+	{name: "reader@imagvfx.com", disabled: true},
+	{name: "reader@imagvfx.com", disabled: false},
+	{name: "reader@imagvfx.com", disabled: false},
+	{name: "not-existing@imagvfx.com", disabled: true, wantErr: fmt.Errorf("user not found")},
+	{name: "admin@imagvfx.com", disabled: true, wantErr: fmt.Errorf("admin user cannot be disabled: admin@imagvfx.com")},
+	{name: "admin@imagvfx.com", disabled: false, wantErr: fmt.Errorf("admin user cannot be disabled: admin@imagvfx.com")},
+}
+
 type testEntryType struct {
 	name string
 	want error
@@ -397,7 +412,7 @@ func TestAddEntries(t *testing.T) {
 		}
 	}
 	for _, user := range testUpdateUserCalled {
-		ctx = forge.ContextWithUserName(ctx, user.name)
+		ctx := forge.ContextWithUserName(ctx, user.name)
 		err = server.UpdateUserCalled(ctx, user.name, user.called)
 		if !equalError(user.updateErr, err) {
 			t.Fatalf("%v.called=%q update: want err %q, got %q", user.name, user.called, errorString(user.updateErr), errorString(err))
@@ -413,7 +428,24 @@ func TestAddEntries(t *testing.T) {
 			continue
 		}
 		if u.Called != user.want {
-			t.Fatalf("%v.called=%q:want %q, got %q", user.name, user.called, user.want, u.Called)
+			t.Fatalf("%v.called=%q: want %q, got %q", user.name, user.called, user.want, u.Called)
+		}
+	}
+	for _, user := range testUpdateUserDisabled {
+		ctx := forge.ContextWithUserName(ctx, user.name)
+		err = server.UpdateUserDisabled(ctx, user.name, user.disabled)
+		if !equalError(user.wantErr, err) {
+			t.Fatalf("%v.disabled=%v update: want err %q, got %q", user.name, user.disabled, errorString(user.wantErr), errorString(err))
+		}
+		if user.wantErr != nil {
+			continue
+		}
+		u, err := server.GetUser(ctx, user.name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if u.Disabled != user.disabled {
+			t.Fatalf("%v.disabled=%v: got %v", user.name, user.disabled, u.Disabled)
 		}
 	}
 	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
