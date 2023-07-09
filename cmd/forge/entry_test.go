@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path"
 	"reflect"
 	"sort"
@@ -10,6 +11,39 @@ import (
 
 	"github.com/imagvfx/forge"
 )
+
+type addUser struct {
+	name    string
+	wantErr error
+}
+
+var testAddUsers = []addUser{
+	{name: "admin@imagvfx.com"},
+	{name: "readwriter@imagvfx.com"},
+	{name: "reader@imagvfx.com"},
+	{name: "uninvited@imagvfx.com"},
+	{name: "user-without-domain", wantErr: fmt.Errorf("username should be '{user}@{domain}' form: user-without-domain")},
+}
+
+type updateUserCalled struct {
+	name      string
+	called    string
+	updateErr error
+	want      string
+	wantErr   error
+}
+
+var testUpdateUserCalled = []updateUserCalled{
+	{name: "admin@imagvfx.com", called: "admin", want: "admin"},
+	{name: "admin@imagvfx.com", called: "", want: ""},
+	{name: "readwriter@imagvfx.com", called: "read writer", want: "read writer"},
+	{name: "readwriter@imagvfx.com", called: "", want: ""},
+	{name: "reader@imagvfx.com", called: "reader\n", want: "reader"},
+	{name: "reader@imagvfx.com", called: "\nreader", want: "reader"},
+	{name: "reader@imagvfx.com", called: "", want: ""},
+	{name: "not-existing@imagvfx.com", called: "", updateErr: fmt.Errorf("user not found")},
+	{name: "user-without-domain", updateErr: fmt.Errorf("user not found")},
+}
 
 type testEntryType struct {
 	name string
@@ -356,11 +390,30 @@ func TestAddEntries(t *testing.T) {
 	defer db.Close()
 	ctx := context.Background()
 	// first user who was added to the db becomes an admin
-	users := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com", "uninvited@imagvfx.com"}
-	for _, user := range users {
-		err = server.AddUser(ctx, &forge.User{Name: user})
-		if err != nil {
-			t.Fatal(err)
+	for _, user := range testAddUsers {
+		err = server.AddUser(ctx, &forge.User{Name: user.name})
+		if !equalError(user.wantErr, err) {
+			t.Fatalf("want err %q, got %q", errorString(user.wantErr), errorString(err))
+		}
+	}
+	for _, user := range testUpdateUserCalled {
+		ctx = forge.ContextWithUserName(ctx, user.name)
+		err = server.UpdateUserCalled(ctx, user.name, user.called)
+		if !equalError(user.updateErr, err) {
+			t.Fatalf("%v.called=%q update: want err %q, got %q", user.name, user.called, errorString(user.updateErr), errorString(err))
+		}
+		if user.updateErr != nil {
+			continue
+		}
+		u, err := server.GetUser(ctx, user.name)
+		if !equalError(user.wantErr, err) {
+			t.Fatalf("%v.called=%q get: want err %q, got %q", user.name, user.called, errorString(user.wantErr), errorString(err))
+		}
+		if user.wantErr != nil {
+			continue
+		}
+		if u.Called != user.want {
+			t.Fatalf("%v.called=%q:want %q, got %q", user.name, user.called, user.want, u.Called)
 		}
 	}
 	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
