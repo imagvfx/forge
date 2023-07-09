@@ -471,7 +471,7 @@ func TestAddEntries(t *testing.T) {
 			t.Fatalf("couldn't get updated property: %v", err)
 		}
 		if got.Eval != prop.expect {
-			t.Fatalf("want value %q, got %q", prop.expect, got.Value)
+			t.Fatalf("want value %q, got %q", prop.expect, got.Eval)
 		}
 	}
 
