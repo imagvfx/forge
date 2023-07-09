@@ -941,6 +941,11 @@ func (h *pageHandler) handleThumbnail(ctx context.Context, w http.ResponseWriter
 }
 
 func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	editMode := false
+	edit := r.FormValue("edit")
+	if edit != "" {
+		editMode = true
+	}
 	user := forge.UserNameFromContext(ctx)
 	u, err := h.server.GetUser(ctx, user)
 	if err != nil {
@@ -957,11 +962,13 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 	recipe := struct {
 		User        *forge.User
 		UserIsAdmin bool
+		EditMode    bool
 		Users       []*forge.User
 		Members     map[string][]*forge.Member
 	}{
 		User:        u,
 		UserIsAdmin: isAdmin,
+		EditMode:    editMode,
 		Users:       users,
 	}
 	err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)

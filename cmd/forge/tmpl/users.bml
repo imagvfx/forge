@@ -6,14 +6,39 @@
 	<body> [
 		{{template "nav.bml" $}}
 		<div class="main"> [
-			<div class="one"> [
+			<div class="one {{if $.EditMode}}editMode{{end}}"> [
+				{{if $.UserIsAdmin}}
+				<div class="editModeDiv"> [<div class="editModeButton"> [edit]]
+				{{end}}
+				<div class="users"> [
 				<h1> [
 					Users
 				]
 				{{range $u := $.Users}}
-					<div class="user"> [
+				{{if not $u.Disabled}}
+					<div class="user" data-user="{{$u.Name}}"> [
 						<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
+						{{if $.UserIsAdmin}}
+						<div class="disableButton button"> [Disable]
+						{{end}}
 					]
+				{{end}}
+				{{end}}
+				]
+				{{if $.UserIsAdmin}}
+				<div class="disabledUsers"> [
+				<h1> [
+					Disabled Users
+				]
+				{{range $u := $.Users}}
+				{{if $u.Disabled}}
+					<div class="user" data-user="{{$u.Name}}"> [
+						<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
+						<div class="enableButton button"> [Enable]
+					]
+				{{end}}
+				{{end}}
+				]
 				{{end}}
 			]
 			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
@@ -24,10 +49,32 @@
 ]
 
 <style> [```
+.editModeDiv {
+	display: flex;
+	justify-content: end;
+	height: 0;
+}
+
+.editModeButton {
+	font-size: 0.8rem;
+	color: #aaa;
+	cursor: pointer;
+}
+
+.editModeButton:hover {
+	color: #444;
+}
+
+.one:not(.editMode) .disabledUsers {
+	display: none;
+}
+
 .user {
 	display: flex;
-	height: 1.8rem;
 	color: #444;
+	gap: 0.5rem;
+	margin-bottom: 0.8rem;
+	align-items: center;
 }
 
 .userID {
@@ -38,6 +85,49 @@
 	color: black;
 	text-decoration: underline;
 }
+
+.one:not(.editMode) .button {
+	display: none;
+}
+
+.button {
+	border: 1px solid black;
+	border-radius: 3px;
+	font-size: 0.7rem;
+	display: flex;
+	padding: 0.1rem 0.2rem;
+	align-items: center;
+	cursor: pointer;
+}
+
+.button:hover {
+	border: 1px solid #666;
+}
+
+.disableButton {
+	color: #666;
+	background-color: #aaa;
+	border: 1px solid #666;
+}
+
+.disableButton:hover {
+	color: #eee;
+	background-color: #888;
+	border: 1px solid #222;
+}
+
+.enableButton {
+	color: #aaa;
+	background-color: #eee;
+	border: 1px solid #aaa;
+}
+
+.enableButton:hover {
+	color: #24f;
+	background-color: #fff;
+	border: 1px solid #24f;
+}
+
 ```]
 
 <script> [```
@@ -55,6 +145,57 @@ window.onload = function() {
 			}
 			navigator.clipboard.writeText(txt).then(succeeded, failed);
 			return;
+		}
+		let edit = event.target.closest(".editModeButton");
+		if (edit) {
+			let url = new URL(location.href);
+			let v = url.searchParams.get("edit");
+			if (v) {
+				url.searchParams.delete("edit");
+			} else {
+				url.searchParams.set("edit", 1);
+			}
+			location.href = url.href;
+		}
+		let disable = event.target.closest(".disableButton");
+		if (disable) {
+			let user = disable.closest(".user").dataset.user;
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("user", user);
+			formData.append("disabled", "1");
+			req.open("post", "/api/update-user-disabled");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+				location.reload();
+			}
+			req.send(formData);
+		}
+		let enable = event.target.closest(".enableButton");
+		if (enable) {
+			let user = enable.closest(".user").dataset.user;
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("user", user);
+			formData.append("disabled", "0"); // 0 means enable
+			req.open("post", "/api/update-user-disabled");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+				location.reload();
+			}
+			req.send(formData);
 		}
 	}
 }

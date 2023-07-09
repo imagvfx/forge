@@ -709,6 +709,23 @@ func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.Response
 	return nil
 }
 
+func (h *apiHandler) handleUpdateUserDisabled(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	v := r.FormValue("disabled")
+	disabled, err := strconv.ParseBool(v)
+	if err != nil {
+		return err
+	}
+	user := r.FormValue("user")
+	err = h.server.UpdateUserDisabled(ctx, user, disabled)
+	if err != nil {
+		return err
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleGetUserSetting(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	user := r.FormValue("user")
 	u, err := h.server.GetUserSetting(ctx, user)
