@@ -148,41 +148,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		findParent := false
 		queries := make([]string, 0)
 		queryVals := make([]any, 0)
-		expandSpecialValue := func(v string) string {
-			if strings.HasPrefix(v, "@today") {
-				day := time.Now().Local()
-				if v == "@today" {
-					return day.Format("2006/01/02")
-				}
-				// check it is @today+n, @today-n form
-				suffix := v[len("@today"):]
-				op := suffix[0]
-				n, err := strconv.Atoi(suffix[1:])
-				if err != nil {
-					return v
-				}
-				if n > 10000 {
-					// time.Hour is already a big number and
-					// if n is also too big, i.e 10000000000,
-					// ParseDuration will raise error.
-					// let's limit n to +- 10000
-					n = 10000
-				}
-				d := time.Duration(n) * 24 * time.Hour
-				if op == '+' {
-					day = day.Add(d)
-				} else {
-					day = day.Add(-d)
-				}
-				return day.Format("2006/01/02")
-			}
-			if v == "@user" {
-				return user
-			}
-			return v
-		}
 		if wh.Key == "" {
-			rawval := expandSpecialValue(rawval)
+			rawval := expandSpecialValue(tx, ctx, rawval)
 			val := "*" + rawval + "*"
 			// Generic search. Not tied to a property.
 			queries = append(queries, `
@@ -285,7 +252,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				if i != 0 {
 					q += " OR "
 				}
-				v = expandSpecialValue(v)
+				v = expandSpecialValue(tx, ctx, v)
 				vl := v
 				if !wh.Exact {
 					vl = "*" + v + "*"
@@ -462,4 +429,39 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		}
 	}
 	return ents, nil
+}
+
+func expandSpecialValue(tx *sql.Tx, ctx context.Context, v string) string {
+	if strings.HasPrefix(v, "@today") {
+		day := time.Now().Local()
+		if v == "@today" {
+			return day.Format("2006/01/02")
+		}
+		// check it is @today+n, @today-n form
+		suffix := v[len("@today"):]
+		op := suffix[0]
+		n, err := strconv.Atoi(suffix[1:])
+		if err != nil {
+			return v
+		}
+		if n > 10000 {
+			// time.Hour is already a big number and
+			// if n is also too big, i.e 10000000000,
+			// ParseDuration will raise error.
+			// let's limit n to +- 10000
+			n = 10000
+		}
+		d := time.Duration(n) * 24 * time.Hour
+		if op == '+' {
+			day = day.Add(d)
+		} else {
+			day = day.Add(-d)
+		}
+		return day.Format("2006/01/02")
+	}
+	if v == "@user" {
+		user := forge.UserNameFromContext(ctx)
+		return user
+	}
+	return v
 }
