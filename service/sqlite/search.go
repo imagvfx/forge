@@ -100,7 +100,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		wh := where{}
 		cmp := ""
 		idx := len(kwd)
-		cmps := []string{"=", "!=", ":", "!:", "<", ">"}
+		// order of cmps are important. don't let prior values shadow later.
+		// ex) if compare a keyword with "<" earlier, "<=" cannot be compared.
+		cmps := []string{"=", "!=", ":", "!:", "<=", ">=", "<", ">"}
 		for _, c := range cmps {
 			i := strings.Index(kwd, c)
 			if i != -1 && i < idx {
@@ -299,14 +301,21 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				dateCmp := ""
 				dateVal := ""
-				if wh.Cmp == "<" {
-					dateCmp = "!= '' AND properties.val" + wh.Cmp
+				if wh.Cmp == "<" || wh.Cmp == "<=" || wh.Cmp == ">" || wh.Cmp == ">=" {
+					if wh.Cmp == "<" || wh.Cmp == "<=" {
+						dateCmp = "!= '' AND properties.val" + wh.Cmp
+					} else if wh.Cmp == ">" || wh.Cmp == ">=" {
+						dateCmp = "!= '' AND properties.val" + wh.Cmp
+					}
+					// rest fills rest date when user put imcomplete yy or yy/mm format
 					rest := "0000/00/00"
-					dateVal = v + rest[len(v):]
-				} else if wh.Cmp == ">" {
-					dateCmp = "!= '' AND properties.val" + wh.Cmp
-					rest := "9999/99/99"
-					dateVal = v + rest[len(v):]
+					if wh.Cmp == ">" || wh.Cmp == "<=" {
+						rest = "9999/99/99"
+					}
+					dateVal = v
+					if len(v) < len(rest) {
+						dateVal += rest[len(v):]
+					}
 				} else {
 					dateCmp = eq
 					dateVal = vl
