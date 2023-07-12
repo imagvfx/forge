@@ -441,17 +441,23 @@
 												{{if index $.SummaryGrandSub $ent.Type}}
 												{{$summary := statusSummary (index $.GrandSubEntries $ent.Path)}}
 												{{range $subType, $sum := $summary}}
+												{{$total := 0}}
 												<div class="statusGroup sub"> [
-												<div class="statusGroupChart sub"> [
-												{{with $n := index $sum ""}}
-													<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:#DDD8" title="{{$n}} (none) {{$subType}}"> []
-												{{end}}
-												{{range $status := index $.PossibleStatus $subType}}
-												{{with $n := index $sum $status.Name}}
-													<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:{{setAlphaToColor $status.Color 0.5}}" title="{{$n}} {{$status.Name}} {{$subType}}"> []
-												{{end}}
-												{{end}}
-												]
+													<div> [
+														<div style="flex:1" class="statusGroupChart sub"> [
+														{{with $n := index $sum ""}}
+															{{$total = add $total $n}}
+															<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:#DDD8" title="{{$n}} (none) {{$subType}}"> []
+														{{end}}
+														{{range $status := index $.PossibleStatus $subType}}
+														{{with $n := index $sum $status.Name}}
+															{{$total = add $total $n}}
+															<div class="statusCounter statusColor sub" style="flex:{{$n}};background-color:{{setAlphaToColor $status.Color 0.5}}" title="{{$n}} {{$status.Name}} {{$subType}}"> []
+														{{end}}
+														{{end}}
+														]
+														<div class="subStatusCounterText"> [/ {{$total}} {{$subType}}]
+													]
 												]
 												{{end}}
 												{{else}}

@@ -348,6 +348,12 @@
 	cursor: initial;
 }
 
+.subStatusCounterText {
+	font-size: 0.5rem;
+	color: #bbb;
+	text-align: end;
+}
+
 {{range $entType, $status := $.PossibleStatus}}
 .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
 	color: #AAA;
