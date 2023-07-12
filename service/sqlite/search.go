@@ -138,15 +138,16 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	if len(wheres) == 0 {
 		return nil, nil
 	}
+
 	innerQueries := make([]string, 0)
-	// vals will contain info for entire queries.
 	innerVals := make([]any, 0)
 	for _, wh := range wheres {
 		key := wh.Key
 		rawval := wh.Val
 		eq := wh.Equal()
 		findParent := false
-		innerKeys := make([]string, 0)
+		queries := make([]string, 0)
+		queryVals := make([]any, 0)
 		expandSpecialValue := func(v string) string {
 			if strings.HasPrefix(v, "@today") {
 				day := time.Now().Local()
@@ -184,7 +185,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			rawval := expandSpecialValue(rawval)
 			val := "*" + rawval + "*"
 			// Generic search. Not tied to a property.
-			innerKeys = append(innerKeys, `
+			queries = append(queries, `
 				(entries.path GLOB ? OR
 					(default_properties.name NOT GLOB '.*' AND
 						(
@@ -205,7 +206,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				// relative path
 				pathl = search.SearchRoot + "*" + rawval + "*"
 			}
-			innerVals = append(innerVals, pathl, val, val, val)
+			queryVals = append(queryVals, pathl, val, val, val)
 		} else if key == "path" {
 			// special keyword "path"
 			vals := wh.Values()
@@ -216,10 +217,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						q += " OR "
 					}
 					q += "entries.path " + wh.Not() + wh.Equal() + " ?"
-					innerVals = append(innerVals, v)
+					queryVals = append(queryVals, v)
 				}
 				q += ")"
-				innerKeys = append(innerKeys, q)
+				queries = append(queries, q)
 			}
 		} else if key == "name" {
 			// special keyword "name"
@@ -234,10 +235,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						q += " OR "
 					}
 					q += "entries.path " + wh.Not() + wh.Equal() + " ?"
-					innerVals = append(innerVals, "*/"+v)
+					queryVals = append(queryVals, "*/"+v)
 				}
 				q += ")"
-				innerKeys = append(innerKeys, q)
+				queries = append(queries, q)
 			}
 		} else if key == "type" {
 			// special keyword "type"
@@ -251,10 +252,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						q += " OR "
 					}
 					q += "entry_types.name " + wh.Not() + wh.Equal() + " ?"
-					innerVals = append(innerVals, v)
+					queryVals = append(queryVals, v)
 				}
 				q += ")"
-				innerKeys = append(innerKeys, q)
+				queries = append(queries, q)
 			}
 		} else {
 			// generic keyword search
@@ -265,12 +266,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				key = toks[1]
 			}
 			q := fmt.Sprintf("(default_properties.name=? AND ")
-			innerVals = append(innerVals, key)
+			queryVals = append(queryVals, key)
 			if sub != "" {
 				findParent = true
 				if sub != "(sub)" {
 					q += "entries.path GLOB ? AND"
-					innerVals = append(innerVals, "*/"+sub)
+					queryVals = append(queryVals, "*/"+sub)
 				}
 			}
 			not := ""
@@ -345,22 +346,22 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						)
 					)
 				`, eq, itemGlob, dateCmp, userWhere)
-				innerVals = append(innerVals, vl, dateVal)
-				innerVals = append(innerVals, whereVals...)
+				queryVals = append(queryVals, vl, dateVal)
+				queryVals = append(queryVals, whereVals...)
 				q += vq
 			}
 			q += "))"
-			innerKeys = append(innerKeys, q)
+			queries = append(queries, q)
 		}
 		where := ""
-		if len(innerKeys) != 0 {
-			where = "WHERE " + strings.Join(innerKeys, " AND ")
+		if len(queries) != 0 {
+			where = "WHERE " + strings.Join(queries, " AND ")
 		}
 		target := "entries"
 		if findParent {
 			target = "parents"
 		}
-		innerQuery := fmt.Sprintf(`
+		query := fmt.Sprintf(`
 			SELECT %s.id FROM entries
 			LEFT JOIN entries AS parents ON entries.parent_id=parents.id
 			LEFT JOIN properties ON entries.id=properties.entry_id
@@ -368,7 +369,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			LEFT JOIN entry_types ON entries.type_id = entry_types.id
 			%v
 		`, target, where)
-		innerQueries = append(innerQueries, innerQuery)
+		innerQueries = append(innerQueries, query)
+		innerVals = append(innerVals, queryVals...)
 	}
 	queryTmpl := `
 		SELECT
