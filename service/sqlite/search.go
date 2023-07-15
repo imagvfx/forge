@@ -139,13 +139,18 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		return nil, nil
 	}
 
+	// handle generic '(sub)' queries separately to join them with INTERSECT.
+	// eventually merge it to innerQueries.
+	subQueries := make([]string, 0)
+	subVals := make([]any, 0)
+
 	innerQueries := make([]string, 0)
 	innerVals := make([]any, 0)
 	for _, wh := range wheres {
 		key := wh.Key
 		rawval := wh.Val
 		eq := wh.Equal()
-		findParent := false
+		sub := ""
 		queries := make([]string, 0)
 		queryVals := make([]any, 0)
 		if wh.Key == "" {
@@ -176,6 +181,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			queryVals = append(queryVals, pathl, val, val, val)
 		} else if key == "path" {
 			// special keyword "path"
+			if key == "(sub).path" {
+				sub = "(sub)"
+			}
 			vals := wh.Values()
 			if len(vals) != 0 {
 				q := "("
@@ -189,12 +197,18 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				q += ")"
 				queries = append(queries, q)
 			}
-		} else if key == "name" {
+		} else if key == "name" || key == "(sub).name" {
 			// special keyword "name"
+			if key == "(sub).name" {
+				sub = "(sub)"
+			}
 			// workaround to glob limitation.
+			// exact values with glob query
+			// eg. path (NOT) GLOB '*/fx'
 			// user should provide the exact name.
-			wh.Exact = false
+			wh.Exact = true
 			vals := wh.Values()
+			wh.Exact = false
 			if len(vals) != 0 {
 				q := "("
 				for i, v := range vals {
@@ -207,9 +221,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				q += ")"
 				queries = append(queries, q)
 			}
-		} else if key == "type" {
+		} else if key == "type" || key == "(sub).type" {
 			// special keyword "type"
 			// could't think of in-exact type search
+			if key == "(sub).type" {
+				sub = "(sub)"
+			}
 			wh.Exact = true
 			vals := wh.Values()
 			if len(vals) != 0 {
@@ -226,7 +243,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			}
 		} else {
 			// generic keyword search
-			sub := ""
 			toks := strings.SplitN(key, ".", 2)
 			if len(toks) == 2 {
 				sub = toks[0]
@@ -235,7 +251,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
 			if sub != "" {
-				findParent = true
 				if sub != "(sub)" {
 					q += "entries.path GLOB ? AND"
 					queryVals = append(queryVals, "*/"+sub)
@@ -320,17 +335,22 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			q += "))"
 			queries = append(queries, q)
 		}
+		target := "id"
+		if sub != "" {
+			if sub == "(sub)" {
+				subQueries = append(subQueries, queries...)
+				subVals = append(subVals, queryVals...)
+				continue
+			}
+			target = "parent_id"
+		}
 		where := ""
 		if len(queries) != 0 {
+			// TODO: what does it mean?
 			where = "WHERE " + strings.Join(queries, " AND ")
 		}
-		target := "entries"
-		if findParent {
-			target = "parents"
-		}
 		query := fmt.Sprintf(`
-			SELECT %s.id FROM entries
-			LEFT JOIN entries AS parents ON entries.parent_id=parents.id
+			SELECT entries.%v FROM entries
 			LEFT JOIN properties ON entries.id=properties.entry_id
 			LEFT JOIN default_properties ON properties.default_id=default_properties.id
 			LEFT JOIN entry_types ON entries.type_id = entry_types.id
@@ -339,6 +359,25 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		innerQueries = append(innerQueries, query)
 		innerVals = append(innerVals, queryVals...)
 	}
+	if len(subQueries) != 0 {
+		queries := make([]string, 0, len(subQueries))
+		for _, q := range subQueries {
+			queries = append(queries, fmt.Sprintf(`
+				SELECT entries.id FROM entries
+				LEFT JOIN properties on entries.id=properties.entry_id
+				LEFT JOIN default_properties ON properties.default_id=default_properties.id
+				LEFT JOIN entry_types ON entries.type_id = entry_types.id
+				WHERE %v
+			`, q))
+		}
+		query := fmt.Sprintf(`
+			SELECT DISTINCT entries.parent_id FROM entries WHERE entries.id IN (%v)
+		`, strings.Join(queries, " INTERSECT "))
+		innerQueries = append(innerQueries, query)
+		innerVals = append(innerVals, subVals...)
+	}
+
+	// build main query
 	queryTmpl := `
 		SELECT
 			entries.id,
@@ -368,8 +407,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	query := fmt.Sprintf(queryTmpl, whereArchived, whereRoot, whereInner)
 	if false {
 		// We need these prints time to time. Do not delete.
+		// NOTE: don't sure this query will be valid. it could fall especially when a value has quote(') in it.
+		query := strings.Replace(query, "?", "'%s'", -1)
+		query = fmt.Sprintf(query, vals...)
 		fmt.Println(query)
-		fmt.Println(vals)
 	}
 	valNeeds := strings.Count(query, "?")
 	if len(vals) != valNeeds {
