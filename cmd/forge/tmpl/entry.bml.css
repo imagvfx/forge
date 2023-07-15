@@ -322,7 +322,7 @@
 }
 
 .statusGroupChart.sub {
-	height: 0.35rem;
+	height: 0.4rem;
 }
 
 .statusCounter {
@@ -352,6 +352,7 @@
 	font-size: 0.6rem;
 	color: #aaa;
 	text-align: end;
+	margin-top: 0.05rem;
 }
 
 {{range $entType, $status := $.PossibleStatus}}
