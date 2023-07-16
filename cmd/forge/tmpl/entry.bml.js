@@ -729,32 +729,42 @@ window.onload = function() {
 				printSelectionStatus();
 				return;
 			}
-			if (ctrlPressed && event.code == "KeyC") {
+		}
+		if (ctrlPressed && event.code == "KeyC") {
+			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
+				return;
+			}
+			let selEnts = document.querySelectorAll(".subEntry.selected");
+			if (!subEntArea.classList.contains("editMode") || selEnts.length == 0) {
+				let subEntName = document.querySelector(".subEntryName:hover");
+				if (!subEntName) {
+					return;
+				}
 				event.preventDefault();
-				if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
-					return;
-				}
-				if (!subEntArea.classList.contains("editMode")) {
-					return;
-				}
-				let selEnts = document.querySelectorAll(".subEntry.selected");
-				if (selEnts.length == 0) {
-					return;
-				}
-				event.preventDefault();
-				let paths = "";
-				for (let ent of selEnts) {
-					paths += ent.dataset.entryPath + "\n";
-				}
+				let ent = subEntName.closest(".entry");
+				let path = ent.dataset.entryPath;
 				let succeeded = function() {
-					printStatus(selEnts.length.toString() + " selected entry paths copied");
+					printStatus("entry path copied: " + path);
 				}
 				let failed = function() {
 					printStatus("failed to copy entry path");
 				}
-				navigator.clipboard.writeText(paths).then(succeeded, failed);
+				navigator.clipboard.writeText(path).then(succeeded, failed);
 				return;
 			}
+			event.preventDefault();
+			let paths = "";
+			for (let ent of selEnts) {
+				paths += ent.dataset.entryPath + "\n";
+			}
+			let succeeded = function() {
+				printStatus(selEnts.length.toString() + " selected entry paths copied");
+			}
+			let failed = function() {
+				printStatus("failed to copy entry path");
+			}
+			navigator.clipboard.writeText(paths).then(succeeded, failed);
+			return;
 		}
 	}
 	document.onchange = function(event) {
