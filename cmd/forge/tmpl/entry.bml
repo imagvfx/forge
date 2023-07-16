@@ -403,7 +403,7 @@
 										{{with $s := index $ent.Property "status"}}
 										<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 										{{end}}
-										<a class="subEntryName" href="{{$ent.Path}}"> [
+										<div class="subEntryName" data-href="{{$ent.Path}}"> [
 											{{subEntryName $ent.Name}}
 										]
 										<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
@@ -415,7 +415,7 @@
 									<div class="subEntryBottom"> [
 										<div class="subEntryBottomLeft"> [
 											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;text-decoration:none;" href="{{$ent.Path}}"> [
+											<div class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;text-decoration:none;" data-href="{{$ent.Path}}"> [
 												<div class="thumbnailContainer"> [
 													<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
 												]

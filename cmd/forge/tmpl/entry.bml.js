@@ -550,6 +550,10 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
+		let subEntLink = event.target.closest(".subEntryName, .thumbnail");
+		if (subEntLink != null) {
+			location.href = subEntLink.dataset.href;
+		}
 		if (event.target.closest(".search-box-center, #downloadAsExcelButton, .subEntryList, #footer") == null) {
 			let subEntArea = document.querySelector(".subEntryArea");
 			if (subEntArea.classList.contains("editMode")) {
