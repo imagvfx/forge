@@ -697,6 +697,10 @@
 	outline: 1px solid #DDD;
 }
 
+.subEntry.highlight {
+	background-color: #EEFAFF !important;
+}
+
 .subEntry.hidden {
 	display: none;
 }

@@ -745,6 +745,10 @@ window.onload = function() {
 				let path = ent.dataset.entryPath;
 				let succeeded = function() {
 					printStatus("entry path copied: " + path);
+					ent.classList.add("highlight");
+					setTimeout(function() {
+						ent.classList.remove("highlight");
+					}, 500)
 				}
 				let failed = function() {
 					printStatus("failed to copy entry path");
