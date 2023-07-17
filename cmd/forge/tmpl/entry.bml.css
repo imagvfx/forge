@@ -228,10 +228,6 @@
 	padding: 0 2px;
 }
 
-.thumbnail {
-	cursor: pointer;
-}
-
 .thumbnailContainer {
 	display: flex;
 	border: 1px dashed #CCCCCC;
@@ -743,7 +739,6 @@
 	text-decoration: none;
 	display: flex;
 	margin-left: 0.3rem;
-	cursor: pointer;
 }
 
 .subEntryName:hover {
