@@ -2350,11 +2350,12 @@ let CalledByName = {
 // autoComplete takes input tag and possible autocompleted values and label.
 // It takes oncomplete function as an argument that will be called with user selected value.
 // It will give oncomplete raw input value when it cannot find any item with the value.
+// it returns clean function which unbind handlers for autoComplete of the input.
 function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	// Turn off browser's default autocomplete behavior.
 	input.setAttribute("autocomplete", "off");
 	let focus = -1;
-	input.oninput = function(event) {
+	let oninput = function(event) {
 		let search = input.value;
 		if (search == "") {
 			return;
@@ -2390,7 +2391,7 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 		}
 	}
 	// Don't set input.onkeydown, it will swipe default (typing characters) behavior of input.
-	input.addEventListener("keydown", function(event) {
+	let onkeydown = function(event) {
 		let menu = document.getElementById("userAutoCompleteMenu");
 		let items = menu.getElementsByClassName("userAutoCompleteItem");
 		if (event.key == "Tab") {
@@ -2438,8 +2439,8 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 			menu.classList.add("invisible");
 			focus = -1;
 		}
-	})
-	input.onkeyup = function(event) {
+	}
+	let onkeyup = function(event) {
 		let menu = document.getElementById("userAutoCompleteMenu");
 		if (input.value == "") {
 			menu.replaceChildren();
@@ -2460,6 +2461,16 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 		}
 		items[focus].classList.add("active");
 	}
+	input.addEventListener("input", oninput);
+	input.addEventListener("keydown", onkeydown);
+	input.addEventListener("keyup", onkeyup);
+	// clean clears event handlers binded in this function.
+	function clean() {
+		input.removeEventListener("input", oninput);
+		input.removeEventListener("keydown", onkeydown);
+		input.removeEventListener("keyup", onkeyup);
+	}
+	return clean;
 }
 
 function requestPropertyUpdate(ents, prop, value, onsuccess) {
@@ -2485,6 +2496,10 @@ function requestPropertyUpdate(ents, prop, value, onsuccess) {
 		printStatus("done");
 	}
 }
+
+// cleanAutoComplete is a function clears autoComplete handlers binded to .propertyPickerValue.
+// Feel not so good, but I couldn't think better way to clear it. At least for now.
+let cleanAutoComplete = null;
 
 function reloadPropertyPicker(popup, prop) {
 	let nameInput = popup.querySelector(".propertyPickerName");
@@ -2524,14 +2539,10 @@ function reloadPropertyPicker(popup, prop) {
 			return;
 		}
 		if (valueInput) {
-			// remove, then create another one, to remove autoComplete binding.
-			// I couldn't find a better way.
-			valueInput.remove();
-			valueInput = document.createElement("textarea");
-			valueInput.classList.add("propertyPickerValue");
-			valueInput.autocomplete = "off";
-			let picker = popup.querySelector(".propertyPicker");
-			picker.appendChild(valueInput);
+			if (cleanAutoComplete != null) {
+				cleanAutoComplete();
+				cleanAutoComplete = null;
+			}
 		}
 		valueInput.value = j.Msg.Eval;
 		nameInput.dataset.type = j.Msg.Type;
@@ -2541,7 +2552,7 @@ function reloadPropertyPicker(popup, prop) {
 		if (nameInput.dataset.type == "user") {
 			let menuAt = getOffset(valueInput);
 			menuAt.top += valueInput.getBoundingClientRect().height + 4;
-			autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
+			cleanAutoComplete = autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
 				let entPath = popup.dataset.entryPath;
 				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
 				let selectedEnts = document.querySelectorAll(".subEntry.selected");
