@@ -1298,7 +1298,7 @@
 	background-color: #D0D0D0;
 }
 
-.updatePropertyPopup {
+#updatePropertyPopup {
 	position: absolute;
 	box-sizing: border-box;
 	display: none;
@@ -1306,11 +1306,9 @@
 	gap: 3px;
 }
 
-{{range $entType, $status := $.PossibleStatus}}
-.main[data-current-select-status-menu="{{$entType}}"] .updatePropertyPopup[data-entry-type="{{$entType}}"] {
+#updatePropertyPopup.expose {
 	display: flex;
 }
-{{end}}
 
 .selectStatusMenu {
 	display: flex;
@@ -1323,6 +1321,7 @@
 	background-color: #E0E0E0;
 	font-size: 0.8rem;
 	word-wrap: break-word;
+	overflow: clip;
 }
 
 .selectStatusMenuItem {
@@ -1362,7 +1361,7 @@
 	overflow: auto;
 }
 
-.updatePropertyPopup[data-sub=""] .propertyPicker {
+#updatePropertyPopup[data-sub=""] .propertyPicker {
 	display: none;
 }
 

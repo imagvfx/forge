@@ -815,6 +815,29 @@ func (h *apiHandler) handleUpdateUserSetting(ctx context.Context, w http.Respons
 			return err
 		}
 	}
+	if r.FormValue("update_picked_property_input_size") != "" {
+		size := strings.TrimSpace(r.FormValue("size"))
+		toks := strings.Split(size, "x")
+		if len(toks) != 2 {
+			return fmt.Errorf("size should be a {width}x{height} string: got %v", size)
+		}
+		// validate user input
+		sx := strings.TrimSpace(toks[0])
+		sy := strings.TrimSpace(toks[1])
+		x, err := strconv.Atoi(sx)
+		if err != nil {
+			return fmt.Errorf("size should be a {width}x{height} string: got %v", size)
+		}
+		y, err := strconv.Atoi(sy)
+		if err != nil {
+			return fmt.Errorf("size should be a {width}x{height} string: got %v", size)
+		}
+		user := forge.UserNameFromContext(ctx)
+		err = h.server.UpdateUserSetting(ctx, user, "picked_property_input_size", [2]int{x, y})
+		if err != nil {
+			return err
+		}
+	}
 	if r.FormValue("update_update_marker_lasts") != "" {
 		v := r.FormValue("update_marker_lasts")
 		var last int

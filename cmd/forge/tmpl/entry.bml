@@ -510,36 +510,21 @@
 					<a class="infoDelete" style="color:#A22;cursor:pointer;"> [Delete]
 				]
 				<div id="userAutoCompleteMenu" class="invisible"> []
-				{{range $entType, $ps := $.PossibleStatus}}
-				<div id="updatePropertyPopup-{{$entType}}" class="updatePropertyPopup" data-entry-type="{{$entType}}"> [
+				<div id="updatePropertyPopup" class="hidden"> [
 					<div class="selectStatusMenu"> [
 						<div class="selectStatusMenuItem" data-value=""> [
-							<div class="selectStatusMenuItemDot statusDot statusDot-{{$entType}}-"> []
+							<div class="selectStatusMenuItemDot statusDot"> []
 							<div class="selectStatusMenuItemValue" style="color:#888888;"> [(none)]
 						]
-						{{range $s := $ps}}
-						<div class="selectStatusMenuItem" data-value="{{$s.Name}}"> [
-							<div class="selectStatusMenuItemDot statusDot" data-entry-type="{{$entType}}" data-value="{{$s.Name}}"> []
-							<div class="selectStatusMenuItemValue"> [{{$s.Name}}]
-						]
-						{{end}}
 					]
 					<div class="propertyPicker"> [
-						{{$picked := index $.UserSetting.PickedProperty $entType}}
-						<select class="propertyPickerName" data-value="{{$picked}}" autocomplete="off"> [
-							<option value="" {{if eq "" $picked}}selected{{end}}> [>]
-							{{range $p := index $.PropertyFilters $entType}}
-							<option value="{{$p}}" {{if eq $p $picked}}selected{{end}}> [{{$p}}]
-							{{end}}
-							{{range $p := index $.HiddenProperties $entType}}
-							<option value="{{$p}}" {{if eq $p $picked}}selected{{end}}> [{{$p}}]
-							{{end}}
+						<select class="propertyPickerName" autocomplete="off"> [
+							<option value=""> [>]
 						]
-						<textarea class="propertyPickerValue" autocomplete="off"> []
+						<textarea class="propertyPickerValue" autocomplete="off" {{with $s := $.UserSetting.PickedPropertyInputSize}}style="width:{{index $s 0}}px; height:{{index $s 1}}px"{{end}}> []
 					]
 				]
 				<div id="statusLabel" class="nodisplay"> []
-				{{end}}
 			]
 			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:1;"> [
 				<div id="infoUpdater" class="infoModifier nodisplay"> [

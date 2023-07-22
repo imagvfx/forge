@@ -334,6 +334,7 @@ type UserSetting struct {
 	EntryPagePropertyFilter     map[string]string
 	EntryPageSortProperty       map[string]string
 	PickedProperty              map[string]string
+	PickedPropertyInputSize     [2]int
 	QuickSearches               []StringKV
 	PinnedPaths                 []string
 	RecentPaths                 []string
