@@ -145,10 +145,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		return nil, nil
 	}
 
-	// handle generic '(sub)' queries separately to join them with INTERSECT.
+	// handle '(sub)', '(*)' queries separately to join them with INTERSECT.
 	// eventually merge it to innerQueries.
 	subQueries := make([]string, 0)
 	subVals := make([]any, 0)
+	allSubQueries := make([]string, 0)
+	allSubVals := make([]any, 0)
 
 	innerQueries := make([]string, 0)
 	innerVals := make([]any, 0)
@@ -241,7 +243,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
 			if sub != "" {
-				if sub != "(sub)" {
+				if sub != "(sub)" && sub != "(*)" {
 					q += "entries.path GLOB ? AND"
 					queryVals = append(queryVals, "*/"+sub)
 				}
@@ -331,6 +333,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				subQueries = append(subQueries, queries...)
 				subVals = append(subVals, queryVals...)
 				continue
+			} else if sub == "(*)" {
+				allSubQueries = append(allSubQueries, queries...)
+				allSubVals = append(allSubVals, queryVals...)
+				continue
 			}
 			target = "parent_id"
 		}
@@ -365,6 +371,40 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		`, strings.Join(queries, " INTERSECT "))
 		innerQueries = append(innerQueries, query)
 		innerVals = append(innerVals, subVals...)
+	}
+	if len(allSubQueries) != 0 {
+		queries := make([]string, 0, len(allSubQueries))
+		for _, q := range allSubQueries {
+			queries = append(queries, fmt.Sprintf(`
+				SELECT entries.id FROM entries
+				LEFT JOIN properties on entries.id=properties.entry_id
+				LEFT JOIN default_properties ON properties.default_id=default_properties.id
+				LEFT JOIN entry_types ON entries.type_id = entry_types.id
+				WHERE %v
+			`, q))
+		}
+		subQuery := strings.Join(queries, " INTERSECT ")
+		query := fmt.Sprintf(`
+			WITH RECURSIVE parent_of as (
+				SELECT id, parent_id from entries
+				UNION ALL
+				SELECT
+					parent_of.id,
+					(SELECT parent_id from entries WHERE id=parent_of.parent_id) ancestor
+				FROM parent_of
+				WHERE ancestor IS NOT NULL
+			)
+			SELECT DISTINCT parent_of.parent_id FROM parent_of
+			WHERE parent_of.id IN (%v)
+			UNION
+			SELECT DISTINCT parent_of.id FROM parent_of
+			WHERE parent_of.id IN (%v)
+		`, subQuery, subQuery)
+		// It seems 'WITH RECURSIVE' should be the first sub-query
+		// TODO: I don't like that I should SELECT twice, but currently out of ideas.
+		innerQueries = append([]string{query}, innerQueries...)
+		allSubVals = append(allSubVals, allSubVals...)
+		innerVals = append(allSubVals, innerVals...)
 	}
 
 	// build main query
