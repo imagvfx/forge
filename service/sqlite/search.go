@@ -30,6 +30,7 @@ func SearchEntries(db *sql.DB, ctx context.Context, search forge.EntrySearcher) 
 }
 
 type where struct {
+	Sub     string
 	Key     string
 	Cmp     string
 	Val     string
@@ -116,6 +117,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			continue
 		}
 		key, val, _ := strings.Cut(kwd, cmp)
+		sub := ""
+		if strings.Contains(key, ".") {
+			sub, key, _ = strings.Cut(key, ".")
+		}
 		if key == "" {
 			// Invalid search. Having ':' or '=' without the keyword.
 			continue
@@ -128,6 +133,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				wh.Exclude = true
 			}
 		}
+		wh.Sub = sub
 		wh.Key = key
 		wh.Cmp = cmp
 		wh.Val = val // exclude colon or equal
@@ -147,10 +153,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	innerQueries := make([]string, 0)
 	innerVals := make([]any, 0)
 	for _, wh := range wheres {
+		sub := wh.Sub
 		key := wh.Key
 		rawval := wh.Val
 		eq := wh.Equal()
-		sub := ""
 		queries := make([]string, 0)
 		queryVals := make([]any, 0)
 		if wh.Key == "" {
@@ -181,9 +187,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			queryVals = append(queryVals, pathl, val, val, val)
 		} else if key == "path" {
 			// special keyword "path"
-			if key == "(sub).path" {
-				sub = "(sub)"
-			}
 			vals := wh.Values()
 			if len(vals) != 0 {
 				q := "("
@@ -197,11 +200,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				q += ")"
 				queries = append(queries, q)
 			}
-		} else if key == "name" || key == "(sub).name" {
-			// special keyword "name"
-			if key == "(sub).name" {
-				sub = "(sub)"
-			}
+		} else if key == "name" {
 			// workaround to glob limitation.
 			// exact values with glob query
 			// eg. path (NOT) GLOB '*/fx'
@@ -221,12 +220,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				q += ")"
 				queries = append(queries, q)
 			}
-		} else if key == "type" || key == "(sub).type" {
+		} else if key == "type" {
 			// special keyword "type"
 			// could't think of in-exact type search
-			if key == "(sub).type" {
-				sub = "(sub)"
-			}
 			wh.Exact = true
 			vals := wh.Values()
 			if len(vals) != 0 {
@@ -242,12 +238,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				queries = append(queries, q)
 			}
 		} else {
-			// generic keyword search
-			toks := strings.SplitN(key, ".", 2)
-			if len(toks) == 2 {
-				sub = toks[0]
-				key = toks[1]
-			}
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
 			if sub != "" {
