@@ -633,7 +633,7 @@ window.onload = function() {
 			if (popup.classList.contains("expose")) {
 				popup.classList.remove("expose");
 				let sel = document.querySelector(".statusSelector.popupAttached");
-				sel.dataset.popupAttached = "";
+				sel.classList.remove("popupAttached");
 				hide = true;
 			}
 			let userMenu = document.getElementById("userAutoCompleteMenu");
