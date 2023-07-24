@@ -521,7 +521,7 @@
 						<select class="propertyPickerName" autocomplete="off"> [
 							<option value=""> [>]
 						]
-						<textarea class="propertyPickerValue" autocomplete="off" {{with $s := $.UserSetting.PickedPropertyInputSize}}style="width:{{index $s 0}}px; height:{{index $s 1}}px"{{end}}> []
+						<textarea class="propertyPickerValue" autocomplete="off" {{with $s := $.UserSetting.PickedPropertyInputSize}}data-width="{{index $s 0}}px" data-height="{{index $s 1}}px" style="width:{{index $s 0}}px; height:{{index $s 1}}px"{{end}}> []
 					]
 				]
 				<div id="statusLabel" class="nodisplay"> []

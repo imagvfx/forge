@@ -1395,23 +1395,29 @@ window.onload = function() {
 			let pickedPropertyInput = document.querySelector(".propertyPickerValue");
 			if (pickedPropertyInput.dataset.resized != "") {
 				pickedPropertyInput.dataset.resized = "";
-				let w = pickedPropertyInput.style.width.slice(0, -2);
-				let h = pickedPropertyInput.style.height.slice(0, -2);
-				let size = w + "x" + h;
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
-				formData.append("update_picked_property_input_size", size);
-				formData.append("size", size);
-				req.open("post", "/api/update-user-setting");
-				req.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
-						printErrorStatus(req.responseText);
+				let width = pickedPropertyInput.style.width;
+				let height = pickedPropertyInput.style.height;
+				if (pickedPropertyInput.dataset.oldWidth != width || pickedPropertyInput.dataset.oldHeight != height) {
+					pickedPropertyInput.dataset.oldWidth = width;
+					pickedPropertyInput.dataset.oldHeight = height;
+					let w = width.slice(0, -2);
+					let h = height.slice(0, -2);
+					let size = w + "x" + h;
+					let req = new XMLHttpRequest();
+					let formData = new FormData();
+					formData.append("update_picked_property_input_size", size);
+					formData.append("size", size);
+					req.open("post", "/api/update-user-setting");
+					req.onerror = function() {
+						printErrorStatus("network error occurred. please check whether the server is down.");
 					}
+					req.onload = function() {
+						if (req.status != 200) {
+							printErrorStatus(req.responseText);
+						}
+					}
+					req.send(formData);
 				}
-				req.send(formData);
 			}
 		}
 	}
