@@ -1625,6 +1625,11 @@ window.onload = function() {
 				return;
 			}
 			let info = parentWithClass(t, "info");
+			let ent = info.closest(".entry");
+			if (info.dataset.entryPath != ent.dataset.entryPath) {
+				showInfoAdder(ent.dataset.entryPath, info.dataset.category, info.dataset.name);
+				return;
+			}
 			showInfoUpdater(info);
 		}
 	}
@@ -1640,7 +1645,7 @@ window.onload = function() {
 		let ent = parentWithClass(a, "entry");
 		let tgl = parentWithClass(a, "infoCategoryToggle");
 		a.onclick = function() {
-			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category);
+			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category, "");
 		}
 	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
@@ -2235,7 +2240,7 @@ function hideInfoUpdater() {
 let PropertyTypes = {{marshalJS $.PropertyTypes}}
 let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
-function showInfoAdder(entry, ctg) {
+function showInfoAdder(entry, ctg, name) {
 	// TODO: Add the item inplace?
 	document.getElementById("infoAdder").classList.remove("nodisplay");
 	document.getElementById("infoUpdater").classList.add("nodisplay");
@@ -2270,8 +2275,11 @@ function showInfoAdder(entry, ctg) {
 	let valueInput = adder.getElementsByClassName("valueInput")[0];
 	valueInput.value = "";
 	resizeTextArea(valueInput);
-
-	nameInput.focus();
+	if (!name) {
+		nameInput.focus();
+	} else {
+		valueInput.focus();
+	}
 }
 
 function hideInfoAdder() {
