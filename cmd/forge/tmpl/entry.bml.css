@@ -683,6 +683,10 @@
 	background-image: url("/asset/expand-property.svg");
 }
 
+.subEntryArea:not(.editMode) .subEntryListOption.deleteEntryOption {
+	display: none;
+}
+
 .subEntryListOption.deleteEntryOption {
 	background-image: url("/asset/delete-entry-d.svg");
 	background-size: 0.80rem;
@@ -695,6 +699,10 @@
 
 .subEntryListOption.groupByOption {
 	width: auto;
+}
+
+.subEntryArea.editMode .subEntryListOption.groupByOption {
+	display: none;
 }
 
 .subEntry {
