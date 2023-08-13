@@ -338,15 +338,21 @@ func (h *apiHandler) handleUnarchiveEntry(ctx context.Context, w http.ResponseWr
 }
 
 func (h *apiHandler) handleDeleteEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	entPath := r.FormValue("path")
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
 	delFn := h.server.DeleteEntry
 	recursive := r.FormValue("recursive")
 	if recursive != "" {
 		delFn = h.server.DeleteEntryRecursive
 	}
-	err := delFn(ctx, entPath)
-	if err != nil {
-		return err
+	for _, pth := range entPaths {
+		err := delFn(ctx, pth)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

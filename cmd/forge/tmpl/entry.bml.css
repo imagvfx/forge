@@ -683,6 +683,16 @@
 	background-image: url("/asset/expand-property.svg");
 }
 
+.subEntryListOption.deleteEntryOption {
+	background-image: url("/asset/delete-entry-d.svg");
+	background-size: 0.80rem;
+}
+
+.subEntryListOption.deleteEntryOption:hover {
+	background-image: url("/asset/delete-entry.svg");
+}
+
+
 .subEntryListOption.groupByOption {
 	width: auto;
 }
@@ -1162,7 +1172,9 @@
 }
 
 .dialogBackground {
-	position: absolute;
+	position: fixed;
+	left: 0;
+	top: 0;
 	width: 100%;
 	height: 100%;
 	display: flex;
@@ -1171,12 +1183,16 @@
 	background-color: rgba(255,255,255,0.4);
 }
 
+.dialogBackground.invisible {
+	display: none;
+}
+
 .dialog {
 	display: flex;
 	flex-direction: column;
 	border-radius: 3px;
 	width: 24rem;
-	min-height: 16rem;
+	height: 16rem;
 	border: 1px solid #CCC;
 	box-shadow: 0 0 30px rgba(128,128,128,0.3);
 	background-color: #F8F8F8;
@@ -1196,6 +1212,7 @@
 	padding: 1rem;
 	background-color: #F8F8F8;
 	color: #222;
+	overflow: auto;
 }
 
 .dialog .buttonBar {

@@ -2,6 +2,9 @@
 
 window.onload = function() {
 	document.onclick = function(event) {
+		if (event.target.closest(".dialogBackground")) {
+			return;
+		}
 		if (event.target.classList.contains("copyCurrentPathButton")) {
 			let mainEntry = event.target.closest(".mainEntry");
 			let ptxt = mainEntry.dataset.entryPath;
@@ -290,6 +293,20 @@ window.onload = function() {
 					}
 				}
 				req.send(formData);
+				return;
+			}
+			opt = event.target.closest(".subEntryListOption.deleteEntryOption");
+			if (opt) {
+				let selEnts = document.querySelectorAll(".subEntry.selected");
+				if (selEnts.length == 0) {
+					printErrorStatus("no sub-entry selected");
+					return;
+				}
+				let paths = [];
+				for (let ent of selEnts) {
+					paths.push(ent.dataset.entryPath);
+				}
+				openDeleteEntryDialog(paths);
 				return;
 			}
 		}
@@ -628,6 +645,11 @@ window.onload = function() {
 		let ctrlPressed = event.ctrlKey || event.metaKey;
 		if (event.code == "Escape") {
 			// Will close floating UIs first, if any exists.
+			let bg = document.querySelector(".dialogBackground");
+			if (!bg.classList.contains("invisible")) {
+				bg.classList.add("invisible");
+				return;
+			}
 			let hide = false;
 			let popup = document.querySelector("#updatePropertyPopup");
 			if (popup.classList.contains("expose")) {
@@ -2355,72 +2377,79 @@ for (let i = 0; i < coll.length; i++) {
 	coll[i].getElementsByClassName("title")[0].addEventListener("click", toggleCollapse);
 }
 
-function openDeleteEntryDialog(path) {
-	// The dialog itself is not hidden but the parent sets the visibility.
+function openDeleteEntryDialog(paths) {
+	if (paths.length == 0) {
+		printErrorStatus("no entry paths to delete");
+		return;
+	}
 	let bg = document.querySelector("#deleteEntryDialogBackground");
 	let dlg = document.querySelector("#deleteEntryDialog");
-	let numSubEntries = -1;
-	let req = new XMLHttpRequest();
-	let formData = new FormData();
-	formData.append("path", path);
-	req.open("post", "/api/count-all-sub-entries");
-	req.send(formData);
-	req.onerror = function(err) {
-		printErrorStatus("network error occurred. please check whether the server is down.");
+	let proms = [];
+	for (let path of paths) {
+		let p = new Promise((resolve, reject) => {
+			let req = new XMLHttpRequest();
+			let formData = new FormData();
+			formData.append("path", path);
+			req.open("post", "/api/count-all-sub-entries");
+			req.send(formData);
+			req.onerror = function(err) {
+				reject("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					reject(req.responseText);
+					return;
+				}
+				let j = JSON.parse(req.responseText);
+				if (j.Err != "") {
+					reject(j.Err);
+					return;
+				}
+				let numSubEntries = j.Msg;
+				resolve(path + " (+" + String(numSubEntries) + ")");
+			}
+		});
+		proms.push(p);
 	}
-	req.onload = function() {
-		if (req.status != 200) {
-			printErrorStatus(req.responseText);
-			return;
+	Promise.all(proms).then(function(values) {
+		let ents = "1 selected entry";
+		if (paths.length > 1) {
+			ents = String(paths.length) + " selected entries";
 		}
-		let j = JSON.parse(req.responseText);
-		if (j.Err != "") {
-			printErrorStatus(j.Err);
-			return;
+		let content = "Do you really want to delete " + ents + "?\nIt will also delete their sub entries.\n";
+		for (let v of values) {
+			content += "\n" + v;
 		}
-		numSubEntries = j.Msg;
-		if (numSubEntries != 0) {
-			document.querySelector("#deleteEntryDialogNoSub").classList.add("nodisplay");
-			document.querySelector("#deleteEntryDialogHasSub").classList.remove("nodisplay");
-			document.querySelector("#deleteEntryDialogTotalSub").innerText = String(numSubEntries);
-		} else {
-			document.querySelector("#deleteEntryDialogNoSub").classList.remove("nodisplay");
-			document.querySelector("#deleteEntryDialogHasSub").classList.add("nodisplay");
-			document.querySelector("#deleteEntryDialogTotalSub").innerText = "";
-		}
-		document.querySelector("#deleteEntryDialogEntry").innerText = path;
+		dlg.querySelector(".content").innerText = content;
 		bg.classList.remove("invisible");
-	}
-	// cancel or confirm delete
-	dlg.querySelector(".cancelButton").onclick = function() {
+	}).catch(function(err) {
+		printErrorStatus(err);
+		return;
+	})
+	let cancelBtn = dlg.querySelector(".cancelButton");
+	cancelBtn.onclick = function(ev) {
+		ev.stopPropagation();
 		bg.classList.add("invisible");
 	}
-	document.querySelector(".confirmButton").onclick = function() {
+	let confirmBtn = dlg.querySelector(".confirmButton");
+	confirmBtn.onclick = function() {
 		let req = new XMLHttpRequest();
 		let formData = new FormData();
-		formData.append("path", path);
-		if (numSubEntries != 0) {
-			formData.append("recursive", path);
+		for (let path of paths) {
+			formData.append("path", path);
 		}
+		formData.append("recursive", "1");
 		req.open("post", "/api/delete-entry");
 		req.send(formData);
+		req.onload = function() {
+			if (req.status == 200) {
+				location.reload();
+			} else {
+				printErrorStatus(req.responseText);
+			}
+		}
 		req.onerror = function(err) {
 			printErrorStatus("network error occurred. please check whether the server is down.");
-			bg.classList.add("invisible");
-		}
-		req.onload = function() {
-			if (req.status != 200) {
-				printErrorStatus(req.responseText);
-				bg.classList.add("invisible");
-				return;
-			}
-			let toks = path.split("/");
-			toks.pop();
-			let parent = toks.join("/");
-			if (parent == "") {
-				parent = "/";
-			}
-			window.location.href = parent;
 		}
 	}
 }
