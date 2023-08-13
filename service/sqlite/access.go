@@ -176,7 +176,7 @@ func userRead(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	if mode == nil {
 		// The entry should invisible to the user.
-		return forge.NotFound("cannot access to entry")
+		return forge.NotFound("cannot access to entry: %s", path)
 	}
 	return nil
 }
@@ -199,10 +199,10 @@ func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 	}
 	if mode == nil {
 		// The entry should invisible to the user.
-		return forge.NotFound("cannot access to entry")
+		return forge.NotFound("cannot access to entry: %s", path)
 	}
 	if *mode == "r" {
-		return forge.Unauthorized("entry modification not allowed")
+		return forge.Unauthorized("entry modification not allowed: %s", path)
 	}
 	return nil
 }
