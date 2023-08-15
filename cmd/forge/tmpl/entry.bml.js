@@ -937,14 +937,14 @@ window.onload = function() {
 	if (addExcelFile != null) {
 		addExcelFile.onchange = function() {
 			let addExcelForm = document.getElementById("addExcelForm");
-			addExcelForm.submit();
+			submitForm(addExcelForm);
 		}
 	}
 	let updateExcelFile = document.getElementById("updateExcelFile");
 	if (updateExcelFile != null) {
 		updateExcelFile.onchange = function() {
 			let updateExcelForm = document.getElementById("updateExcelForm");
-			updateExcelForm.submit();
+			submitForm(updateExcelForm);
 		}
 	}
 	let downloadAsExcelButton = document.getElementById("downloadAsExcelButton");
@@ -1803,6 +1803,22 @@ window.onpageshow = function() {
 			// It makes the browser uses the old 'not found' cache.
 			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
 		}
+	}
+}
+
+function submitForm(form) {
+	let req = new XMLHttpRequest();
+	req.open(form.method, form.action);
+	req.send(new FormData(form));
+	req.onload = function() {
+		if (req.status == 200) {
+			location.reload();
+		} else {
+			printErrorStatus(req.responseText);
+		}
+	}
+	req.onerror = function(err) {
+		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 }
 
