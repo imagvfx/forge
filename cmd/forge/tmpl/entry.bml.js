@@ -1505,7 +1505,7 @@ window.onload = function() {
 			event.preventDefault();
 			let thumbInput = event.currentTarget.getElementsByClassName("updateThumbnailInput")[0];
 			thumbInput.files = event.dataTransfer.files;
-			let thumb = parentWithClass(thumbInput, "thumbnail");
+			let thumb = thumbInput.closest(".thumbnail");
 			updateThumbnail(thumb);
 			event.currentTarget.classList.remove("prepareDrop");
 		}
@@ -1515,7 +1515,7 @@ window.onload = function() {
 		thumbInput.onchange = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			let thumb = parentWithClass(thumbInput, "thumbnail");
+			let thumb = thumbInput.closest(".thumbnail");
 			updateThumbnail(thumb);
 		}
 	}
@@ -1524,7 +1524,7 @@ window.onload = function() {
 		delButton.onclick = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			let thumb = parentWithClass(delButton, "thumbnail");
+			let thumb = delButton.closest(".thumbnail");
 			deleteThumbnail(thumb);
 		}
 	}
@@ -1545,7 +1545,7 @@ window.onload = function() {
 		let menuAt = getOffset(input);
 		menuAt.top += input.getBoundingClientRect().height + 4;
 		autoComplete(input, AllUserLabels, AllUserNames, menuAt, function(value) {
-			let thisEnt = parentWithClass(input, "subEntry");
+			let thisEnt = input.closest(".subEntry");
 			let entPath = thisEnt.dataset.entryPath;
 			let selectedEnts = document.querySelectorAll(".subEntry.selected");
 			if (selectedEnts.length != 0) {
@@ -1646,7 +1646,7 @@ window.onload = function() {
 				}
 				return;
 			}
-			let info = parentWithClass(t, "info");
+			let info = t.closest(".info");
 			let ent = info.closest(".entry");
 			if (info.dataset.entryPath != ent.dataset.entryPath) {
 				showInfoAdder(ent.dataset.entryPath, info.dataset.category, info.dataset.name);
@@ -1657,15 +1657,15 @@ window.onload = function() {
 	}
 	let infoSelectors = document.getElementsByClassName("infoSelector");
 	for (let s of infoSelectors) {
-		let tgl = parentWithClass(s, "infoCategoryToggle");
+		let tgl = s.closest(".infoCategoryToggle");
 		s.onclick = function() {
 			showCategoryInfos(tgl.dataset.category);
 		}
 	}
 	let infoAdders = document.getElementsByClassName("infoAdder");
 	for (let a of infoAdders) {
-		let ent = parentWithClass(a, "entry");
-		let tgl = parentWithClass(a, "infoCategoryToggle");
+		let ent = a.closest(".entry");
+		let tgl = a.closest(".infoCategoryToggle");
 		a.onclick = function() {
 			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category, "");
 		}
@@ -1675,8 +1675,8 @@ window.onload = function() {
 		loader.onclick = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			let ent = parentWithClass(loader, "entry");
-			let info = parentWithClass(loader, "info");
+			let ent = loader.closest(".entry");
+			let info = loader.closest(".info");
 			if (info == null) {
 				console.log("info not found");
 				return;
@@ -1829,19 +1829,6 @@ function removeClass(parent, clsName) {
 	}
 }
 
-function parentWithClass(from, clsName) {
-	while (true) {
-		let parent = from.parentElement;
-		if (parent == null) {
-			return null;
-		}
-		if (parent.classList.contains(clsName)) {
-			return parent;
-		}
-		from = parent;
-	}
-}
-
 function offsetFrom(elem, target) {
 	if (!target) {
 		return {top: 0, left: 0};
@@ -1970,7 +1957,7 @@ function updateThumbnail(thumb) {
 	req.send(new FormData(form));
 	req.onload = function() {
 		if (req.status == 200) {
-			let entryPath = parentWithClass(thumb, "entry").dataset.entryPath;
+			let entryPath = thumb.closest(".entry").dataset.entryPath;
 			img.src = "/thumbnail" + entryPath + "?t=" + new Date().getTime();
 			thumb.classList.remove("inherited");
 			thumb.classList.add("exists");
@@ -2215,7 +2202,7 @@ function showInfoUpdater(info) {
 	if (active) {
 		active.classList.remove("active");
 	}
-	let thisEnt = parentWithClass(info, "entry");
+	let thisEnt = info.closest(".entry");
 	let entPath = info.dataset.entryPath;
 	let ctg = info.dataset.category;
 	let name = info.dataset.name;
