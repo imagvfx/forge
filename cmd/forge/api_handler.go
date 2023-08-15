@@ -1093,6 +1093,9 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	if err != nil {
 		return err
 	}
+	if len(rows) == 0 {
+		return fmt.Errorf("no data to update in the first sheet: %v", sheet)
+	}
 	propFor := make(map[int]string)
 	labelRow := rows[0]
 	nameIdx := -1
