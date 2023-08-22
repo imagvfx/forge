@@ -107,6 +107,10 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 		keys = append(keys, "parents.path=?")
 		vals = append(vals, *find.ParentPath)
 	}
+	if find.AncestorPath != nil {
+		keys = append(keys, "entries.path GLOB ? || '/*'")
+		vals = append(vals, *find.AncestorPath)
+	}
 	if find.ChildPath != nil {
 		if *find.ChildPath != "/" {
 			keys = append(keys, "(? GLOB entries.path || '/*') OR (entries.path='/')")

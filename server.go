@@ -36,6 +36,10 @@ func (s *Server) GetEntry(ctx context.Context, path string) (*Entry, error) {
 	return ent, nil
 }
 
+func (s *Server) FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error) {
+	return s.svc.FindEntries(ctx, find)
+}
+
 func (s *Server) SubEntries(ctx context.Context, path string) ([]*Entry, error) {
 	if path == "" {
 		return nil, fmt.Errorf("entry path not specified")

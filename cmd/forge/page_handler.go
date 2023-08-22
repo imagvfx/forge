@@ -625,15 +625,15 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	sortProps(mainEntryHiddenProps)
 	// Get grand sub entries if needed.
 	grandSubEntries := make(map[string][]*forge.Entry)
-	showGrandSub := make(map[string]bool)
+	grandSubTypes := make(map[string]string)
 	summaryGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
-		_, ok := showGrandSub[sub.Type]
+		_, ok := grandSubTypes[sub.Type]
 		if ok {
 			continue
 		}
 		// expose_sub_entries might have entry types to expose later.
-		_, err := h.server.GetGlobal(ctx, sub.Type, "expose_sub_entries")
+		subtypes, err := h.server.GetGlobal(ctx, sub.Type, "expose_sub_entries")
 		if err != nil {
 			var e *forge.NotFoundError
 			if !errors.As(err, &e) {
@@ -641,7 +641,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			}
 			continue
 		}
-		showGrandSub[sub.Type] = true
+		grandSubTypes[sub.Type] = subtypes.Value
 		// summary_sub_entries needs expose_sub_entries to effect
 		_, err = h.server.GetGlobal(ctx, sub.Type, "summary_sub_entries")
 		if err != nil {
@@ -654,21 +654,66 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		summaryGrandSub[sub.Type] = true
 	}
 	for _, sub := range subEnts {
-		if !showGrandSub[sub.Type] {
-			continue
-		}
-		gsubEnts, err := h.server.SubEntries(ctx, sub.Path)
-		if err != nil {
-			return err
-		}
-		for _, gs := range gsubEnts {
-			sortProp := entrySortProp[gs.Type]
-			if gs.Property[sortProp] == nil {
-				entrySortProp[gs.Type] = ""
+		if subtypes, ok := grandSubTypes[sub.Type]; ok {
+			gsubEnts := make([]*forge.Entry, 0)
+			subtypes = strings.TrimSpace(subtypes)
+			if subtypes == "" {
+				// get direct children
+				gsub, err := h.server.SubEntries(ctx, sub.Path)
+				if err != nil {
+					return err
+				}
+				gsubEnts = gsub
+			} else {
+				// find grand children of the type recursively
+				typs := strings.Fields(subtypes)
+				for _, typ := range typs {
+					gsub, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &sub.Path, Type: &typ})
+					if err != nil {
+						return err
+					}
+					gsubEnts = append(gsubEnts, gsub...)
+				}
 			}
+			for _, gs := range gsubEnts {
+				sortProp := entrySortProp[gs.Type]
+				if gs.Property[sortProp] == nil {
+					entrySortProp[gs.Type] = ""
+				}
+			}
+			sortEntries(gsubEnts)
+			entryOrder := make(map[string]int)
+			for i, gsub := range gsubEnts {
+				entryOrder[gsub.Path] = i
+			}
+			toks := make(map[string][]string)
+			for _, gsub := range gsubEnts {
+				remain := gsub.Path[len(sub.Path)+1:]
+				toks[gsub.Path] = strings.Split(remain, "/")
+			}
+			sort.Slice(gsubEnts, func(i, j int) bool {
+				a := gsubEnts[i]
+				b := gsubEnts[j]
+				n := len(toks[a.Path])
+				if len(toks[b.Path]) < n {
+					n = len(toks[b.Path])
+				}
+				aPath := sub.Path
+				bPath := sub.Path
+				for i := 0; i < n; i++ {
+					aPath += "/" + toks[a.Path][i]
+					bPath += "/" + toks[b.Path][i]
+					aOrd := entryOrder[aPath]
+					bOrd := entryOrder[bPath]
+					if aOrd == bOrd {
+						continue
+					}
+					return aOrd < bOrd
+				}
+				return strings.Compare(a.Path, b.Path) < 0
+			})
+			grandSubEntries[sub.Path] = gsubEnts
 		}
-		sortEntries(gsubEnts)
-		grandSubEntries[sub.Path] = gsubEnts
 	}
 	// Get possible status for entry types defines it.
 	possibleStatus := make(map[string][]forge.Status)
@@ -785,7 +830,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		StatusSummary             map[string]map[string]int
 		ShowSearches              [][3]string // [][from, name, query]
 		SubEntryTags              map[string][]string
-		ShowGrandSub              map[string]bool
 		SummaryGrandSub           map[string]bool
 		GrandSubEntries           map[string][]*forge.Entry
 		PropertyTypes             []string
@@ -817,7 +861,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		StatusSummary:             statusSummary,
 		ShowSearches:              showSearches,
 		SubEntryTags:              subEntryTags,
-		ShowGrandSub:              showGrandSub,
 		SummaryGrandSub:           summaryGrandSub,
 		GrandSubEntries:           grandSubEntries,
 		PropertyTypes:             forge.PropertyTypes(),

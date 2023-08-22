@@ -48,12 +48,13 @@ func (e *Entry) MarshalJSON() ([]byte, error) {
 }
 
 type EntryFinder struct {
-	ID         *int
-	ParentPath *string
-	ChildPath  *string
-	Path       *string
-	Type       *string
-	Archived   bool // Don't set manually, it will be automatically set.
+	ID           *int
+	ParentPath   *string
+	AncestorPath *string
+	ChildPath    *string
+	Path         *string
+	Type         *string
+	Archived     bool // Don't set manually, it will be automatically set.
 }
 
 type EntrySearcher struct {
