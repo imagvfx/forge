@@ -36,6 +36,7 @@ var pageHandlerFuncs = template.FuncMap{
 	"addString": func(a, b string) string {
 		return a + b
 	},
+	"strIndex": strings.Index,
 	"min": func(a, b int) int {
 		if a < b {
 			return a

@@ -990,14 +990,14 @@
 }
 
 .summaryDot.nonDirect.grandSubEntry {
-	padding: 0.05rem 0.2rem;
+	border-radius: 6px;
+	padding: 0.1rem 0.25rem;
 	font-size: 0.5rem;
-	color: #444b;
 }
 
-.summaryDot.nonDirect.grandSubEntry>span{
-	font-size: 0.6rem;
-	color: #444;
+.flexBreakLine {
+	flex-basis: 100%;
+	height: 0;
 }
 
 .grandSubEntries {
