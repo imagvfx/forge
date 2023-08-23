@@ -463,7 +463,9 @@
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
 													{{$gsPath := slice $gs.Path (inc (len $ent.Path)) (len $gs.Path)}}
-													<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gsPath}}]
+													{{$gsDir := dir $gsPath}}
+													{{$gsName := base $gsPath}}
+													<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector {{if has $gsPath "/"}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{if ne $gsDir "."}}{{$gsDir}}/{{end}}<span>[{{$gsName}}]]
 													{{end}}
 													<div class="summaryDot grandSubAdderLoader"> [+]
 												]

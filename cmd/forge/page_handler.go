@@ -195,7 +195,8 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return false, nil
 	},
-	"dir": filepath.Dir,
+	"dir":  filepath.Dir,
+	"base": filepath.Base,
 	"statusSummary": func(ents []*forge.Entry) map[string]map[string]int {
 		summary := make(map[string]map[string]int) // map[entryType][status]occurence
 		for _, ent := range ents {

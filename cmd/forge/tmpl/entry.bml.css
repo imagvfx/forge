@@ -989,11 +989,23 @@
 	content: "@";
 }
 
+.summaryDot.nonDirect.grandSubEntry {
+	padding: 0.05rem 0.2rem;
+	font-size: 0.5rem;
+	color: #444b;
+}
+
+.summaryDot.nonDirect.grandSubEntry>span{
+	font-size: 0.6rem;
+	color: #444;
+}
+
 .grandSubEntries {
 	display: flex;
 	gap: 0.1rem;
 	margin: 0.3rem 0.1rem 0.1rem 0.1rem;
 	flex-wrap: wrap;
+	align-items: baseline;
 }
 
 .subEntryArea:not(.editMode) .summaryDot.grandSubAdderLoader {
