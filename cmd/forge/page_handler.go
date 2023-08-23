@@ -666,8 +666,19 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				gsubEnts = gsub
 			} else {
 				// find grand children of the type recursively
+				valid_types, err := h.server.FindEntryTypes(ctx)
+				if err != nil {
+					return err
+				}
+				valid := make(map[string]bool)
+				for _, t := range valid_types {
+					valid[t] = true
+				}
 				typs := strings.Fields(subtypes)
 				for _, typ := range typs {
+					if !valid[typ] {
+						continue
+					}
 					gsub, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &sub.Path, Type: &typ})
 					if err != nil {
 						return err
