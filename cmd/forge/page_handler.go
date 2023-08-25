@@ -198,17 +198,20 @@ var pageHandlerFuncs = template.FuncMap{
 	},
 	"dir":  filepath.Dir,
 	"base": filepath.Base,
-	"statusSummary": func(ents []*forge.Entry) map[string]map[string]int {
+	"statusSummary": func(entGroups [][]*forge.Entry) map[string]map[string]int {
+		// to know what is entGroups, see grandSubEntGroups
 		summary := make(map[string]map[string]int) // map[entryType][status]occurence
-		for _, ent := range ents {
-			if summary[ent.Type] == nil {
-				summary[ent.Type] = make(map[string]int)
+		for _, ents := range entGroups {
+			for _, ent := range ents {
+				if summary[ent.Type] == nil {
+					summary[ent.Type] = make(map[string]int)
+				}
+				stat := ""
+				if ent.Property["status"] != nil {
+					stat = ent.Property["status"].Eval
+				}
+				summary[ent.Type][stat]++
 			}
-			stat := ""
-			if ent.Property["status"] != nil {
-				stat = ent.Property["status"].Eval
-			}
-			summary[ent.Type][stat]++
 		}
 		return summary
 	},
@@ -626,7 +629,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	sortProps(mainEntryHiddenProps)
 	// Get grand sub entries if needed.
-	grandSubEntries := make(map[string][]*forge.Entry)
+	grandSubEntGroups := make(map[string][][]*forge.Entry)
 	grandSubTypes := make(map[string]string)
 	summaryGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
@@ -725,7 +728,23 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				}
 				return strings.Compare(a.Path, b.Path) < 0
 			})
-			grandSubEntries[sub.Path] = gsubEnts
+			groups := make([][]*forge.Entry, 0)
+			oldg := ""
+			grp := make([]*forge.Entry, 0)
+			for _, gsub := range gsubEnts {
+				remain := gsub.Path[len(sub.Path)+1:]
+				g, _, _ := strings.Cut(remain, "/")
+				if g != oldg && len(grp) != 0 {
+					groups = append(groups, grp)
+					grp = make([]*forge.Entry, 0)
+				}
+				grp = append(grp, gsub)
+				oldg = g
+			}
+			if len(grp) != 0 {
+				groups = append(groups, grp)
+			}
+			grandSubEntGroups[sub.Path] = groups
 		}
 	}
 	// Get possible status for entry types defines it.
@@ -844,7 +863,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ShowSearches              [][3]string // [][from, name, query]
 		SubEntryTags              map[string][]string
 		SummaryGrandSub           map[string]bool
-		GrandSubEntries           map[string][]*forge.Entry
+		GrandSubEntGroups         map[string][][]*forge.Entry
 		PropertyTypes             []string
 		MainEntryHiddenProperties []string
 		HiddenProperties          map[string][]string
@@ -875,7 +894,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ShowSearches:              showSearches,
 		SubEntryTags:              subEntryTags,
 		SummaryGrandSub:           summaryGrandSub,
-		GrandSubEntries:           grandSubEntries,
+		GrandSubEntGroups:         grandSubEntGroups,
 		PropertyTypes:             forge.PropertyTypes(),
 		MainEntryHiddenProperties: mainEntryHiddenProps,
 		HiddenProperties:          hiddenProps,

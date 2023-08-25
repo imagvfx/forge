@@ -436,7 +436,7 @@
 											{{if $assignee}}
 											<input class="assigneeInput" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 											{{end}}
-											{{with $summary := statusSummary (index $.GrandSubEntries $ent.Path)}}
+											{{with $summary := statusSummary (index $.GrandSubEntGroups $ent.Path)}}
 											<div class="grandSubArea"> [
 												{{if index $.SummaryGrandSub $ent.Type}}
 												{{range $subType, $sum := $summary}}
@@ -461,18 +461,24 @@
 												{{end}}
 												{{else}}
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
-													{{$wasNonDirect := false}}
-													{{range $gs := (index $.GrandSubEntries $ent.Path)}}
-													{{$gsPath := slice $gs.Path (inc (len $ent.Path)) (len $gs.Path)}}
-													{{$i := strIndex $gsPath "/"}}
-													{{$gsName := $gsPath}}
-													{{if ne $i -1}}
-													{{$wasNonDirect = true}}
-													{{$gsName = slice $gsPath $i (len $gsPath)}}
-													{{else}}
-													{{if $wasNonDirect}}<div class="flexBreakLine"> []{{end}}
+													{{$lastBreak := false}}
+													{{range $gsGroups := (index $.GrandSubEntGroups $ent.Path)}}
+													{{if and (not $lastBreak) (ne (len $gsGroups) 1)}}
+													{{$lastBreak = true}}
+													<div class="flexBreakLine"> []
 													{{end}}
-													<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector {{if has $gsPath "/"}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gsName}}]
+													{{range $gs := $gsGroups}}
+														{{$gsPath := slice $gs.Path (inc (len $ent.Path)) (len $gs.Path)}}
+														{{$i := strIndex $gsPath "/"}}
+														{{$gsName := $gsPath}}
+														{{if ne $i -1}}
+														{{$gsName = slice $gsPath $i (len $gsPath)}}
+														{{end}}
+														<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector {{if has $gsPath "/"}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gsName}}]
+													{{end}}
+													{{if ne (len $gsGroups) 1}}
+													<div class="flexBreakLine"> []
+													{{end}}
 													{{end}}
 													<div class="summaryDot grandSubAdderLoader"> [+]
 												]
