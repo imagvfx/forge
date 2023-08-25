@@ -340,17 +340,16 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			}
 			target = "parent_id"
 		}
-		where := ""
+		where := "TRUE"
 		if len(queries) != 0 {
-			// TODO: what does it mean?
-			where = "WHERE " + strings.Join(queries, " AND ")
+			where = strings.Join(queries, " AND ")
 		}
 		query := fmt.Sprintf(`
 			SELECT entries.%v FROM entries
 			LEFT JOIN properties ON entries.id=properties.entry_id
 			LEFT JOIN default_properties ON properties.default_id=default_properties.id
 			LEFT JOIN entry_types ON entries.type_id = entry_types.id
-			%v
+			WHERE %v
 		`, target, where)
 		innerQueries = append(innerQueries, query)
 		innerVals = append(innerVals, queryVals...)
