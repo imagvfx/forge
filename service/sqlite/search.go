@@ -356,6 +356,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		innerVals = append(innerVals, queryVals...)
 	}
 	if len(subQueries) != 0 {
+		// for example, search "(sub).prop=val"
 		queries := make([]string, 0, len(subQueries))
 		for _, q := range subQueries {
 			queries = append(queries, fmt.Sprintf(`
@@ -373,6 +374,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		innerVals = append(innerVals, subVals...)
 	}
 	if len(allSubQueries) != 0 {
+		// for example, search "(*).prop=val"
 		queries := make([]string, 0, len(allSubQueries))
 		for _, q := range allSubQueries {
 			queries = append(queries, fmt.Sprintf(`
