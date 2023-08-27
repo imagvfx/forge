@@ -1340,6 +1340,16 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
+			if (
+				document.querySelector("#updatePropertyPopup.expose") ||
+				document.querySelector("#infoUpdater:not(.nodisplay)") ||
+				document.querySelector("#infoAdder:not(.nodisplay)")
+			) {
+				// close those first.
+				// a bit clunky where most logic is on document.onclick,
+				// but entry selection is separate from that.
+				return;
+			}
 			if (event.target.closest(".statusDot, .summaryDot, .infoTitle, .assigneeInput, .pathText, .thumbnailViewExpander") != null) {
 				return;
 			}
