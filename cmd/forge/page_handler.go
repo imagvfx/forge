@@ -631,6 +631,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	// Get grand sub entries if needed.
 	grandSubEntGroups := make(map[string][][]*forge.Entry)
 	grandSubTypes := make(map[string]string)
+	showGrandSub := make(map[string]bool)
 	summaryGrandSub := make(map[string]bool)
 	for _, sub := range subEnts {
 		_, ok := grandSubTypes[sub.Type]
@@ -646,6 +647,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			}
 			continue
 		}
+		showGrandSub[sub.Type] = true
 		grandSubTypes[sub.Type] = subtypes.Value
 		// summary_sub_entries needs expose_sub_entries to effect
 		_, err = h.server.GetGlobal(ctx, sub.Type, "summary_sub_entries")
@@ -862,6 +864,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		StatusSummary             map[string]map[string]int
 		ShowSearches              [][3]string // [][from, name, query]
 		SubEntryTags              map[string][]string
+		ShowGrandSub              map[string]bool
 		SummaryGrandSub           map[string]bool
 		GrandSubEntGroups         map[string][][]*forge.Entry
 		PropertyTypes             []string
@@ -893,6 +896,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		StatusSummary:             statusSummary,
 		ShowSearches:              showSearches,
 		SubEntryTags:              subEntryTags,
+		ShowGrandSub:              showGrandSub,
 		SummaryGrandSub:           summaryGrandSub,
 		GrandSubEntGroups:         grandSubEntGroups,
 		PropertyTypes:             forge.PropertyTypes(),

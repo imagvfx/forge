@@ -436,9 +436,10 @@
 											{{if $assignee}}
 											<input class="assigneeInput" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 											{{end}}
-											{{with $summary := statusSummary (index $.GrandSubEntGroups $ent.Path)}}
+											{{if index $.ShowGrandSub $ent.Type}}
 											<div class="grandSubArea"> [
 												{{if index $.SummaryGrandSub $ent.Type}}
+												{{$summary := statusSummary (index $.GrandSubEntGroups $ent.Path)}}
 												{{range $subType, $sum := $summary}}
 												{{$total := 0}}
 												<div class="statusGroup sub"> [
