@@ -277,7 +277,7 @@
 						{{$nInType = add $nInType (len $ents)}}
 						{{end}}
 						{{with $numStatus := index $.StatusSummary $entType}}
-						<div class="statusGroup" data-entry-type="{{$entType}}" style="flex:{{$nInType}};display:flex;flex-direction:column;"> [
+						<div class="statusGroup" data-entry-type="{{$entType}}" style="flex:{{$nInType}};"> [
 							<div class="statusGroupChart"> [
 								{{with $n := index $numStatus ""}}
 								<div class="statusCounter statusColor bg" data-entry-type="{{$entType}}" data-status="" style="flex:{{$n}}" title="{{$n}} (none)"> [<div>[{{$n}}] <div class="hideOnSmallScreen">[(none)]]
