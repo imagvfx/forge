@@ -145,7 +145,7 @@
 					<div class="mainEntryBottom" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
 						<div class="mainEntryThumbnailContainer"> [
 							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
-							<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex"> [
+							<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}"> [
 								<div class="thumbnailContainer"> [
 									<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px"> []
 								]
@@ -416,7 +416,7 @@
 									<div class="subEntryBottom"> [
 										<div class="subEntryBottomLeft"> [
 											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="display:flex;text-decoration:none;" href="{{$ent.Path}}"> [
+											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}"> [
 												<div class="thumbnailContainer"> [
 													<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
 												]
