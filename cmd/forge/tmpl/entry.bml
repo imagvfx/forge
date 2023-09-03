@@ -335,7 +335,8 @@
 							{{end}}
 							<div class="subEntryTypeLabel"> [
 								<b> [{{$entType}}]
-								<b class="subEntryTypeCount"> [({{$nInType}})]]
+								<b class="subEntryTypeCount"> [({{$nInType}})]
+							]
 							<!-- Add SubEntry -->
 							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST"> [
 								<input name="name" style="border-radius:2px 0 0 2px;" placeholder="name" {{if $.ResultsFromSearch}}disabled{{end}}> []
