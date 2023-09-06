@@ -1520,7 +1520,7 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 				data += "  "
 				due := subEnt.Property["due"]
 				if due == nil || due.Value == "" {
-					data += "(due)"
+					// would not add "(due)" as the cell looks cleaner
 				} else {
 					data += due.Value
 				}
