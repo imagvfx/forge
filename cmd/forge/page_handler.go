@@ -1492,14 +1492,14 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 				} else {
 					cellData += assignee.Eval // yes, Eval.
 				}
-				cellData += "\n"
+				cellData += "  "
 				status := subEnt.Property["status"]
 				if status == nil || status.Value == "" {
 					cellData += "(none)"
 				} else {
 					cellData += status.Value
 				}
-				cellData += "\n"
+				cellData += "  "
 				due := subEnt.Property["due"]
 				if due == nil || due.Value == "" {
 					cellData += "(due)"
