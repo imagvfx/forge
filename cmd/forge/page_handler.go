@@ -1504,7 +1504,7 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 				if due == nil || due.Value == "" {
 					cellData += "(due)"
 				} else {
-					cellData += assignee.Value
+					cellData += due.Value
 				}
 				data = append(data, cellData)
 			}
