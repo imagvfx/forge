@@ -1442,9 +1442,18 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 			labels[i+3] = prop
 		}
 		for _, sub := range sortedSubEntries[typ] {
-			labels = append(labels, "sub:"+sub)
+			if strings.Index(sub, "/") == -1 {
+				// direct sub entry
+				labels = append(labels, "sub:"+sub)
+			}
 		}
 		sheet.SetRow(cell, labels)
+
+		// need lookup label order
+		labelIndex := make(map[string]int)
+		for i, l := range labels {
+			labelIndex[l.(string)] = i
+		}
 
 		row := 1
 		for _, ent := range typeEnts {
@@ -1466,14 +1475,15 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 					return err
 				}
 			}
-			// row data from second column
-			data := make([]any, numProps[typ]+2)
-			data[0] = filepath.Dir(ent.Path)
-			data[1] = filepath.Base(ent.Path)
+
+			rowData := make([]any, len(labels))
+			// rowData[0] is just a place holder for thumbnail
+			rowData[1] = filepath.Dir(ent.Path)
+			rowData[2] = filepath.Base(ent.Path)
 			for prop, p := range ent.Property {
-				idx, ok := propIndex[typ][prop]
+				idx, ok := labelIndex[prop]
 				if ok {
-					data[idx+2] = p.Value
+					rowData[idx] = p.Value
 				}
 			}
 
@@ -1482,37 +1492,45 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 			for _, sub := range sortedSubEntries[ent.Type] {
 				subEnt, ok := subEntry[ent.Path][sub]
 				if !ok {
-					data = append(data, "")
 					continue
 				}
-				cellData := ""
+				dirSub, restSub, _ := strings.Cut(sub, "/")
+				subIdx := labelIndex["sub:"+dirSub]
+				cellData := rowData[subIdx]
+				data := ""
+				if cellData != nil {
+					data = cellData.(string) + "\n"
+				}
+				if restSub != "" {
+					data += restSub + ": "
+				}
 				assignee := subEnt.Property["assignee"]
 				if assignee == nil || assignee.Value == "" {
-					cellData += "(assignee)"
+					data += "(assignee)"
 				} else {
-					cellData += assignee.Eval // yes, Eval.
+					data += assignee.Eval // yes, Eval.
 				}
-				cellData += "  "
+				data += "  "
 				status := subEnt.Property["status"]
 				if status == nil || status.Value == "" {
-					cellData += "(none)"
+					data += "(none)"
 				} else {
-					cellData += status.Value
+					data += status.Value
 				}
-				cellData += "  "
+				data += "  "
 				due := subEnt.Property["due"]
 				if due == nil || due.Value == "" {
-					cellData += "(due)"
+					data += "(due)"
 				} else {
-					cellData += due.Value
+					data += due.Value
 				}
-				data = append(data, cellData)
+				rowData[subIdx] = data
 			}
 			cell, err := excelize.CoordinatesToCellName(2, row)
 			if err != nil {
 				return err
 			}
-			sheet.SetRow(cell, data, excelize.RowOpts{Height: 54})
+			sheet.SetRow(cell, rowData[1:], excelize.RowOpts{Height: 54})
 		}
 		sheet.Flush()
 
