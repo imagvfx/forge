@@ -1287,6 +1287,17 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		return fmt.Errorf("please specify paths")
 	}
 	exposeSub := make(map[string]bool)
+	exposeSubTypes := make(map[string][]string)
+
+	validTypes, err := h.server.FindEntryTypes(ctx)
+	if err != nil {
+		return err
+	}
+	validType := make(map[string]bool)
+	for _, t := range validTypes {
+		validType[t] = true
+	}
+
 	ents := make(map[string][]*forge.Entry)              // [type][]entry
 	thumbnail := make(map[string]*forge.Thumbnail)       // [path]thumbnail
 	allSubEntry := make(map[string]map[string]bool)      // [type][sub-entry]
@@ -1298,17 +1309,27 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		}
 		if ents[ent.Type] == nil {
 			ents[ent.Type] = make([]*forge.Entry, 0)
-			exposeSub[ent.Type] = false
 			glbs, err := h.server.Globals(ctx, ent.Type)
 			if err != nil {
 				return err
 			}
+			expSub := false
+			var exp *forge.Global
 			for _, g := range glbs {
 				if g.Name == "expose_sub_entries" {
-					exposeSub[ent.Type] = true
+					expSub = true
+					exp = g
 					break
 				}
 			}
+			expSubTypes := make([]string, 0)
+			for _, typ := range strings.Fields(exp.Value) {
+				if validType[typ] {
+					expSubTypes = append(expSubTypes, typ)
+				}
+			}
+			exposeSub[ent.Type] = expSub
+			exposeSubTypes[ent.Type] = expSubTypes
 		}
 		ents[ent.Type] = append(ents[ent.Type], ent)
 		th, err := h.server.GetThumbnail(ctx, pth)
@@ -1325,13 +1346,26 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 		if allSubEntry[ent.Type] == nil {
 			allSubEntry[ent.Type] = make(map[string]bool)
 		}
-		subs, err := h.server.SubEntries(ctx, pth)
-		if err != nil {
-			return err
+		subEnts := make([]*forge.Entry, 0)
+		subTypes := exposeSubTypes[ent.Type]
+		if len(subTypes) == 0 {
+			subs, err := h.server.SubEntries(ctx, pth)
+			if err != nil {
+				return err
+			}
+			subEnts = subs
+		} else {
+			for _, typ := range subTypes {
+				subs, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &ent.Path, Type: &typ})
+				if err != nil {
+					return err
+				}
+				subEnts = append(subEnts, subs...)
+			}
 		}
 		subEntry[pth] = make(map[string]*forge.Entry)
-		for _, sub := range subs {
-			subName := filepath.Base(sub.Path)
+		for _, sub := range subEnts {
+			subName := sub.Path[len(pth)+1:]
 			allSubEntry[ent.Type][subName] = true
 			subEntry[pth][subName] = sub
 		}
