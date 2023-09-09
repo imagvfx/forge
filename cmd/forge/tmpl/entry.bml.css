@@ -228,6 +228,10 @@
 	padding: 0 2px;
 }
 
+.thumbnail {
+	display: flex;
+}
+
 .thumbnailContainer {
 	display: flex;
 	border: 1px dashed #CCCCCC;
