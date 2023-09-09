@@ -153,9 +153,12 @@ var pageHandlerFuncs = template.FuncMap{
 				}
 				t += "<div class='searchLink' data-search-from='" + p.EntryPath + "' data-search-query='" + query + "'>" + name + "</div>"
 			} else {
+				// p.Type == text, etc...
 				line = template.HTMLEscapeString(line)
 				if strings.HasPrefix(line, "/") {
 					t += "<div class='pathText'>" + line + "</div>"
+				} else if strings.HasPrefix(line, "https://") {
+					t += "<div class='externalLinkContainer'><div class='externalLinkIcon'></div><a class='externalLink' href='" + line + "' target='_blank'>" + line[8:] + "</a></div>"
 				} else {
 					t += "<div>" + line + "</div>"
 				}

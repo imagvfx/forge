@@ -924,6 +924,38 @@
 	content: "→ ";
 }
 
+.externalLinkContainer {
+	display: flex;
+	align-items: start;
+	gap: 0.3rem;
+}
+
+.externalLinkIcon {
+	background-image: url("/asset/external-link.svg");
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 0.9rem 0.9rem;
+	filter: invert() brightness(40%) sepia(100%) hue-rotate(180deg) contrast(3) grayscale(100%);
+	width: 1rem;
+	height: 1rem;
+	cursor: pointer;
+}
+
+.externalLinkContainer:hover .externalLinkIcon {
+	filter: invert() brightness(35%) sepia(100%) hue-rotate(180deg) contrast(3);
+}
+
+.externalLink {
+	color: #666;
+	flex: 1;
+	overflow-wrap: anywhere;
+	word-break: break-all;
+}
+
+.externalLinkContainer:hover .externalLink {
+	color: #468;
+}
+
 .parentLink {
 	font-size: 0.7rem;
 	background-color: #EEE;

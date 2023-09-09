@@ -2157,6 +2157,18 @@ function refreshInfoValue(path, ctg, name, p) {
 			div.appendChild(text);
 			if (line.startsWith("/")) {
 				div.classList.add("pathText");
+			} else if (line.startsWith("https://")) {
+				div.innerText = "";
+				div.classList.add("externalLinkContainer");
+				let icon = document.createElement("div");
+				icon.classList.add("externalLinkIcon");
+				div.appendChild(icon);
+				let a = document.createElement("a");
+				a.classList.add("externalLink");
+				a.href = line;
+				a.target = "_blank"; // open a new tab
+				a.innerText = line.slice(8);
+				div.appendChild(a);
 			}
 			valueElem.appendChild(div);
 		}
