@@ -478,7 +478,7 @@
 														{{if ne $i -1}}
 														{{$gsName = slice $gsPath $i (len $gsPath)}}
 														{{end}}
-														<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector {{if has $gsPath "/"}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}"> [{{$gsName}}]
+														<div class="summaryDot {{with $assignee := index $gs.Property "assignee"}}{{if (eq $.User.Name $assignee.Value)}}my{{end}}{{end}} summaryLabeler statusSelector {{if has $gsPath "/"}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{with $p := index $gs.Property "status"}}{{$p.Value}}{{end}}" data-assignee="{{with $p := index $gs.Property "assignee"}}{{$p.Value}}{{end}}" data-due="{{with $p := index $gs.Property "due"}}{{$p.Value}}{{end}}"> [{{$gsName}}]
 													{{end}}
 													{{if ne (len $gsGroups) 1}}
 													<div class="flexBreakLine"> []
