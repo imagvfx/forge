@@ -846,7 +846,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			nextEntry = siblings[n]
 		}
 	}
-	allUsers, err := h.server.Users(ctx)
+	users, err := h.server.Users(ctx)
 	if err != nil {
 		return err
 	}
@@ -881,7 +881,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		AccessList                []*forge.Access
 		ThumbnailPath             map[string]string
 		BaseEntryTypes            []string
-		AllUsers                  []*forge.User
+		Users                     []*forge.User
 	}{
 		User:                      u,
 		UserIsAdmin:               isAdmin,
@@ -913,7 +913,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		AccessList:                acs,
 		ThumbnailPath:             thumbnailPath,
 		BaseEntryTypes:            baseTypes,
-		AllUsers:                  allUsers,
+		Users:                     users,
 	}
 	err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 	if err != nil {
@@ -1041,17 +1041,23 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	disabledUsers, err := h.server.DisabledUsers(ctx)
+	if err != nil {
+		return err
+	}
 	recipe := struct {
-		User        *forge.User
-		UserIsAdmin bool
-		EditMode    bool
-		Users       []*forge.User
-		Members     map[string][]*forge.Member
+		User          *forge.User
+		UserIsAdmin   bool
+		EditMode      bool
+		Users         []*forge.User
+		DisabledUsers []*forge.User
+		Members       map[string][]*forge.Member
 	}{
-		User:        u,
-		UserIsAdmin: isAdmin,
-		EditMode:    editMode,
-		Users:       users,
+		User:          u,
+		UserIsAdmin:   isAdmin,
+		EditMode:      editMode,
+		Users:         users,
+		DisabledUsers: disabledUsers,
 	}
 	err = Tmpl.ExecuteTemplate(w, "users.bml", recipe)
 	if err != nil {

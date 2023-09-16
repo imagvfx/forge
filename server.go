@@ -677,7 +677,17 @@ func (s *Server) GetLogs(ctx context.Context, path, ctg, name string) ([]*Log, e
 }
 
 func (s *Server) Users(ctx context.Context) ([]*User, error) {
-	users, err := s.svc.FindUsers(ctx, UserFinder{})
+	disabled := false
+	users, err := s.svc.FindUsers(ctx, UserFinder{Disabled: &disabled})
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (s *Server) DisabledUsers(ctx context.Context) ([]*User, error) {
+	disabled := true
+	users, err := s.svc.FindUsers(ctx, UserFinder{Disabled: &disabled})
 	if err != nil {
 		return nil, err
 	}

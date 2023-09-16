@@ -15,14 +15,12 @@
 					Users
 				]
 				{{range $u := $.Users}}
-				{{if not $u.Disabled}}
-					<div class="user" data-user="{{$u.Name}}"> [
-						<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
-						{{if $.UserIsAdmin}}
-						<div class="disableButton button"> [Disable]
-						{{end}}
-					]
-				{{end}}
+				<div class="user" data-user="{{$u.Name}}"> [
+					<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
+					{{if $.UserIsAdmin}}
+					<div class="disableButton button"> [Disable]
+					{{end}}
+				]
 				{{end}}
 				]
 				{{if $.UserIsAdmin}}
@@ -30,13 +28,11 @@
 				<h1> [
 					Disabled Users
 				]
-				{{range $u := $.Users}}
-				{{if $u.Disabled}}
-					<div class="user" data-user="{{$u.Name}}"> [
-						<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
-						<div class="enableButton button"> [Enable]
-					]
-				{{end}}
+				{{range $u := $.DisabledUsers}}
+				<div class="user" data-user="{{$u.Name}}"> [
+					<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
+					<div class="enableButton button"> [Enable]
+				]
 				{{end}}
 				]
 				{{end}}

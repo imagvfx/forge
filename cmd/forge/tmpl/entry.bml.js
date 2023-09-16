@@ -2509,13 +2509,13 @@ function openDeleteEntryDialog(paths) {
 }
 
 let AllUserNames = [
-{{- range $u := $.AllUsers -}}
+{{- range $u := $.Users -}}
 	"{{$u.Name}}",
 {{end}}
 ];
 
 let AllUserLabels = [
-{{- range $u := $.AllUsers -}}
+{{- range $u := $.Users -}}
 	"{{$u.Called}} ({{$u.Name}})",
 {{end}}
 ];
@@ -2523,7 +2523,7 @@ let AllUserLabels = [
 // pun intended
 let CalledByName = {
 	"": "",
-{{- range $u := $.AllUsers -}}
+{{- range $u := $.Users -}}
 	"{{$u.Name}}": "{{$u.Called}}",
 {{end}}
 }
