@@ -1619,6 +1619,13 @@ window.onload = function() {
 			if (event.key == "Enter") {
 				event.preventDefault();
 				let creating = input.textContent;
+				let subs = [];
+				for (let sub of creating.split(" ")) {
+					sub = sub.trim();
+					if (sub) {
+						subs.push(sub);
+					}
+				}
 				let selected = document.querySelectorAll(".subEntry.selected");
 				if (selected.length == 0) {
 					let thisEnt = event.target.closest(".subEntry");
@@ -1638,11 +1645,12 @@ window.onload = function() {
 					if (parent == "/") {
 						parent = "";
 					}
-					let path = parent + "/" + creating;
-					formData.append("path", path);
-					// possibleTypes actually should just a type here.
-					let type = sel.dataset.possibleSubTypes;
-					formData.append("type", type);
+					for (let sub of subs) {
+						formData.append("path", parent + "/" + sub);
+						// possibleTypes actually should just a type here.
+						let type = sel.dataset.possibleSubTypes;
+						formData.append("type", type);
+					}
 				}
 				if (nBypass == selected.length) {
 					printStatus("nothing to do; all the entries already have '" + creating + "' entry");
