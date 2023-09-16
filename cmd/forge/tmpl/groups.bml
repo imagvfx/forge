@@ -32,6 +32,9 @@
 				{{end}}
 				]
 				{{range $g := $.Groups}}
+				{{if or (eq $g.Name "everyone") (eq (strIndex $g.Name "everyone@") 0)}}
+					{{continue}}
+				{{end}}
 				<div> [
 					<h4> [{{$g.Name}}]
 					<form action="/api/add-group-member" method="post"> [
