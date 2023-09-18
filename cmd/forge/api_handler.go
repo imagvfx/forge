@@ -272,6 +272,27 @@ func (h *apiHandler) handleGetEntry(ctx context.Context, w http.ResponseWriter, 
 	return nil
 }
 
+func (h *apiHandler) handleGetEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	r.FormValue("")
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
+	ents := make([]*forge.Entry, 0)
+	for _, pth := range entPaths {
+		ent, err := h.server.GetEntry(ctx, pth)
+		if err != nil {
+			h.WriteResponse(w, nil, err)
+		}
+		ents = append(ents, ent)
+	}
+	h.WriteResponse(w, ents, nil)
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleAddEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]
