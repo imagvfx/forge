@@ -1618,6 +1618,7 @@ window.onload = function() {
 		input.onkeydown = function() {
 			if (event.key == "Enter") {
 				event.preventDefault();
+				let thisEnt = event.target.closest(".subEntry");
 				let creating = input.textContent;
 				let subs = [];
 				for (let sub of creating.split(" ")) {
@@ -1628,17 +1629,13 @@ window.onload = function() {
 				}
 				let selected = document.querySelectorAll(".subEntry.selected");
 				if (selected.length == 0) {
-					let thisEnt = event.target.closest(".subEntry");
 					selected = [thisEnt];
 				}
-				let formData = new FormData();
 				let paths = [];
 				let types = [];
-				let nBypass = 0;
 				for (let sel of selected) {
 					if (sel.querySelector(`.grandSubEntry[data-name="${creating}"]`)) {
 						// The parent already has entry we want to create.
-						nBypass += 1;
 						continue;
 					}
 					let parent = sel.dataset.entryPath;
@@ -1646,15 +1643,22 @@ window.onload = function() {
 						parent = "";
 					}
 					for (let sub of subs) {
-						formData.append("path", parent + "/" + sub);
+						if (sel.querySelector(`.grandSubEntry[data-sub="${sub}"]`)) {
+							continue;
+						}
+						paths.push(parent + "/" + sub);
 						// possibleTypes actually should just a type here.
-						let type = sel.dataset.possibleSubTypes;
-						formData.append("type", type);
+						types.push(sel.dataset.possibleSubTypes);
 					}
 				}
-				if (nBypass == selected.length) {
+				if (paths.length == 0) {
 					printStatus("nothing to do; all the entries already have '" + creating + "' entry");
 					return;
+				}
+				let formData = new FormData();
+				for (let i in paths) {
+					formData.append("path", paths[i]);
+					formData.append("type", types[i]);
 				}
 				let req = new XMLHttpRequest();
 				req.open("post", "/api/add-entry");
@@ -1666,7 +1670,69 @@ window.onload = function() {
 						printErrorStatus("cannot add entry: " + req.responseText);
 						return;
 					}
-					location.reload();
+					let r = new XMLHttpRequest();
+					let fdata = new FormData();
+					for (let path of paths) {
+						let toks = path.split("/");
+						let sub = toks.pop();
+						let parent = toks.join("/");
+						fdata.append("path", path);
+					}
+					r.open("post", "/api/get-entries");
+					r.onerror = function() {
+						printErrorStatus("network error occurred. please check whether the server is down.");
+					}
+					r.onload = function() {
+						if (r.status != 200) {
+							printErrorStatus("cannot get entry: " + req.responseText);
+							return;
+						}
+						let resp = JSON.parse(r.responseText);
+						let ents = resp.Msg;
+						for (let ent of ents) {
+							let path = ent.Path;
+							let toks = path.split("/");
+							let sub = toks.pop();
+							let parent = toks.join("/");
+							let prop = ent.Property;
+							let tmpl = document.createElement("template");
+							tmpl.innerHTML = `<div class="summaryDot summaryLabeler statusSelector grandSubEntry"></div>`;
+							let gsub = tmpl.content.firstChild;
+							gsub.innerText = sub;
+							gsub.dataset.sub = sub;
+							gsub.dataset.entryType = ent.Type;
+							gsub.dataset.value = "";
+							if (Object.hasOwnProperty(prop, "status")) {
+								gsub.dataset.value = prop.status;
+							}
+							gsub.dataset.assignee = "";
+							if (Object.hasOwnProperty(prop, "assignee")) {
+								gsub.dataset.assignee = prop.status;
+							}
+							gsub.dataset.due = "";
+							if (Object.hasOwnProperty(prop, "due")) {
+								gsub.dataset.due = prop.due;
+							}
+							// temporary border for letting user notice new gsub entries. (until reload page)
+							gsub.style.border = "1px solid #f84";
+							let subEnt = document.querySelector(`.subEntry[data-entry-path="${parent}"]`);
+							if (!subEnt) {
+								// this could happen when user created non-direct child. eg. fx/main
+								// TODO: handle this gracefully
+								continue;
+							}
+							let adderLoader = subEnt.querySelector(".grandSubAdderLoader");
+							let gsubEnts = subEnt.querySelector(`.grandSubEntries`);
+							gsubEnts.insertBefore(gsub, adderLoader);
+							// TODO: hover on the new gsub entries doesn't work
+						}
+						let gsubArea = thisEnt.querySelector(".grandSubArea");
+						gsubArea.classList.remove("adding");
+						let adderInput = thisEnt.querySelector(".grandSubAdderInput");
+						adderInput.innerHTML = "";
+						printStatus("done");
+					}
+					r.send(fdata);
 				}
 				req.send(formData);
 			}
