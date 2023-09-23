@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -198,6 +199,30 @@ var pageHandlerFuncs = template.FuncMap{
 			return true, nil
 		}
 		return false, nil
+	},
+	"dayLeft": func(timestr string) string {
+		if timestr == "" {
+			return ""
+		}
+		t, err := time.Parse("2006/01/02", timestr)
+		if err != nil {
+			return "!"
+		}
+		delta := time.Now().Sub(t)
+		day := int(delta / (24 * time.Hour))
+		rem := delta % (24 * time.Hour)
+		if rem < 0 {
+			day -= 1
+		}
+		left := strconv.Itoa(day)
+		if day == 0 {
+			left = "D-" + left
+		} else if day < 0 {
+			left = "D" + left
+		} else {
+			left = "D+" + left
+		}
+		return left
 	},
 	"dir":  filepath.Dir,
 	"base": filepath.Base,

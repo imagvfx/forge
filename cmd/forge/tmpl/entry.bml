@@ -433,10 +433,15 @@
 													<input readonly name="back_to_referer" type="hidden" value="1"> []
 												]
 											]
-											{{$assignee := index $ent.Property "assignee"}}
-											{{if $assignee}}
-											<input class="assigneeInput" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
-											{{end}}
+											<div class="subInfoArea"> [
+												{{with $assignee := index $ent.Property "assignee"}}
+												<input class="assigneeInput" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
+												{{end}}
+												<span> []
+												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
+												<div class="dueLabel" title="{{$due.Value}}"> [{{dayLeft $due.Value}}]
+												{{end}}{{end}}
+											]
 											{{if index $.ShowGrandSub $ent.Type}}
 											<div class="grandSubArea"> [
 												{{if index $.SummaryGrandSub $ent.Type}}

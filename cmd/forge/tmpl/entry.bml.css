@@ -1034,6 +1034,13 @@
 	opacity: 0.9;
 }
 
+.subInfoArea {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1px;
+}
+
 .flexBreakLine {
 	flex-basis: 100%;
 	height: 0;
@@ -1316,12 +1323,23 @@
 }
 
 .assigneeInput {
-	width: 96px;
+	min-width: 0;
+	flex: 1;
 	box-sizing: border-box;
 	font-size: 0.7rem;
 	padding: 2px;
 	background-color: transparent;
 	border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.dueLabel {
+	font-size: 0.6rem;
+	padding: 1px 2px;
+	margin: 2px 0;
+}
+
+.dueLabel.hidden {
+	visibility: hidden;
 }
 
 .subEntryArea.editMode .assigneeInput:focus {
