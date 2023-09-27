@@ -204,14 +204,13 @@ var pageHandlerFuncs = template.FuncMap{
 		if timestr == "" {
 			return ""
 		}
-		t, err := time.Parse("2006/01/02", timestr)
+		t, err := time.ParseInLocation("2006/01/02", timestr, time.Local)
 		if err != nil {
 			return "!"
 		}
-		delta := time.Now().Sub(t)
-		day := int(delta / (24 * time.Hour))
-		rem := delta % (24 * time.Hour)
-		if rem < 0 {
+		remain := time.Now().Sub(t)
+		day := int(remain / (24 * time.Hour))
+		if remain < 0 {
 			day -= 1
 		}
 		left := strconv.Itoa(day)
