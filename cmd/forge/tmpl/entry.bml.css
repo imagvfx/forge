@@ -1338,6 +1338,10 @@
 	margin: 2px 0;
 }
 
+.dueLabel.dueComming {
+	background-color: #fed6d6;
+}
+
 .dueLabel.hidden {
 	visibility: hidden;
 }

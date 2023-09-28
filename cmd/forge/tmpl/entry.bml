@@ -439,7 +439,8 @@
 												{{end}}
 												<span> []
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
-												<div class="dueLabel" title="{{$due.Value}}"> [{{dayLeft $due.Value}}]
+												{{$l := dayLeft $due.Value}}
+												<div class="dueLabel {{if (eq $l "D-0" "D-1" "D-2" "D-3")}}dueComming{{end}}" title="{{$due.Value}}"> [{{$l}}]
 												{{end}}{{end}}
 											]
 											{{if index $.ShowGrandSub $ent.Type}}
