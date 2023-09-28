@@ -1499,14 +1499,11 @@ window.onload = function() {
 				let n = Math.floor((today - then) / day);
 				let t = String(Math.abs(n))
 				if (n > 0) {
-					t += "d over"
-					if (n > 7) {
-						t = "past"
-					}
+					t = "D+" + t
 				} else if (n == 0) {
-					t = "today"
+					t = "D-0"
 				} else {
-					t += "d left"
+					t = "D-" + t
 				}
 				label.innerText += t;
 			}
