@@ -913,6 +913,45 @@ window.onload = function() {
 	searchTypeSelect.onchange = function() {
 		searchTypeSelect.classList.remove("notEffected");
 	}
+	let searchForm = document.querySelector("#searchForm");
+	searchForm.onsubmit = function(event) {
+		// it will be handled by searchInput.onkeydown;
+		event.preventDefault();
+		return false;
+	}
+	let searchInput = document.querySelector("#searchInput");
+	searchInput.onkeydown = function(event) {
+		if (event.code != "Enter") {
+			return;
+		}
+		let formData = new FormData(searchForm);
+		let from = searchForm.action;
+		if (event.altKey || event.metaKey) {
+			let query = formData.get("search_query");
+			let toks = [];
+			for (let tok of query.split(" ")) {
+				tok = tok.trim();
+				if (tok.startsWith("/")) {
+					toks.push(tok);
+				}
+			}
+			let newQuery = "type: path=";
+			if (toks.length != 0) {
+				newQuery += toks.join(",")
+			}
+			formData.set("search_query", newQuery);
+			from = "/";
+		}
+		let param = new URLSearchParams(formData).toString();
+		location.href = from + "?" + param;
+	}
+	let searchButton = document.querySelector("#searchButton");
+	searchButton.onclick = function(event) {
+		console.log(event);
+		let formData = new FormData(searchForm);
+		let param = new URLSearchParams(formData).toString();
+		location.href = searchForm.action + "?" + param;
+	}
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
 		input.autocomplete = "off";
