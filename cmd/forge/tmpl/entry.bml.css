@@ -626,6 +626,7 @@
 	gap: 0.2rem;
 	background-color: #EEE;
 	margin-bottom: 1rem;
+	z-index: 1;
 }
 
 .subEntryListSeparator {
