@@ -98,7 +98,7 @@
 	border: 1px solid #A22;
 }
 
-.search-box-left {
+#searchTypeSelect {
 	appearance: none;
 	-webkit-appearance: none;
 	margin: 0;
@@ -111,7 +111,12 @@
 	cursor: pointer;
 }
 
-.search-box-center {
+#searchTypeSelect.notEffected {
+	color: #666;
+	text-decoration-line: line-through;
+}
+
+#searchInput {
 	appearance: none;
 	-webkit-appearance: none;
 	box-sizing: content-box;
@@ -124,7 +129,7 @@
 	font-size:0.85rem;
 }
 
-.search-box-right {
+#searchButton {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -135,11 +140,6 @@
 	font-family: sans-serif;
 	font-size:0.8rem;
 	cursor: pointer;
-}
-
-.searchTypeSelect.notEffected {
-	color: #666;
-	text-decoration-line: line-through;
 }
 
 .showSearches {

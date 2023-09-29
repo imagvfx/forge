@@ -61,7 +61,7 @@
 					<div style="flex-basis:24rem;flex-grow:1;display:flex;flex-direction:column;"> [
 						<form id="searchForm" action="/{{topName $.Entry.Path}}" style="display:flex;"> [
 							<input hidden name="search" value="1"> []
-							<select name="search_entry_type" class="search-box-left searchTypeSelect {{if $.QueryHasType}}notEffected{{end}}"> [
+							<select id="searchTypeSelect" name="search_entry_type" class="{{if $.QueryHasType}}notEffected{{end}}"> [
 								<option value=""> [(any)]
 								{{range $t := $.BaseEntryTypes}}
 								{{if ne $t "root"}}
@@ -69,8 +69,8 @@
 								{{end}}
 								{{end}}
 							]
-							<input id="searchInput" name="search_query" class="search-box-center" type="text" size="6" style="flex :1;min-width:7.5rem" placeholder="search" value="{{$.SearchQuery}}"> []
-							<div id="searchButton" class="search-box-right" style="background-color:inherit"> [Go]
+							<input id="searchInput" name="search_query" type="text" size="6" style="flex :1;min-width:7.5rem" placeholder="search" value="{{$.SearchQuery}}"> []
+							<div id="searchButton" style="background-color:inherit"> [Go]
 						]
 						<div style="height:0.2rem"> []
 						<form action="/api/update-user-setting" style="{{if not $.ResultsFromSearch}}visibility:hidden;{{end}}display:flex;justify-content:end;color:#AAA;" method="post"> [
