@@ -473,12 +473,16 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		statusSummary[typ] = num
 	}
-	showSearches := make([][3]string, 0)
-	toks := strings.Split(ent.Path, "/")
-	if len(toks) > 1 {
-		// not at root path
+	searches := make([][][2]string, 0)
+	searchAt := []string{"/"}
+	if ent.Path != "/" {
+		toks := strings.Split(ent.Path, "/")
 		showPath := strings.Join(toks[:2], "/")
-		show, err := h.server.GetEntry(ctx, showPath)
+		searchAt = append(searchAt, showPath)
+	}
+	for _, at := range searchAt {
+		atSearches := make([][2]string, 0)
+		show, err := h.server.GetEntry(ctx, at)
 		if err != nil {
 			return err
 		}
@@ -492,9 +496,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				if !ok {
 					continue
 				}
-				showSearches = append(showSearches, [3]string{showPath, name, query})
+				atSearches = append(atSearches, [2]string{name, query})
 			}
 		}
+		searches = append(searches, atSearches)
 	}
 	tag := make(map[string]map[string]bool)
 	for _, ent := range subEnts {
@@ -929,7 +934,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch         bool
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
-		ShowSearches              [][3]string // [][from, name, query]
+		Searches                  [][][2]string // [at][][name, query]
 		SubEntryTags              map[string][]string
 		ShowGrandSub              map[string]bool
 		SummaryGrandSub           map[string]bool
@@ -962,7 +967,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
-		ShowSearches:              showSearches,
+		Searches:                  searches,
 		SubEntryTags:              subEntryTags,
 		ShowGrandSub:              showGrandSub,
 		SummaryGrandSub:           summaryGrandSub,

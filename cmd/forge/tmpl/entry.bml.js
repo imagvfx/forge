@@ -34,8 +34,12 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.classList.contains("searchLink")) {
+			let path = window.location.pathname;
+			if (path != "/") {
+				path = path.split("/").slice(0, 2).join("/");
+			}
 			let query = encodeURIComponent(event.target.dataset.searchQuery);
-			let url = event.target.dataset.searchFrom + "?search=1&search_query=" + query;
+			let url = path + "?search=1&search_query=" + query;
 			window.location.href = url;
 			return;
 		}

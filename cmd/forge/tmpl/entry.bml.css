@@ -144,6 +144,7 @@
 
 .showSearches {
 	margin-top: 1rem;
+	gap: 0.1rem;
 }
 
 .mainEntryTop {

@@ -83,11 +83,13 @@
 						]
 						<div style="flex:1"> []
 						<div class="showSearches" style="display:flex;flex-wrap:wrap;justify-content:end;"> [
-							{{range $s := $.ShowSearches}}
-							{{$show := index $s 0}}
-							{{$name := index $s 1}}
-							{{$query := index $s 2}}
-							<div class="searchLink" data-search-from={{$show}} data-search-query="{{$query}}"> [{{$name}}]
+							{{range $at := $.Searches}}
+							{{range $s := $at}}
+							{{$name := index $s 0}}
+							{{$query := index $s 1}}
+							<div class="searchLink" data-search-query="{{$query}}"> [{{$name}}]
+							{{end}}
+							<div class="flexBreakLine"> []
 							{{end}}
 						]
 					]
