@@ -925,8 +925,8 @@ window.onload = function() {
 			return;
 		}
 		let formData = new FormData(searchForm);
-		let from = searchForm.action;
-		if (event.altKey || event.metaKey) {
+		if (event.ctrlKey || event.metaKey) {
+			// search by entry path mode
 			let query = formData.get("search_query");
 			let toks = [];
 			for (let tok of query.split(" ")) {
@@ -935,15 +935,14 @@ window.onload = function() {
 					toks.push(tok);
 				}
 			}
-			let newQuery = "type: path=";
+			let newQuery = "-mode:entry";
 			if (toks.length != 0) {
-				newQuery += toks.join(",")
+				newQuery += " " + toks.join(" ")
 			}
 			formData.set("search_query", newQuery);
-			from = "/";
 		}
 		let param = new URLSearchParams(formData).toString();
-		location.href = from + "?" + param;
+		location.href = searchForm.action + "?" + param;
 	}
 	let searchButton = document.querySelector("#searchButton");
 	searchButton.onclick = function(event) {

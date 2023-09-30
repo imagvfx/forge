@@ -343,22 +343,58 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			// the update doesn't affect current page
 			setting.EntryPageSearchEntryType = searchEntryType
 		}
-		if searchEntryType != "" || searchQuery != "" {
+		err := func() error {
+			if searchEntryType == "" && searchQuery == "" {
+				// user not searching
+				return nil
+			}
 			resultsFromSearch = true
-			typeQuery := ""
-			for _, q := range strings.Fields(searchQuery) {
+			queries := strings.Fields(searchQuery)
+			mode := ""
+			for _, q := range queries {
+				if strings.HasPrefix(q, "-mode:") {
+					mode = q[len("-mode:"):]
+				}
 				if strings.HasPrefix(q, "type=") || strings.HasPrefix(q, "type:") {
 					queryHasType = true
-					break
 				}
 			}
+			if mode == "entry" {
+				// sql couldn't handle query if path list is too long
+				// so let's just get one by one
+				paths := make([]string, 0)
+				for _, q := range queries {
+					if strings.HasPrefix(q, "/") {
+						paths = append(paths, q)
+					}
+				}
+				for _, p := range paths {
+					ent, err := h.server.GetEntry(ctx, p)
+					if err != nil {
+						var e *forge.NotFoundError
+						if !errors.As(err, &e) {
+							return err
+						}
+						continue
+					}
+					subEnts = append(subEnts, ent)
+				}
+				return nil
+			}
+			// default search
+			typeQuery := ""
 			if !queryHasType && searchEntryType != "" {
 				typeQuery = "type=" + searchEntryType
 			}
-			subEnts, err = h.server.SearchEntries(ctx, path, typeQuery+" "+searchQuery)
+			ents, err := h.server.SearchEntries(ctx, path, typeQuery+" "+searchQuery)
 			if err != nil {
 				return err
 			}
+			subEnts = ents
+			return nil
+		}()
+		if err != nil {
+			return err
 		}
 	}
 	if !resultsFromSearch {
