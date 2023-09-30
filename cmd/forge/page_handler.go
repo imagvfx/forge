@@ -910,6 +910,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	disabledUsers, err := h.server.DisabledUsers(ctx)
+	if err != nil {
+		return err
+	}
 	recipe := struct {
 		User                      *forge.User
 		UserIsAdmin               bool
@@ -942,6 +946,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ThumbnailPath             map[string]string
 		BaseEntryTypes            []string
 		Users                     []*forge.User
+		DisabledUsers             []*forge.User
 	}{
 		User:                      u,
 		UserIsAdmin:               isAdmin,
@@ -974,6 +979,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		ThumbnailPath:             thumbnailPath,
 		BaseEntryTypes:            baseTypes,
 		Users:                     users,
+		DisabledUsers:             disabledUsers,
 	}
 	err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 	if err != nil {

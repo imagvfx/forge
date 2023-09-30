@@ -2609,8 +2609,23 @@ function openDeleteEntryDialog(paths) {
 	}
 }
 
+let EnabledUserNames = [
+{{- range $u := $.Users -}}
+	"{{$u.Name}}",
+{{end}}
+];
+
+let EnabledUserLabels = [
+{{- range $u := $.Users -}}
+	"{{$u.Called}} ({{$u.Name}})",
+{{end}}
+];
+
 let AllUserNames = [
 {{- range $u := $.Users -}}
+	"{{$u.Name}}",
+{{end}}
+{{- range $u := $.DisabledUsers -}}
 	"{{$u.Name}}",
 {{end}}
 ];
@@ -2619,12 +2634,18 @@ let AllUserLabels = [
 {{- range $u := $.Users -}}
 	"{{$u.Called}} ({{$u.Name}})",
 {{end}}
+{{- range $u := $.DisabledUsers -}}
+	"{{$u.Name}}",
+{{end}}
 ];
 
 // pun intended
 let CalledByName = {
 	"": "",
 {{- range $u := $.Users -}}
+	"{{$u.Name}}": "{{$u.Called}}",
+{{end}}
+{{- range $u := $.DisabledUsers -}}
 	"{{$u.Name}}": "{{$u.Called}}",
 {{end}}
 }
