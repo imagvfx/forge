@@ -120,9 +120,13 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 			keys = append(keys, "FALSE")
 		}
 	}
-	if find.Type != nil {
-		keys = append(keys, "entry_types.name=?")
-		vals = append(vals, *find.Type)
+	if find.Types != nil {
+		qs := []string{}
+		for _, typ := range find.Types {
+			qs = append(qs, "?")
+			vals = append(vals, typ)
+		}
+		keys = append(keys, "entry_types.name IN ("+strings.Join(qs, ", ")+")")
 	}
 	where := ""
 	if len(keys) != 0 {

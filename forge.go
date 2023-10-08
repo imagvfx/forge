@@ -53,7 +53,7 @@ type EntryFinder struct {
 	AncestorPath *string
 	ChildPath    *string
 	Path         *string
-	Type         *string
+	Types        []string
 	Archived     bool // Don't set manually, it will be automatically set.
 }
 

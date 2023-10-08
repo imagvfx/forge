@@ -750,16 +750,18 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			} else {
 				// find grand children of the type recursively
 				typs := strings.Fields(subtypes)
+				valids := []string{}
 				for _, typ := range typs {
 					if !validType[typ] {
 						continue
 					}
-					gsub, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &sub.Path, Type: &typ})
-					if err != nil {
-						return err
-					}
-					gsubEnts = append(gsubEnts, gsub...)
+					valids = append(valids, typ)
 				}
+				gsub, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &sub.Path, Types: valids})
+				if err != nil {
+					return err
+				}
+				gsubEnts = append(gsubEnts, gsub...)
 			}
 			for _, gs := range gsubEnts {
 				sortProp := entrySortProp[gs.Type]
@@ -1435,13 +1437,17 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 			}
 			subEnts = subs
 		} else {
+			valids := []string{}
 			for _, typ := range subTypes {
-				subs, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &ent.Path, Type: &typ})
-				if err != nil {
-					return err
+				if validType[typ] {
+					valids = append(valids, typ)
 				}
-				subEnts = append(subEnts, subs...)
 			}
+			subs, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &ent.Path, Types: valids})
+			if err != nil {
+				return err
+			}
+			subEnts = append(subEnts, subs...)
 		}
 		subEntry[pth] = make(map[string]*forge.Entry)
 		for _, sub := range subEnts {
