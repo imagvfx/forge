@@ -763,12 +763,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				}
 				gsubEnts = append(gsubEnts, gsub...)
 			}
-			for _, gs := range gsubEnts {
-				sortProp := entrySortProp[gs.Type]
-				if gs.Property[sortProp] == nil {
-					entrySortProp[gs.Type] = ""
-				}
-			}
 			sortEntries(gsubEnts)
 			entryOrder := make(map[string]int)
 			for i, gsub := range gsubEnts {
