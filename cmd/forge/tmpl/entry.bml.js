@@ -935,6 +935,10 @@ window.onload = function() {
 			let toks = [];
 			for (let tok of query.split(" ")) {
 				tok = tok.trim();
+				if (tok == "/") {
+					// don't contain root entry
+					continue;
+				}
 				if (tok.startsWith("/")) {
 					toks.push(tok);
 				}
