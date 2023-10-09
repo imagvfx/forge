@@ -736,82 +736,88 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		summaryGrandSub[sub.Type] = true
 	}
+	grandSubEnts := make(map[*forge.Entry][]*forge.Entry)
 	for _, sub := range subEnts {
-		if subtypes, ok := grandSubTypes[sub.Type]; ok {
-			gsubEnts := make([]*forge.Entry, 0)
-			subtypes = strings.TrimSpace(subtypes)
-			if subtypes == "" {
-				// get direct children
-				gsub, err := h.server.SubEntries(ctx, sub.Path)
-				if err != nil {
-					return err
-				}
-				gsubEnts = gsub
-			} else {
-				// find grand children of the type recursively
-				typs := strings.Fields(subtypes)
-				valids := []string{}
-				for _, typ := range typs {
-					if !validType[typ] {
-						continue
-					}
-					valids = append(valids, typ)
-				}
-				gsub, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &sub.Path, Types: valids})
-				if err != nil {
-					return err
-				}
-				gsubEnts = append(gsubEnts, gsub...)
-			}
-			sortEntries(gsubEnts)
-			entryOrder := make(map[string]int)
-			for i, gsub := range gsubEnts {
-				entryOrder[gsub.Path] = i
-			}
-			toks := make(map[string][]string)
-			for _, gsub := range gsubEnts {
-				remain := gsub.Path[len(sub.Path)+1:]
-				toks[gsub.Path] = strings.Split(remain, "/")
-			}
-			sort.Slice(gsubEnts, func(i, j int) bool {
-				a := gsubEnts[i]
-				b := gsubEnts[j]
-				n := len(toks[a.Path])
-				if len(toks[b.Path]) < n {
-					n = len(toks[b.Path])
-				}
-				aPath := sub.Path
-				bPath := sub.Path
-				for i := 0; i < n; i++ {
-					aPath += "/" + toks[a.Path][i]
-					bPath += "/" + toks[b.Path][i]
-					aOrd := entryOrder[aPath]
-					bOrd := entryOrder[bPath]
-					if aOrd == bOrd {
-						continue
-					}
-					return aOrd < bOrd
-				}
-				return strings.Compare(a.Path, b.Path) < 0
-			})
-			groups := make([][]*forge.Entry, 0)
-			oldg := ""
-			grp := make([]*forge.Entry, 0)
-			for _, gsub := range gsubEnts {
-				remain := gsub.Path[len(sub.Path)+1:]
-				g, _, _ := strings.Cut(remain, "/")
-				if g != oldg && len(grp) != 0 {
-					groups = append(groups, grp)
-					grp = make([]*forge.Entry, 0)
-				}
-				grp = append(grp, gsub)
-				oldg = g
-			}
-			if len(grp) != 0 {
-				groups = append(groups, grp)
-			}
-			grandSubEntGroups[sub.Path] = groups
+		subtypes, ok := grandSubTypes[sub.Type]
+		if !ok {
+			continue
 		}
+		gsubEnts := make([]*forge.Entry, 0)
+		subtypes = strings.TrimSpace(subtypes)
+		if subtypes == "" {
+			// get direct children
+			gsub, err := h.server.SubEntries(ctx, sub.Path)
+			if err != nil {
+				return err
+			}
+			gsubEnts = gsub
+		} else {
+			// find grand children of the type recursively
+			typs := strings.Fields(subtypes)
+			valids := []string{}
+			for _, typ := range typs {
+				if !validType[typ] {
+					continue
+				}
+				valids = append(valids, typ)
+			}
+			gsub, err := h.server.FindEntries(ctx, forge.EntryFinder{AncestorPath: &sub.Path, Types: valids})
+			if err != nil {
+				return err
+			}
+			gsubEnts = append(gsubEnts, gsub...)
+		}
+		grandSubEnts[sub] = gsubEnts
+	}
+	for sub, gsubEnts := range grandSubEnts {
+		sortEntries(gsubEnts)
+		entryOrder := make(map[string]int)
+		for i, gsub := range gsubEnts {
+			entryOrder[gsub.Path] = i
+		}
+		toks := make(map[string][]string)
+		for _, gsub := range gsubEnts {
+			remain := gsub.Path[len(sub.Path)+1:]
+			toks[gsub.Path] = strings.Split(remain, "/")
+		}
+		sort.Slice(gsubEnts, func(i, j int) bool {
+			a := gsubEnts[i]
+			b := gsubEnts[j]
+			n := len(toks[a.Path])
+			if len(toks[b.Path]) < n {
+				n = len(toks[b.Path])
+			}
+			aPath := sub.Path
+			bPath := sub.Path
+			for i := 0; i < n; i++ {
+				aPath += "/" + toks[a.Path][i]
+				bPath += "/" + toks[b.Path][i]
+				aOrd := entryOrder[aPath]
+				bOrd := entryOrder[bPath]
+				if aOrd == bOrd {
+					continue
+				}
+				return aOrd < bOrd
+			}
+			return strings.Compare(a.Path, b.Path) < 0
+		})
+		groups := make([][]*forge.Entry, 0)
+		oldg := ""
+		grp := make([]*forge.Entry, 0)
+		for _, gsub := range gsubEnts {
+			remain := gsub.Path[len(sub.Path)+1:]
+			g, _, _ := strings.Cut(remain, "/")
+			if g != oldg && len(grp) != 0 {
+				groups = append(groups, grp)
+				grp = make([]*forge.Entry, 0)
+			}
+			grp = append(grp, gsub)
+			oldg = g
+		}
+		if len(grp) != 0 {
+			groups = append(groups, grp)
+		}
+		grandSubEntGroups[sub.Path] = groups
 	}
 	// Get possible status for entry types defines it.
 	possibleStatus := make(map[string][]forge.Status)
