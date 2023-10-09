@@ -377,7 +377,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		queries := make([]string, 0, len(allSubQueries))
 		for _, q := range allSubQueries {
 			queries = append(queries, fmt.Sprintf(`
-				SELECT entries.id FROM entries
+				SELECT entries.id, entries.parent_id FROM entries
 				LEFT JOIN properties on entries.id=properties.entry_id
 				LEFT JOIN default_properties ON properties.default_id=default_properties.id
 				LEFT JOIN entry_types ON entries.type_id = entry_types.id
@@ -387,7 +387,9 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		subQuery := strings.Join(queries, " INTERSECT ")
 		query := fmt.Sprintf(`
 			WITH RECURSIVE parent_of as (
-				SELECT id, parent_id from entries
+				SELECT id, parent_id from (
+					%v
+				)
 				UNION ALL
 				SELECT
 					parent_of.id,
@@ -396,15 +398,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				WHERE ancestor IS NOT NULL
 			)
 			SELECT DISTINCT parent_of.parent_id FROM parent_of
-			WHERE parent_of.id IN (%v)
 			UNION
 			SELECT DISTINCT parent_of.id FROM parent_of
-			WHERE parent_of.id IN (%v)
-		`, subQuery, subQuery)
+		`, subQuery)
 		// It seems 'WITH RECURSIVE' should be the first sub-query
 		// TODO: I don't like that I should SELECT twice, but currently out of ideas.
 		innerQueries = append([]string{query}, innerQueries...)
-		allSubVals = append(allSubVals, allSubVals...)
 		innerVals = append(allSubVals, innerVals...)
 	}
 
