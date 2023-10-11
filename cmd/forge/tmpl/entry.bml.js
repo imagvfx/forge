@@ -925,7 +925,7 @@ window.onload = function() {
 	}
 	let searchInput = document.querySelector("#searchInput");
 	searchInput.onkeydown = function(event) {
-		if (event.code != "Enter") {
+		if (event.code != "Enter" && event.code != "NumpadEnter") {
 			return;
 		}
 		let formData = new FormData(searchForm);
