@@ -954,7 +954,6 @@ window.onload = function() {
 	}
 	let searchButton = document.querySelector("#searchButton");
 	searchButton.onclick = function(event) {
-		console.log(event);
 		let formData = new FormData(searchForm);
 		let param = new URLSearchParams(formData).toString();
 		location.href = searchForm.action + "?" + param;
