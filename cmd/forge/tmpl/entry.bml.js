@@ -2,6 +2,7 @@
 
 window.onload = function() {
 	document.onclick = function(event) {
+		let inEditMode = document.querySelector(".subEntryArea").classList.contains("editMode");
 		if (event.target.closest(".dialogBackground")) {
 			return;
 		}
@@ -579,6 +580,13 @@ window.onload = function() {
 				userMenu.classList.add("invisible");
 				hide = true;
 			}
+		}
+		let dueLabel = event.target.closest(".dueLabel");
+		if (dueLabel != null && !(event.altKey || event.metaKey) && !inEditMode) {
+			let due = dueLabel.title;
+			let entType = dueLabel.closest(".subEntry").dataset.entryType;
+			search("type=" + entType + " due=" + due);
+			hide = true;
 		}
 		if (event.target.closest(".infoContextMenuLoader") == null) {
 			let infoMenu = document.getElementById("infoContextMenu");
@@ -1967,6 +1975,14 @@ function submitForm(form) {
 	req.onerror = function(err) {
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
+}
+
+function search(query) {
+	let formData = new FormData();
+	formData.append("search", "1");
+	formData.append("search_query", query);
+	let param = new URLSearchParams(formData).toString();
+	location.href = location.pathname + "?" + param;
 }
 
 function removeClass(parent, clsName) {
