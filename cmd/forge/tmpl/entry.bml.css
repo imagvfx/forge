@@ -1468,10 +1468,6 @@
 	overflow: auto;
 }
 
-#updatePropertyPopup[data-sub=""] .propertyPicker {
-	display: none;
-}
-
 .propertyPickerName {
 	-webkit-appearance: none;
 	appearance: none;
