@@ -1481,8 +1481,8 @@
 }
 
 @-moz-document url-prefix() {
-  .propertyPickerName {
-    padding: 0.3rem;
+  .propertyPickerName[data-value=""] {
+    padding: 0.3rem 0.45rem;
   }
 }
 
