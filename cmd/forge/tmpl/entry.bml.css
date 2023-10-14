@@ -767,7 +767,7 @@
 	overflow-wrap:anywhere;
 	padding-left: 2px;
 	text-decoration: none;
-	display: flex;
+	display: inline;
 	margin-left: 0.3rem;
 }
 

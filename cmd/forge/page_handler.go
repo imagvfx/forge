@@ -88,7 +88,7 @@ var pageHandlerFuncs = template.FuncMap{
 			words = append(words, word)
 		}
 		text := strings.Join(words, "<wbr>")
-		return template.HTML("<div>" + text + "</div>")
+		return template.HTML(text)
 	},
 	"pathLinks": func(path string) (template.HTML, error) {
 		if !strings.HasPrefix(path, "/") {

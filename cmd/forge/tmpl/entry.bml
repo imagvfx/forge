@@ -406,9 +406,7 @@
 										{{with $s := index $ent.Property "status"}}
 										<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
 										{{end}}
-										<a class="subEntryName" href="{{$ent.Path}}"> [
-											{{subEntryName $ent.Name}}
-										]
+										<a class="subEntryName" href="{{$ent.Path}}"> [{{subEntryName $ent.Name}}]
 										<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
 										{{if $ent.Archived}}
 										<div class="archivedLabel" style="font-size:0.6rem"> [Archived]
