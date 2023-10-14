@@ -368,11 +368,11 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 		if pickedProp == nil {
 			pickedProp = make(map[string]string)
 		}
-		pickedProp, ok := upd.Value.(map[string]string)
+		updatePickedProp, ok := upd.Value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("invalid update value type for key: %v", upd.Key)
 		}
-		for entryType, p := range pickedProp {
+		for entryType, p := range updatePickedProp {
 			pickedProp[entryType] = p
 		}
 		value, err = json.Marshal(pickedProp)
