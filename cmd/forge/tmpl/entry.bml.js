@@ -1393,6 +1393,10 @@ window.onload = function() {
 			mousedownId = 0;
 		}
 		ent.onclick = function(event) {
+			if (event.target.tagName == "A") {
+				// it will go to other page. keep this state.
+				return;
+			}
 			if (
 				document.querySelector("#updatePropertyPopup.expose") ||
 				document.querySelector("#infoUpdater:not(.nodisplay)") ||
