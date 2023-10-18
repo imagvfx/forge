@@ -482,6 +482,7 @@
 	border-radius: 4px;
 	background-color: #FEFEFE;
 	padding: 0 1px;
+	overflow: auto;
 }
 
 .infoTitle {
