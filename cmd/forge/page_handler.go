@@ -1017,10 +1017,35 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 		if err != nil {
 			return err
 		}
+		// when item type is user, we need their name alog with id
+		users, err := h.server.Users(ctx)
+		if err != nil {
+			return err
+		}
+		disabledUsers, err := h.server.DisabledUsers(ctx)
+		if err != nil {
+			return err
+		}
+		users = append(users, disabledUsers...)
+		called := map[string]string{}
+		for _, u := range users {
+			called[u.Name] = u.Called
+		}
 		// history is selected set of logs of an item.
 		history := make([]*forge.Log, 0)
 		for _, l := range logs {
 			l.When = l.When.Local()
+			if l.Type == "user" {
+				user := l.Value
+				value := called[user]
+				if user != "" {
+					if value == "" {
+						value = "unknown user"
+					}
+					value += " (" + user + ")"
+				}
+				l.Value = value
+			}
 			history = append(history, l)
 		}
 		recipe := struct {
@@ -1030,6 +1055,7 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			Category    string
 			Name        string
 			History     []*forge.Log
+			Users       []*forge.User
 		}{
 			User:        u,
 			UserIsAdmin: isAdmin,
@@ -1037,6 +1063,7 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			Category:    ctg,
 			Name:        name,
 			History:     history,
+			Users:       users,
 		}
 		err = Tmpl.ExecuteTemplate(w, "entry-item-history.bml", recipe)
 		if err != nil {
