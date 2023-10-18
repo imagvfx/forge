@@ -1808,7 +1808,7 @@ window.onload = function() {
 			let info = t.closest(".info");
 			let ent = info.closest(".entry");
 			if (info.dataset.entryPath != ent.dataset.entryPath) {
-				showInfoAdder(ent.dataset.entryPath, info.dataset.category, info.dataset.name);
+				showInfoAdder(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
 				return;
 			}
 			showInfoUpdater(info);
@@ -1826,7 +1826,7 @@ window.onload = function() {
 		let ent = a.closest(".entry");
 		let tgl = a.closest(".infoCategoryToggle");
 		a.onclick = function() {
-			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category, "");
+			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category, "", "text", "");
 		}
 	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
@@ -2444,7 +2444,7 @@ function hideInfoUpdater() {
 let PropertyTypes = {{marshalJS $.PropertyTypes}}
 let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
-function showInfoAdder(entry, ctg, name) {
+function showInfoAdder(entry, ctg, name, type, value) {
 	// TODO: Add the item inplace?
 	document.getElementById("infoAdder").classList.remove("nodisplay");
 	document.getElementById("infoUpdater").classList.add("nodisplay");
@@ -2469,6 +2469,9 @@ function showInfoAdder(entry, ctg, name) {
 		let types = PropertyTypes;
 		for (let t of types) {
 			let option = document.createElement("option");
+			if (t == type) {
+				option.selected = true;
+			}
 			option.value = t;
 			option.text = t;
 			typeSel.appendChild(option)
@@ -2477,7 +2480,7 @@ function showInfoAdder(entry, ctg, name) {
 	adder.getElementsByClassName("valueForm")[0].action = "/api/add-" + ctg;
 
 	let valueInput = adder.getElementsByClassName("valueInput")[0];
-	valueInput.value = "";
+	valueInput.value = value;
 	resizeTextArea(valueInput);
 	if (!name) {
 		nameInput.focus();
