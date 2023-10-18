@@ -1347,6 +1347,10 @@
 	cursor: pointer;
 }
 
+.subEntryArea:not(.editMode) .dueLabel:hover {
+	text-decoration: underline;
+}
+
 .dueLabel.dueComming {
 	background-color: #ffcccc;
 }
