@@ -149,7 +149,7 @@
 							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
 							<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}"> [
 								<div class="thumbnailContainer"> [
-									<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="128px" height="72px"> []
+									<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}"> []
 								]
 								<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -418,7 +418,7 @@
 											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
 											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}"> [
 												<div class="thumbnailContainer"> [
-													<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" width="96px" height="54px" alt=""> []
+													<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" alt=""> []
 												]
 												<form class="updateThumbnailForm" action="/api/{{if $ent.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
 													<input name="path" type="hidden" value="{{$ent.Path}}"> []
