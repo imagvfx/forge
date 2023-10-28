@@ -469,13 +469,9 @@
 												{{end}}
 												{{else}}
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
-													{{$lastBreak := false}}
 													{{range $gsGroups := (index $.GrandSubEntGroups $ent.Path)}}
-													{{if and (not $lastBreak) (ne (len $gsGroups) 1)}}
-														{{$lastBreak = true}}
+													{{if ne (len $gsGroups) 1}}
 														<div class="flexBreakLine"> []
-													{{else}}
-														{{$lastBreak = false}}
 													{{end}}
 													{{range $gs := $gsGroups}}
 														{{$gsPath := slice $gs.Path (inc (len $ent.Path)) (len $gs.Path)}}
