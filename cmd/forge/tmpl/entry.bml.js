@@ -1549,19 +1549,7 @@ window.onload = function() {
 			let due = labeler.dataset.due;
 			if (due != "") {
 				label.innerText += " / "
-				let then = new Date(due);
-				let now = new Date();
-				let today = new Date(now.toDateString());
-				let day = 24 * 60 * 60 * 1000;
-				let n = Math.floor((today - then) / day);
-				let t = String(Math.abs(n))
-				if (n > 0) {
-					t = "D+" + t
-				} else if (n == 0) {
-					t = "D-0"
-				} else {
-					t = "D-" + t
-				}
+				let t = dday(due);
 				label.innerText += t;
 			}
 			label.style.fontSize = "0.6rem";
