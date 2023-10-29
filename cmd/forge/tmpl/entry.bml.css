@@ -1336,7 +1336,7 @@
 }
 
 .assigneeInput {
-	min-width: 0;
+	width: 0;
 	flex: 1;
 	box-sizing: border-box;
 	font-size: 0.7rem;
