@@ -1989,6 +1989,23 @@ function search(query) {
 	location.href = location.pathname + "?" + param;
 }
 
+function dday(due) {
+	if (!due) {
+		return "";
+	}
+	let then = new Date(due);
+	let now = new Date();
+	let today = new Date(now.toDateString());
+	let day = 24 * 60 * 60 * 1000;
+	let n = Math.floor((today - then) / day);
+	let t = String(Math.abs(n))
+	let c = "-"
+	if (n > 0) {
+		c = "+"
+	}
+	return "D" + c + t;
+}
+
 function removeClass(parent, clsName) {
 	let elems = parent.getElementsByClassName(clsName);
 	for (let e of elems) {
