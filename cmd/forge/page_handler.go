@@ -307,6 +307,15 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
+	pageSetting, err := h.server.GetUserDataSection(ctx, user, "entry_page")
+	if err != nil {
+		var e *forge.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
+		// prevent nil dereference
+		pageSetting = &forge.UserDataSection{}
+	}
 	path := r.URL.Path
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
@@ -925,6 +934,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User                      *forge.User
 		UserIsAdmin               bool
 		UserSetting               *forge.UserSetting
+		PageSetting               *forge.UserDataSection
 		Entry                     *forge.Entry
 		EntryByPath               map[string]*forge.Entry
 		PrevEntry                 *forge.Entry
@@ -958,6 +968,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		User:                      u,
 		UserIsAdmin:               isAdmin,
 		UserSetting:               setting,
+		PageSetting:               pageSetting,
 		Entry:                     ent,
 		EntryByPath:               entryByPath,
 		PrevEntry:                 prevEntry,

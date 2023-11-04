@@ -255,7 +255,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea {{if $.UserSetting.EntryPageExpandProperty}}expandProperty{{end}}" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
+				<div class="subEntryArea {{if (index $.PageSetting.Data "detail_view")}}detailView{{end}} {{if $.UserSetting.EntryPageExpandProperty}}expandProperty{{end}}" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption editModeOption" title="turn on/off edit-mode" data-value=""> []
 						<div class="subEntryListSeparator"> []
@@ -263,6 +263,7 @@
 							<img class="normalViewOption" src="/asset/normal-view.svg"> []
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []
 						]
+						<div class="subEntryListOption detailViewOption" title="enable/disable detail view" data-value="{{index $.PageSetting.Data "detail_view"}}"> []
 						<div class="subEntryListOption expandPropertyOption" title="expand/shrink property" data-expand="{{$.UserSetting.EntryPageExpandProperty}}"> []
 						<div class="flexSpacer"> []
 						<select class="subEntryListOption groupByOption" {{if not $.ResultsFromSearch}}data-disabled="1" disabled{{end}}> [
@@ -440,7 +441,7 @@
 												<span> []
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
 												{{$l := dayLeft $due.Value}}
-												<div class="dueLabel {{if (eq $l "D-0" "D-1" "D-2" "D-3")}}dueComming{{end}}" title="{{$due.Value}}"> [{{$l}}]
+												<div class="dueLabel {{if (eq $l "D-0" "D-1" "D-2" "D-3")}}dueComming{{end}}" data-due="{{$due.Value}}"> [{{$l}}]
 												{{end}}{{end}}
 											]
 											{{if index $.ShowGrandSub $ent.Type}}
@@ -470,24 +471,32 @@
 												{{else}}
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gsGroups := (index $.GrandSubEntGroups $ent.Path)}}
-													{{if ne (len $gsGroups) 1}}
-														<div class="flexBreakLine"> []
-													{{end}}
-													{{range $gs := $gsGroups}}
+													<div class="grandSubGroup {{if gt (len $gsGroups) 1}}detail{{end}}"> [
+													{{range $i, $gs := $gsGroups}}
+														{{$direct := eq $i 0}}
+														<div class="grandSub {{if not $direct}}nonDirect{{end}}"> [
 														{{$gsPath := slice $gs.Path (inc (len $ent.Path)) (len $gs.Path)}}
-														{{$i := strIndex $gsPath "/"}}
+														{{$idx := strIndex $gsPath "/"}}
 														{{$gsName := $gsPath}}
-														{{if ne $i -1}}
-														{{$gsName = slice $gsPath $i (len $gsPath)}}
+														{{if ne $idx -1}}
+														{{$gsName = slice $gsPath $idx (len $gsPath)}}
 														{{end}}
 														{{$assignee := ""}}{{with $p := index $gs.Property "assignee"}}{{$assignee = $p.Value}}{{end}}
 														{{$status := ""}}{{with $p := index $gs.Property "status"}}{{$status = $p.Value}}{{end}}
 														{{$due := ""}}{{with $p:= index $gs.Property "due"}}{{$due = $p.Value}}{{end}}
-														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} summaryLabeler statusSelector {{if has $gsPath "/"}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}" data-assignee="{{$assignee}}" data-due="{{$due}}"> [{{$gsName}}]
+														{{if and false (ne $i 0)}}
+														<div style="color:#aaa"> [+]
+														{{end}}
+														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} summaryLabeler statusSelector {{if ne $i 0}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}" data-assignee="{{$assignee}}" data-due="{{$due}}"> [
+															{{$gsName}}
+														]
+														<div class="gsInfo"> [
+															<div class="assigneeLabel" data-assignee="{{$assignee}}"> []
+															<div class="dueLabel" data-due="{{$due}}"> []
+														]
+														]
 													{{end}}
-													{{if ne (len $gsGroups) 1}}
-													<div class="flexBreakLine"> []
-													{{end}}
+													]
 													{{end}}
 													<div class="summaryDot grandSubAdderLoader"> [+]
 												]

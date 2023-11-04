@@ -259,6 +259,11 @@
 	height: 54px;
 }
 
+.detailView .subEntry .thumbnailImg {
+	width: 128px;
+	height: 72px;
+}
+
 .thumbnail:not(:is(.exists, .inherited)) .thumbnailImg {
 	visibility: hidden;
 }
@@ -618,6 +623,10 @@
 	overflow: hidden;
 }
 
+.detailView .subEntryList {
+	grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+}
+
 .subEntryListContainer[data-hide="1"] .subEntryList {
 	display: none;
 }
@@ -700,6 +709,15 @@
 
 .subEntryListOption.expandPropertyOption[data-expand="true"] {
 	background-image: url("/asset/expand-property.svg");
+}
+
+.subEntryListOption.detailViewOption {
+	background-image: url("/asset/compact-view.svg");
+	background-size: 1.4rem;
+}
+
+.subEntryListOption.detailViewOption:not([data-value=""]) {
+	background-image: url("/asset/detail-view.svg");
 }
 
 .subEntryArea:not(.editMode) .subEntryListOption.deleteEntryOption {
@@ -1024,7 +1042,7 @@
 {{end}}
 
 .summaryDot {
-	width: auto;
+	width: max-content;
 	height: auto;
 	border-radius: 7px;
 	padding: 0.1rem 0.3rem;
@@ -1046,6 +1064,7 @@
 	font-size: 0.5rem;
 	opacity: 0.9;
 	align-self: end;
+	margin-left: 0.1rem;
 }
 
 .subInfoArea {
@@ -1062,10 +1081,43 @@
 
 .grandSubEntries {
 	display: flex;
-	gap: 0.1rem;
-	margin: 0.3rem 0.1rem 0.1rem 0.1rem;
 	flex-wrap: wrap;
+	font-size: 0.6rem;
+	gap: 0.2rem 0.1rem;
+	padding: 0.1rem;
+	margin-top: 0.3rem;
+}
+
+.detailView .grandSubEntries {
+	flex-direction: column;
+}
+
+.grandSubGroup {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.detailView .grandSubGroup {
+	flex-direction: column;
+}
+
+.detail.grandSubGroup {
+	width: 100%;
+}
+
+.grandSub {
+	display: flex;
 	align-items: center;
+}
+
+.grandSub.nonDirect {
+	margin-top: 0.15rem;
+}
+
+.detailView .grandSub.nonDirect::before {
+	color: #e8e8e8;
+	content: "L";
+	text-vertical-align:top;
 }
 
 .subEntryArea:not(.editMode) .summaryDot.grandSubAdderLoader {
@@ -1346,12 +1398,29 @@
 	border: 1px solid rgba(0, 0, 0, 0);
 }
 
+.gsInfo {
+	flex: 1;
+	display: none;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 0.6rem;
+	margin-left: 0.3rem;
+	color: #444;
+}
+
+.detailView .gsInfo {
+	display: flex;
+}
+
 .dueLabel {
 	font-size: 0.6rem;
-	padding: 1px 2px;
-	margin: 2px 0;
+	padding: 0 2px;
 	border-radius: 1px;
 	user-select: none;
+}
+
+.subInfoArea .dueLabel {
+	margin: 2px 0;
 }
 
 .subEntryArea:not(.editMode) .dueLabel {

@@ -300,6 +300,49 @@ window.onload = function() {
 				req.send(formData);
 				return;
 			}
+			opt = event.target.closest(".subEntryListOption.detailViewOption");
+			if (opt) {
+				let subEntArea = document.querySelector(".subEntryArea");
+				if (opt.dataset.value) {
+					subEntArea.classList.remove("detailView");
+					opt.dataset.value = "";
+				} else {
+					subEntArea.classList.add("detailView");
+					opt.dataset.value = "1";
+				}
+				let req = new XMLHttpRequest();
+				let formData = new FormData();
+				formData.append("section", "entry_page");
+				req.open("post", "/api/ensure-user-data-section");
+				req.onerror = function() {
+					printErrorStatus("network error occurred. please check whether the server is down.");
+				}
+				req.onload = function() {
+					if (req.status != 200) {
+						printErrorStatus(req.responseText);
+						return;
+					}
+					console.log("here");
+					let r = new XMLHttpRequest();
+					let data = new FormData();
+					data.append("section", "entry_page");
+					data.append("key", "detail_view");
+					data.append("value", opt.dataset.value);
+					r.open("post", "/api/set-user-data");
+					r.onerror = function() {
+						printErrorStatus("network error occurred. please check whether the server is down.");
+					}
+					r.onload = function() {
+						if (r.status != 200) {
+							printErrorStatus(req.responseText);
+							return;
+						}
+					}
+					r.send(data);
+				}
+				req.send(formData);
+				return;
+			}
 			opt = event.target.closest(".subEntryListOption.deleteEntryOption");
 			if (opt) {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
@@ -1936,6 +1979,14 @@ window.onload = function() {
 		pickedPropertyInput.dataset.resized = 1;
 	});
 	resize.observe(pickedPropertyInput);
+	let dueLabels = document.querySelectorAll(".dueLabel")
+	for (let el of dueLabels) {
+		el.innerText = dday(el.dataset.due);
+	}
+	let assigneeLabels = document.querySelectorAll(".assigneeLabel")
+	for (let el of assigneeLabels) {
+		el.innerText = CalledByName[el.dataset.assignee];
+	}
 }
 
 window.onpageshow = function() {
