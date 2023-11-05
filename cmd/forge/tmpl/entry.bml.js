@@ -695,6 +695,11 @@ window.onload = function() {
 				printStatus("no entry selected");
 			}
 		}
+		let scrollToTop = event.target.closest("#scrollToTop")
+		if (scrollToTop) {
+			window.scrollTo(window.scrollX, 0);
+			scrollToTop.classList.remove("reveal");
+		}
 	}
 	document.onkeydown = function(event) {
 		let ctrlPressed = event.ctrlKey || event.metaKey;
@@ -1986,6 +1991,13 @@ window.onload = function() {
 	let assigneeLabels = document.querySelectorAll(".assigneeLabel")
 	for (let el of assigneeLabels) {
 		el.innerText = CalledByName[el.dataset.assignee];
+	}
+	let scrollToTop = document.querySelector("#scrollToTop");
+	scrollToTop.onmouseenter = function() {
+		scrollToTop.classList.add("reveal");
+	}
+	scrollToTop.onmouseleave = function() {
+		scrollToTop.classList.remove("reveal");
 	}
 }
 
