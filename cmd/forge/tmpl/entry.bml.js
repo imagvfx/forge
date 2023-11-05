@@ -322,7 +322,6 @@ window.onload = function() {
 						printErrorStatus(req.responseText);
 						return;
 					}
-					console.log("here");
 					let r = new XMLHttpRequest();
 					let data = new FormData();
 					data.append("section", "entry_page");
