@@ -625,8 +625,13 @@ window.onload = function() {
 		}
 		let dueLabel = event.target.closest(".dueLabel");
 		if (dueLabel != null && !(event.altKey || event.metaKey) && !inEditMode) {
-			let due = dueLabel.title;
-			let entType = dueLabel.closest(".subEntry").dataset.entryType;
+			let due = dueLabel.dataset.due;
+			let ent = dueLabel.closest(".subEntry");
+			let gs = dueLabel.closest(".grandSub");
+			if (gs) {
+				ent = gs.querySelector(".grandSubEntry");
+			}
+			let entType = ent.dataset.entryType;
 			search("type=" + entType + " due=" + due);
 			hide = true;
 		}
