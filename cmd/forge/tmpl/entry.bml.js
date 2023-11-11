@@ -680,7 +680,7 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
-		if (event.target.closest("#searchInput, #downloadAsExcelButton, .subEntryList, #footer") == null) {
+		if (event.target.closest("#searchInput, #downloadAsExcelButton, .subEntry, #footer") == null) {
 			let subEntArea = document.querySelector(".subEntryArea");
 			if (subEntArea.classList.contains("editMode")) {
 				let selEnts = document.querySelectorAll(".subEntry.selected");
