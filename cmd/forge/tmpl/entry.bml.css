@@ -1301,10 +1301,10 @@
 
 #scrollToTop {
 	position: fixed;
-	right: 0.2rem;
+	right: 1.5rem;
 	bottom: 1.8rem;
-	width: 1.5rem;
-	height: 2.5rem;
+	width: 1.8rem;
+	height: 2.7rem;
 	z-index: 1;
 	border-radius: 0.2rem;
 	border: 0.1rem solid #444;
@@ -1312,21 +1312,8 @@
 	background-image: url("/asset/scroll-to-top.svg");
 	background-repeat: no-repeat;
 	background-position: center center;
-	background-size: 1rem 1rem;
-	opacity: 0.1;
-}
-
-@keyframes appear {
-	to {
-		opacity: 1;
-	}
-}
-
-#scrollToTop.reveal {
-	animation-duration: 0.5s;
-	animation-name: appear;
-	animation-iteration-count: 1;
-	animation-fill-mode: forwards;
+	background-size: 1.2rem 1.2rem;
+	opacity: 0;
 }
 
 #statusBar.error {

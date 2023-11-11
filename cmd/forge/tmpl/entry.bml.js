@@ -1999,10 +1999,26 @@ window.onload = function() {
 	let scrollToTop = document.querySelector("#scrollToTop");
 	scrollToTop.onmouseenter = function() {
 		scrollToTop.classList.add("reveal");
+		scrollToTop.style.opacity = 1;
 	}
 	scrollToTop.onmouseleave = function() {
 		scrollToTop.classList.remove("reveal");
+		scrollToTop.style.opacity = scrollToTopOpacity();
 	}
+	window.onscroll = function(event) {
+		if (scrollToTop.classList.contains("reveal")) {
+			scrollToTop.style.opacity = 1;
+		} else {
+			scrollToTop.style.opacity = scrollToTopOpacity();
+		}
+	}
+	scrollToTop.style.opacity = scrollToTopOpacity();
+}
+
+function scrollToTopOpacity() {
+	let op = (window.scrollY - 300) / 1000;
+	op = Math.max(Math.min(op, 1), 0);
+	return op * 0.1;
 }
 
 window.onpageshow = function() {
