@@ -1115,7 +1115,7 @@
 }
 
 .detailView .grandSub.nonDirect::before {
-	color: #e8e8e8;
+	color: #ddd;
 	content: "L";
 	text-vertical-align:top;
 }
@@ -1307,12 +1307,12 @@
 	height: 2.7rem;
 	z-index: 1;
 	border-radius: 0.2rem;
-	border: 0.1rem solid #444;
+	border: 0.08rem solid #444;
 	background-color: #fafafa;
 	background-image: url("/asset/scroll-to-top.svg");
 	background-repeat: no-repeat;
 	background-position: center center;
-	background-size: 1.2rem 1.2rem;
+	background-size: 1rem 1rem;
 	opacity: 0;
 }
 
