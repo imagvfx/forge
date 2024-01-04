@@ -1429,6 +1429,10 @@
 	display: flex;
 }
 
+.assigneeLabel.my {
+	text-decoration: 2px underline #ffbbbb;
+}
+
 .dueLabel {
 	font-size: 0.6rem;
 	padding: 0 2px;

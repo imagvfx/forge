@@ -491,7 +491,7 @@
 															{{$gsName}}
 														]
 														<div class="gsInfo"> [
-															<div class="assigneeLabel" data-assignee="{{$assignee}}"> []
+															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> []
 															<div class="dueLabel" data-due="{{$due}}"> []
 														]
 														]
