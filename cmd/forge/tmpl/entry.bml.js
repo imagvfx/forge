@@ -39,9 +39,17 @@ window.onload = function() {
 			if (path != "/") {
 				path = path.split("/").slice(0, 2).join("/");
 			}
-			let query = encodeURIComponent(event.target.dataset.searchQuery);
-			let url = path + "?search=1&search_query=" + query;
-			window.location.href = url;
+			let url = new URL(window.location.href);
+			let query = url.searchParams.get("search_query");
+			if (!query) {
+				query = "";
+			} else {
+				query += " ";
+			}
+			query += event.target.dataset.searchQuery;
+			url.searchParams.set("search", "1");
+			url.searchParams.set("search_query", query);
+			window.location.href = url.toString();
 			return;
 		}
 		if (event.target.classList.contains("tagLink")) {
