@@ -41,12 +41,18 @@ window.onload = function() {
 			}
 			let url = new URL(window.location.href);
 			let query = url.searchParams.get("search_query");
-			if (!query) {
-				query = "";
+			if (event.altKey || event.metaKey) {
+				// replace query
+				query = event.target.dataset.searchQuery;
 			} else {
-				query += " ";
+				// add query
+				if (!query) {
+					query = "";
+				} else {
+					query += " ";
+				}
+				query += event.target.dataset.searchQuery;
 			}
-			query += event.target.dataset.searchQuery;
 			url.searchParams.set("search", "1");
 			url.searchParams.set("search_query", query);
 			window.location.href = url.toString();
