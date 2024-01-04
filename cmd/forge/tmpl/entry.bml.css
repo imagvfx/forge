@@ -1415,6 +1415,10 @@
 	border: 1px solid rgba(0, 0, 0, 0);
 }
 
+.assigneeInput.my {
+	text-decoration: 2px underline #ffbbbb;
+}
+
 .gsInfo {
 	flex: 1;
 	display: none;

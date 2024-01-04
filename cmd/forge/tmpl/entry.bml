@@ -436,7 +436,7 @@
 											]
 											<div class="subInfoArea"> [
 												{{with $assignee := index $ent.Property "assignee"}}
-												<input class="assigneeInput" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
+												<input class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 												{{end}}
 												<span> []
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
