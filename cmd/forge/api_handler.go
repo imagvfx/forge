@@ -456,6 +456,42 @@ func (h *apiHandler) handleUpdateEnviron(ctx context.Context, w http.ResponseWri
 	return nil
 }
 
+func (h *apiHandler) handleAddOrUpdateEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
+	name := r.FormValue("name")
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	for _, pth := range entPaths {
+		env, err := h.server.GetEnviron(ctx, pth, name)
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+		}
+		if env != nil {
+			err := h.server.UpdateEnviron(ctx, pth, name, value)
+			if err != nil {
+				return err
+			}
+		} else {
+			// bulk-addition only supports "text" environ, for now.
+			err := h.server.AddEnviron(ctx, pth, name, "text", value)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	if r.FormValue("back_to_referer") != "" {
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
+	}
+	return nil
+}
+
 func (h *apiHandler) handleGetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	entPath := r.FormValue("path")
 	name := r.FormValue("name")
@@ -478,7 +514,20 @@ func (h *apiHandler) handleDeleteEnviron(ctx context.Context, w http.ResponseWri
 		return fmt.Errorf("path not defined")
 	}
 	name := r.FormValue("name")
+	generous := r.FormValue("generous") != ""
 	for _, pth := range entPaths {
+		if generous {
+			_, err := h.server.GetEnviron(ctx, pth, name)
+			if err != nil {
+				var e *forge.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+				// the environ doesn't exist, but it should be generous.
+				// let's skip.
+				continue
+			}
+		}
 		err := h.server.DeleteEnviron(ctx, pth, name)
 		if err != nil {
 			return err

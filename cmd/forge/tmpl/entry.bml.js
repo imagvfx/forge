@@ -530,6 +530,7 @@ window.onload = function() {
 							opt.remove();
 						}
 						let props = Properties[sel.dataset.entryType];
+						props.push("*environ");
 						if (props) {
 							let picked = LastPickedProperty[sel.dataset.entryType];
 							for (let p of props) {
@@ -554,11 +555,13 @@ window.onload = function() {
 					popup.classList.add("expose");
 					sel.classList.add("popupAttached");
 				} else {
+					// an element inside of #updatePropertyPopup clicked
 					let popup = handle;
 					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
 					let entPath = thisEnt.dataset.entryPath;
 					let item = event.target.closest(".selectStatusMenuItem");
 					if (item != null) {
+						// change status when user clicked .selectStatusMenuItem
 						let selectedEnts = document.querySelectorAll(".subEntry.selected");
 						if (selectedEnts.length != 0) {
 							let inSel = false;
@@ -803,6 +806,66 @@ window.onload = function() {
 						path += "/" + sub;
 					}
 					paths.push(path);
+				}
+				if (prop == "*environ") {
+					let lines = valueInput.value.split("\n");
+					let modify = false;
+					for (let l of lines) {
+						l = l.trim();
+						let prefix = l.slice(0, 1);
+						if (prefix != "+" && prefix != "-") {
+							continue
+						}
+						modify = true;
+
+						let envVal = l.slice(1);
+						envVal = envVal.trim();
+						let idx = envVal.indexOf("=");
+						if (idx < 0) {
+							printErrorStatus("unexpected line: "  + l);
+							break;
+						}
+						let env = envVal.slice(0, idx).trim();
+						let val = envVal.slice(idx+1).trim();
+
+						let req = new XMLHttpRequest();
+						let formData = new FormData();
+						for (let path of paths) {
+							formData.append("path", path);
+						}
+						formData.append("name", env);
+						let api = "";
+						if (prefix == "+") {
+							api = "/api/add-or-update-environ";
+							formData.append("value", val);
+						} else if (prefix == "-") {
+							api = "/api/delete-environ";
+							formData.append("generous", "1");
+						}
+						req.open("post", api);
+						req.send(formData);
+						req.onerror = function() {
+							nameInput.dataset.error = "1";
+							printErrorStatus("network error occurred. please check whether the server is down.");
+						}
+						req.onload = function() {
+							if (req.status != 200) {
+								nameInput.dataset.error = "1";
+								printErrorStatus(req.responseText);
+								console.log(req.responseText);
+								return;
+							}
+							nameInput.dataset.error = "";
+							nameInput.dataset.modified = "";
+							printStatus("done");
+						}
+					}
+					if (!modify) {
+						printStatus("nothing to do");
+					} else {
+						reloadPropertyPicker(popup, "*environ");
+					}
+					return;
 				}
 				let req = new XMLHttpRequest();
 				let formData = new FormData();
@@ -2985,7 +3048,11 @@ function reloadPropertyPicker(popup, prop) {
 	let fdata = new FormData();
 	fdata.append("path", path);
 	fdata.append("name", prop);
-	r.open("post", "/api/get-property");
+	let api = "/api/get-property";
+	if (prop == "*environ") {
+		api = "/api/entry-environs";
+	}
+	r.open("post", api);
 	r.send(fdata);
 	r.onerror = function() {
 		printErrorStatus("network error occurred. please check whether the server is down.");
@@ -3006,8 +3073,23 @@ function reloadPropertyPicker(popup, prop) {
 				cleanAutoComplete = null;
 			}
 		}
-		valueInput.value = j.Msg.Eval;
-		nameInput.dataset.type = j.Msg.Type;
+		let val = "";
+		let type = "";
+		if (prop == "*environ") {
+			let envs = j.Msg;
+			let environs = [];
+			for (let e of envs) {
+				environs.push(e.Name + "=" + e.Value);
+			}
+			environs.sort();
+			val = environs.join("\n");
+			type = "environ";
+		} else {
+			val = j.Msg.Eval;
+			type = j.Msg.Type;
+		}
+		valueInput.value = val;
+		nameInput.dataset.type = type;
 		nameInput.dataset.error = "";
 		nameInput.dataset.modified = "";
 
