@@ -99,9 +99,8 @@
 				<div class="mainEntry entry" data-entry-path="{{$.Entry.Path}}" style="padding:1.5rem 1.2rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div class="mainEntryTop"> [
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
-						{{with $s := index $.Entry.Property "status"}}
-						<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$.Entry.Type}}" data-value="{{$s.Value}}"> []
-						{{end}}
+						{{$s := index $.Entry.Property "status"}}
+						<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$.Entry.Type}}" data-value="{{if $s}}{{$s.Value}}{{end}}"> []
 						<div class="mainEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
 							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
@@ -404,9 +403,8 @@
 									<a class="parentLink" href="{{$parent}}"> [{{trimPrefix $parent (addString $.Entry.Path "/")}}]
 									{{end}}
 									<div class="subEntryTop"> [
-										{{with $s := index $ent.Property "status"}}
-										<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$entType}}" data-value="{{$s.Value}}"> []
-										{{end}}
+										{{$s := index $ent.Property "status"}}
+										<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$entType}}" data-value="{{if $s}}{{$s.Value}}{{end}}"> []
 										<a class="subEntryName" href="{{$ent.Path}}"> [{{subEntryName $ent.Name}}]
 										<div class="recentlyUpdatedDot forEntry {{if not (recent $ent.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $ent.UpdatedAt}}"> []
 										{{if $ent.Archived}}

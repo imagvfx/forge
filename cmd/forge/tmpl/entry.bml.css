@@ -1541,6 +1541,10 @@
 	overflow: clip;
 }
 
+.selectStatusMenu.hidden {
+	display: none;
+}
+
 .selectStatusMenuItem {
 	display: flex;
 	background-color: #FFFFFF;

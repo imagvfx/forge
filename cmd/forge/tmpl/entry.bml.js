@@ -492,58 +492,51 @@ window.onload = function() {
 						// disconnect the selector currently attaching the popup
 						attached.classList.remove("popupAttached");
 					}
-					if (popup.dataset.entryType != sel.dataset.entryType) {
-						// reset inner elements
-						popup.dataset.entryType = sel.dataset.entryType;
-						let menu = popup.querySelector(".selectStatusMenu");
-						let items = menu.querySelectorAll(".selectStatusMenuItem");
-						for (let item of items) {
-							item.remove();
-						}
-						let stats = PossibleStatus[sel.dataset.entryType];
-						if (stats) {
-							for (let s of stats) {
-								let item = document.createElement("div");
-								item.dataset.value = s;
-								item.classList.add("selectStatusMenuItem");
-								let dot = document.createElement("div");
-								dot.classList.add("selectStatusMenuItemDot");
-								dot.classList.add("statusDot");
-								dot.dataset.entryType = sel.dataset.entryType;
-								dot.dataset.value = s;
-								let val = document.createElement("div");
-								val.classList.add("selectStatusMenuItemValue");
-								let t = s;
-								if (s == "") {
-									t = "(none)";
-									val.style.color = "#888888";
-								}
-								val.innerText = t;
-								item.appendChild(dot);
-								item.appendChild(val);
-								menu.appendChild(item);
+					// reset inner elements
+					popup.dataset.entryType = sel.dataset.entryType;
+					let menu = popup.querySelector(".selectStatusMenu");
+					menu.innerHTML = "";
+					let stats = PossibleStatus[sel.dataset.entryType];
+					if (stats.length != 0) {
+						menu.classList.remove("hidden");
+						for (let s of stats) {
+							let item = document.createElement("div");
+							item.dataset.value = s;
+							item.classList.add("selectStatusMenuItem");
+							let dot = document.createElement("div");
+							dot.classList.add("selectStatusMenuItemDot");
+							dot.classList.add("statusDot");
+							dot.dataset.entryType = sel.dataset.entryType;
+							dot.dataset.value = s;
+							let val = document.createElement("div");
+							val.classList.add("selectStatusMenuItemValue");
+							let t = s;
+							if (s == "") {
+								t = "(none)";
+								val.style.color = "#888888";
 							}
+							val.innerText = t;
+							item.appendChild(dot);
+							item.appendChild(val);
+							menu.appendChild(item);
 						}
-						let select = popup.querySelector(".propertyPickerName");
-						let options = popup.querySelectorAll("option");
-						for (let opt of options) {
-							opt.remove();
+					} else {
+						menu.classList.add("hidden");
+					}
+					let select = popup.querySelector(".propertyPickerName");
+					select.innerHTML = "";
+					let props = Properties[sel.dataset.entryType].slice();
+					props.push("*environ", "*access");
+					let picked = LastPickedProperty[sel.dataset.entryType];
+					for (let p of props) {
+						let opt = document.createElement("option");
+						opt.value = p;
+						let t = p || ">";
+						opt.innerText = t;
+						if (p == picked) {
+							opt.selected = true;
 						}
-						let props = Properties[sel.dataset.entryType];
-						props.push("*environ", "*access");
-						if (props) {
-							let picked = LastPickedProperty[sel.dataset.entryType];
-							for (let p of props) {
-								let opt = document.createElement("option");
-								opt.value = p;
-								let t = p || ">";
-								opt.innerText = t;
-								if (p == picked) {
-									opt.selected = true;
-								}
-								select.appendChild(opt);
-							}
-						}
+						select.appendChild(opt);
 					}
 					let nameInput = popup.querySelector(".propertyPickerName");
 					reloadPropertyPicker(popup, nameInput.value.trim());
@@ -2848,7 +2841,9 @@ let CalledByName = {
 let PossibleStatus = {
 {{range $entType, $status := $.PossibleStatus}}
 	"{{$entType}}": [
+		{{with $status}}
 		"", {{range $s := $status}}"{{$s.Name}}",{{end}}
+		{{end}}
 	],
 {{end}}
 }
