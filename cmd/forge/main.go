@@ -244,6 +244,7 @@ func main() {
 	mux.HandleFunc("/api/update-access", api.Handler(api.handleUpdateAccess))
 	mux.HandleFunc("/api/add-or-update-access", api.Handler(api.handleAddOrUpdateAccess))
 	mux.HandleFunc("/api/get-access", api.Handler(api.handleGetAccess))
+	mux.HandleFunc("/api/entry-access-list", api.Handler(api.handleEntryAccessList))
 	mux.HandleFunc("/api/delete-access", api.Handler(api.handleDeleteAccess))
 	mux.HandleFunc("/api/add-group", api.Handler(api.handleAddGroup))
 	mux.HandleFunc("/api/rename-group", api.Handler(api.handleRenameGroup))

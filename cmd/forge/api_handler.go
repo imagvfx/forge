@@ -625,6 +625,13 @@ func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter,
 	return nil
 }
 
+func (h *apiHandler) handleEntryAccessList(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPath := r.FormValue("path")
+	accs, err := h.server.EntryAccessList(ctx, entPath)
+	h.WriteResponse(w, accs, err)
+	return nil
+}
+
 func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]
@@ -632,7 +639,20 @@ func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWrit
 		return fmt.Errorf("path not defined")
 	}
 	name := r.FormValue("name")
+	generous := r.FormValue("generous") != ""
 	for _, pth := range entPaths {
+		if generous {
+			_, err := h.server.GetAccess(ctx, pth, name)
+			if err != nil {
+				var e *forge.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+				// the access doesn't exist, but it should be generous.
+				// let's skip.
+				continue
+			}
+		}
 		err := h.server.DeleteAccess(ctx, pth, name)
 		if err != nil {
 			return err

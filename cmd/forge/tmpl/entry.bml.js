@@ -530,7 +530,7 @@ window.onload = function() {
 							opt.remove();
 						}
 						let props = Properties[sel.dataset.entryType];
-						props.push("*environ");
+						props.push("*environ", "*access");
 						if (props) {
 							let picked = LastPickedProperty[sel.dataset.entryType];
 							for (let p of props) {
@@ -807,7 +807,8 @@ window.onload = function() {
 					}
 					paths.push(path);
 				}
-				if (prop == "*environ") {
+				if (prop == "*environ" || prop == "*access") {
+					let updateType = prop.slice(1);
 					let lines = valueInput.value.split("\n");
 					let modify = false;
 					for (let l of lines) {
@@ -818,28 +819,28 @@ window.onload = function() {
 						}
 						modify = true;
 
-						let envVal = l.slice(1);
-						envVal = envVal.trim();
-						let idx = envVal.indexOf("=");
+						let keyVal = l.slice(1);
+						keyVal = keyVal.trim();
+						let idx = keyVal.indexOf("=");
 						if (idx < 0) {
 							printErrorStatus("unexpected line: "  + l);
 							break;
 						}
-						let env = envVal.slice(0, idx).trim();
-						let val = envVal.slice(idx+1).trim();
+						let key = keyVal.slice(0, idx).trim();
+						let val = keyVal.slice(idx+1).trim();
 
 						let req = new XMLHttpRequest();
 						let formData = new FormData();
 						for (let path of paths) {
 							formData.append("path", path);
 						}
-						formData.append("name", env);
+						formData.append("name", key);
 						let api = "";
 						if (prefix == "+") {
-							api = "/api/add-or-update-environ";
+							api = "/api/add-or-update-" + updateType;
 							formData.append("value", val);
 						} else if (prefix == "-") {
-							api = "/api/delete-environ";
+							api = "/api/delete-" + updateType;
 							formData.append("generous", "1");
 						}
 						req.open("post", api);
@@ -857,13 +858,12 @@ window.onload = function() {
 							}
 							nameInput.dataset.error = "";
 							nameInput.dataset.modified = "";
+							reloadPropertyPicker(popup, prop);
 							printStatus("done");
 						}
 					}
 					if (!modify) {
 						printStatus("nothing to do");
-					} else {
-						reloadPropertyPicker(popup, "*environ");
 					}
 					return;
 				}
@@ -3051,6 +3051,8 @@ function reloadPropertyPicker(popup, prop) {
 	let api = "/api/get-property";
 	if (prop == "*environ") {
 		api = "/api/entry-environs";
+	} else if (prop == "*access") {
+		api = "/api/entry-access-list";
 	}
 	r.open("post", api);
 	r.send(fdata);
@@ -3084,6 +3086,15 @@ function reloadPropertyPicker(popup, prop) {
 			environs.sort();
 			val = environs.join("\n");
 			type = "environ";
+		} else if (prop == "*access") {
+			let accs = j.Msg;
+			let accessList = [];
+			for (let a of accs) {
+				accessList.push(a.Name + "=" + a.Value);
+			}
+			accessList.sort();
+			val = accessList.join("\n");
+			type = "access";
 		} else {
 			val = j.Msg.Eval;
 			type = j.Msg.Type;
