@@ -3081,7 +3081,11 @@ function reloadPropertyPicker(popup, prop) {
 			let envs = j.Msg;
 			let environs = [];
 			for (let e of envs) {
-				environs.push(e.Name + "=" + e.Value);
+				let l = e.Name + "=" + e.Value;
+				if (e.Path != entPath) {
+					l = "~" + l;
+				}
+				environs.push(l);
 			}
 			environs.sort();
 			val = environs.join("\n");
@@ -3090,7 +3094,11 @@ function reloadPropertyPicker(popup, prop) {
 			let accs = j.Msg;
 			let accessList = [];
 			for (let a of accs) {
-				accessList.push(a.Name + "=" + a.Value);
+				let l = a.Name + "=" + a.Value;
+				if (a.Path != entPath) {
+					l = "~" + l;
+				}
+				accessList.push(l);
 			}
 			accessList.sort();
 			val = accessList.join("\n");
