@@ -588,7 +588,6 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 		return fmt.Errorf("path not defined")
 	}
 	accessor := r.FormValue("name")
-	accessor_type := r.FormValue("type")
 	mode := r.FormValue("value")
 	mode = strings.TrimSpace(mode)
 	for _, pth := range entPaths {
@@ -600,9 +599,6 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 			}
 		}
 		if acl != nil {
-			if accessor_type != "" && accessor_type != acl.Type {
-				return fmt.Errorf("accessor exists, but with different type: %v", acl.Type)
-			}
 			err := h.server.UpdateAccess(ctx, pth, accessor, mode)
 			if err != nil {
 				return err
