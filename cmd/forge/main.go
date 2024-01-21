@@ -182,6 +182,7 @@ func main() {
 	page := &pageHandler{
 		server: server,
 		cfg:    cfg,
+		login:  login,
 	}
 	api := &apiHandler{
 		server: server,

@@ -41,6 +41,11 @@ func (h *loginHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			state := fmt.Sprintf("%x", hs.Sum(nil))
 			session["state"] = state
 		}
+		entryURL := r.URL.String()
+		if r.URL.Path == "/login" {
+			entryURL = "/"
+		}
+		session["entry_url"] = entryURL
 		appKey := r.FormValue("app_session_key")
 		if appKey != "" {
 			// Need to store the authentication info so the app could retrive it with api.
@@ -141,6 +146,8 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		session["state"] = ""
 		appKey := session["app_session_key"]
 		session["app_session_key"] = ""
+		entryURL := session["entry_url"]
+		session["entry_url"] = ""
 		err = setSession(w, session)
 		if err != nil {
 			return err
@@ -158,7 +165,7 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/app-login-completed", http.StatusSeeOther)
 			return nil
 		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, entryURL, http.StatusSeeOther)
 		return nil
 
 	}()

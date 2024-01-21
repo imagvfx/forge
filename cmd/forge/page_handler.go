@@ -25,6 +25,7 @@ import (
 type pageHandler struct {
 	server *forge.Server
 	cfg    *forge.Config
+	login  *loginHandler
 }
 
 var pageHandlerFuncs = template.FuncMap{
@@ -283,7 +284,7 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 			}
 			user := session["user"]
 			if user == "" {
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				h.login.Handle(w, r)
 				return nil
 			}
 			ctx := forge.ContextWithUserName(r.Context(), user)
