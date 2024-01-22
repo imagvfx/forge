@@ -42,9 +42,6 @@ window.onload = function() {
 			let url = new URL(window.location.href);
 			let query = url.searchParams.get("search_query");
 			if (event.altKey || event.metaKey) {
-				// replace query
-				query = event.target.dataset.searchQuery;
-			} else {
 				// add query
 				if (!query) {
 					query = "";
@@ -52,6 +49,9 @@ window.onload = function() {
 					query += " ";
 				}
 				query += event.target.dataset.searchQuery;
+			} else {
+				// replace query
+				query = event.target.dataset.searchQuery;
 			}
 			url.searchParams.set("search", "1");
 			url.searchParams.set("search_query", query);
