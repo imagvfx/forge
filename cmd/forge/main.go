@@ -264,6 +264,7 @@ func main() {
 	mux.HandleFunc("/api/bulk-update", api.Handler(api.handleBulkUpdate))
 	fs := http.FileServer(http.Dir("asset"))
 	mux.Handle("/asset/", http.StripPrefix("/asset/", fs))
+	mux.Handle("/favicon.ico", fs)
 
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)
