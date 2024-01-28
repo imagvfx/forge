@@ -35,10 +35,7 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.classList.contains("searchLink")) {
-			let path = window.location.pathname;
-			if (path != "/") {
-				path = path.split("/").slice(0, 2).join("/");
-			}
+			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(window.location.href);
 			url.pathname = path;
 			let query = url.searchParams.get("search_query");
@@ -62,10 +59,7 @@ window.onload = function() {
 		if (event.target.classList.contains("tagLink")) {
 			let t = event.target;
 			let tag = t.dataset.tagName + "=" + t.dataset.tagValue;
-			let path = window.location.pathname;
-			if (path != "/") {
-				path = path.split("/").slice(0, 2).join("/");
-			}
+			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			if (event.altKey || event.metaKey) {
 				let new_url = path + "?search=1&search_query=" + encodeURIComponent(tag);
 				window.location.href = new_url;
