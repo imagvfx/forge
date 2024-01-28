@@ -60,58 +60,31 @@ window.onload = function() {
 			let t = event.target;
 			let tag = t.dataset.tagName + "=" + t.dataset.tagValue;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
-			if (event.altKey || event.metaKey) {
-				let new_url = path + "?search=1&search_query=" + encodeURIComponent(tag);
-				window.location.href = new_url;
+			let url = new URL(window.location.href);
+			url.pathname = path;
+			let in_search = false;
+			if (url.searchParams.get("search") == 1) {
+				in_search = true;
+			}
+			if (event.altKey || event.metaKey || !in_search) {
+				url.searchParams.set("search", "1");
+				url.searchParams.set("search_query", tag);
+				window.location.href = url.toString();
 				return;
 			}
-			let toks = window.location.href.split(/[?](.*)/s);
-			let parm = toks[1];
-			let in_search = false;
 			let already_exists = false;
-			let prev_query = false;
-			if (parm) {
-				for (let p of parm.split("&")) {
-					if (p == "search=1") {
-						in_search = true;
-						continue;
-					}
-					let toks = p.split(/=(.*)/s);
-					if (toks.length == 1) {
-						continue
-					}
-					if (toks[0] != "search_query") {
-						continue
-					}
-					if (toks[1] == "") {
-						break
-					}
-					prev_query = true;
-					let query = toks[1].replaceAll("+", " ");
-					let fields = decodeURIComponent(query).split(" ");
-					if (fields) {
-						for (let f of fields) {
-							if (f == tag) {
-								already_exists = true;
-								break;
-							}
-						}
-					}
+			let query = url.searchParams.get("search_query");
+			for (let q of query.split(" ")) {
+				if (q == tag) {
+					already_exists = true;
+					break;
 				}
-			}
-			let new_url = path;
-			if (!in_search) {
-				new_url += "?search=1&search_query=";
-			} else {
-				new_url += "?" + parm;
 			}
 			if (!already_exists) {
-				if (prev_query) {
-					new_url += "+"
-				}
-				new_url += encodeURIComponent(tag)
+				query += " " + tag
 			}
-			window.location.href = new_url;
+			url.searchParams.set("search_query", query)
+			window.location.href = url.toString();
 			return;
 		}
 		let hideBtn = event.target.closest("#sideMenuHideButton");
