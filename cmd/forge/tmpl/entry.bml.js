@@ -40,6 +40,7 @@ window.onload = function() {
 				path = path.split("/").slice(0, 2).join("/");
 			}
 			let url = new URL(window.location.href);
+			url.pathname = path;
 			let query = url.searchParams.get("search_query");
 			if (event.altKey || event.metaKey) {
 				// add query
