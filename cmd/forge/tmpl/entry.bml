@@ -52,7 +52,7 @@
 						]
 						<div id="quickSearchDropZone" style="display:flex;flex-wrap:wrap;font-size:1rem;"> [
 							{{range $i, $search := $.UserSetting.QuickSearches -}}
-							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#555;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-key="{{$search.K}}" data-link="/{{topName $.Entry.Path}}?search=1&{{toURL $search.V}}" draggable="true"> [{{$search.K}}]
+							<div id="quickSearch-{{$search.K}}" class="quickSearchLink" style="color:#555;cursor:pointer;margin-right:1rem;" data-idx="{{$i}}" data-key="{{$search.K}}" data-link="/{{topName $.Entry.Path}}?search=1&{{$search.V}}" draggable="true"> [{{$search.K}}]
 							{{- end}}
 						]
 					]
@@ -76,7 +76,7 @@
 						<form action="/api/update-user-setting" style="{{if not $.ResultsFromSearch}}visibility:hidden;{{end}}display:flex;justify-content:end;color:#AAA;" method="post"> [
 							<input name="user" type="hidden" value="{{$.User}}"> []
 							<input name="quick_search_name" style="width:7rem;border-radius:2px;background-color:inherit;font-size:0.7rem;border: 1px solid rgba(1, 1, 1, 0);" placeholder="add to quick search" value=""> []
-							<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{$.SearchQuery}}"> []
+							<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search_query={{escapeQuery $.SearchQuery}}"> []
 							<input name="quick_search_at" type="hidden" value="{{len $.UserSetting.QuickSearches}}"> []
 							<button name="update_quick_search" value="1" hidden> []
 							<input readonly name="back_to_referer" type="hidden" value="1"> []

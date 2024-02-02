@@ -12,6 +12,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -168,8 +169,8 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return template.HTML("<div class='infoValue'>" + t + "</div>")
 	},
-	"toURL": func(s string) template.URL {
-		return template.URL(s)
+	"escapeQuery": func(s string) string {
+		return url.QueryEscape(s)
 	},
 	// topName is name of the entry directly under the root for given path.
 	// Which indicates a show name.
