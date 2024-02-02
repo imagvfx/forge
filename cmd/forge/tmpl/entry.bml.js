@@ -1289,13 +1289,13 @@ window.onload = function() {
 	let quickSearches = document.getElementsByClassName("quickSearchLink");
 	for (let qs of quickSearches) {
 		qs.onclick = function(event) {
-			// I've had hard time when I drag quickSearchLink while it is 'a' tag.
-			// At first glance qs.ondragstart seemed to work consitently, then the link is clicked instead.
-			// Hope I got peace by making quickSearchLink 'div'.
 			window.location.href = qs.dataset.link;
 			return;
 		}
 		qs.ondragstart = function(event) {
+			// I've had hard time when I drag quickSearchLink while it is 'a' tag.
+			// At first glance qs.ondragstart seemed to work consitently, then the link is clicked instead.
+			// Hope I got peace by making quickSearchLink 'div'.
 			event.dataTransfer.effectAllowed = "move";
 			let zone = document.getElementById("quickSearchDropZone");
 			zone.ondragover = function(event) {
