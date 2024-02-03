@@ -450,6 +450,12 @@ window.onload = function() {
 						if (popup.classList.contains("expose")) {
 							popup.classList.remove("expose");
 						} else {
+							// entry position might have changed its position for some reason.
+							// eg. entry expanded
+							let right = sel.closest(".right");
+							let offset = offsetFrom(sel, right);
+							popup.style.left = String(offset.left - 6) + "px";
+							popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
 							popup.classList.add("expose");
 						}
 						hide = true;
