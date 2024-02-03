@@ -1620,6 +1620,10 @@
 	color: black;
 }
 
+.propertyPickerHistory.hidden {
+	display: none;
+}
+
 @-moz-document url-prefix() {
   .propertyPickerName[data-value=""] {
     padding: 0.3rem 0.45rem;

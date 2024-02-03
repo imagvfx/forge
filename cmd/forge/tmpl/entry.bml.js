@@ -3004,15 +3004,18 @@ function reloadPropertyPicker(popup, prop) {
 	LastPickedProperty[popup.dataset.entryType] = prop;
 	let nameInput = popup.querySelector(".propertyPickerName");
 	let valueInput = popup.querySelector(".propertyPickerValue");
+	let history = popup.querySelector(".propertyPickerHistory");
 	nameInput.dataset.value = prop;
 	if (prop == "") {
 		nameInput.dataset.error = "";
 		nameInput.dataset.modified = "";
 		valueInput.disabled = "1";
 		valueInput.value = "";
+		history.classList.add("hidden");
 		return;
 	}
 	valueInput.disabled = "";
+	history.classList.remove("hidden");
 	let mainDiv = document.querySelector(".main");
 	let entPath = popup.dataset.entryPath;
 	let path = entPath;
