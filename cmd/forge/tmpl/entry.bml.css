@@ -1607,6 +1607,19 @@
 	background-color: #EEF8FA;
 }
 
+.propertyPickerHistory {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin-right: 0.5rem;
+	cursor: pointer;
+	color: #aaa;
+}
+
+.propertyPickerHistory:hover {
+	color: black;
+}
+
 @-moz-document url-prefix() {
   .propertyPickerName[data-value=""] {
     padding: 0.3rem 0.45rem;

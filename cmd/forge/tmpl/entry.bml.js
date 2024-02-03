@@ -514,8 +514,7 @@ window.onload = function() {
 				} else {
 					// an element inside of #updatePropertyPopup clicked
 					let popup = handle;
-					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
-					let entPath = thisEnt.dataset.entryPath;
+					let entPath = popup.dataset.entryPath;
 					let item = event.target.closest(".selectStatusMenuItem");
 					if (item != null) {
 						// change status when user clicked .selectStatusMenuItem
@@ -573,6 +572,15 @@ window.onload = function() {
 						req.onerror = function(err) {
 							printErrorStatus("network error occurred. please check whether the server is down.");
 						}
+					}
+					let history = event.target.closest(".propertyPickerHistory");
+					if (history != null) {
+						let path = popup.dataset.entryPath;
+						if (popup.dataset.sub) {
+							path += "/" + popup.dataset.sub;
+						}
+						let prop = history.closest(".propertyPicker").querySelector(".propertyPickerName").dataset.value;
+						window.location.href = "/logs?path=" + path + "&category=property&name=" + prop;
 					}
 				}
 			}

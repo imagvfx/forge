@@ -553,6 +553,7 @@
 							<option value=""> [>]
 						]
 						<textarea class="propertyPickerValue" autocomplete="off" {{with $s := $.UserSetting.PickedPropertyInputSize}}data-old-width="{{index $s 0}}px" data-old-height="{{index $s 1}}px" style="width:{{index $s 0}}px; height:{{index $s 1}}px"{{end}}> []
+						<div class="propertyPickerHistory"> [...]
 					]
 				]
 				<div id="statusLabel" class="nodisplay"> []
