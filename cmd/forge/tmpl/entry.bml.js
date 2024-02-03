@@ -623,9 +623,9 @@ window.onload = function() {
 			hide = hideInfoModifier();
 		}
 		if (event.target.closest(".grandSubAdderLoader")) {
-			let addingArea = document.querySelector(".grandSubArea.adding");
-			if (addingArea != null) {
-				addingArea.classList.remove("adding");
+			let grandSubAdding = document.querySelector(".grandSubArea.adding");
+			if (grandSubAdding != null) {
+				grandSubAdding.classList.remove("adding");
 			}
 			let subEnt = event.target.closest(".subEntry");
 			if (document.querySelectorAll(".subEntry.selected").length != 0 && !subEnt.classList.contains("selected")) {
@@ -640,9 +640,11 @@ window.onload = function() {
 		    sel.selectAllChildren(input);
 		    sel.collapseToEnd();
 		} else if (event.target.closest(".grandSubAdder") == null) {
-			let addingArea = document.querySelector(".grandSubArea.adding");
-			if (addingArea != null) {
-				addingArea.classList.remove("adding");
+			let grandSubAdding = document.querySelector(".grandSubArea.adding");
+			if (grandSubAdding != null) {
+				let editable = grandSubAdding.querySelector(".grandSubAdderInput");
+				editable.textContent = "";
+				grandSubAdding.classList.remove("adding");
 				hide = true;
 			}
 		}
@@ -699,6 +701,13 @@ window.onload = function() {
 			if (currentContextMenuLoader != null) {
 				infoMenu.classList.add("invisible");
 				currentContextMenuLoader = null;
+				hide = true;
+			}
+			let grandSubAdding = document.querySelector(".grandSubArea.adding");
+			if (grandSubAdding != null) {
+				let editable = grandSubAdding.querySelector(".grandSubAdderInput");
+				editable.textContent = "";
+				grandSubAdding.classList.remove("adding");
 				hide = true;
 			}
 			if (hide) {
