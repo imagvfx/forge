@@ -1488,7 +1488,8 @@ window.onload = function() {
 			if (
 				document.querySelector("#updatePropertyPopup.expose") ||
 				document.querySelector("#infoUpdater:not(.nodisplay)") ||
-				document.querySelector("#infoAdder:not(.nodisplay)")
+				document.querySelector("#infoAdder:not(.nodisplay)") ||
+				document.querySelector(".grandSubArea.adding")
 			) {
 				// close those first.
 				// a bit clunky where most logic is on document.onclick,
