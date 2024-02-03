@@ -496,8 +496,8 @@
 													{{end}}
 													]
 													{{end}}
-													<div class="summaryDot grandSubAdderLoader"> [+]
 												]
+												<div class="summaryDot grandSubAdderLoader" style="margin-left:0.1rem;"> [+]
 												<div class="summaryDot grandSubAdder"> [
 													<div class="grandSubAdderInput" contenteditable="true" style="flex:1;"> []
 													<div> [+]

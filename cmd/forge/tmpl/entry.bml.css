@@ -1129,15 +1129,19 @@
 	text-vertical-align:top;
 }
 
-.subEntryArea:not(.editMode) .summaryDot.grandSubAdderLoader {
+.subEntryArea:not(.editMode) .grandSubAdderLoader {
 	visibility: hidden;
 }
 
-.grandSubArea:not(:hover) .summaryDot.grandSubAdderLoader {
+.grandSubArea:not(:hover) .grandSubAdderLoader {
 	visibility: hidden;
 }
 
-.summaryDot.grandSubAdderLoader:not(:hover) {
+.grandSubAdderLoader {
+	margin-left: 0.1rem;
+}
+
+.grandSubAdderLoader:not(:hover) {
 	cursor: pointer;
 	background-color: transparent;
 	outline: 1px solid #E0E0E0;
@@ -1145,7 +1149,7 @@
 	color: #DDD;
 }
 
-.summaryDot.grandSubAdderLoader:hover {
+.grandSubAdderLoader:hover {
 	cursor: pointer;
 }
 
@@ -1158,7 +1162,7 @@
 }
 
 .grandSubAdder {
-	flex: 1;
+	width: auto;
 	display: flex;
 	gap: 0.2rem;
 }
