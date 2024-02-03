@@ -439,27 +439,24 @@ window.onload = function() {
 							if (!inSel) {
 								let popup = document.querySelector("#updatePropertyPopup");
 								popup.classList.remove("expose");
-								sel.classList.remove("popupAttached");
 								printErrorStatus("entry not in selection: " + entPath);
 								return;
 							}
 						}
 					}
 					let popup = document.querySelector("#updatePropertyPopup");
-					popup.dataset.entryPath = entPath;
-					popup.dataset.sub = sel.dataset.sub;
-					if (sel.classList.contains("popupAttached")) {
+					if (popup.dataset.entryPath == entPath && popup.dataset.sub == sel.dataset.sub) {
 						// popup is already opened, close
-						popup.classList.remove("expose");
-						sel.classList.remove("popupAttached");
+						if (popup.classList.contains("expose")) {
+							popup.classList.remove("expose");
+						} else {
+							popup.classList.add("expose");
+						}
 						hide = true;
 						return;
 					}
-					let attached = document.querySelector(".statusSelector.popupAttached")
-					if (attached) {
-						// disconnect the selector currently attaching the popup
-						attached.classList.remove("popupAttached");
-					}
+					popup.dataset.entryPath = entPath;
+					popup.dataset.sub = sel.dataset.sub;
 					// reset inner elements
 					popup.dataset.entryType = sel.dataset.entryType;
 					let menu = popup.querySelector(".selectStatusMenu");
@@ -514,7 +511,6 @@ window.onload = function() {
 					popup.style.left = String(offset.left - 6) + "px";
 					popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
 					popup.classList.add("expose");
-					sel.classList.add("popupAttached");
 				} else {
 					// an element inside of #updatePropertyPopup clicked
 					let popup = handle;
@@ -534,7 +530,6 @@ window.onload = function() {
 							}
 							if (!inSel) {
 								popup.classList.remove("expose");
-								sel.classList.remove("popupAttached");
 								printErrorStatus("entry not in selection: " + entPath);
 								return;
 							}
@@ -570,9 +565,7 @@ window.onload = function() {
 									dot.dataset.value = item.dataset.value;
 								}
 								let popup = document.querySelector("#updatePropertyPopup");
-								let sel = document.querySelector(".statusSelector.popupAttached");
 								popup.classList.remove("expose");
-								sel.classList.remove("popupAttached");
 							} else {
 								printErrorStatus(req.responseText);
 							}
@@ -585,11 +578,9 @@ window.onload = function() {
 			}
 			fn()
 		} else {
-			let attached = document.querySelector(".statusSelector.popupAttached");
-			if (attached) {
-				let popup = document.querySelector("#updatePropertyPopup");
+			let popup = document.querySelector("#updatePropertyPopup");
+			if (popup.classList.contains("expose")) {
 				popup.classList.remove("expose");
-				attached.classList.remove("popupAttached");
 				hide = true;
 			}
 		}
@@ -696,8 +687,6 @@ window.onload = function() {
 			let popup = document.querySelector("#updatePropertyPopup");
 			if (popup.classList.contains("expose")) {
 				popup.classList.remove("expose");
-				let sel = document.querySelector(".statusSelector.popupAttached");
-				sel.classList.remove("popupAttached");
 				hide = true;
 			}
 			let userMenu = document.getElementById("userAutoCompleteMenu");
@@ -2989,7 +2978,6 @@ let cleanAutoComplete = null;
 
 function reloadPropertyPicker(popup, prop) {
 	LastPickedProperty[popup.dataset.entryType] = prop;
-
 	let nameInput = popup.querySelector(".propertyPickerName");
 	let valueInput = popup.querySelector(".propertyPickerValue");
 	nameInput.dataset.value = prop;
