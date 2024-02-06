@@ -520,6 +520,7 @@ window.onload = function() {
 				} else {
 					// an element inside of #updatePropertyPopup clicked
 					let popup = handle;
+					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
 					let entPath = popup.dataset.entryPath;
 					let item = event.target.closest(".selectStatusMenuItem");
 					if (item != null) {
