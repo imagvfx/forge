@@ -2065,6 +2065,66 @@ window.onload = function() {
 		}
 	}
 	scrollToTop.style.opacity = scrollToTopOpacity();
+	let assetLinks = document.querySelectorAll(".assetLink");
+	for (let link of assetLinks) {
+		getEntry(link.dataset.entryPath, function(ent) {
+			let dot = link.querySelector(".assetStatus");
+			dot.dataset.entryType = ent.Type;
+			let status = ent.Property["status"];
+			if (status) {
+				dot.dataset.value = status.Value;
+			}
+		});
+	}
+}
+
+let EntryCache = {}
+
+function getCachedEntry(path, onget, attempt) {
+	if (attempt >= 5) {
+		return;
+	}
+	let ent = EntryCache[path];
+	if (ent) {
+		onget(ent);
+		return;
+	}
+	setTimeout(function() { getCachedEntry(path, onget, attempt+1) }, 200);
+}
+
+function getEntry(path, onget) {
+	let ent = EntryCache[path];
+	if (ent === null) {
+		// checking the entry, but not quite complete yet.
+		setTimeout(function() { getCachedEntry(path, onget, 0) }, 200);
+	}
+	if (ent) {
+		onget(ent);
+		return;
+	}
+	EntryCache[path] = null; // mark as the entry is on checking.
+	let r = new XMLHttpRequest();
+	let fdata = new FormData();
+	fdata.append("path", path);
+	r.open("post", "/api/get-entry");
+	r.send(fdata);
+	r.onerror = function() {
+		printErrorStatus("network error occurred. please check whether the server is down.");
+	}
+	r.onload = function() {
+		if (r.status != 200) {
+			printErrorStatus(r.responseText);
+			return;
+		}
+		let j = JSON.parse(r.responseText);
+		if (j.Err != "") {
+			printErrorStatus(j.Err);
+			return;
+		}
+		let ent = j.Msg;
+		EntryCache[path] = ent;
+		onget(ent);
+	}
 }
 
 function scrollToTopOpacity() {

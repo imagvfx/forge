@@ -1184,6 +1184,43 @@
 {{end}}
 {{end}}
 
+
+.assetIcon {
+	width: 0.8rem;
+	height: 0.8rem;
+	background-image: url("/asset/asset.svg");
+	background-size: contain;
+	background-origin: content-box;
+	background-repeat: no-repeat;
+	background-position-y: center;
+	filter: invert(100%) brightness(60%);
+}
+
+.assetArea {
+	margin-top: 0.3rem;
+	display: flex;
+	gap: 0.3rem;
+	flex-wrap: wrap;
+}
+
+.assetLink {
+	font-size: 0.55rem;
+	display: flex;
+	gap: 0.2rem;
+	border: 1px solid #ddd;
+	border-radius: 0.4rem;
+	padding: 1px 4px;
+	align-items: center;
+	min-width: 0;
+}
+
+.assetStatus {
+	width: 0.25rem !important;
+	height: 0.25rem !important;
+	border-radius: 0.25rem;
+	border: 1px solid #ccc;
+}
+
 .infoCategoryToggle {
 	width: fit-content;
 	display: flex;

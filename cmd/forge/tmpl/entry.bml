@@ -504,8 +504,16 @@
 												]
 												{{end}}
 											]
-											{{end}}
 											<div class="flexSpacer"> []
+											{{with $asset := index .Property "asset"}}
+											{{with $val := $asset.Value}}
+											<div class="assetIcon"> []
+											<div class="assetArea"> [
+												{{handleAsset $val}}
+											]
+											{{end}}
+											{{end}}
+											{{end}}
 											<img class="thumbnailViewExpander" src="/asset/expander.svg"> []
 										]
 										<div class="subEntryProperties"> [
