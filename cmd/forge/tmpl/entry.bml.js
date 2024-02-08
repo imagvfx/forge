@@ -87,6 +87,16 @@ window.onload = function() {
 			window.location.href = url.toString();
 			return;
 		}
+		if (event.target.classList.contains("assetLink")) {
+			let t = event.target;
+			let query = "asset=" + t.dataset.entryPath;
+			let path = document.querySelector("#searchArea").dataset.searchFrom;
+			let url = new URL(path, window.location.origin);
+			url.searchParams.set("search", "1");
+			url.searchParams.set("search_query", query);
+			window.location.href = url.toString();
+			return;
+		}
 		let hideBtn = event.target.closest("#sideMenuHideButton");
 		if (hideBtn) {
 			let left = hideBtn.closest(".left");

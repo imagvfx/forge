@@ -1212,6 +1212,7 @@
 	padding: 1px 4px;
 	align-items: center;
 	min-width: 0;
+	cursor: pointer;
 }
 
 .assetStatus {
