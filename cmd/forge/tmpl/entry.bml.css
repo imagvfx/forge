@@ -1225,6 +1225,10 @@
 	cursor: pointer;
 }
 
+.keyshotLink.fail {
+	color: #aaa;
+}
+
 .keyshotStatus {
 	width: 0.25rem !important;
 	height: 0.25rem !important;
@@ -1263,6 +1267,10 @@
 	align-items: center;
 	min-width: 0;
 	cursor: pointer;
+}
+
+.assetLink.fail {
+	color: #888;
 }
 
 .assetStatus {

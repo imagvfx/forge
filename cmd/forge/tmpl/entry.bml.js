@@ -2087,25 +2087,39 @@ window.onload = function() {
 	scrollToTop.style.opacity = scrollToTopOpacity();
 	let assetLinks = document.querySelectorAll(".assetLink");
 	for (let link of assetLinks) {
-		getEntry(link.dataset.entryPath, function(ent) {
-			let dot = link.querySelector(".assetStatus");
-			dot.dataset.entryType = ent.Type;
-			let status = ent.Property["status"];
-			if (status) {
-				dot.dataset.value = status.Value;
-			}
-		});
+		getEntry(
+			link.dataset.entryPath,
+			function(ent) {
+				let dot = link.querySelector(".assetStatus");
+				dot.dataset.entryType = ent.Type;
+				let status = ent.Property["status"];
+				if (status) {
+					dot.dataset.value = status.Value;
+				}
+			},
+			function(err) {
+				link.classList.add("fail");
+				link.title = err;
+			},
+		);
 	}
 	let keyshotLinks = document.querySelectorAll(".keyshotLink");
 	for (let link of keyshotLinks) {
-		getEntry(link.dataset.entryPath, function(ent) {
-			let dot = link.querySelector(".keyshotStatus");
-			dot.dataset.entryType = ent.Type;
-			let status = ent.Property["status"];
-			if (status) {
-				dot.dataset.value = status.Value;
-			}
-		});
+		getEntry(
+			link.dataset.entryPath,
+			function(ent) {
+				let dot = link.querySelector(".keyshotStatus");
+				dot.dataset.entryType = ent.Type;
+				let status = ent.Property["status"];
+				if (status) {
+					dot.dataset.value = status.Value;
+				}
+			},
+			function(err) {
+				link.classList.add("fail");
+				link.title = err;
+			},
+		);
 	}
 }
 
@@ -2123,7 +2137,7 @@ function getCachedEntry(path, onget, attempt) {
 	setTimeout(function() { getCachedEntry(path, onget, attempt+1) }, 200);
 }
 
-function getEntry(path, onget) {
+function getEntry(path, onget, onfail) {
 	let ent = EntryCache[path];
 	if (ent === null) {
 		// checking the entry, but not quite complete yet.
@@ -2143,13 +2157,14 @@ function getEntry(path, onget) {
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	r.onload = function() {
-		if (r.status != 200) {
-			printErrorStatus(r.responseText);
-			return;
+		let j = null;
+		try {
+			j = JSON.parse(r.responseText);
+		} catch(err) {
+			onfail(r.responseText);
 		}
-		let j = JSON.parse(r.responseText);
 		if (j.Err != "") {
-			printErrorStatus(j.Err);
+			onfail(j.Err);
 			return;
 		}
 		let ent = j.Msg;
