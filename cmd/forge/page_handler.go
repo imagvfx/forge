@@ -124,6 +124,24 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		return template.HTML(res)
 	},
+	"handleKeyshot": func(asset string) template.HTML {
+		lines := strings.Split(asset, "\n")
+		res := ""
+		for _, ln := range lines {
+			ln = strings.TrimSpace(ln)
+			if !strings.HasPrefix(ln, "/") {
+				continue
+			}
+			toks := strings.Split(ln, "/")
+			name := toks[len(toks)-1]
+			if len(ln) == 1 {
+				// show root as /
+				name = "/"
+			}
+			res += fmt.Sprintf(`<div class="keyshotLink" data-entry-path="%s"><div class="keyshotStatus statusDot"></div>%s</div>`, ln, name)
+		}
+		return template.HTML(res)
+	},
 	"sortProperty": func(p string) string {
 		if len(p) == 0 {
 			return ""

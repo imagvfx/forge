@@ -505,14 +505,28 @@
 												{{end}}
 											]
 											<div class="flexSpacer"> []
-											{{with $asset := index .Property "asset"}}
-											{{with $val := $asset.Value}}
-											<div class="assetIcon"> []
-											<div class="assetArea"> [
-												{{handleAsset $val}}
+											<div class="linkedEntryArea"> [
+												{{with $keyshot := index .Property "keyshot"}}
+												{{with $val := $keyshot.Value}}
+												<div class="keyshotArea"> [
+													<div class="keyshotHeader"> [
+														<div class="keyshotIcon" title="keyshot"> []
+													]
+													{{handleKeyshot $val}}
+												]
+												{{end}}
+												{{end}}
+												{{with $asset := index .Property "asset"}}
+												{{with $val := $asset.Value}}
+												<div class="assetArea"> [
+													<div class="assetHeader"> [
+														<div class="assetIcon" title="asset"> []
+													]
+													{{handleAsset $val}}
+												]
+												{{end}}
+												{{end}}
 											]
-											{{end}}
-											{{end}}
 											{{end}}
 											<img class="thumbnailViewExpander" src="/asset/expander.svg"> []
 										]

@@ -87,6 +87,16 @@ window.onload = function() {
 			window.location.href = url.toString();
 			return;
 		}
+		if (event.target.classList.contains("keyshotLink")) {
+			let t = event.target;
+			let query = "keyshot=" + t.dataset.entryPath;
+			let path = document.querySelector("#searchArea").dataset.searchFrom;
+			let url = new URL(path, window.location.origin);
+			url.searchParams.set("search", "1");
+			url.searchParams.set("search_query", query);
+			window.location.href = url.toString();
+			return;
+		}
 		if (event.target.classList.contains("assetLink")) {
 			let t = event.target;
 			let query = "asset=" + t.dataset.entryPath;
@@ -2079,6 +2089,17 @@ window.onload = function() {
 	for (let link of assetLinks) {
 		getEntry(link.dataset.entryPath, function(ent) {
 			let dot = link.querySelector(".assetStatus");
+			dot.dataset.entryType = ent.Type;
+			let status = ent.Property["status"];
+			if (status) {
+				dot.dataset.value = status.Value;
+			}
+		});
+	}
+	let keyshotLinks = document.querySelectorAll(".keyshotLink");
+	for (let link of keyshotLinks) {
+		getEntry(link.dataset.entryPath, function(ent) {
+			let dot = link.querySelector(".keyshotStatus");
 			dot.dataset.entryType = ent.Type;
 			let status = ent.Property["status"];
 			if (status) {
