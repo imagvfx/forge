@@ -1887,9 +1887,8 @@ window.onload = function() {
 								// TODO: handle this gracefully
 								continue;
 							}
-							let adderLoader = subEnt.querySelector(".grandSubAdderLoader");
 							let gsubEnts = subEnt.querySelector(`.grandSubEntries`);
-							gsubEnts.insertBefore(gsub, adderLoader);
+							gsubEnts.append(gsub);
 							// TODO: hover on the new gsub entries doesn't work
 						}
 						let gsubArea = thisEnt.querySelector(".grandSubArea");
