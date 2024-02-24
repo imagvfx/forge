@@ -485,7 +485,7 @@
 														{{if and false (ne $i 0)}}
 														<div style="color:#aaa"> [+]
 														{{end}}
-														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} summaryLabeler statusSelector {{if ne $i 0}}nonDirect{{end}} grandSubEntry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}" data-assignee="{{$assignee}}" data-due="{{$due}}"> [
+														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} summaryLabeler statusSelector {{if ne $i 0}}nonDirect{{end}} grandSubEntry entry" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}" data-assignee="{{$assignee}}" data-due="{{$due}}"> [
 															{{$gsName}}
 														]
 														<div class="gsInfo"> [

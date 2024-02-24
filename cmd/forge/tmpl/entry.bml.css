@@ -1123,6 +1123,10 @@
 	margin-top: 0.15rem;
 }
 
+.grandSubEntry.highlight {
+	outline: 1px solid #88aadd;
+}
+
 .detailView .grandSub.nonDirect::before {
 	color: #ddd;
 	content: "L";

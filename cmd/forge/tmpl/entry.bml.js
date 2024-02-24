@@ -947,15 +947,21 @@ window.onload = function() {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
+			let ents = document.querySelectorAll(".entry:hover");
+			if (ents.length == 0 || ents.length > 2) {
+				return;
+			}
+			let ent = ents[0]; // entry for hightlight
+			let path = ents[0].dataset.entryPath;
+			let sub = "";
+			if (ents.length == 2) {
+				ent = ents[1];
+				sub = ents[1].dataset.sub;
+				path = path + "/" + sub;
+			}
+			event.preventDefault();
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (!subEntArea.classList.contains("editMode") || selEnts.length == 0) {
-				let subEntName = document.querySelector(".subEntryName:hover");
-				if (!subEntName) {
-					return;
-				}
-				event.preventDefault();
-				let ent = subEntName.closest(".entry");
-				let path = ent.dataset.entryPath;
 				let succeeded = function() {
 					printStatus("entry path copied: " + path);
 					ent.classList.add("highlight");
@@ -969,13 +975,36 @@ window.onload = function() {
 				navigator.clipboard.writeText(path).then(succeeded, failed);
 				return;
 			}
-			event.preventDefault();
+			// multiple entries are selected
 			let paths = "";
+			let nTotal = selEnts.length;
+			let nCopied = 0;
+			let copiedEnts = [];
 			for (let ent of selEnts) {
-				paths += ent.dataset.entryPath + "\n";
+				let copied = ent;
+				if (sub) {
+					let subEnt = ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`);
+					if (!subEnt) {
+						continue;
+					}
+					copied = subEnt;
+				}
+				nCopied += 1;
+				copiedEnts.push(copied);
+				let p = ent.dataset.entryPath;
+				if (sub) {
+					p += "/" + sub;
+				}
+				paths += p + "\n";
 			}
 			let succeeded = function() {
-				printStatus(selEnts.length.toString() + " selected entry paths copied");
+				printStatus(nCopied.toString() + "/" + nTotal.toString() + " selected entry paths copied");
+				copiedEnts.forEach(function(ent) {
+					ent.classList.add("highlight");
+					setTimeout(function() {
+						ent.classList.remove("highlight");
+					}, 500);
+				})
 			}
 			let failed = function() {
 				printStatus("failed to copy entry path");
