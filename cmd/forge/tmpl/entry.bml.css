@@ -1284,6 +1284,10 @@
 	border: 1px solid #ccc;
 }
 
+.copyable.highlight {
+	outline: 1px solid #88aadd;
+}
+
 .infoCategoryToggle {
 	width: fit-content;
 	display: flex;

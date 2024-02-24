@@ -89,7 +89,7 @@ window.onload = function() {
 		}
 		if (event.target.classList.contains("keyshotLink")) {
 			let t = event.target;
-			let query = "keyshot=" + t.dataset.entryPath;
+			let query = "keyshot=" + t.dataset.value;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(path, window.location.origin);
 			url.searchParams.set("search", "1");
@@ -99,7 +99,7 @@ window.onload = function() {
 		}
 		if (event.target.classList.contains("assetLink")) {
 			let t = event.target;
-			let query = "asset=" + t.dataset.entryPath;
+			let query = "asset=" + t.dataset.value;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(path, window.location.origin);
 			url.searchParams.set("search", "1");
@@ -947,17 +947,40 @@ window.onload = function() {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
-			let ents = document.querySelectorAll(".entry:hover");
-			if (ents.length == 0 || ents.length > 2) {
+			let ents = document.querySelectorAll(".entry:hover,.copyable:hover");
+			if (ents.length == 0) {
 				return;
 			}
-			let ent = ents[0]; // entry for hightlight
-			let path = ents[0].dataset.entryPath;
+			let ent = ents[ents.length-1];
+			if (ent.classList.contains("copyable")) {
+				let succeeded = function() {
+					let show = ent.dataset.value;
+					if (show.length > 50) {
+						show = show.slice(0, 50) + "...";
+					}
+					printStatus("copied: " + show);
+					ent.classList.add("highlight");
+					setTimeout(function() {
+						ent.classList.remove("highlight");
+					}, 500)
+				}
+				let failed = function() {
+					printStatus("failed to copy entry path");
+				}
+				navigator.clipboard.writeText(ent.dataset.value).then(succeeded, failed);
+				return;
+			}
 			let sub = "";
-			if (ents.length == 2) {
-				ent = ents[1];
-				sub = ents[1].dataset.sub;
-				path = path + "/" + sub;
+			let path = "";
+			if (ent.dataset.sub) {
+				sub = ent.dataset.sub;
+				let parent = ent.parentElement.closest(".entry");
+				if (!parent) {
+					return;
+				}
+				path = parent.dataset.entryPath + "/" + sub;
+			} else {
+				path = ent.dataset.entryPath;
 			}
 			event.preventDefault();
 			let selEnts = document.querySelectorAll(".subEntry.selected");
@@ -2116,7 +2139,7 @@ window.onload = function() {
 	let assetLinks = document.querySelectorAll(".assetLink");
 	for (let link of assetLinks) {
 		getEntry(
-			link.dataset.entryPath,
+			link.dataset.value,
 			function(ent) {
 				let dot = link.querySelector(".assetStatus");
 				dot.dataset.entryType = ent.Type;
@@ -2134,7 +2157,7 @@ window.onload = function() {
 	let keyshotLinks = document.querySelectorAll(".keyshotLink");
 	for (let link of keyshotLinks) {
 		getEntry(
-			link.dataset.entryPath,
+			link.dataset.value,
 			function(ent) {
 				let dot = link.querySelector(".keyshotStatus");
 				dot.dataset.entryType = ent.Type;

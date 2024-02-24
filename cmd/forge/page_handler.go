@@ -120,7 +120,7 @@ var pageHandlerFuncs = template.FuncMap{
 				// show root as /
 				name = "/"
 			}
-			res += fmt.Sprintf(`<div class="assetLink" data-entry-path="%s"><div class="assetStatus statusDot"></div>%s</div>`, ln, name)
+			res += fmt.Sprintf(`<div class="assetLink copyable" data-value="%s"><div class="assetStatus statusDot"></div>%s</div>`, ln, name)
 		}
 		return template.HTML(res)
 	},
@@ -138,7 +138,7 @@ var pageHandlerFuncs = template.FuncMap{
 				// show root as /
 				name = "/"
 			}
-			res += fmt.Sprintf(`<div class="keyshotLink" data-entry-path="%s"><div class="keyshotStatus statusDot"></div>%s</div>`, ln, name)
+			res += fmt.Sprintf(`<div class="keyshotLink copyable" data-value="%s"><div class="keyshotStatus statusDot"></div>%s</div>`, ln, name)
 		}
 		return template.HTML(res)
 	},
