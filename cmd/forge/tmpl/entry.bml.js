@@ -947,6 +947,10 @@ window.onload = function() {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
+			if (getSelection().type == "Range") {
+				// user has selected some text. don't copy anything else.
+				return;
+			}
 			let ents = document.querySelectorAll(".entry:hover,.grandSubEntry:hover,.copyable:hover");
 			if (ents.length == 0) {
 				return;
