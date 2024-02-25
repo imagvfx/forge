@@ -1221,9 +1221,10 @@
 	font-size: 0.55rem;
 	display: flex;
 	gap: 0.2rem;
-	border: 1px solid #ddd;
-	border-radius: 0.4rem;
+	outline: 1px solid #ddd;
+	border-radius: 0.34rem;
 	padding: 1px 4px;
+	margin: 1px;
 	align-items: center;
 	min-width: 0;
 	cursor: pointer;
@@ -1265,9 +1266,10 @@
 	font-size: 0.55rem;
 	display: flex;
 	gap: 0.2rem;
-	border: 1px solid #ddd;
-	border-radius: 0.4rem;
+	outline: 1px solid #ddd;
+	border-radius: 0.34rem;
 	padding: 1px 4px;
+	margin: 1px;
 	align-items: center;
 	min-width: 0;
 	cursor: pointer;
