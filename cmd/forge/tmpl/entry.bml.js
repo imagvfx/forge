@@ -1035,6 +1035,31 @@ window.onload = function() {
 			navigator.clipboard.writeText(paths).then(succeeded, failed);
 			return;
 		}
+		if (ctrlPressed && event.code == "KeyG") {
+			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
+				return;
+			}
+			let ents = document.querySelectorAll(".entry:hover");
+			if (ents.length == 0) {
+				return;
+			}
+			event.preventDefault();
+			let ent = ents[ents.length-1];
+			let sub = "";
+			let path = "";
+			if (ent.dataset.sub) {
+				sub = ent.dataset.sub;
+				let parent = ent.parentElement.closest(".entry");
+				if (!parent) {
+					return;
+				}
+				path = parent.dataset.entryPath + "/" + sub;
+			} else {
+				path = ent.dataset.entryPath;
+			}
+			location.href = path;
+			return;
+		}
 	}
 	document.onchange = function(event) {
 		if (event.target.closest(".propertyPickerName")) {
