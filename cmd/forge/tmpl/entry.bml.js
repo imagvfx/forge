@@ -89,7 +89,7 @@ window.onload = function() {
 		}
 		if (event.target.classList.contains("keyshotLink")) {
 			let t = event.target;
-			let query = "keyshot=" + t.dataset.value;
+			let query = "keyshot=" + t.dataset.entryPath;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(path, window.location.origin);
 			url.searchParams.set("search", "1");
@@ -99,7 +99,7 @@ window.onload = function() {
 		}
 		if (event.target.classList.contains("assetLink")) {
 			let t = event.target;
-			let query = "asset=" + t.dataset.value;
+			let query = "asset=" + t.dataset.entryPath;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(path, window.location.origin);
 			url.searchParams.set("search", "1");
@@ -947,17 +947,19 @@ window.onload = function() {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
-			let ents = document.querySelectorAll(".entry:hover,.copyable:hover");
+			let ents = document.querySelectorAll(".entry:hover,.grandSubEntry:hover,.copyable:hover");
 			if (ents.length == 0) {
 				return;
 			}
 			let ent = ents[ents.length-1];
 			if (ent.classList.contains("copyable")) {
+				let field = ent.dataset.copyField;
+				let data = ent.dataset[field];
+				let show = data;
+				if (show.length > 50) {
+					show = show.slice(0, 50) + "...";
+				}
 				let succeeded = function() {
-					let show = ent.dataset.value;
-					if (show.length > 50) {
-						show = show.slice(0, 50) + "...";
-					}
 					printStatus("copied: " + show);
 					ent.classList.add("highlight");
 					setTimeout(function() {
@@ -967,7 +969,7 @@ window.onload = function() {
 				let failed = function() {
 					printStatus("failed to copy entry path");
 				}
-				navigator.clipboard.writeText(ent.dataset.value).then(succeeded, failed);
+				navigator.clipboard.writeText(data).then(succeeded, failed);
 				return;
 			}
 			let sub = "";
@@ -1039,7 +1041,7 @@ window.onload = function() {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
-			let ents = document.querySelectorAll(".entry:hover");
+			let ents = document.querySelectorAll(":is([data-entry-path],[data-sub]):hover");
 			if (ents.length == 0) {
 				return;
 			}
@@ -2164,7 +2166,7 @@ window.onload = function() {
 	let assetLinks = document.querySelectorAll(".assetLink");
 	for (let link of assetLinks) {
 		getEntry(
-			link.dataset.value,
+			link.dataset.entryPath,
 			function(ent) {
 				let dot = link.querySelector(".assetStatus");
 				dot.dataset.entryType = ent.Type;
@@ -2182,7 +2184,7 @@ window.onload = function() {
 	let keyshotLinks = document.querySelectorAll(".keyshotLink");
 	for (let link of keyshotLinks) {
 		getEntry(
-			link.dataset.value,
+			link.dataset.entryPath,
 			function(ent) {
 				let dot = link.querySelector(".keyshotStatus");
 				dot.dataset.entryType = ent.Type;
