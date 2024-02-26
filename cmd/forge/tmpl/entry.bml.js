@@ -1041,7 +1041,7 @@ window.onload = function() {
 			navigator.clipboard.writeText(paths).then(succeeded, failed);
 			return;
 		}
-		if (ctrlPressed && event.code == "KeyG") {
+		if (ctrlPressed && event.code == "KeyD") {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
 				return;
 			}
