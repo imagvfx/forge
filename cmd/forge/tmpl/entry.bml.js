@@ -955,6 +955,7 @@ window.onload = function() {
 			if (ents.length == 0) {
 				return;
 			}
+			event.preventDefault();
 			let ent = ents[ents.length-1];
 			if (ent.classList.contains("copyable")) {
 				let field = ent.dataset.copyField;
@@ -988,7 +989,6 @@ window.onload = function() {
 			} else {
 				path = ent.dataset.entryPath;
 			}
-			event.preventDefault();
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (!subEntArea.classList.contains("editMode") || selEnts.length == 0) {
 				let succeeded = function() {
