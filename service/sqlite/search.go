@@ -149,8 +149,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	// eventually merge it to innerQueries.
 	subQueries := make([]string, 0)
 	subVals := make([]any, 0)
-	allSubQueries := make([]string, 0)
-	allSubVals := make([]any, 0)
+	allSubQueries := make(map[string][]string)
+	allSubVals := make(map[string][]any)
 
 	innerQueries := make([]string, 0)
 	innerVals := make([]any, 0)
@@ -243,7 +243,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
 			if sub != "" {
-				if sub != "(sub)" && sub != "(*)" {
+				if sub != "(sub)" && sub != "(*)" && !strings.Contains(sub, "*") {
 					q += "entries.path GLOB ? AND"
 					queryVals = append(queryVals, "*/"+sub)
 				}
@@ -333,9 +333,16 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				subQueries = append(subQueries, queries...)
 				subVals = append(subVals, queryVals...)
 				continue
-			} else if sub == "(*)" {
-				allSubQueries = append(allSubQueries, queries...)
-				allSubVals = append(allSubVals, queryVals...)
+			} else if sub == "(*)" || strings.Contains(sub, "*") {
+				if sub == "(*)" {
+					sub = "*"
+				}
+				if allSubQueries[sub] == nil {
+					allSubQueries[sub] = make([]string, 0)
+					allSubVals[sub] = make([]any, 0)
+				}
+				allSubQueries[sub] = append(allSubQueries[sub], queries...)
+				allSubVals[sub] = append(allSubVals[sub], queryVals...)
 				continue
 			}
 			target = "parent_id"
@@ -372,40 +379,43 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		innerQueries = append(innerQueries, query)
 		innerVals = append(innerVals, subVals...)
 	}
-	if len(allSubQueries) != 0 {
-		// for example, search "(*).prop=val"
-		queries := make([]string, 0, len(allSubQueries))
-		for _, q := range allSubQueries {
-			queries = append(queries, fmt.Sprintf(`
-				SELECT entries.id, entries.parent_id FROM entries
-				LEFT JOIN properties on entries.id=properties.entry_id
-				LEFT JOIN default_properties ON properties.default_id=default_properties.id
-				LEFT JOIN entry_types ON entries.type_id = entry_types.id
-				WHERE %v
-			`, q))
-		}
-		subQuery := strings.Join(queries, " INTERSECT ")
-		query := fmt.Sprintf(`
-			WITH RECURSIVE parent_of as (
-				SELECT id, parent_id from (
-					%v
+	for sub := range allSubQueries {
+		allQ := allSubQueries[sub]
+		allV := allSubVals[sub]
+		if len(allQ) != 0 {
+			// for example, search "(*).prop=val"
+			queries := make([]string, 0, len(allQ))
+			for _, q := range allQ {
+				queries = append(queries, fmt.Sprintf(`
+					SELECT entries.id, entries.parent_id FROM entries
+					LEFT JOIN properties on entries.id=properties.entry_id
+					LEFT JOIN default_properties ON properties.default_id=default_properties.id
+					LEFT JOIN entry_types ON entries.type_id = entry_types.id
+					WHERE entries.path GLOB %v AND %v
+				`, "'*/"+sub+"'", q))
+			}
+			subQuery := strings.Join(queries, " INTERSECT ")
+			query := fmt.Sprintf(`
+				WITH RECURSIVE parent_of as (
+					SELECT id, parent_id from (
+						%v
+					)
+					UNION ALL
+					SELECT
+						parent_of.id,
+						(SELECT parent_id from entries WHERE id=parent_of.parent_id) ancestor
+					FROM parent_of
+					WHERE ancestor IS NOT NULL
 				)
-				UNION ALL
-				SELECT
-					parent_of.id,
-					(SELECT parent_id from entries WHERE id=parent_of.parent_id) ancestor
-				FROM parent_of
-				WHERE ancestor IS NOT NULL
-			)
-			SELECT DISTINCT parent_of.parent_id FROM parent_of
-			UNION
-			SELECT id FROM (%v)
-		`, subQuery, subQuery)
-		innerQueries = append([]string{query}, innerQueries...)
-		innerVals = append(allSubVals, innerVals...)
-		innerVals = append(allSubVals, innerVals...)
+				SELECT DISTINCT parent_of.parent_id FROM parent_of
+				UNION
+				SELECT id FROM (%v)
+			`, subQuery, subQuery)
+			innerQueries = append([]string{query}, innerQueries...)
+			innerVals = append(allV, innerVals...)
+			innerVals = append(allV, innerVals...)
+		}
 	}
-
 	// build main query
 	queryTmpl := `
 		SELECT
