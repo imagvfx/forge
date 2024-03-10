@@ -399,11 +399,10 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			)
 			SELECT DISTINCT parent_of.parent_id FROM parent_of
 			UNION
-			SELECT DISTINCT parent_of.id FROM parent_of
-		`, subQuery)
-		// It seems 'WITH RECURSIVE' should be the first sub-query
-		// TODO: I don't like that I should SELECT twice, but currently out of ideas.
+			SELECT id FROM (%v)
+		`, subQuery, subQuery)
 		innerQueries = append([]string{query}, innerQueries...)
+		innerVals = append(allSubVals, innerVals...)
 		innerVals = append(allSubVals, innerVals...)
 	}
 
