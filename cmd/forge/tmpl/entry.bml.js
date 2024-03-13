@@ -1885,13 +1885,10 @@ window.onload = function() {
 			if (event.key == "Enter") {
 				event.preventDefault();
 				let thisEnt = event.target.closest(".subEntry");
-				let creating = input.textContent;
-				let subs = [];
-				for (let sub of creating.split(" ")) {
-					sub = sub.trim();
-					if (sub) {
-						subs.push(sub);
-					}
+				let sub = input.textContent;
+				if (sub.includes(" ")) {
+					printErrorStatus("cannot create entry with name that has space: " + sub);
+					return;
 				}
 				let selected = document.querySelectorAll(".subEntry.selected");
 				if (selected.length == 0) {
@@ -1900,7 +1897,7 @@ window.onload = function() {
 				let paths = [];
 				let types = [];
 				for (let sel of selected) {
-					if (sel.querySelector(`.grandSubEntry[data-name="${creating}"]`)) {
+					if (sel.querySelector(`.grandSubEntry[data-sub="${sub}"]`)) {
 						// The parent already has entry we want to create.
 						continue;
 					}
@@ -1908,17 +1905,13 @@ window.onload = function() {
 					if (parent == "/") {
 						parent = "";
 					}
-					for (let sub of subs) {
-						if (sel.querySelector(`.grandSubEntry[data-sub="${sub}"]`)) {
-							continue;
-						}
-						paths.push(parent + "/" + sub);
-						// possibleTypes actually should just a type here.
-						types.push(sel.dataset.possibleSubTypes);
-					}
+					paths.push(parent + "/" + sub);
+					// BUG: 'fx/a' entry should follow possibleSubTypes of 'fx', not selected entry
+					// find real types for grand sub entries
+					types.push(sel.dataset.possibleSubTypes);
 				}
 				if (paths.length == 0) {
-					printStatus("nothing to do; all the entries already have '" + creating + "' entry");
+					printStatus("nothing to do; all the entries already have '" + sub + "' entry");
 					return;
 				}
 				let formData = new FormData();
@@ -1957,9 +1950,14 @@ window.onload = function() {
 						let ents = resp.Msg;
 						for (let ent of ents) {
 							let path = ent.Path;
-							let toks = path.split("/");
-							let sub = toks.pop();
-							let parent = toks.join("/");
+							if (!path.endsWith(sub)) {
+								console.log("wanted to create sub entry" + sub + " but actaully created:" + path);
+								return;
+							}
+							let parent = path.slice(0, path.length - sub.length - 1);
+							if (parent == "") {
+								parent = "/";
+							}
 							let prop = ent.Property;
 							let tmpl = document.createElement("template");
 							tmpl.innerHTML = `<div class="summaryDot summaryLabeler statusSelector grandSubEntry"></div>`;
