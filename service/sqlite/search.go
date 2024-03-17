@@ -147,8 +147,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 
 	// handle '(sub)', '(*)' queries separately to join them with INTERSECT.
 	// eventually merge it to innerQueries.
-	subQueries := make([]string, 0)
-	subVals := make([]any, 0)
+	subQueries := make(map[string][]string)
+	subVals := make(map[string][]any)
 	allSubQueries := make(map[string][]string)
 	allSubVals := make(map[string][]any)
 
@@ -242,12 +242,6 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		} else {
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
-			if sub != "" {
-				if sub != "(sub)" && sub != "(*)" && !strings.Contains(sub, "*") {
-					q += "entries.path GLOB ? AND"
-					queryVals = append(queryVals, "*/"+sub)
-				}
-			}
 			not := ""
 			if wh.Exclude {
 				not = "NOT"
@@ -327,13 +321,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 			q += "))"
 			queries = append(queries, q)
 		}
-		target := "id"
 		if sub != "" {
-			if sub == "(sub)" {
-				subQueries = append(subQueries, queries...)
-				subVals = append(subVals, queryVals...)
-				continue
-			} else if sub == "(*)" || strings.Contains(sub, "*") {
+			if sub == "(*)" || strings.Contains(sub, "*") {
 				if sub == "(*)" {
 					sub = "*"
 				}
@@ -343,41 +332,60 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				allSubQueries[sub] = append(allSubQueries[sub], queries...)
 				allSubVals[sub] = append(allSubVals[sub], queryVals...)
-				continue
+			} else if sub == "(sub)" {
+				subQueries[""] = queries
+				subVals[""] = queryVals
+			} else {
+				subQueries[sub] = queries
+				subVals[sub] = queryVals
 			}
-			target = "parent_id"
+			continue
 		}
 		where := "TRUE"
 		if len(queries) != 0 {
 			where = strings.Join(queries, " AND ")
 		}
 		query := fmt.Sprintf(`
-			SELECT entries.%v FROM entries
+			SELECT entries.id FROM entries
 			LEFT JOIN properties ON entries.id=properties.entry_id
 			LEFT JOIN default_properties ON properties.default_id=default_properties.id
 			LEFT JOIN entry_types ON entries.type_id = entry_types.id
 			WHERE %v
-		`, target, where)
+		`, where)
 		innerQueries = append(innerQueries, query)
 		innerVals = append(innerVals, queryVals...)
 	}
 	if len(subQueries) != 0 {
 		// for example, search "(sub).prop=val"
+		subs := make([]string, 0, len(subQueries))
 		queries := make([]string, 0, len(subQueries))
-		for _, q := range subQueries {
-			queries = append(queries, fmt.Sprintf(`
-				SELECT entries.id FROM entries
-				LEFT JOIN properties on entries.id=properties.entry_id
-				LEFT JOIN default_properties ON properties.default_id=default_properties.id
-				LEFT JOIN entry_types ON entries.type_id = entry_types.id
-				WHERE %v
-			`, q))
+		for sub, qs := range subQueries {
+			subs = append(subs, sub)
+			for _, q := range qs {
+				if sub != "" {
+					q += fmt.Sprintf(" AND entries.path GLOB '*/%v'", sub)
+				}
+				pq := fmt.Sprintf(`
+					SELECT entries.id FROM entries
+					LEFT JOIN properties on entries.id=properties.entry_id
+					LEFT JOIN default_properties ON properties.default_id=default_properties.id
+					LEFT JOIN entry_types ON entries.type_id = entry_types.id
+					WHERE %v
+				`, q)
+				nParent := strings.Count(sub, "/") + 1
+				for range nParent {
+					pq = fmt.Sprintf("SELECT DISTINCT entries.parent_id FROM entries WHERE entries.id IN (%v)", pq)
+				}
+				queries = append(queries, pq)
+			}
 		}
 		query := fmt.Sprintf(`
-			SELECT DISTINCT entries.parent_id FROM entries WHERE entries.id IN (%v)
+			SELECT DISTINCT entries.id FROM entries WHERE entries.id IN (%v)
 		`, strings.Join(queries, " INTERSECT "))
 		innerQueries = append(innerQueries, query)
-		innerVals = append(innerVals, subVals...)
+		for _, sub := range subs {
+			innerVals = append(innerVals, subVals[sub]...)
+		}
 	}
 	for sub := range allSubQueries {
 		allQ := allSubQueries[sub]
