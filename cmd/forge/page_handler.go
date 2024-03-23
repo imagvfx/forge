@@ -111,8 +111,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	resultsFromSearch := false
 	var subEnts []*forge.Entry
 	search := r.FormValue("search")
+	if r.FormValue("search_query") != "" {
+		// previously we used "search_query" field instead of "search".
+		search = r.FormValue("search_query")
+	}
 	searchEntryType := r.FormValue("search_entry_type")
-	searchQuery := r.FormValue("search_query")
 	queryHasType := false
 	if search != "" {
 		// User pressed search button,
@@ -127,12 +130,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			setting.EntryPageSearchEntryType = searchEntryType
 		}
 		err := func() error {
-			if searchEntryType == "" && searchQuery == "" {
+			if searchEntryType == "" && search == "" {
 				// user not searching
 				return nil
 			}
 			resultsFromSearch = true
-			queries := strings.Fields(searchQuery)
+			queries := strings.Fields(search)
 			mode := ""
 			for _, q := range queries {
 				if strings.HasPrefix(q, "-mode:") {
@@ -169,7 +172,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			if !queryHasType && searchEntryType != "" {
 				typeQuery = "type=" + searchEntryType
 			}
-			ents, err := h.server.SearchEntries(ctx, path, typeQuery+" "+searchQuery)
+			ents, err := h.server.SearchEntries(ctx, path, typeQuery+" "+search)
 			if err != nil {
 				return err
 			}
@@ -715,7 +718,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		NextEntry                 *forge.Entry
 		EntryPinned               bool
 		SearchEntryType           string
-		SearchQuery               string
+		Search                    string
 		QueryHasType              bool
 		ResultsFromSearch         bool
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
@@ -749,7 +752,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		NextEntry:                 nextEntry,
 		EntryPinned:               entryPinned,
 		SearchEntryType:           searchEntryType,
-		SearchQuery:               searchQuery,
+		Search:                    search,
 		QueryHasType:              queryHasType,
 		ResultsFromSearch:         resultsFromSearch,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,

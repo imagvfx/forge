@@ -38,7 +38,11 @@ window.onload = function() {
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(window.location.href);
 			url.pathname = path;
-			let query = url.searchParams.get("search_query");
+			let query = url.searchParams.get("search");
+			if (url.searchParams.get("search_query")) {
+				// legacy url
+				query = url.searchParams.get("search_query");
+			}
 			if (event.altKey || event.metaKey) {
 				// add query
 				if (!query) {
@@ -51,8 +55,7 @@ window.onload = function() {
 				// replace query
 				query = event.target.dataset.searchQuery;
 			}
-			url.searchParams.set("search", "1");
-			url.searchParams.set("search_query", query);
+			url.searchParams.set("search", query);
 			window.location.href = url.toString();
 			return;
 		}
@@ -63,17 +66,20 @@ window.onload = function() {
 			let url = new URL(window.location.href);
 			url.pathname = path;
 			let in_search = false;
-			if (url.searchParams.get("search") == 1) {
+			if (url.searchParams.get("search")) {
 				in_search = true;
 			}
 			if (event.altKey || event.metaKey || !in_search) {
-				url.searchParams.set("search", "1");
-				url.searchParams.set("search_query", tag);
+				url.searchParams.set("search", tag);
 				window.location.href = url.toString();
 				return;
 			}
 			let already_exists = false;
-			let query = url.searchParams.get("search_query");
+			let query = url.searchParams.get("search");
+			if (url.searchParams.get("search_query")) {
+				// legacy url
+				query = url.searchParams.get("search_query");
+			}
 			for (let q of query.split(" ")) {
 				if (q == tag) {
 					already_exists = true;
@@ -83,7 +89,7 @@ window.onload = function() {
 			if (!already_exists) {
 				query += " " + tag
 			}
-			url.searchParams.set("search_query", query)
+			url.searchParams.set("search", query)
 			window.location.href = url.toString();
 			return;
 		}
@@ -92,8 +98,7 @@ window.onload = function() {
 			let query = "keyshot=" + t.dataset.entryPath;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(path, window.location.origin);
-			url.searchParams.set("search", "1");
-			url.searchParams.set("search_query", query);
+			url.searchParams.set("search", query);
 			window.location.href = url.toString();
 			return;
 		}
@@ -102,8 +107,7 @@ window.onload = function() {
 			let query = "asset=" + t.dataset.entryPath;
 			let path = document.querySelector("#searchArea").dataset.searchFrom;
 			let url = new URL(path, window.location.origin);
-			url.searchParams.set("search", "1");
-			url.searchParams.set("search_query", query);
+			url.searchParams.set("search", query);
 			window.location.href = url.toString();
 			return;
 		}
@@ -1162,7 +1166,7 @@ window.onload = function() {
 		let formData = new FormData(searchForm);
 		if (event.ctrlKey || event.metaKey) {
 			// search by entry path mode
-			let query = formData.get("search_query");
+			let query = formData.get("search");
 			let toks = [];
 			for (let tok of query.split(" ")) {
 				tok = tok.trim();
@@ -1178,7 +1182,7 @@ window.onload = function() {
 			if (toks.length != 0) {
 				newQuery += " " + toks.join(" ")
 			}
-			formData.set("search_query", newQuery);
+			formData.set("search", newQuery);
 		}
 		let param = new URLSearchParams(formData).toString();
 		location.href = searchForm.action + "?" + param;
@@ -1186,8 +1190,36 @@ window.onload = function() {
 	let searchButton = document.querySelector("#searchButton");
 	searchButton.onclick = function(event) {
 		let formData = new FormData(searchForm);
-		let param = new URLSearchParams(formData).toString();
-		location.href = searchForm.action + "?" + param;
+		let param = new URLSearchParams(formData);
+		if (!param.get("search_entry_type")) {
+			param.delete("search_entry_type");
+		}
+		location.href = searchForm.action + "?" + param.toString();
+	}
+	let addQuickSearchForm = document.querySelector("#addQuickSearchForm");
+	addQuickSearchForm.onsubmit = function(event) {
+		let searchFormData = new FormData(searchForm);
+		let searchFormParam = new URLSearchParams(searchFormData);
+		if (!searchFormParam.get("search_entry_type")) {
+			searchFormParam.delete("search_entry_type");
+		}
+		let req = new XMLHttpRequest();
+		let formData = new FormData(addQuickSearchForm);
+		formData.set("update_quick_search", "1");
+		formData.set("quick_search_value", searchFormParam.toString());
+		req.open("post", "/api/update-user-setting");
+		req.onerror = function() {
+			printErrorStatus("network error occurred. please check whether the server is down.");
+		}
+		req.onload = function() {
+			if (req.status != 200) {
+				printErrorStatus(req.responseText);
+				return;
+			}
+			location.reload();
+		}
+		req.send(formData);
+		return false;
 	}
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
@@ -2309,8 +2341,7 @@ function submitForm(form) {
 
 function search(query) {
 	let formData = new FormData();
-	formData.append("search", "1");
-	formData.append("search_query", query);
+	formData.append("search", query);
 	let param = new URLSearchParams(formData).toString();
 	location.href = location.pathname + "?" + param;
 }
@@ -2614,7 +2645,7 @@ function refreshInfoValue(path, ctg, name, p) {
 			line = line.trim();
 			let a = document.createElement("a");
 			a.classList.add("tagLink");
-			a.href = "/"+show+"?search=1&search_query="+p.Name+"="+encodeURIComponent(line)
+			a.href = "/"+show+"?search="+p.Name+"="+encodeURIComponent(line)
 			let text = document.createTextNode(line);
 			a.appendChild(text);
 			valueElem.appendChild(a);
