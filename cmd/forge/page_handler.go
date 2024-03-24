@@ -47,6 +47,12 @@ func handleError(w http.ResponseWriter, err error) {
 	http.Error(w, err.Error(), status)
 }
 
+type pageHandler struct {
+	server *forge.Server
+	cfg    *forge.Config
+	login  *loginHandler
+}
+
 func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.ResponseWriter, r *http.Request) error) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := func() error {

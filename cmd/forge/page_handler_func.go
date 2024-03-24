@@ -13,12 +13,6 @@ import (
 	"github.com/imagvfx/forge"
 )
 
-type pageHandler struct {
-	server *forge.Server
-	cfg    *forge.Config
-	login  *loginHandler
-}
-
 var pageHandlerFuncs = template.FuncMap{
 	"inc": func(i int) int {
 		return i + 1
