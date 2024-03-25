@@ -1184,8 +1184,11 @@ window.onload = function() {
 			}
 			formData.set("search", newQuery);
 		}
-		let param = new URLSearchParams(formData).toString();
-		location.href = searchForm.action + "?" + param;
+		let param = new URLSearchParams(formData);
+		if (!param.get("search_entry_type")) {
+			param.delete("search_entry_type");
+		}
+		location.href = searchForm.action + "?" + param.toString();
 	}
 	let searchButton = document.querySelector("#searchButton");
 	searchButton.onclick = function(event) {
