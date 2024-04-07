@@ -849,17 +849,15 @@
 
 .subEntryProperties {
 	flex:1;
-	display:flex;
+	display:grid;
+	grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+	grid-auto-rows: min-content;
 	flex-wrap:wrap;
 	gap:1rem;
 }
 
 .subEntry:not(.expanded) .subEntryProperties {
 	display: none;
-}
-
-.subEntryInfo {
-	width: 12rem;
 }
 
 .subEntryInfoTop {
