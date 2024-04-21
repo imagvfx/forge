@@ -930,6 +930,11 @@
 	user-select: none;
 }
 
+.searchLink.andSearch:before {
+	content: "& ";
+	color: #a87;
+}
+
 .tagLink {
 	display: inline-block;
 	border-radius: 2px;

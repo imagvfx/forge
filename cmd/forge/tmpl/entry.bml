@@ -86,7 +86,7 @@
 							{{range $s := $at}}
 							{{$name := index $s 0}}
 							{{$query := index $s 1}}
-							<div class="searchLink" data-search-query="{{$query}}"> [{{$name}}]
+							<div class="searchLink {{with hasPrefix $query "&"}}andSearch{{end}}" data-search-query="{{$query}}"> [{{$name}}]
 							{{end}}
 							<div class="flexBreakLine"> []
 							{{end}}

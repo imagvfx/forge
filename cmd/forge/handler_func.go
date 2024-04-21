@@ -33,6 +33,7 @@ var pageHandlerFuncs = template.FuncMap{
 	"has": func(s, tok string) bool {
 		return strings.Contains(s, tok)
 	},
+	"hasPrefix":  strings.HasPrefix,
 	"trim":       strings.TrimSpace,
 	"trimPrefix": strings.TrimPrefix,
 	"remapFrom": func(s string) string {
