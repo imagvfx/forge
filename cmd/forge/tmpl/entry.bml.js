@@ -649,7 +649,7 @@ window.onload = function() {
 				ent = gs.querySelector(".grandSubEntry");
 			}
 			let entType = ent.dataset.entryType;
-			search("type=" + entType + " due=" + due);
+			goSearch("type=" + entType + " due=" + due);
 			hide = true;
 		}
 		if (event.target.closest(".infoContextMenuLoader") == null) {
@@ -1164,9 +1164,9 @@ window.onload = function() {
 			return;
 		}
 		let formData = new FormData(searchForm);
+		let query = formData.get("search");
 		if (event.ctrlKey || event.metaKey) {
 			// search by entry path mode
-			let query = formData.get("search");
 			let toks = [];
 			for (let tok of query.split(" ")) {
 				tok = tok.trim();
@@ -1182,13 +1182,9 @@ window.onload = function() {
 			if (toks.length != 0) {
 				newQuery += " " + toks.join(" ")
 			}
-			formData.set("search", newQuery);
+			query = newQuery;
 		}
-		let param = new URLSearchParams(formData);
-		if (!param.get("search_entry_type")) {
-			param.delete("search_entry_type");
-		}
-		location.href = searchForm.action + "?" + param.toString();
+		goSearch(query);
 	}
 	let searchButton = document.querySelector("#searchButton");
 	searchButton.onclick = function(event) {
@@ -1457,7 +1453,25 @@ window.onload = function() {
 	let quickSearches = document.getElementsByClassName("quickSearchLink");
 	for (let qs of quickSearches) {
 		qs.onclick = function(event) {
-			window.location.href = qs.dataset.link;
+			// for historical reason, the data encoded as uri string
+			let p = new URLSearchParams(qs.dataset.search);
+			let query = "";
+			if (p.get("search_entry_type")) {
+				query += "type=" + p.get("search_entry_type");
+			}
+			if (p.get("search_query")) {
+				if (query) {
+					query += " ";
+				}
+				query = p.get("search_query");
+			}
+			if (p.get("search")) {
+				if (query) {
+					query += " ";
+				}
+				query += p.get("search");
+			}
+			goSearch(query);
 			return;
 		}
 		qs.ondragstart = function(event) {
@@ -2342,11 +2356,30 @@ function submitForm(form) {
 	}
 }
 
-function search(query) {
-	let formData = new FormData();
-	formData.append("search", query);
-	let param = new URLSearchParams(formData).toString();
-	location.href = location.pathname + "?" + param;
+function goSearch(query) {
+	let p = new URLSearchParams();
+	if (query.startsWith("& ")) {
+		// add to the current query
+		p = new URLSearchParams(window.location.search);
+		let q = p.get("search");
+		if (!q) {
+			q = "";
+		}
+		let toks = query.split(" ").slice(1);
+		for (let t of toks) {
+			t = t.trim();
+			if (!t) {
+				continue;
+			}
+			if (q) {
+				q += " ";
+			}
+			q += t;
+		}
+		query = q;
+	}
+	p.set("search", query);
+	location.href = location.pathname + "?" + p.toString();
 }
 
 function dday(due) {
