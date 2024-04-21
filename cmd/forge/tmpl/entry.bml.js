@@ -35,28 +35,7 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.classList.contains("searchLink")) {
-			let path = document.querySelector("#searchArea").dataset.searchFrom;
-			let url = new URL(window.location.href);
-			url.pathname = path;
-			let query = url.searchParams.get("search");
-			if (url.searchParams.get("search_query")) {
-				// legacy url
-				query = url.searchParams.get("search_query");
-			}
-			if (event.altKey || event.metaKey) {
-				// add query
-				if (!query) {
-					query = "";
-				} else {
-					query += " ";
-				}
-				query += event.target.dataset.searchQuery;
-			} else {
-				// replace query
-				query = event.target.dataset.searchQuery;
-			}
-			url.searchParams.set("search", query);
-			window.location.href = url.toString();
+			goSearch(event.target.dataset.searchQuery);
 			return;
 		}
 		if (event.target.classList.contains("tagLink")) {
