@@ -1164,15 +1164,14 @@ window.onload = function() {
 			query = newQuery;
 		}
 		goSearch(query);
+		return;
 	}
 	let searchButton = document.querySelector("#searchButton");
 	searchButton.onclick = function(event) {
 		let formData = new FormData(searchForm);
-		let param = new URLSearchParams(formData);
-		if (!param.get("search_entry_type")) {
-			param.delete("search_entry_type");
-		}
-		location.href = searchForm.action + "?" + param.toString();
+		let query = formData.get("search");
+		goSearch(query);
+		return;
 	}
 	let addQuickSearchForm = document.querySelector("#addQuickSearchForm");
 	addQuickSearchForm.onsubmit = function(event) {
@@ -2336,10 +2335,9 @@ function submitForm(form) {
 }
 
 function goSearch(query) {
-	let p = new URLSearchParams();
+	let p = new URLSearchParams(window.location.search);
 	if (query.startsWith("& ")) {
 		// add to the current query
-		p = new URLSearchParams(window.location.search);
 		let q = p.get("search");
 		if (!q) {
 			q = "";
@@ -2356,6 +2354,11 @@ function goSearch(query) {
 			q += t;
 		}
 		query = q;
+	} else {
+		// user might have changed search_entry_type.
+		// in '&' search case search type should not changed.
+		let sel = document.querySelector("#searchTypeSelect");
+		p.set("search_entry_type", sel.value)
 	}
 	p.set("search", query);
 	location.href = location.pathname + "?" + p.toString();
