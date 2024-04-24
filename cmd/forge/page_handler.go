@@ -122,12 +122,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		search = r.FormValue("search_query")
 	}
 	searchEntryType := r.FormValue("search_entry_type")
-	queryHasType := false
-	if search != "" {
-		// User pressed search button,
-		// Note that it rather clear the search if every search field is emtpy.
+	if _, ok := r.Form["search_entry_type"]; ok {
 		if searchEntryType != setting.EntryPageSearchEntryType {
-			// Whether perform search or not, it will remeber the search entry type.
 			err := h.server.UpdateUserSetting(ctx, user, "entry_page_search_entry_type", searchEntryType)
 			if err != nil {
 				return err
@@ -135,6 +131,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			// the update doesn't affect current page
 			setting.EntryPageSearchEntryType = searchEntryType
 		}
+	}
+	queryHasType := false
+	if search != "" || searchEntryType != "" {
+		// User pressed search button,
+		// Note that it rather clear the search if every search field is emtpy.
 		err := func() error {
 			if searchEntryType == "" && search == "" {
 				// user not searching
