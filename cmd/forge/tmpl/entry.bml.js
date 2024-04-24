@@ -2361,7 +2361,8 @@ function goSearch(query) {
 		p.set("search_entry_type", sel.value)
 	}
 	p.set("search", query);
-	location.href = location.pathname + "?" + p.toString();
+	let area = document.querySelector("#searchArea");
+	location.href = area.dataset.searchFrom + "?" + p.toString();
 }
 
 function dday(due) {
