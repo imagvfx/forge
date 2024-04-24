@@ -1441,7 +1441,7 @@ window.onload = function() {
 				if (query) {
 					query += " ";
 				}
-				query = p.get("search_query");
+				query += p.get("search_query");
 			}
 			if (p.get("search")) {
 				if (query) {
