@@ -788,6 +788,33 @@ func (h *apiHandler) handleGetSessionUser(ctx context.Context, w http.ResponseWr
 	return nil
 }
 
+func (h *apiHandler) handleAddUser(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	ctxUser := forge.UserNameFromContext(ctx)
+	isAdmin, err := h.server.IsAdmin(ctx, ctxUser)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return fmt.Errorf("non-admin user cannot add a user: %v", ctxUser)
+	}
+	user := r.FormValue("user")
+	called := r.FormValue("called")
+	_, err = h.server.GetUser(ctx, user)
+	var e *forge.NotFoundError
+	if !errors.As(err, &e) {
+		return err
+	}
+	u := &forge.User{
+		Name:   user,
+		Called: called,
+	}
+	err = h.server.AddUser(ctx, u)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	called := r.FormValue("called")
 	name := forge.UserNameFromContext(ctx)

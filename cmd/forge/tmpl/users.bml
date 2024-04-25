@@ -14,6 +14,11 @@
 				<h1> [
 					Users
 				]
+				<form id="addUserForm" method="post" action="/api/add-user"> [
+					<input name="user" type="text" size="6" style="width:7.5rem" placeholder="user" value=""> []
+					<input name="called" type="text" size="6" style="width:7.5rem" placeholder="called" value=""> []
+					<button> [Add]
+				]
 				{{range $u := $.Users}}
 				<div class="user" data-user="{{$u.Name}}"> [
 					<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
@@ -62,6 +67,16 @@
 }
 
 .one:not(.editMode) .disabledUsers {
+	display: none;
+}
+
+#addUserForm {
+	display: flex;
+	gap: 0.2rem;
+	margin-bottom: 1.2rem;
+}
+
+.one:not(.editMode) #addUserForm {
 	display: none;
 }
 
