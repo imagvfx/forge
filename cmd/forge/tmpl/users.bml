@@ -21,7 +21,12 @@
 				]
 				{{range $u := $.Users}}
 				<div class="user" data-user="{{$u.Name}}"> [
-					<div> [<span class="userID"> [{{$u.Name}}] - {{$u.Called}}]
+					<div> [<span class="userID"> [{{$u.Name}}]]
+					<div> [<span class="userCalled onlyViewMode"> [- {{$u.Called}}]]
+					<form class="updateUserCalledForm onlyEditMode" onsubmit="return false" method="post" action="/api/update-user-called"> [
+						<input name="user" type="hidden" size="6" style="width:7.5rem" placeholder="user" value="{{$u.Name}}"> []
+						<input name="called" type="text" size="6" style="width:7.5rem" placeholder="called" value="{{$u.Called}}"> []
+					]
 					{{if $.UserIsAdmin}}
 					<div class="disableButton button"> [Disable]
 					{{end}}
@@ -95,6 +100,14 @@
 .userID:hover {
 	color: black;
 	text-decoration: underline;
+}
+
+.one:not(.editMode) .onlyEditMode {
+	display: none;
+}
+
+.one.editMode .onlyViewMode {
+	display: none;
 }
 
 .one:not(.editMode) .button {
@@ -196,6 +209,28 @@ window.onload = function() {
 			formData.append("user", user);
 			formData.append("disabled", "0"); // 0 means enable
 			req.open("post", "/api/update-user-disabled");
+			req.onerror = function() {
+				printErrorStatus("network error occurred. please check whether the server is down.");
+			}
+			req.onload = function() {
+				if (req.status != 200) {
+					printErrorStatus(req.responseText);
+					return;
+				}
+				location.reload();
+			}
+			req.send(formData);
+		}
+	}
+	let updateForms = document.querySelectorAll(".updateUserCalledForm");
+	for (let form of updateForms) {
+		form.onkeydown = function(event) {
+			if (event.key != "Enter") {
+				return;
+			}
+			let req = new XMLHttpRequest();
+			let formData = new FormData(form);
+			req.open("post", "/api/update-user-called");
 			req.onerror = function() {
 				printErrorStatus("network error occurred. please check whether the server is down.");
 			}

@@ -816,9 +816,17 @@ func (h *apiHandler) handleAddUser(ctx context.Context, w http.ResponseWriter, r
 }
 
 func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	ctxUser := forge.UserNameFromContext(ctx)
+	isAdmin, err := h.server.IsAdmin(ctx, ctxUser)
+	if err != nil {
+		return err
+	}
+	if ctxUser != user && !isAdmin {
+		return fmt.Errorf("non-admin user cannot update another user: %v", ctxUser)
+	}
 	called := r.FormValue("called")
-	name := forge.UserNameFromContext(ctx)
-	err := h.server.UpdateUserCalled(ctx, name, called)
+	err = h.server.UpdateUserCalled(ctx, user, called)
 	if err != nil {
 		return err
 	}
@@ -829,12 +837,20 @@ func (h *apiHandler) handleUpdateUserCalled(ctx context.Context, w http.Response
 }
 
 func (h *apiHandler) handleUpdateUserDisabled(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := r.FormValue("user")
+	ctxUser := forge.UserNameFromContext(ctx)
+	isAdmin, err := h.server.IsAdmin(ctx, ctxUser)
+	if err != nil {
+		return err
+	}
+	if ctxUser != user && !isAdmin {
+		return fmt.Errorf("non-admin user cannot update another user: %v", ctxUser)
+	}
 	v := r.FormValue("disabled")
 	disabled, err := strconv.ParseBool(v)
 	if err != nil {
 		return err
 	}
-	user := r.FormValue("user")
 	err = h.server.UpdateUserDisabled(ctx, user, disabled)
 	if err != nil {
 		return err
