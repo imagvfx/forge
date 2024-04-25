@@ -14,7 +14,7 @@
 				<h1> [
 					Users
 				]
-				<form id="addUserForm" method="post" action="/api/add-user"> [
+				<form id="addUserForm" class="onlyEditMode" onsubmit="return false" method="post" action="/api/add-user"> [
 					<input name="user" type="text" size="6" style="width:7.5rem" placeholder="user" value=""> []
 					<input name="called" type="text" size="6" style="width:7.5rem" placeholder="called" value=""> []
 					<button> [Add]
@@ -81,10 +81,6 @@
 	margin-bottom: 1.2rem;
 }
 
-.one:not(.editMode) #addUserForm {
-	display: none;
-}
-
 .user {
 	display: flex;
 	color: #444;
@@ -103,11 +99,11 @@
 }
 
 .one:not(.editMode) .onlyEditMode {
-	display: none;
+	display: none !important;
 }
 
 .one.editMode .onlyViewMode {
-	display: none;
+	display: none !important;
 }
 
 .one:not(.editMode) .button {
@@ -221,6 +217,26 @@ window.onload = function() {
 			}
 			req.send(formData);
 		}
+	}
+	let addForm = document.querySelector("#addUserForm");
+	addForm.onkeydown = function(event) {
+		if (event.key != "Enter") {
+			return;
+		}
+		let req = new XMLHttpRequest();
+		let formData = new FormData(addForm);
+		req.open("post", "/api/update-user-called");
+		req.onerror = function() {
+			printErrorStatus("network error occurred. please check whether the server is down.");
+		}
+		req.onload = function() {
+			if (req.status != 200) {
+				printErrorStatus(req.responseText);
+				return;
+			}
+			location.reload();
+		}
+		req.send(formData);
 	}
 	let updateForms = document.querySelectorAll(".updateUserCalledForm");
 	for (let form of updateForms) {
