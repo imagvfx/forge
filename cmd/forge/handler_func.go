@@ -175,7 +175,11 @@ var pageHandlerFuncs = template.FuncMap{
 				if !ok {
 					continue
 				}
-				t += "<div class='searchLink' data-search-from='" + p.EntryPath + "' data-search-query='" + query + "'>" + name + "</div>"
+				andSearch := ""
+				if strings.HasPrefix(query, "&") {
+					andSearch = "andSearch"
+				}
+				t += "<div class='searchLink " + andSearch + "' data-search-from='" + p.EntryPath + "' data-search-query='" + query + "'>" + name + "</div>"
 			} else {
 				// p.Type == text, etc...
 				line = template.HTMLEscapeString(line)
