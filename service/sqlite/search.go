@@ -333,11 +333,11 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				allSubQueries[sub] = append(allSubQueries[sub], queries...)
 				allSubVals[sub] = append(allSubVals[sub], queryVals...)
 			} else if sub == "(sub)" {
-				subQueries[""] = queries
-				subVals[""] = queryVals
+				subQueries[""] = append(subQueries[""], queries...)
+				subVals[""] = append(subVals[""], queryVals...)
 			} else {
-				subQueries[sub] = queries
-				subVals[sub] = queryVals
+				subQueries[sub] = append(subQueries[sub], queries...)
+				subVals[sub] = append(subVals[sub], queryVals...)
 			}
 			continue
 		}
