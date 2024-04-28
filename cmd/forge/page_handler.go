@@ -1226,14 +1226,16 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 					break
 				}
 			}
-			expSubTypes := make([]string, 0)
-			for _, typ := range strings.Fields(exp.Value) {
-				if validType[typ] {
-					expSubTypes = append(expSubTypes, typ)
+			if expSub {
+				expSubTypes := make([]string, 0)
+				for _, typ := range strings.Fields(exp.Value) {
+					if validType[typ] {
+						expSubTypes = append(expSubTypes, typ)
+					}
 				}
+				exposeSub[ent.Type] = expSub
+				exposeSubTypes[ent.Type] = expSubTypes
 			}
-			exposeSub[ent.Type] = expSub
-			exposeSubTypes[ent.Type] = expSubTypes
 		}
 		ents[ent.Type] = append(ents[ent.Type], ent)
 		th, err := h.server.GetThumbnail(ctx, pth)
