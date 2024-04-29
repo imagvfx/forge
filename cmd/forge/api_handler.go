@@ -800,6 +800,9 @@ func (h *apiHandler) handleAddUser(ctx context.Context, w http.ResponseWriter, r
 	user := r.FormValue("user")
 	called := r.FormValue("called")
 	_, err = h.server.GetUser(ctx, user)
+	if err == nil {
+		return fmt.Errorf("user already exists: %v", user)
+	}
 	var e *forge.NotFoundError
 	if !errors.As(err, &e) {
 		return err
