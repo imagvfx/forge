@@ -194,6 +194,10 @@
 	font-size: 0.75rem;
 }
 
+#backupAsExcelButton {
+	cursor: pointer;
+}
+
 .mainEntryBottom {
 	display: flex;
 	flex-wrap: wrap;

@@ -1451,3 +1451,127 @@ func (h *pageHandler) handleDownloadAsExcel(ctx context.Context, w http.Response
 	xl.WriteTo(w)
 	return nil
 }
+
+func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	user := forge.UserNameFromContext(ctx)
+	_, err := h.server.GetUser(ctx, user)
+	if err != nil {
+		return err
+	}
+	root := strings.TrimSpace(r.FormValue("root"))
+	if root == "" {
+		return fmt.Errorf("please specify root path to backup")
+	}
+	ents, err := h.server.SearchEntries(ctx, root, "name:")
+	if err != nil {
+		return err
+	}
+	entsPerType := make(map[string][]*forge.Entry) // [type][]entry
+	thumbnail := make(map[string]*forge.Thumbnail) // [path]thumbnail
+	for _, ent := range ents {
+		if entsPerType[ent.Type] == nil {
+			entsPerType[ent.Type] = make([]*forge.Entry, 0)
+		}
+		entsPerType[ent.Type] = append(entsPerType[ent.Type], ent)
+		thumb, err := h.server.GetThumbnail(ctx, ent.Path)
+		if err != nil {
+			var notFound *forge.NotFoundError
+			if !errors.As(err, &notFound) {
+				return err
+			}
+		}
+		thumbnail[ent.Path] = thumb
+	}
+	for _, ents := range entsPerType {
+		sort.Slice(ents, func(i, j int) bool {
+			return strings.Compare(ents[i].Path, ents[j].Path) <= 0
+		})
+	}
+	propsPerType := make(map[string][]string)
+	for typ, ents := range entsPerType {
+		for _, ent := range ents {
+			// only need to check one per type
+			props := []string{
+				"thumbnail",
+				"path",
+			}
+			for _, p := range ent.Property {
+				props = append(props, p.Name)
+			}
+			propsPerType[typ] = props
+			break
+		}
+	}
+	xl := excelize.NewFile()
+	sheet_idx := 0
+	for typ, ents := range entsPerType {
+		if sheet_idx == 0 {
+			xl.SetSheetName("Sheet1", typ)
+		} else {
+			xl.NewSheet(typ)
+		}
+		sheet, err := xl.NewStreamWriter(typ)
+		if err != nil {
+			return err
+		}
+		sheet.SetColWidth(1, 1, 16) // thumbnail column width, 16 isn't sized in pixel.
+		firstEnt := ents[0]
+		props := make([]string, 0, len(firstEnt.Property))
+		for prop := range firstEnt.Property {
+			props = append(props, prop)
+		}
+		sort.Strings(props)
+		labels := []any{
+			"thumbnail",
+			"path",
+		}
+		for _, prop := range props {
+			labels = append(labels, prop)
+		}
+		cell, _ := excelize.CoordinatesToCellName(1, 1)
+		sheet.SetRow(cell, labels)
+
+		row := 2 // first row is for labels
+		for _, ent := range ents {
+			// thumbnail
+			thumb := thumbnail[ent.Path]
+			if thumb != nil {
+				thumbCell, err := excelize.CoordinatesToCellName(1, row)
+				if err != nil {
+					return err
+				}
+				err = xl.AddPictureFromBytes(typ, thumbCell, &excelize.Picture{
+					Extension: ".png", // thumbnails in forge always saved as png
+					File:      thumb.Data,
+					// It has a bug on scaling images, let's keep our eyes on the new release of excelize.
+					Format: &excelize.GraphicOptions{OffsetX: 1, OffsetY: 1, ScaleX: 0.33, ScaleY: 0.18},
+				})
+				if err != nil {
+					return err
+				}
+			}
+			// props
+			cell, err = excelize.CoordinatesToCellName(2, row)
+			if err != nil {
+				return err
+			}
+			rowData := make([]any, 0, len(props)+1)
+			rowData = append(rowData, ent.Path)
+			for _, prop := range props {
+				p := ent.Property[prop]
+				rowData = append(rowData, p.Value)
+			}
+			err = sheet.SetRow(cell, rowData, excelize.RowOpts{Height: 54})
+			if err != nil {
+				return err
+			}
+			row++
+		}
+		sheet.Flush()
+		sheet_idx++
+	}
+	w.Header().Set("Content-Type", "application/vnd.ms-excel")
+	w.Header().Set("Content-Disposition", "attachment;") // filename should be set in the client script.
+	xl.WriteTo(w)
+	return nil
+}

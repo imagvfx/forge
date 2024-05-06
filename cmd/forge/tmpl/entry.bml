@@ -123,6 +123,7 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
+							<div id="backupAsExcelButton"> [Backup]
 							{{if $.UserIsAdmin}}
 							{{if $.Entry.Archived}}
 							<form action="/api/unarchive-entry" method="post"> [
