@@ -1510,9 +1510,18 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 	}
 	entryEnvs := make(map[string]string)
 	for _, ent := range ents {
-		envs, err := h.server.GetEnvirons(ctx, ent.Path)
-		if err != nil {
-			return err
+		var envs []*forge.Property
+		if ent.Path == root {
+			// should save inherited environ for backup root
+			envs, err = h.server.EntryEnvirons(ctx, ent.Path)
+			if err != nil {
+				return err
+			}
+		} else {
+			envs, err = h.server.GetEnvirons(ctx, ent.Path)
+			if err != nil {
+				return err
+			}
 		}
 		environ := make([]string, 0, len(envs))
 		for _, e := range envs {
