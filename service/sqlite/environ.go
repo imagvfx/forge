@@ -72,6 +72,25 @@ func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Prope
 	return envs, nil
 }
 
+// GetEnvirons get environs defined in an entry.
+// It doesn't count inherited environs unlike EntryEnvirons.
+func GetEnvirons(db *sql.DB, ctx context.Context, path string) ([]*forge.Property, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	envs, err := findEnvirons(tx, ctx, forge.PropertyFinder{EntryPath: &path})
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return envs, nil
+}
+
 // when id is empty, it will find environs of root.
 // It returns a map instead of a slice, because it is better structure for aggregating the parents` environs.
 func findEnvirons(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([]*forge.Property, error) {

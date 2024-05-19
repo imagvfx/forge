@@ -1462,10 +1462,15 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 	if root == "" {
 		return fmt.Errorf("please specify root path to backup")
 	}
+	rootEnt, err := h.server.GetEntry(ctx, root)
+	if err != nil {
+		return err
+	}
 	ents, err := h.server.SearchEntries(ctx, root, "name:")
 	if err != nil {
 		return err
 	}
+	ents = append(ents, rootEnt)
 	entsPerType := make(map[string][]*forge.Entry) // [type][]entry
 	thumbnail := make(map[string]*forge.Thumbnail) // [path]thumbnail
 	for _, ent := range ents {
@@ -1494,6 +1499,7 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 			props := []string{
 				"thumbnail",
 				"path",
+				"env",
 			}
 			for _, p := range ent.Property {
 				props = append(props, p.Name)
@@ -1501,6 +1507,20 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 			propsPerType[typ] = props
 			break
 		}
+	}
+	entryEnvs := make(map[string]string)
+	for _, ent := range ents {
+		envs, err := h.server.GetEnvirons(ctx, ent.Path)
+		if err != nil {
+			return err
+		}
+		environ := make([]string, 0, len(envs))
+		for _, e := range envs {
+			// give type to environs was a mistake, they will eventually be simple text
+			val := strings.ReplaceAll(e.Eval, "\n", "\\n") // escape newline
+			environ = append(environ, e.Name+"="+val)
+		}
+		entryEnvs[ent.Path] = strings.Join(environ, "\n")
 	}
 	xl := excelize.NewFile()
 	sheet_idx := 0
@@ -1524,6 +1544,7 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 		labels := []any{
 			"thumbnail",
 			"path",
+			"env",
 		}
 		for _, prop := range props {
 			labels = append(labels, prop)
@@ -1557,6 +1578,7 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 			}
 			rowData := make([]any, 0, len(props)+1)
 			rowData = append(rowData, ent.Path)
+			rowData = append(rowData, entryEnvs[ent.Path])
 			for _, prop := range props {
 				p := ent.Property[prop]
 				rowData = append(rowData, p.Value)

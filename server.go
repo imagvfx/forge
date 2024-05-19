@@ -454,6 +454,20 @@ func (s *Server) EntryEnvirons(ctx context.Context, path string) ([]*Property, e
 	return envs, nil
 }
 
+func (s *Server) GetEnvirons(ctx context.Context, path string) ([]*Property, error) {
+	if path == "" {
+		return nil, fmt.Errorf("environ path not specified")
+	}
+	envs, err := s.svc.GetEnvirons(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(envs, func(i, j int) bool {
+		return envs[i].Name < envs[j].Name
+	})
+	return envs, nil
+}
+
 func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, error) {
 	if path == "" {
 		return nil, fmt.Errorf("environ path not specified")

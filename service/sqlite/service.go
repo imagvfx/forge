@@ -154,6 +154,10 @@ func (s *Service) EntryEnvirons(ctx context.Context, path string) ([]*forge.Prop
 	return EntryEnvirons(s.db, ctx, path)
 }
 
+func (s *Service) GetEnvirons(ctx context.Context, path string) ([]*forge.Property, error) {
+	return GetEnvirons(s.db, ctx, path)
+}
+
 func (s *Service) GetEnviron(ctx context.Context, path, name string) (*forge.Property, error) {
 	return GetEnviron(s.db, ctx, path, name)
 }
