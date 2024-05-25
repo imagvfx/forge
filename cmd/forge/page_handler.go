@@ -1531,6 +1531,29 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 		}
 		entryEnvs[ent.Path] = strings.Join(environ, "\n")
 	}
+
+	entryAccessList := make(map[string]string)
+	for _, ent := range ents {
+		var accs []*forge.Access
+		if ent.Path == root {
+			// should save inherited accesses for backup root
+			accs, err = h.server.EntryAccessList(ctx, ent.Path)
+			if err != nil {
+				return err
+			}
+		} else {
+			accs, err = h.server.GetAccessList(ctx, ent.Path)
+			if err != nil {
+				return err
+			}
+		}
+		accessList := make([]string, 0, len(accs))
+		for _, a := range accs {
+			// give type to environs was a mistake, they will eventually be simple text
+			accessList = append(accessList, a.Name+"="+a.Value)
+		}
+		entryAccessList[ent.Path] = strings.Join(accessList, "\n")
+	}
 	xl := excelize.NewFile()
 	sheet_idx := 0
 	for typ, ents := range entsPerType {
@@ -1554,6 +1577,7 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 			"thumbnail",
 			"path",
 			"env",
+			"access",
 		}
 		for _, prop := range props {
 			labels = append(labels, prop)
@@ -1588,6 +1612,7 @@ func (h *pageHandler) handleBackupAsExcel(ctx context.Context, w http.ResponseWr
 			rowData := make([]any, 0, len(props)+1)
 			rowData = append(rowData, ent.Path)
 			rowData = append(rowData, entryEnvs[ent.Path])
+			rowData = append(rowData, entryAccessList[ent.Path])
 			for _, prop := range props {
 				p := ent.Property[prop]
 				rowData = append(rowData, p.Value)

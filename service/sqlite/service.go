@@ -178,6 +178,10 @@ func (s Service) EntryAccessList(ctx context.Context, path string) ([]*forge.Acc
 	return EntryAccessList(s.db, ctx, path)
 }
 
+func (s Service) GetAccessList(ctx context.Context, path string) ([]*forge.Access, error) {
+	return GetAccessList(s.db, ctx, path)
+}
+
 func (s *Service) GetAccess(ctx context.Context, path, name string) (*forge.Access, error) {
 	return GetAccess(s.db, ctx, path, name)
 }

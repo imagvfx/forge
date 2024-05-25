@@ -551,6 +551,20 @@ func (s *Server) EntryAccessList(ctx context.Context, path string) ([]*Access, e
 	return acls, nil
 }
 
+func (s *Server) GetAccessList(ctx context.Context, path string) ([]*Access, error) {
+	if path == "" {
+		return nil, fmt.Errorf("access control path not specified")
+	}
+	acls, err := s.svc.GetAccessList(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(acls, func(i, j int) bool {
+		return acls[i].Name < acls[j].Name
+	})
+	return acls, nil
+}
+
 func (s *Server) GetAccess(ctx context.Context, path string, accessor string) (*Access, error) {
 	if path == "" {
 		return nil, fmt.Errorf("access control path not specified")

@@ -46,6 +46,7 @@ type Service interface {
 	UpdateEnviron(ctx context.Context, upd PropertyUpdater) error
 	DeleteEnviron(ctx context.Context, path string, name string) error
 	EntryAccessList(ctx context.Context, path string) ([]*Access, error)
+	GetAccessList(ctx context.Context, path string) ([]*Access, error)
 	GetAccess(ctx context.Context, path, name string) (*Access, error)
 	AddAccess(ctx context.Context, ac *Access) error
 	UpdateAccess(ctx context.Context, upd AccessUpdater) error

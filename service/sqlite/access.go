@@ -81,6 +81,23 @@ func entryAccessList(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Acc
 	return acs, nil
 }
 
+func GetAccessList(db *sql.DB, ctx context.Context, path string) ([]*forge.Access, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	accs, err := findAccessList(tx, ctx, forge.AccessFinder{EntryPath: &path})
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return accs, nil
+}
+
 // when id is empty, it will find access controls of root.
 func findAccessList(tx *sql.Tx, ctx context.Context, find forge.AccessFinder) ([]*forge.Access, error) {
 	keys := make([]string, 0)
