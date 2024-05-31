@@ -123,7 +123,6 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
-							<div id="backupAsExcelButton"> [Backup]
 							{{if $.UserIsAdmin}}
 							{{if $.Entry.Archived}}
 							<form action="/api/unarchive-entry" method="post"> [
@@ -133,6 +132,8 @@
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							{{else}}
+							<!-- Backup isn't working well in when the entry is in archive. I might dig it one day. -->
+							<div id="backupAsExcelButton"> [Backup]
 							<form action="/api/archive-entry" method="post"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 								<button id="archiveEntryButton" name="archive_entry" value="1" hidden> []
