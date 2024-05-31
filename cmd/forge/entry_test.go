@@ -314,6 +314,17 @@ var testSearches = []testSearch{
 	{path: "/", query: "asset:human", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 	{path: "/", query: "asset:/set/", wantRes: []string{"/test/shot/cg/0030"}},
 	{path: "/", query: "asset!:/set/", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
+	// check leaf entries
+	{path: "/", query: "has=", wantRes: []string{"/TEST", "/test/asset/char/android", "/test/asset/char/human1", "/test/asset/char/human2", "/test/asset/char/yb", "/test/asset/set/cabin", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/match", "/test/shot/cg/0010/mdl", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	// check non-leaf entries
+	{path: "/", query: "has!=", wantRes: []string{"/", "/test", "/test/asset", "/test/asset/char", "/test/asset/set", "/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "type=shot has=ani", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "type:shot has:ani", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "type=shot has=ani,lgt", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/", query: "type=shot has=ani has=lgt", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/", query: "type=shot has!=ani", wantRes: []string{}},
+	{path: "/", query: "type=shot has!:ani", wantRes: []string{}},
+	{path: "/", query: "type=shot has!=lgt", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 }
 
 type testRename struct {

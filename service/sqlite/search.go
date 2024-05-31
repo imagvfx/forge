@@ -239,6 +239,33 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				q += ")"
 				queries = append(queries, q)
 			}
+		} else if key == "has" {
+			wh.Exact = true
+			vals := wh.Values()
+			if len(vals) != 0 {
+				not := ""
+				if wh.Exclude {
+					not = "NOT"
+				}
+				q := "("
+				for i, v := range vals {
+					if i != 0 {
+						q += " OR "
+					}
+					q += "entries.path || '/' || ? " + not + " IN (SELECT entries.path FROM entries)"
+					queryVals = append(queryVals, v)
+				}
+				q += ")"
+				queries = append(queries, q)
+			} else {
+				// "has=" means find entries which don't have any child.
+				not := "NOT"
+				if wh.Exclude {
+					not = ""
+				}
+				q := "(entries.id " + not + " IN (SELECT entries.parent_id FROM entries WHERE entries.parent_id IS NOT NULL))"
+				queries = append(queries, q)
+			}
 		} else {
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
