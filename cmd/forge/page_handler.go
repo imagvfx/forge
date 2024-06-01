@@ -133,6 +133,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 	}
 	queryHasType := false
+	groupByOverride := ""
 	if search != "" || searchEntryType != "" {
 		// User pressed search button,
 		// Note that it rather clear the search if every search field is emtpy.
@@ -144,13 +145,23 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			resultsFromSearch = true
 			queries := strings.Fields(search)
 			mode := ""
-			for _, q := range queries {
+			query := ""
+			for i, q := range queries {
+				if i != 0 {
+					query += " "
+				}
 				if strings.HasPrefix(q, "-mode:") {
 					mode = q[len("-mode:"):]
+					continue
+				}
+				if strings.HasPrefix(q, "-group:") {
+					groupByOverride = q[len("-group:"):]
+					continue
 				}
 				if strings.HasPrefix(q, "type=") || strings.HasPrefix(q, "type:") {
 					queryHasType = true
 				}
+				query += q
 			}
 			if mode == "entry" {
 				// sql couldn't handle query if path list is too long
@@ -179,7 +190,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			if !queryHasType && searchEntryType != "" {
 				typeQuery = "type=" + searchEntryType
 			}
-			ents, err := h.server.SearchEntries(ctx, path, typeQuery+" "+search)
+			ents, err := h.server.SearchEntries(ctx, path, typeQuery+" "+query)
 			if err != nil {
 				return err
 			}
@@ -213,7 +224,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 	}
 	entryByPath := make(map[string]*forge.Entry)
-	if setting.EntryGroupBy == "" {
+	groupByProp := setting.EntryGroupBy
+	if groupByOverride != "" {
+		groupByProp = groupByOverride
+	}
+	if groupByProp == "" {
 		for _, e := range subEnts {
 			// at least one group needed
 			if subEntsByTypeByGroup[e.Type] == nil {
@@ -227,7 +242,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			byGroup[""] = append(byGroup[""], e)
 			subEntsByTypeByGroup[e.Type] = byGroup
 		}
-	} else if setting.EntryGroupBy == "parent" {
+	} else if groupByProp == "parent" {
 		for _, e := range subEnts {
 			if subEntsByTypeByGroup[e.Type] == nil {
 				// This should come from search results.
@@ -250,6 +265,48 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			}
 			byGroup[parent] = append(byGroup[parent], e)
 			subEntsByTypeByGroup[e.Type] = byGroup
+		}
+	} else {
+		var sub, prop string
+		before, after, found := strings.Cut(groupByProp, ".")
+		if found {
+			sub = before
+			prop = after
+		} else {
+			prop = before
+		}
+		for _, ent := range subEnts {
+			byGroup := subEntsByTypeByGroup[ent.Type]
+			if byGroup == nil {
+				// This should come from search results.
+				byGroup = make(map[string][]*forge.Entry)
+			}
+			path := ent.Path
+			if sub != "" {
+				path += "/" + sub
+			}
+			var e *forge.Entry
+			if _, ok := entryByPath[path]; !ok {
+				e, err = h.server.GetEntry(ctx, path)
+				if err != nil {
+					var e *forge.NotFoundError
+					if !errors.As(err, &e) {
+						return err
+					}
+				}
+			}
+			v := ""
+			if prop != "" && e != nil {
+				pr := e.Property[prop]
+				if pr != nil {
+					v = pr.Eval
+				}
+			}
+			if byGroup[v] == nil {
+				byGroup[v] = make([]*forge.Entry, 0)
+			}
+			byGroup[v] = append(byGroup[v], ent)
+			subEntsByTypeByGroup[ent.Type] = byGroup
 		}
 	}
 	statusSummary := make(map[string]map[string]int)
@@ -728,6 +785,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		Search                    string
 		QueryHasType              bool
 		ResultsFromSearch         bool
+		GroupByOverride           string
+		GroupByProp               string
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
 		Searches                  [][][2]string // [at][][name, query]
@@ -762,6 +821,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		Search:                    search,
 		QueryHasType:              queryHasType,
 		ResultsFromSearch:         resultsFromSearch,
+		GroupByOverride:           groupByOverride,
+		GroupByProp:               groupByProp,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
 		Searches:                  searches,

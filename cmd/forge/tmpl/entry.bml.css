@@ -625,6 +625,10 @@
 	align-items: center;
 }
 
+.groupByLabel {
+	margin-right: 0.3rem;
+}
+
 .subEntryList {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));

@@ -266,7 +266,7 @@
 						<div class="subEntryListOption detailViewOption" title="enable/disable detail view" data-value="{{index $.PageSetting.Data "detail_view"}}"> []
 						<div class="subEntryListOption expandPropertyOption" title="expand/shrink property" data-expand="{{$.UserSetting.EntryPageExpandProperty}}"> []
 						<div class="flexSpacer"> []
-						<select class="subEntryListOption groupByOption" {{if not $.ResultsFromSearch}}data-disabled="1" disabled{{end}}> [
+						<select class="subEntryListOption groupByOption" {{if or (not $.ResultsFromSearch) $.GroupByOverride}}data-disabled="1" disabled{{end}}> [
 							<option value="" {{if eq $.UserSetting.EntryGroupBy ""}}selected{{end}}> [(group by)]
 							<option value="parent" {{if eq $.UserSetting.EntryGroupBy "parent"}}selected{{end}}> [parent]
 						]
@@ -376,17 +376,10 @@
 						{{range $group, $subEntries := $entsByGroup}}
 						{{if $subEntries}}
 						<div class="subEntryListContainer"> [
-							{{if and $.ResultsFromSearch (eq $.UserSetting.EntryGroupBy "parent")}}
-							{{$parent := $group}}
-							{{$ent := index $.EntryByPath $parent}}
+							{{if and $.ResultsFromSearch $.GroupByProp}}
 							<div class="subEntryListFrom"> [
 								<img class="subEntryListExpander" src="/asset/down-arrow.svg" title="shift+click to collapse/expand all"> []
-								{{$entType}}s
-								from
-								{{with $s := index $ent.Property "status"}}
-								<div class="statusDot statusLabeler" style="display:inline-block" data-sub="" data-entry-type="{{$ent.Type}}" data-value="{{$s.Value}}"> []
-								{{end}}
-								<a class="pathLink" href="{{$parent}}"> [{{$parent}}]
+								<div class="groupByLabel"> [{{$.GroupByProp}}: {{$group}}]
 								<div class="subEntryListFromCount"> [({{len $subEntries}})]
 							]
 							{{end}}
