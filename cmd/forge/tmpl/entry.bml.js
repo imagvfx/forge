@@ -890,16 +890,26 @@ window.onload = function() {
 				event.preventDefault();
 				let selEnt = document.querySelector(".subEntry.selected");
 				if (!selEnt) {
+					let entTypes = document.querySelectorAll(".subEntryListForType");
+					if (entTypes.length > 1) {
+						printErrorStatus("please select at least one entry to determine entry type");
+						return;
+					}
 					let first = document.querySelector(".subEntry:not(.hidden)");
 					if (!first) {
 						return;
 					}
 					selEnt = first;
 				}
-				let typ = selEnt.dataset.entryType;
-				let typeEnts = document.querySelectorAll(`.subEntry:not(.hidden)[data-entry-type="${typ}"]`);
-				for (let ent of typeEnts) {
-					ent.classList.add("selected");
+				let typeList = selEnt.closest(".subEntryListForType");
+				for (let group of typeList.querySelectorAll(".subEntryListContainer")) {
+					if (group.dataset.hide) {
+						continue;
+					}
+					let ents = group.querySelectorAll(".subEntry:not(.hidden)");
+					for (let ent of ents) {
+						ent.classList.add("selected");
+					}
 				}
 				removeClass(subEntArea, "lastClicked");
 				removeClass(subEntArea, "temporary");
