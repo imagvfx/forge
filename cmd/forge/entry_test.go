@@ -327,6 +327,47 @@ var testSearches = []testSearch{
 	{path: "/", query: "type=shot has!=lgt", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 }
 
+func ptr[T any](value T) *T {
+	return &value
+}
+
+var testFinds = []struct {
+	label   string
+	finder  forge.EntryFinder
+	wantRes []string
+}{
+	{
+		label:   "children of /test/shot/cg",
+		finder:  forge.EntryFinder{ParentPath: ptr("/test/shot/cg")},
+		wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"},
+	},
+	{
+		label:   "recursive children of /test/shot/cg",
+		finder:  forge.EntryFinder{AncestorPath: ptr("/test/shot/cg")},
+		wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/match", "/test/shot/cg/0010/mdl", "/test/shot/cg/0020", "/test/shot/cg/0020/ani", "/test/shot/cg/0030", "/test/shot/cg/0030/ani"},
+	},
+	{
+		label:   "recursive shot children of /test/shot/cg",
+		finder:  forge.EntryFinder{AncestorPath: ptr("/test/shot/cg"), Types: []string{"shot"}},
+		wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"},
+	},
+	{
+		label:   "recursive part children of /test/shot/cg",
+		finder:  forge.EntryFinder{AncestorPath: ptr("/test/shot/cg"), Types: []string{"part"}},
+		wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/match", "/test/shot/cg/0010/mdl", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"},
+	},
+	{
+		label:   "parent of /test/shot/cg",
+		finder:  forge.EntryFinder{ChildPath: ptr("/test/shot/cg")},
+		wantRes: []string{"/", "/test", "/test/shot"},
+	},
+	{
+		label:   "show parent of /test/shot/cg",
+		finder:  forge.EntryFinder{ChildPath: ptr("/test/shot/cg"), Types: []string{"show"}},
+		wantRes: []string{"/test"},
+	},
+}
+
 type testRename struct {
 	path    string
 	newName string
@@ -549,6 +590,7 @@ func TestAddEntries(t *testing.T) {
 		}
 	}
 
+	// search
 	whoCanRead := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com"}
 	for _, user := range whoCanRead {
 		ctx = forge.ContextWithUserName(ctx, user)
@@ -584,6 +626,24 @@ func TestAddEntries(t *testing.T) {
 				}
 				t.Fatalf("searched %q from %q: uninvited user shouldn't be able to search child entries, got: %v", s.query, s.path, got)
 			}
+		}
+	}
+
+	// test find
+	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
+	for _, f := range testFinds {
+		ents, err := server.FindEntries(ctx, f.finder)
+		if err != nil {
+			t.Fatalf("find: %v", err)
+		}
+		got := make([]string, 0)
+		for _, e := range ents {
+			got = append(got, e.Path)
+		}
+		sort.Strings(got)
+		sort.Strings(f.wantRes)
+		if !reflect.DeepEqual(got, f.wantRes) {
+			t.Fatalf("find: %v: got %q, want %q", f.label, got, f.wantRes)
 		}
 	}
 

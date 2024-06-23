@@ -134,6 +134,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	queryHasType := false
 	groupByOverride := ""
+	getTypes := []string{}
 	if search != "" || searchEntryType != "" {
 		// User pressed search button,
 		// Note that it rather clear the search if every search field is emtpy.
@@ -152,6 +153,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				}
 				if strings.HasPrefix(q, "-mode:") {
 					mode = q[len("-mode:"):]
+					continue
+				}
+				if strings.HasPrefix(q, "-get:") {
+					v := q[len("-get:"):]
+					getTypes = strings.Split(v, ",")
 					continue
 				}
 				if strings.HasPrefix(q, "-group:") {
@@ -208,6 +214,45 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			return err
 		}
 		searchEntryType = setting.EntryPageSearchEntryType
+	}
+	newSubEnts := make(map[string]*forge.Entry)
+	if len(getTypes) > 0 {
+		for _, ent := range subEnts {
+			for _, typ := range getTypes {
+				if typ == ent.Type {
+					newSubEnts[ent.Path] = ent
+					break
+				}
+			}
+			if _, ok := newSubEnts[ent.Path]; ok {
+				// ent is already one of needed types.
+				continue
+			}
+			// get parent of the type, if there is.
+			ancs, err := h.server.FindEntries(ctx, forge.EntryFinder{
+				ChildPath: &ent.Path,
+				Types:     getTypes,
+			})
+			if err != nil {
+				return err
+			}
+			if len(ancs) == 0 {
+				continue
+			}
+			sort.Slice(ancs, func(i, j int) bool {
+				// reverse sort, so we can get a nearest ancestor.
+				return strings.Compare(ancs[i].Path, ancs[j].Path) > 0
+			})
+			anc := ancs[0]
+			newSubEnts[anc.Path] = anc
+		}
+		subEnts = make([]*forge.Entry, 0, len(newSubEnts))
+		for _, ent := range newSubEnts {
+			subEnts = append(subEnts, ent)
+		}
+		sort.Slice(subEnts, func(i, j int) bool {
+			return strings.Compare(subEnts[i].Path, subEnts[j].Path) < 0
+		})
 	}
 	// Organize the sub entries by type and by parent.
 	subEntsByTypeByGroup := make(map[string]map[string][]*forge.Entry) // map[type]map[parent]

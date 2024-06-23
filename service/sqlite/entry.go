@@ -113,7 +113,7 @@ func findEntries(tx *sql.Tx, ctx context.Context, find forge.EntryFinder) ([]*fo
 	}
 	if find.ChildPath != nil {
 		if *find.ChildPath != "/" {
-			keys = append(keys, "(? GLOB entries.path || '/*') OR (entries.path='/')")
+			keys = append(keys, "(? GLOB entries.path || '/*' OR entries.path='/')")
 			vals = append(vals, *find.ChildPath)
 		} else {
 			// no entry is parent of root
