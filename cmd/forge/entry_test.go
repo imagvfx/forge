@@ -459,7 +459,7 @@ var userDataCases = []testUserData{
 	},
 }
 
-func TestAddEntries(t *testing.T) {
+func TestEntries(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
 		t.Fatal(err)
