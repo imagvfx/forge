@@ -88,6 +88,8 @@ type testDefault struct {
 
 var testDefaults = []testDefault{
 	{typ: "show", ctg: "property", k: "sup", t: "user", v: ""},
+	{typ: "show", ctg: "environ", k: "LIBRARY_ROOT", t: "text", v: "/mnt/imag/lib"},
+	// TODO: add 'entry_name' environ makes the test fail, caused by validation of default property.
 	{typ: "shot", ctg: "property", k: "cg", t: "text", v: ""},
 	{typ: "shot", ctg: "property", k: "direction", t: "text", v: ""},
 	{typ: "shot", ctg: "property", k: "due", t: "date", v: ""},
@@ -459,6 +461,33 @@ var userDataCases = []testUserData{
 	},
 }
 
+var testEntryEnviron = []struct {
+	label   string
+	path    string
+	env     string
+	want    string
+	wantErr error
+}{
+	{
+		label: "LIBRARY_ROOT in show",
+		path:  "/test",
+		env:   "LIBRARY_ROOT",
+		want:  "/mnt/imag/lib",
+	},
+	{
+		label: "LIBRARY_ROOT in a child",
+		path:  "/test/shot/cg",
+		env:   "LIBRARY_ROOT",
+		want:  "/mnt/imag/lib",
+	},
+	{
+		label:   "invalid path",
+		path:    "abc",
+		env:     "LIBRARY_ROOT",
+		wantErr: errors.New("entry not found: abc"),
+	},
+}
+
 func TestEntries(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
@@ -700,5 +729,23 @@ func TestEntries(t *testing.T) {
 	}
 	if len(data) != 0 {
 		t.Fatalf("find: want section length 0, got %v", len(data))
+	}
+
+	// test environ after user data as environ overrided by user data.
+	for _, c := range testEntryEnviron {
+		envs, err := server.EntryEnvirons(ctx, c.path)
+		if !equalError(c.wantErr, err) {
+			t.Fatalf("environ: %q: %v", c.label, err)
+		}
+		var got string
+		for _, e := range envs {
+			if e.Name == c.env {
+				got = e.Eval
+				break
+			}
+		}
+		if got != c.want {
+			t.Fatalf("environ: %q: want %q, got %q", c.label, c.want, got)
+		}
 	}
 }

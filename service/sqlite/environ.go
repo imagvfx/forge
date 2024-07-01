@@ -49,6 +49,10 @@ func EntryEnvirons(db *sql.DB, ctx context.Context, path string) ([]*forge.Prope
 }
 
 func entryEnvirons(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Property, error) {
+	_, err := getEntry(tx, ctx, path)
+	if err != nil {
+		return nil, err
+	}
 	envmap := make(map[string]*forge.Property)
 	for {
 		envs, err := findEnvirons(tx, ctx, forge.PropertyFinder{EntryPath: &path})
