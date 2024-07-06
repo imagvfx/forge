@@ -240,6 +240,13 @@
 .inheritedInfoIcon {
 	filter: invert(60%) sepia(97%) hue-rotate(180deg);
 	padding: 0 2px;
+	user-select: none;
+}
+
+.overrideInfoIcon {
+	filter: invert(74%) sepia(18%) saturate(3286%) hue-rotate(302deg) brightness(130%) contrast(80%);
+	padding: 0 1px;
+	user-select: none;
 }
 
 .thumbnail {
@@ -509,7 +516,7 @@
 	border: 1px solid #EEE;
 	border-radius: 4px;
 	background-color: #FEFEFE;
-	padding: 0 1px;
+	padding: 0 2px;
 	overflow: auto;
 }
 

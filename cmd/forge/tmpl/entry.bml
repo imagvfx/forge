@@ -221,10 +221,10 @@
 							{{range $e := $.Environs}}
 							<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
 								<div class="infoTop"> [
-									{{if ne $e.EntryPath $.Entry.Path}}
-									<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$e.EntryPath}}">[]
+									{{if eq $e.EntryPath $.Entry.Path}}
+									<img class="overrideInfoIcon" src="/asset/override.svg" src="/asset/plus.svg" width="10px">[]
 									{{end}}
-									<div class="infoTitle"> [
+									<div class="infoTitle" title="defined at {{$e.EntryPath}}"> [
 										<div> [{{$e.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
 									]
@@ -238,10 +238,10 @@
 							{{range $a := $.AccessList}}
 							<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
 								<div class="infoTop"> [
-									{{if ne $a.EntryPath $.Entry.Path}}
-									<img class="inheritedInfoIcon" src="/asset/inherit.svg" width="8px" title="Inherited from {{$a.EntryPath}}">[]
+									{{if eq $a.EntryPath $.Entry.Path}}
+									<img class="overrideInfoIcon" src="/asset/override.svg" width="10px">[]
 									{{end}}
-									<div class="infoTitle"> [
+									<div class="infoTitle" title="defined at {{$a.EntryPath}}"> [
 										<div> [{{$a.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
 									]
