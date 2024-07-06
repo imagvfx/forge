@@ -2154,7 +2154,11 @@ window.onload = function() {
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
 			infoHistory.href = "/logs?path=" + info.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
 			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
+			infoDelete.classList.remove("nodisplay");
 			if (info.dataset.category == "property") {
+				infoDelete.classList.add("nodisplay");
+			}
+			if (info.dataset.category == "environ" && info.dataset.entryPath != ent.dataset.entryPath) {
 				infoDelete.classList.add("nodisplay");
 			}
 			infoDelete.onclick = function(ev) {
