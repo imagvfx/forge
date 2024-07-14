@@ -262,7 +262,7 @@ func (s *Server) AddDefault(ctx context.Context, entType, ctg, name, typ, value 
 	return nil
 }
 
-func (s *Server) UpdateDefault(ctx context.Context, entType, ctg, name, typ, value string) error {
+func (s *Server) UpdateDefault(ctx context.Context, entType, ctg, name string, newName, typ, value *string) error {
 	if entType == "" {
 		return fmt.Errorf("default entry type not specified")
 	}
@@ -272,15 +272,13 @@ func (s *Server) UpdateDefault(ctx context.Context, entType, ctg, name, typ, val
 	if name == "" {
 		return fmt.Errorf("default name not specified")
 	}
-	if typ == "" {
-		return fmt.Errorf("default type not specified")
-	}
 	upd := DefaultUpdater{
 		EntryType: entType,
 		Category:  ctg,
 		Name:      name,
-		Type:      &typ,
-		Value:     &value,
+		NewName:   newName,
+		Type:      typ,
+		Value:     value,
 	}
 	err := s.svc.UpdateDefault(ctx, upd)
 	if err != nil {

@@ -141,9 +141,10 @@ func (h *apiHandler) handleUpdateDefault(ctx context.Context, w http.ResponseWri
 	entType := r.FormValue("entry_type")
 	ctg := r.FormValue("category")
 	name := r.FormValue("name")
+	newName := r.FormValue("new_name")
 	typ := r.FormValue("type")
 	value := r.FormValue("value")
-	err := h.server.UpdateDefault(ctx, entType, ctg, name, typ, value)
+	err := h.server.UpdateDefault(ctx, entType, ctg, name, &newName, &typ, &value)
 	if err != nil {
 		return err
 	}

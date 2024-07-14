@@ -39,7 +39,8 @@
 							<form class="updateForm" action="/api/update-default" method="post"> [
 								<input hidden name="entry_type" value="{{$t.Name}}"> []
 								<input readonly class="firstVisible" name="category" type="text" value="{{$d.Category}}" style="width:6rem;"> []
-								<input readonly name="name" type="text" value="{{$d.Name}}" style="width:10rem;"> []
+								<input readonly name="name" type="hidden" value="{{$d.Name}}"> []
+								<input name="new_name" type="text" value="{{$d.Name}}" style="width:10rem;"> []
 								<input name="type" type="text" value="{{$d.Type}}" style="width:8rem;"> []
 								<textarea class="valueEdit lastVisible" name="value" type="text"> [{{$d.Value}}]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []
@@ -53,7 +54,8 @@
 							<form class="updateForm" action="/api/update-global" method="post"> [
 								<input readonly name="entry_type" type="hidden" value="{{$t.Name}}"> []
 								<input readonly class="firstVisible" name="category" type="text" value="global" style="width:6rem;"> []
-								<input readonly name="name" type="text" value="{{$g.Name}}" style="width:10rem;"> []
+								<input name="name" type="hidden" value="{{$g.Name}}"> []
+								<input readonly name="new_name" type="text" value="{{$g.Name}}" style="width:10rem;"> []
 								<input name="type" type="text" value="{{$g.Type}}" style="width:8rem;"> []
 								<textarea class="valueEdit lastVisible" name="value" type="text"> [{{$g.Value}}]
 								<input readonly name="back_to_referer" type="hidden" value="1"> []

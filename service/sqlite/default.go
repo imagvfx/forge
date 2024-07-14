@@ -692,31 +692,34 @@ func UpdateDefault(db *sql.DB, ctx context.Context, upd forge.DefaultUpdater) er
 }
 
 func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
-	keys := make([]string, 0)
-	vals := make([]any, 0)
-	if upd.Type != nil {
-		keys = append(keys, "type=?")
-		vals = append(vals, *upd.Type)
-	}
 	d, err := getDefaultProperty(tx, ctx, upd.EntryType, upd.Name)
 	if err != nil {
 		return err
 	}
+	n := &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}
+	keys := make([]string, 0)
+	vals := make([]any, 0)
+	if upd.NewName != nil {
+		n.Name = *upd.NewName
+		keys = append(keys, "name=?")
+		vals = append(vals, *upd.NewName)
+	}
+	if upd.Type != nil {
+		n.Type = *upd.Type
+		keys = append(keys, "type=?")
+		vals = append(vals, *upd.Type)
+	}
 	if upd.Value != nil {
-		typ := d.Type
-		if upd.Type != nil {
-			typ = *upd.Type
-		}
-		p := &forge.Property{Name: d.Name, Type: typ, Value: *upd.Value}
-		err = validateProperty(tx, ctx, p, nil)
-		if err != nil {
-			return err
-		}
+		n.Value = *upd.Value
 		keys = append(keys, "value=?")
-		vals = append(vals, p.Value)
+		vals = append(vals, n.Value)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "property", upd.Name)
+	}
+	err = validateProperty(tx, ctx, n, nil)
+	if err != nil {
+		return err
 	}
 	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
 	if err != nil {

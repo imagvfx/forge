@@ -95,6 +95,7 @@ type DefaultUpdater struct {
 	EntryType string
 	Category  string
 	Name      string
+	NewName   *string
 	Type      *string
 	Value     *string
 }
