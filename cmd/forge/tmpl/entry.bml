@@ -222,7 +222,7 @@
 							<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
 								<div class="infoTop"> [
 									{{if eq $e.EntryPath $.Entry.Path}}
-									<img class="overrideInfoIcon" src="/asset/override.svg" src="/asset/plus.svg" width="10px">[]
+									<img class="overrideInfoIcon" src="/asset/override.svg">[]
 									{{end}}
 									<div class="infoTitle" title="defined at {{$e.EntryPath}}"> [
 										<div> [{{$e.Name}}]
@@ -239,7 +239,7 @@
 							<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
 								<div class="infoTop"> [
 									{{if eq $a.EntryPath $.Entry.Path}}
-									<img class="overrideInfoIcon" src="/asset/override.svg" width="10px">[]
+									<img class="overrideInfoIcon" src="/asset/override.svg">[]
 									{{end}}
 									<div class="infoTitle" title="defined at {{$a.EntryPath}}"> [
 										<div> [{{$a.Name}}]

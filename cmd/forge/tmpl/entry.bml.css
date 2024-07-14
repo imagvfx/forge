@@ -241,12 +241,14 @@
 	filter: invert(60%) sepia(97%) hue-rotate(180deg);
 	padding: 0 2px;
 	user-select: none;
+	width: 8px;
 }
 
 .overrideInfoIcon {
 	filter: invert(74%) sepia(18%) saturate(3286%) hue-rotate(302deg) brightness(130%) contrast(80%);
 	padding: 0 1px;
 	user-select: none;
+	width: 8px;
 }
 
 .thumbnail {
