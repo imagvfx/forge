@@ -954,101 +954,90 @@ window.onload = function() {
 				return;
 			}
 			// need at least one entry selected or hovered
-			let selEnts = document.querySelectorAll(".subEntry.selected");
-			let hoverEnt = null;
-			let hoverEnts = document.querySelectorAll(".entry:hover,.grandSubEntry:hover,.copyable:hover");
-			if (hoverEnts) {
-				hoverEnt = hoverEnts[hoverEnts.length - 1];
+			let copyables = document.querySelectorAll(".copyable:hover");
+			if (!copyables) {
+				return
 			}
-			if (selEnts.length == 0 && !hoverEnt) {
+			let copyable = copyables[copyables.length-1];
+
+			event.preventDefault();
+
+			let subEnt = copyable.closest(".subEntry");
+			if (!subEnt || !copyable.dataset.copyKey) {
+				let field = copyable.dataset.copyField;
+				let data = copyable.dataset[field];
+				let show = data;
+				if (show.length > 50) {
+					show = show.slice(0, 50) + "...";
+				}
+				let copyKey = "data";
+				if (copyable.dataset.copyKey) {
+					copyKey = copyable.dataset.copyKey;
+				}
+				let succeeded = function() {
+					printStatus(copyKey + " copied: " + show);
+					copyable.classList.add("highlight");
+					setTimeout(function() {
+						copyable.classList.remove("highlight");
+					}, 500)
+				}
+				let failed = function() {
+					printStatus("failed to copy data");
+				}
+				navigator.clipboard.writeText(data).then(succeeded, failed);
 				return;
 			}
-			event.preventDefault();
-			if (hoverEnt) {
-				if (hoverEnt.classList.contains("copyable")) {
-					// nothing to do with selected entries
-					let field = hoverEnt.dataset.copyField;
-					let data = hoverEnt.dataset[field];
-					let show = data;
-					if (show.length > 50) {
-						show = show.slice(0, 50) + "...";
-					}
-					let succeeded = function() {
-						printStatus("copied: " + show);
-						hoverEnt.classList.add("highlight");
-						setTimeout(function() {
-							hoverEnt.classList.remove("highlight");
-						}, 500)
-					}
-					let failed = function() {
-						printStatus("failed to copy entry path");
-					}
-					navigator.clipboard.writeText(data).then(succeeded, failed);
-					return;
-				}
-				if (selEnts.length == 0) {
-					let path = "";
-					if (hoverEnt.dataset.sub) {
-						let parent = hoverEnt.parentElement.closest(".entry");
-						path = parent.dataset.entryPath + "/" + hoverEnt.dataset.sub;
-					} else {
-						path = hoverEnt.dataset.entryPath;
-					}
-					let succeeded = function() {
-						printStatus("entry path copied: " + path);
-						hoverEnt.classList.add("highlight");
-						setTimeout(function() {
-							hoverEnt.classList.remove("highlight");
-						}, 500)
-					}
-					let failed = function() {
-						printStatus("failed to copy entry path");
-					}
-					navigator.clipboard.writeText(path).then(succeeded, failed);
-					return;
-				}
+			let selEnts = document.querySelectorAll(".subEntry.selected");
+			if (selEnts.length == 0) {
+				selEnts = document.querySelectorAll(".subEntry:hover");
 			}
-			// multiple entries are selected
-			let paths = [];
-			let nTotal = selEnts.length;
-			let copiedEnts = [];
-			let sub = "";
-			if (hoverEnt && hoverEnt.dataset.sub != "") {
-				sub = hoverEnt.dataset.sub;
-			}
-			for (let ent of selEnts) {
-				let copied = ent;
-				if (sub) {
-					let subEnt = ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`);
-					if (!subEnt) {
-						continue;
-					}
-					copied = subEnt;
+			// multiple entries selected
+			let copyKey = copyable.dataset.copyKey;
+			let data = "";
+			let nCopy = 0;
+			for (let i = 0; i < selEnts.length; i++) {
+				let ent = selEnts[i];
+				let c = null;
+				if (ent.dataset.copyKey == copyKey) {
+					// querySelector does not work for self.
+					c = ent;
+				} else {
+					c = ent.querySelector(`.copyable[data-copy-key="${copyKey}"]`);
 				}
-				copiedEnts.push(copied);
-				let p = ent.dataset.entryPath;
-				if (sub) {
-					p += "/" + sub;
+				if (!c) {
+					continue;
 				}
-				paths.push(p);
+				let field = c.dataset.copyField;
+				if (c.dataset.copyFrom) {
+					// it might want to get data from a parent
+					c = c.closest(c.dataset.copyFrom);
+				}
+				nCopy += 1;
+				let d = c.dataset[field];
+				if (i != 0) {
+					data += "\n";
+				}
+				data += d;
 			}
 			let succeeded = function() {
-				let n = selEnts.length.toString();
-				if (copiedEnts.length != selEnts.length) {
-					n = copiedEnts.length.toString() + "/" + n;
+				let show = data;
+				if (show.length > 50) {
+					show = show.slice(0, 50) + "...";
 				}
-				printStatus(n + " selected entry paths copied");
-				copiedEnts.forEach(function(ent) {
-					ent.classList.add("highlight");
-					setTimeout(function() {
-						ent.classList.remove("highlight");
-					}, 500);
-				})
+				let num = String(selEnts.length);
+				if (nCopy != selEnts.length) {
+					num = String(nCopy) + " of " + String(selEnts.length);
+				}
+				printStatus(copyKey + " copied from " + num + " entries: " + show);
+				copyable.classList.add("highlight");
+				setTimeout(function() {
+					copyable.classList.remove("highlight");
+				}, 500)
 			}
 			let failed = function() {
-				printStatus("failed to copy entry path");
+				printStatus("failed to copy data");
 			}
-			navigator.clipboard.writeText(paths.join("\n")).then(succeeded, failed);
+			navigator.clipboard.writeText(data).then(succeeded, failed);
 			return;
 		}
 		if (ctrlPressed && event.code == "KeyD") {

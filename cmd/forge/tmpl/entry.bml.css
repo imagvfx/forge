@@ -156,6 +156,11 @@
 	gap: 0.1rem;
 }
 
+.mainEntry.highlight {
+	background-color: #EEFAFF !important;
+	outline: none !important;
+}
+
 .mainEntryTop {
 	display: flex;
 	flex-wrap: wrap;
@@ -862,6 +867,10 @@
 
 .subEntry:not(.expanded) .subEntryProperties {
 	display: none;
+}
+
+.subEntryInfo {
+	border-radius: 3px;
 }
 
 .subEntryInfoTop {
