@@ -392,7 +392,8 @@ func (h *apiHandler) handleUpdateProperty(ctx context.Context, w http.ResponseWr
 	// originally I wanted to remove this nautilus drop-file header in js, but didn't succeed.
 	// recent nautilus seems fix it, use it until we have this patch.
 	value = strings.ReplaceAll(value, "\r\n", "\n")
-	value = strings.ReplaceAll(value, "x-special/nautilus-clipboard\ncopy\nfile://", "")
+	value = strings.ReplaceAll(value, "x-special/nautilus-clipboard\ncopy\n", "")
+	value = strings.ReplaceAll(value, "file://", "")
 
 	for _, pth := range entPaths {
 		err := h.server.UpdateProperty(ctx, pth, name, value)
