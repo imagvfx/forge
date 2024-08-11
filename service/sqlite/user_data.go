@@ -169,6 +169,8 @@ func addUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) e
 	return nil
 }
 
+// GetUserDataSection returns a user data section from the sql file.
+// NOTE: It doesn't raise error but returns an empty section, if the section doesn't exists.
 func GetUserDataSection(db *sql.DB, ctx context.Context, user, section string) (*forge.UserDataSection, error) {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
@@ -199,7 +201,7 @@ func getUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) (
 		return nil, err
 	}
 	if len(data) == 0 {
-		return nil, forge.NotFound("user data section is not exists: %v", section)
+		return &forge.UserDataSection{Section: section}, nil
 	}
 	sec := data[0]
 	if sec.Section != section {
@@ -209,8 +211,7 @@ func getUserDataSection(tx *sql.Tx, ctx context.Context, user, section string) (
 }
 
 // GetUserData returns a user data from the sql file.
-// NOTE: It doesn't raise error even if the key (even the section) doesn't exists in user_data table.
-// It returns an empty string, instead.
+// NOTE: It doesn't raise error but returns an empty string, if the section or key doesn't exists.
 func GetUserData(db *sql.DB, ctx context.Context, user, section, key string) (string, error) {
 	ctxUser := forge.UserNameFromContext(ctx)
 	if ctxUser == "" {
