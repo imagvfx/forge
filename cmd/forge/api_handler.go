@@ -33,23 +33,29 @@ func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.Respons
 			if r.Method != "POST" {
 				return fmt.Errorf("need POST, got %v", r.Method)
 			}
-			session, err := getSession(r)
-			if err != nil {
-				clearSession(w)
-				return err
-			}
+			var session map[string]string
 			if r.FormValue("session") != "" {
-				// Session sended with a form instead.
-				err = secureCookie.Decode("session", r.FormValue("session"), &session)
+				// app
+				err := secureCookie.Decode("session", r.FormValue("session"), &session)
 				if err != nil {
-					return err
+					return fmt.Errorf("please app-login")
 				}
+			} else {
+				// browser
+				s, err := getSession(r)
+				if err != nil {
+					clearSession(w)
+					return fmt.Errorf("please login")
+				}
+				session = s
 			}
 			user := session["user"]
 			ctx := forge.ContextWithUserName(r.Context(), user)
 			return handleFunc(ctx, w, r)
 		}()
-		handleError(w, err)
+		if err != nil {
+			h.WriteResponse(w, nil, err)
+		}
 	}
 }
 
