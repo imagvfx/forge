@@ -1561,7 +1561,7 @@ window.onload = function() {
 					console.log("unable to find drop target from quicksearches");
 					return;
 				}
-				updateQuickSearch(qs.dataset.key, at);
+				updateQuickSearch(qs.dataset.key, at, false);
 			}
 			let del = document.getElementById("quickSearchDeleteButton");
 			del.classList.remove("nodisplay");
@@ -1584,7 +1584,7 @@ window.onload = function() {
 				ev.preventDefault();
 				ev.stopPropagation();
 				// updateQuickSearch reloads the page.
-				updateQuickSearch(qs.dataset.key, -1);
+				updateQuickSearch(qs.dataset.key, -1, false);
 			}
 		}
 		qs.ondragend = function(event) {
@@ -2348,6 +2348,7 @@ function getEntry(path, onget, onfail) {
 			j = JSON.parse(r.responseText);
 		} catch(err) {
 			onfail(r.responseText);
+			return;
 		}
 		if (j.Err != "") {
 			onfail(j.Err);
@@ -2504,12 +2505,15 @@ function updatePinnedPath(path, at) {
 	}
 }
 
-function updateQuickSearch(path, at) {
+function updateQuickSearch(path, at, override) {
 	let req = new XMLHttpRequest();
 	let formData = new FormData();
 	formData.append("update_quick_search", "1");
 	formData.append("quick_search_name", path);
 	formData.append("quick_search_at", at);
+	if (override) {
+		formData.append("quick_search_override", "1");
+	}
 	req.open("post", "/api/update-user-setting");
 	req.send(formData);
 	req.onload = function() {

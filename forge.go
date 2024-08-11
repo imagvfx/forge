@@ -405,8 +405,9 @@ type MemberFinder struct {
 }
 
 type QuickSearchArranger struct {
-	KV    StringKV
-	Index int
+	KV       StringKV
+	Index    int
+	Override bool
 }
 
 type StringSliceArranger struct {

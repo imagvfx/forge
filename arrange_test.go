@@ -177,7 +177,7 @@ func TestArrangeStringKV(t *testing.T) {
 			},
 		},
 		{
-			label: "insert {a:alena} at 0",
+			label: "override a with {a:alena}, or insert at 0",
 			elems: []StringKV{
 				{K: "a", V: "apple"},
 				{K: "b", V: "banana"},
@@ -191,7 +191,7 @@ func TestArrangeStringKV(t *testing.T) {
 			},
 		},
 		{
-			label: "insert {a:alena} at 1",
+			label: "override a with {a:alena}, or insert at 1",
 			elems: []StringKV{
 				{K: "a", V: "apple"},
 				{K: "b", V: "banana"},
@@ -200,8 +200,23 @@ func TestArrangeStringKV(t *testing.T) {
 			idx:      1,
 			override: true,
 			want: []StringKV{
-				{K: "b", V: "banana"},
 				{K: "a", V: "alena"},
+				{K: "b", V: "banana"},
+			},
+		},
+		{
+			label: "override c with {c:coconut}, or insert at 1",
+			elems: []StringKV{
+				{K: "a", V: "apple"},
+				{K: "b", V: "banana"},
+			},
+			el:       StringKV{K: "c", V: "coconut"},
+			idx:      1,
+			override: true,
+			want: []StringKV{
+				{K: "a", V: "apple"},
+				{K: "c", V: "coconut"},
+				{K: "b", V: "banana"},
 			},
 		},
 	}

@@ -398,7 +398,7 @@ func updateUserSetting(tx *sql.Tx, ctx context.Context, upd forge.UserSettingUpd
 			return fmt.Errorf("%v: name empty", upd.Key)
 		}
 		key := func(a forge.StringKV) string { return a.K }
-		searches := forge.Arrange(setting.QuickSearches, search, arng.Index, key, false)
+		searches := forge.Arrange(setting.QuickSearches, search, arng.Index, key, arng.Override)
 		value, err = json.Marshal(searches)
 		if err != nil {
 			return err

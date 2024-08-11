@@ -7,7 +7,8 @@ package forge
 // So 'elems' will be returned as untouched.
 //
 // If a key for 'el' already exists, it will override the value
-// only if user set 'override' to true.
+// if user set 'override' to true.
+// When it overrides, it will not touch the original index.
 //
 // idx < 0 means remove the element.
 // idx >= len(elems) means append it to the last.
@@ -15,11 +16,10 @@ package forge
 // ex) When elems is []string{"a", "b", "c"} with given arguments,
 // results will be same as following.
 //
-//     elems = []string{"b", "c"}       where path = "a" and idx = -1
-//     elems = []string{"a", "b", "c"}  where path = "a" and idx = 0
-//     elems = []string{"b", "a", "c"}  where path = "a" and idx = 1
-//     elems = []string{"b", "c", "a"}  where path = "a" and idx = 2
-//
+//	elems = []string{"b", "c"}       where path = "a" and idx = -1
+//	elems = []string{"a", "b", "c"}  where path = "a" and idx = 0
+//	elems = []string{"b", "a", "c"}  where path = "a" and idx = 1
+//	elems = []string{"b", "c", "a"}  where path = "a" and idx = 2
 func Arrange[T any, K comparable](elems []T, el T, idx int, key func(a T) K, override bool) []T {
 	if key == nil {
 		return elems
@@ -32,9 +32,12 @@ func Arrange[T any, K comparable](elems []T, el T, idx int, key func(a T) K, ove
 		}
 	}
 	if findIdx >= 0 {
-		if !override {
-			el = elems[findIdx]
+		if override {
+			// keep original index
+			elems[findIdx] = el
+			return elems
 		}
+		el = elems[findIdx]
 		elems = append(elems[:findIdx], elems[findIdx+1:]...)
 	}
 	if idx < 0 {
