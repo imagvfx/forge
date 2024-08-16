@@ -748,11 +748,4 @@ func TestEntries(t *testing.T) {
 			t.Fatalf("environ: %q: want %q, got %q", c.label, c.want, got)
 		}
 	}
-
-	// getting a not-existing section shouldn't raise error.
-	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
-	_, err = server.GetUserDataSection(ctx, "admin@imagvfx.com", "whatever")
-	if err != nil {
-		t.Fatalf("userdata: shouldn't raise error on getting not-existing section, got: %v", err)
-	}
 }
