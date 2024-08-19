@@ -797,6 +797,24 @@ func (h *apiHandler) handleGetSessionUser(ctx context.Context, w http.ResponseWr
 	return nil
 }
 
+func (h *apiHandler) handleGetAllUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	users, err := h.server.AllUsers(ctx)
+	h.WriteResponse(w, users, err)
+	return nil
+}
+
+func (h *apiHandler) handleGetActiveUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	users, err := h.server.ActiveUsers(ctx)
+	h.WriteResponse(w, users, err)
+	return nil
+}
+
+func (h *apiHandler) handleGetDisabledUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	users, err := h.server.DisabledUsers(ctx)
+	h.WriteResponse(w, users, err)
+	return nil
+}
+
 func (h *apiHandler) handleAddUser(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	ctxUser := forge.UserNameFromContext(ctx)
 	isAdmin, err := h.server.IsAdmin(ctx, ctxUser)

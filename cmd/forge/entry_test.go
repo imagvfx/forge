@@ -21,7 +21,7 @@ var testAddUsers = []addUser{
 	{name: "admin@imagvfx.com"},
 	{name: "readwriter@imagvfx.com"},
 	{name: "reader@imagvfx.com"},
-	{name: "uninvited@imagvfx.com"},
+	{name: "disabled@imagvfx.com"},
 	{name: "user-without-domain", wantErr: fmt.Errorf("username should be '{user}@{domain}' form: user-without-domain")},
 }
 
@@ -55,10 +55,17 @@ var testUpdateUserDisabled = []updateUserDisabled{
 	{name: "reader@imagvfx.com", disabled: true},
 	{name: "reader@imagvfx.com", disabled: false},
 	{name: "reader@imagvfx.com", disabled: false},
+	{name: "disabled@imagvfx.com", disabled: true},
 	{name: "not-existing@imagvfx.com", disabled: true, wantErr: fmt.Errorf("user not found")},
 	{name: "admin@imagvfx.com", disabled: true, wantErr: fmt.Errorf("admin user cannot be disabled: admin@imagvfx.com")},
 	{name: "admin@imagvfx.com", disabled: false, wantErr: fmt.Errorf("admin user cannot be disabled: admin@imagvfx.com")},
 }
+
+var testAllUsers = []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com", "disabled@imagvfx.com"}
+
+var testActiveUsers = []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com"}
+
+var testDisabledUsers = []string{"disabled@imagvfx.com"}
 
 type testEntryType struct {
 	name string
@@ -538,6 +545,39 @@ func TestEntries(t *testing.T) {
 		if u.Disabled != user.disabled {
 			t.Fatalf("%v.disabled=%v: got %v", user.name, user.disabled, u.Disabled)
 		}
+	}
+	allUsers, err := server.AllUsers(ctx)
+	if err != nil {
+		t.Fatalf("all users: %v", err)
+	}
+	gotAllUsers := []string{}
+	for _, u := range allUsers {
+		gotAllUsers = append(gotAllUsers, u.Name)
+	}
+	if !reflect.DeepEqual(gotAllUsers, testAllUsers) {
+		t.Fatalf("all users: want %q, got %q", testAllUsers, gotAllUsers)
+	}
+	activeUsers, err := server.ActiveUsers(ctx)
+	if err != nil {
+		t.Fatalf("active users: %v", err)
+	}
+	gotActiveUsers := []string{}
+	for _, u := range activeUsers {
+		gotActiveUsers = append(gotActiveUsers, u.Name)
+	}
+	if !reflect.DeepEqual(gotActiveUsers, testActiveUsers) {
+		t.Fatalf("active users: want %q, got %q", testActiveUsers, gotActiveUsers)
+	}
+	disabledUsers, err := server.DisabledUsers(ctx)
+	if err != nil {
+		t.Fatalf("disabled users: %v", err)
+	}
+	gotDisabledUsers := []string{}
+	for _, u := range disabledUsers {
+		gotDisabledUsers = append(gotDisabledUsers, u.Name)
+	}
+	if !reflect.DeepEqual(gotDisabledUsers, testDisabledUsers) {
+		t.Fatalf("disabled users: want %q, got %q", testDisabledUsers, gotDisabledUsers)
 	}
 	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	groupMembers := map[string][]string{

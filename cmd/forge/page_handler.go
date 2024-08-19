@@ -808,7 +808,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			nextEntry = siblings[n]
 		}
 	}
-	users, err := h.server.Users(ctx)
+	users, err := h.server.ActiveUsers(ctx)
 	if err != nil {
 		return err
 	}
@@ -919,7 +919,7 @@ func (h *pageHandler) handleEntryLogs(ctx context.Context, w http.ResponseWriter
 			return err
 		}
 		// when item type is user, we need their name alog with id
-		users, err := h.server.Users(ctx)
+		users, err := h.server.ActiveUsers(ctx)
 		if err != nil {
 			return err
 		}
@@ -1038,7 +1038,7 @@ func (h *pageHandler) handleUsers(ctx context.Context, w http.ResponseWriter, r 
 	if err != nil {
 		return err
 	}
-	users, err := h.server.Users(ctx)
+	users, err := h.server.ActiveUsers(ctx)
 	if err != nil {
 		return err
 	}
