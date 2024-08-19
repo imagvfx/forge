@@ -256,10 +256,11 @@ func (h *apiHandler) handleParentEntries(ctx context.Context, w http.ResponseWri
 
 func (h *apiHandler) handleSearchEntries(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	from := r.FormValue("from")
+	// type is DEPRECATED, use q directly.
 	typ := r.FormValue("type")
 	q := r.FormValue("q")
 	if typ != "" {
-		q += "type=" + typ + " "
+		q = "type=" + typ + " " + q
 	}
 	ents, err := h.server.SearchEntries(ctx, from, q)
 	h.WriteResponse(w, ents, err)
