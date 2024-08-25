@@ -954,11 +954,18 @@ window.onload = function() {
 				return;
 			}
 			// need at least one entry selected or hovered
+			let copyable = null;
 			let copyables = document.querySelectorAll(".copyable:hover");
-			if (!copyables) {
-				return
+			if (copyables.length != 0) {
+				copyable = copyables[copyables.length-1];
 			}
-			let copyable = copyables[copyables.length-1];
+			if (!copyable) {
+				let selected = document.querySelector(".subEntry.selected");
+				if (!selected) {
+					return;
+				}
+				copyable = selected;
+			}
 
 			event.preventDefault();
 
