@@ -1077,13 +1077,13 @@ func (h *pageHandler) handleGroups(ctx context.Context, w http.ResponseWriter, r
 	if err != nil {
 		return err
 	}
-	groups, err := h.server.FindAllGroups(ctx)
+	groups, err := h.server.AllGroups(ctx)
 	if err != nil {
 		return err
 	}
 	members := make(map[string][]*forge.Member)
 	for _, g := range groups {
-		mems, err := h.server.FindGroupMembers(ctx, g.Name)
+		mems, err := h.server.GroupMembers(ctx, g.Name)
 		if err != nil {
 			return err
 		}

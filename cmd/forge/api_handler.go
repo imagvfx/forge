@@ -673,6 +673,12 @@ func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWrit
 	return nil
 }
 
+func (h *apiHandler) handleGetAllGroups(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	grps, err := h.server.AllGroups(ctx)
+	h.WriteResponse(w, grps, err)
+	return nil
+}
+
 func (h *apiHandler) handleAddGroup(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	group := r.FormValue("group")
 	g := &forge.Group{
@@ -698,6 +704,13 @@ func (h *apiHandler) handleRenameGroup(ctx context.Context, w http.ResponseWrite
 	if r.FormValue("back_to_referer") != "" {
 		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}
+	return nil
+}
+
+func (h *apiHandler) handleGetGroupMembers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	group := r.FormValue("group")
+	mems, err := h.server.GroupMembers(ctx, group)
+	h.WriteResponse(w, mems, err)
 	return nil
 }
 

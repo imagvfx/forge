@@ -847,7 +847,7 @@ func (s *Server) DeleteUserData(ctx context.Context, user, section, key string) 
 	return nil
 }
 
-func (s *Server) FindAllGroups(ctx context.Context) ([]*Group, error) {
+func (s *Server) AllGroups(ctx context.Context) ([]*Group, error) {
 	groups, err := s.svc.FindGroups(ctx, GroupFinder{})
 	if err != nil {
 		return nil, err
@@ -903,7 +903,7 @@ func (s *Server) RenameGroup(ctx context.Context, name string, newName string) e
 	return nil
 }
 
-func (s *Server) FindGroupMembers(ctx context.Context, group string) ([]*Member, error) {
+func (s *Server) GroupMembers(ctx context.Context, group string) ([]*Member, error) {
 	if group == "" {
 		return nil, fmt.Errorf("group not specified")
 	}
