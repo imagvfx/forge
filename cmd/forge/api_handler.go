@@ -673,6 +673,30 @@ func (h *apiHandler) handleDeleteAccess(ctx context.Context, w http.ResponseWrit
 	return nil
 }
 
+func (h *apiHandler) handleGetPropertyHistory(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	pth := r.FormValue("path")
+	prop := r.FormValue("property")
+	logs, err := h.server.GetLogs(ctx, pth, "property", prop)
+	h.WriteResponse(w, logs, err)
+	return nil
+}
+
+func (h *apiHandler) handleGetEnvironHistory(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	pth := r.FormValue("path")
+	env := r.FormValue("environ")
+	logs, err := h.server.GetLogs(ctx, pth, "environ", env)
+	h.WriteResponse(w, logs, err)
+	return nil
+}
+
+func (h *apiHandler) handleGetAccessHistory(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	pth := r.FormValue("path")
+	acc := r.FormValue("access")
+	logs, err := h.server.GetLogs(ctx, pth, "access", acc)
+	h.WriteResponse(w, logs, err)
+	return nil
+}
+
 func (h *apiHandler) handleGetAllGroups(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	grps, err := h.server.AllGroups(ctx)
 	h.WriteResponse(w, grps, err)
