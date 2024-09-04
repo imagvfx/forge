@@ -1183,7 +1183,15 @@ window.onload = function() {
 	addQuickSearchForm.onsubmit = function(event) {
 		let searchFormData = new FormData(searchForm);
 		let searchFormParam = new URLSearchParams(searchFormData);
-		if (!searchFormParam.get("search_entry_type")) {
+		let query = searchFormParam.get("search");
+		let typeInQuery = false;
+		for (let tok of query.split(" ")) {
+			tok = tok.trim();
+			if (tok.startsWith("type=")) {
+				typeInQuery = true;
+			}
+		}
+		if (typeInQuery || !searchFormParam.get("search_entry_type")) {
 			searchFormParam.delete("search_entry_type");
 		}
 		let req = new XMLHttpRequest();
