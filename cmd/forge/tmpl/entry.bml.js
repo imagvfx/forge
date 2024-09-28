@@ -704,6 +704,9 @@ window.onload = function() {
 		}
 	}
 	document.onkeydown = function(event) {
+		if (event.repeat) {
+			return;
+		}
 		let ctrlPressed = event.ctrlKey || event.metaKey;
 		if (event.code == "Escape") {
 			// Will close floating UIs first, if any exists.
@@ -1219,6 +1222,9 @@ window.onload = function() {
 	let inputs = document.getElementsByClassName("valueInput");
 	for (let input of inputs) {
 		input.onkeydown = function(ev) {
+			if (ev.repeat) {
+				return;
+			}
 			if (((ev.ctrlKey || ev.metaKey) && ev.code == "Enter") || ev.code == "NumpadEnter") {
 				submitUpdaterOrAdder(ev, input);
 			}
