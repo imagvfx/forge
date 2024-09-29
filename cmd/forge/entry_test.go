@@ -164,7 +164,8 @@ type testProperty struct {
 
 var testUpdateProps = []testProperty{
 	// below for pure validation. clean-up after set.
-	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\n", expect: "title\n\n"},
+	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\n", expect: "title"},
+	{path: "/test/shot/cg/0010", k: "direction", v: "title\r\n\r\nbody", expect: "title\n\nbody"},
 	{path: "/test/shot/cg/0010", k: "direction", v: "", expect: ""},
 	{path: "/test/shot/cg/0010", k: "due", v: "2023/05/21", expect: "2023/05/21"},
 	{path: "/test/shot/cg/0010", k: "due", v: "20230521", expect: "2023/05/21"},

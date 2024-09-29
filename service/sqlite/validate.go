@@ -22,6 +22,9 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 	if p == nil {
 		return fmt.Errorf("unable to validate nil property")
 	}
+	// cleanup
+	p.Value = strings.TrimSpace(p.Value)
+	p.Value = strings.ReplaceAll(p.Value, "\r\n", "\n")
 	// note that 'old' will be nil, if there is no previous value
 	handled, err := validateSpecialProperty(tx, ctx, p, old)
 	if handled {
@@ -93,7 +96,6 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Prop
 }
 
 func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
-	p.Value = strings.ReplaceAll(p.Value, "\r\n", "\n")
 	user := forge.UserNameFromContext(ctx)
 	setting, err := getUserSetting(tx, ctx, user)
 	if err != nil {
@@ -376,8 +378,7 @@ func validateSearch(tx *sql.Tx, ctx context.Context, p, old *forge.Property) err
 	// 	assets|type=asset
 	// 	scene1 shots|type=shot path:/shot/scene1
 	// 	environ assets|type=asset path:/asset/environ
-	value := strings.TrimSpace(p.Value)
-	lines := strings.Split(value, "\n")
+	lines := strings.Split(p.Value, "\n")
 	newlines := make([]string, 0, len(lines))
 	for _, ln := range lines {
 		ln = strings.TrimSpace(ln)
