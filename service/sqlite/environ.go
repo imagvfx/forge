@@ -324,7 +324,7 @@ func updateEnviron(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) e
 		Category:  "environ",
 		Name:      e.Name,
 		Type:      e.Type,
-		Value:     e.RawValue,
+		Value:     e.Value,
 	})
 	if err != nil {
 		return err

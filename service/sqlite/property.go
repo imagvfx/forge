@@ -240,7 +240,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 		Category:  "property",
 		Name:      p.Name,
 		Type:      p.Type,
-		Value:     p.RawValue,
+		Value:     p.Value,
 	})
 	if err != nil {
 		return err
@@ -354,7 +354,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 		Category:  "property",
 		Name:      p.Name,
 		Type:      p.Type,
-		Value:     p.RawValue,
+		Value:     p.Value,
 	})
 	if err != nil {
 		return nil

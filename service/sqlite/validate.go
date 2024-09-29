@@ -16,6 +16,8 @@ import (
 
 // validateProperty validates a property with related infos.
 // It saves the result to p.RawValue when it has processed well.
+// It modifies p.Value to make it better form to log.
+// Every type should allow empty Value while its meaning can be different on the type.
 func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	if p == nil {
 		return fmt.Errorf("unable to validate nil property")
@@ -91,7 +93,7 @@ func validateSpecialProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Prop
 }
 
 func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
-	val := strings.ReplaceAll(p.Value, "\r\n", "\n")
+	p.Value = strings.ReplaceAll(p.Value, "\r\n", "\n")
 	user := forge.UserNameFromContext(ctx)
 	setting, err := getUserSetting(tx, ctx, user)
 	if err != nil {
@@ -103,20 +105,20 @@ func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 	// but this is what I have now.
 	toks := strings.Split(remap, ";")
 	if len(toks) != 2 {
-		p.RawValue = val
+		p.RawValue = p.Value
 		return nil
 	}
 	remapFrom := strings.TrimSpace(toks[0])
 	remapTo := strings.TrimSpace(toks[1])
 	if remapFrom == "" && remapTo == "" {
-		p.RawValue = val
+		p.RawValue = p.Value
 		return nil
 	}
 	if remapFrom == "" || remapTo == "" {
 		// only one of remapFrom,remapTo is defined
 		return fmt.Errorf("user path mapping needs both from and to sides for now")
 	}
-	lines := strings.Split(val, "\n")
+	lines := strings.Split(p.Value, "\n")
 	newLines := make([]string, 0, len(lines))
 	for _, line := range lines {
 		if strings.HasPrefix(line, remapTo) {
@@ -124,8 +126,8 @@ func validateText(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		}
 		newLines = append(newLines, line)
 	}
-	val = strings.Join(newLines, "\n")
-	p.RawValue = val
+	p.Value = strings.Join(newLines, "\n")
+	p.RawValue = p.Value
 	return nil
 }
 
@@ -143,9 +145,7 @@ func validateUser(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 }
 
 func validateTimecode(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
-	// 00:00:00:00
 	if p.Value == "" {
-		// unset
 		p.RawValue = ""
 		return nil
 	}
@@ -164,19 +164,20 @@ func validateTimecode(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 	if len(tc) != 8 {
 		return fmt.Errorf("invalid timecode string: %v", p.Value)
 	}
-	p.RawValue = strings.Join(
+	// make the value a formal form of timecode. ex) 00:00:00:00
+	p.Value = strings.Join(
 		[]string{
 			tc[0:2], tc[2:4], tc[4:6], tc[6:8],
 		},
 		":",
 	)
+	p.RawValue = p.Value
 	return nil
 }
 
 func validateEntryPath(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	// It will save 'val' entry as it's id.
 	if p.Value == "" {
-		// unset
 		p.RawValue = ""
 		return nil
 	}
@@ -186,11 +187,12 @@ func validateEntryPath(tx *sql.Tx, ctx context.Context, p, old *forge.Property) 
 		p.RawValue = "0"
 		return nil
 	}
+	pth := p.Value
 	if !path.IsAbs(p.Value) {
 		// make abs path
-		p.Value = path.Join(p.EntryPath, p.Value)
+		pth = path.Join(p.EntryPath, p.Value)
 	}
-	id, err := getEntryID(tx, ctx, p.Value)
+	id, err := getEntryID(tx, ctx, pth)
 	if err != nil {
 		return err
 	}
@@ -200,9 +202,6 @@ func validateEntryPath(tx *sql.Tx, ctx context.Context, p, old *forge.Property) 
 
 // Entry name property accepts path of an entry and returns it's name.
 func validateEntryName(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
-	// It will save 'val' entry as it's id.
-	// So validation process is same with 'validateEntryPath'.
-	// Difference comes from evaluation.
 	return validateEntryPath(tx, ctx, p, old)
 }
 
@@ -216,6 +215,7 @@ func validateEntryLink(tx *sql.Tx, ctx context.Context, p, old *forge.Property) 
 			have[pth] = true
 		}
 	}
+	val := ""
 	lines := strings.Split(p.Value, "\n")
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
@@ -240,29 +240,32 @@ func validateEntryLink(tx *sql.Tx, ctx context.Context, p, old *forge.Property) 
 		switch op {
 		case '+':
 			// add
+			val += "+" + pth + "\n"
 			have[pth] = true
 		case '-':
 			// remove
+			val += "-" + pth + "\n"
 			delete(have, pth)
 		}
 	}
+	// update p.Value so it only logs differences, not everything.
+	p.Value = strings.TrimSpace(val)
 	pths := make([]string, 0, len(have))
 	for pth := range have {
 		pths = append(pths, pth)
 	}
 	sort.Strings(pths)
-	val := strings.Join(pths, "\n")
-	if val != "" {
+	rawVal := strings.Join(pths, "\n")
+	if rawVal != "" {
 		// for line matching search in sqlite
-		val = "\n" + val + "\n"
+		rawVal = "\n" + rawVal + "\n"
 	}
-	p.RawValue = val
+	p.RawValue = rawVal
 	return nil
 }
 
 func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	if p.Value == "" {
-		// unset
 		p.RawValue = ""
 		return nil
 	}
@@ -291,13 +294,13 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 	if err != nil {
 		return fmt.Errorf("invalid date string: %v", err)
 	}
-	p.RawValue = val
+	p.Value = val
+	p.RawValue = p.Value
 	return nil
 }
 
 func validateInt(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	if p.Value == "" {
-		// unset
 		p.RawValue = ""
 		return nil
 	}
@@ -305,7 +308,8 @@ func validateInt(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 	if err != nil {
 		return fmt.Errorf("cannot convert to int: %v", p.Value)
 	}
-	p.RawValue = strconv.Itoa(n)
+	p.Value = strconv.Itoa(n)
+	p.RawValue = p.Value
 	return nil
 }
 
@@ -319,6 +323,7 @@ func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 			have[v] = true
 		}
 	}
+	val := ""
 	lines := strings.Split(p.Value, "\n")
 	for _, ln := range lines {
 		ln = strings.TrimSpace(ln)
@@ -338,22 +343,27 @@ func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 		switch op {
 		case '+':
 			// add
+			val += "+" + v + "\n"
 			have[v] = true
 		case '-':
 			// remove
 			delete(have, v)
+			val += "-" + v + "\n"
 		}
 	}
+	// update p.Value so it only logs differences, not everything.
+	p.Value = strings.TrimSpace(val)
 	newlines := make([]string, 0, len(have))
 	for v := range have {
 		newlines = append(newlines, v)
 	}
 	sort.Strings(newlines)
-	val := strings.Join(newlines, "\n")
-	if val != "" {
-		val = "\n" + val + "\n"
+	rawVal := strings.Join(newlines, "\n")
+	if rawVal != "" {
+		// for line matching search in sqlite
+		rawVal = "\n" + rawVal + "\n"
 	}
-	p.RawValue = val
+	p.RawValue = rawVal
 	return nil
 }
 
@@ -390,6 +400,7 @@ func validateSearch(tx *sql.Tx, ctx context.Context, p, old *forge.Property) err
 		}
 		newlines = append(newlines, name+"|"+query)
 	}
-	p.RawValue = strings.Join(newlines, "\n")
+	p.Value = strings.Join(newlines, "\n")
+	p.RawValue = p.Value
 	return nil
 }
