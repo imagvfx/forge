@@ -13,8 +13,8 @@ func createAccessorsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS accessors (
 			id INTEGER PRIMARY KEY,
 			is_group BOOL NOT NULL,
-			name STRING NOT NULL UNIQUE,
-			called STRING NOT NULL,
+			name TEXT NOT NULL UNIQUE,
+			called TEXT NOT NULL,
 			disabled BOOL NOT NULL
 		)
 	`)

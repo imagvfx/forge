@@ -13,12 +13,12 @@ func createLogsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS logs (
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER,
-			user STRING NOT NULL,
-			action STRING NOT NULL,
-			ctg STRING NOT NULL,
-			name STRING NOT NULL,
-			typ STRING NOT NULL,
-			val STRING NOT NULL,
+			user TEXT NOT NULL,
+			action TEXT NOT NULL,
+			ctg TEXT NOT NULL,
+			name TEXT NOT NULL,
+			typ TEXT NOT NULL,
+			val TEXT NOT NULL,
 			time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (entry_id) REFERENCES entries (id)
 		)

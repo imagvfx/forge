@@ -16,8 +16,8 @@ func createUserSettingsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS user_settings (
 			id INTEGER PRIMARY KEY,
 			user_id INTERGER NOT NULL,
-			key STRING NOT NULL,
-			value STRING NOT NULL,
+			key TEXT NOT NULL,
+			value TEXT NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 		)
 	`)

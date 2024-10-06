@@ -13,7 +13,7 @@ func createEntryTypesTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS entry_types (
 			id INTEGER PRIMARY KEY,
-			name STRING NOT NULL UNIQUE
+			name TEXT NOT NULL UNIQUE
 		)
 	`)
 	if err != nil {

@@ -17,7 +17,7 @@ func createPropertiesTable(tx *sql.Tx) error {
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER,
 			default_id INTEGER NOT NULL,
-			val STRING NOT NULL,
+			val TEXT NOT NULL,
 			updated_at TIMESTAMP NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			FOREIGN KEY (default_id) REFERENCES default_properties (id),

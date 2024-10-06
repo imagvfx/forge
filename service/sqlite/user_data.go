@@ -16,9 +16,9 @@ func createUserDataTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS user_data (
 			id INTEGER PRIMARY KEY,
 			user_id INTERGER NOT NULL,
-			section STRING NOT NULL,
-			key STRING NOT NULL,
-			value STRING NOT NULL,
+			section TEXT NOT NULL,
+			key TEXT NOT NULL,
+			value TEXT NOT NULL,
 			FOREIGN KEY (user_id) REFERENCES accessors (id)
 			UNIQUE (user_id, section, key)
 		)

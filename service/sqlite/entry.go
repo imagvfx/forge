@@ -18,7 +18,7 @@ func createEntriesTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS entries (
 			id INTEGER PRIMARY KEY,
 			parent_id INTEGER,
-			path STRING NOT NULL UNIQUE,
+			path TEXT NOT NULL UNIQUE,
 			type_id INTEGER NOT NULL,
 			created_at TIMESTAMP NOT NULL,
 			archived BOOLEAN NOT NULL,

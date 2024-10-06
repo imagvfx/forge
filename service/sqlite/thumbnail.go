@@ -13,7 +13,7 @@ func createThumbnailsTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS thumbnails (
 			id INTEGER PRIMARY KEY,
-			entry_id STRING NOT NULL UNIQUE,
+			entry_id TEXT NOT NULL UNIQUE,
 			data BLOB NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id)
 		)

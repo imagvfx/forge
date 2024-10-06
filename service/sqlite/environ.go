@@ -16,9 +16,9 @@ func createEnvironsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS environs (
 			id INTEGER PRIMARY KEY,
 			entry_id INTEGER,
-			name STRING NOT NULL,
-			typ STRING NOT NULL,
-			val STRING NOT NULL,
+			name TEXT NOT NULL,
+			typ TEXT NOT NULL,
+			val TEXT NOT NULL,
 			updated_at TIMESTAMP NOT NULL,
 			FOREIGN KEY (entry_id) REFERENCES entries (id),
 			UNIQUE (entry_id, name)

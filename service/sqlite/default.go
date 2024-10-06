@@ -15,9 +15,9 @@ func createDefaultPropertiesTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS default_properties (
 			id INTEGER PRIMARY KEY,
 			entry_type_id INTEGER NOT NULL,
-			name STRING NOT NULL,
-			type STRING NOT NULL,
-			value STRING NOT NULL,
+			name TEXT NOT NULL,
+			type TEXT NOT NULL,
+			value TEXT NOT NULL,
 			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
 			UNIQUE (entry_type_id, name)
 		)
@@ -34,9 +34,9 @@ func createDefaultEnvironsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS default_environs (
 			id INTEGER PRIMARY KEY,
 			entry_type_id INTEGER NOT NULL,
-			name STRING NOT NULL,
-			type STRING NOT NULL,
-			value STRING NOT NULL,
+			name TEXT NOT NULL,
+			type TEXT NOT NULL,
+			value TEXT NOT NULL,
 			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
 			UNIQUE (entry_type_id, name)
 		)
@@ -73,9 +73,9 @@ func createDefaultSubEntriesTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS default_sub_entries (
 			id INTEGER PRIMARY KEY,
 			entry_type_id INTEGER NOT NULL,
-			name STRING NOT NULL,
+			name TEXT NOT NULL,
 			sub_entry_type_id INTEGER NOT NULL,
-			value STRING NOT NULL,
+			value TEXT NOT NULL,
 			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
 			FOREIGN KEY (sub_entry_type_id) REFERENCES entry_types (id),
 			UNIQUE (entry_type_id, name)

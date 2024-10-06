@@ -14,9 +14,9 @@ func createGlobalsTable(tx *sql.Tx) error {
 		CREATE TABLE IF NOT EXISTS globals (
 			id INTEGER PRIMARY KEY,
 			entry_type_id INTEGER NOT NULL,
-			name STRING NOT NULL,
-			type STRING NOT NULL,
-			value STRING NOT NULL,
+			name TEXT NOT NULL,
+			type TEXT NOT NULL,
+			value TEXT NOT NULL,
 			FOREIGN KEY (entry_type_id) REFERENCES entry_types (id),
 			UNIQUE (entry_type_id, name)
 		)
