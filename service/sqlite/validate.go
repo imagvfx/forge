@@ -272,15 +272,38 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		return nil
 	}
 	// Need 8 digits in what ever form.
-	isDigit := map[string]bool{
-		"0": true, "1": true, "2": true, "3": true, "4": true,
-		"5": true, "6": true, "7": true, "8": true, "9": true,
+	isDigit := map[rune]bool{
+		'0': true, '1': true, '2': true, '3': true, '4': true,
+		'5': true, '6': true, '7': true, '8': true, '9': true,
 	}
+	// if the value starts with + or -, it will change the current date
+	possiblePrefix := rune(p.Value[0])
+	if possiblePrefix == '+' || possiblePrefix == '-' {
+		day, err := strconv.Atoi(p.Value[1:])
+		if err != nil {
+			return fmt.Errorf("invalid date operation: +/- operation needs digits only, got: %v", p.Value[1:])
+		}
+		if possiblePrefix == '-' {
+			day *= -1
+		}
+		if old.Value == "" {
+			// TODO: would it better to use today instead?
+			return fmt.Errorf("invalid date operation: +/- operation could be applied only non-empty date: %v", p.Value[1:])
+		}
+		t, err := time.Parse("2006/01/02", old.Value)
+		if err != nil {
+			return fmt.Errorf("invalid date string: %v", err)
+		}
+		t = t.AddDate(0, 0, day)
+		val := t.Format("2006/01/02")
+		p.RawValue = val
+		return nil
+	}
+	// the value should be a date
 	date := ""
 	for _, r := range p.Value {
-		ch := string(r)
-		if isDigit[ch] {
-			date += ch
+		if isDigit[r] {
+			date += string(r)
 		}
 	}
 	if len(date) != 8 {
