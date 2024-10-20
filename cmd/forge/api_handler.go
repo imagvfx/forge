@@ -1450,11 +1450,21 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			oldv, seen := propValue[p]
 			if !seen {
 				props = append(props, p)
+				if plus {
+					old, err := h.server.GetProperty(ctx, entPath, p)
+					if err != nil {
+						return err
+					}
+					if old.ValueError != nil {
+						return fmt.Errorf("cannot evaluate the previous value: %v.%v", entPath, p)
+					}
+					oldv = old.Value
+				}
 			}
 			v := strings.TrimSpace(val)
 			if plus {
 				if v != "" {
-					propValue[p] = oldv + "\n\n\n" + v
+					propValue[p] = oldv + "\n" + v
 				}
 			} else {
 				if seen {
