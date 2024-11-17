@@ -1288,13 +1288,27 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	if err != nil {
 		return err
 	}
-	sheet := xlr.GetSheetList()[0]
+	// TODO: I'd like to get the currently opened sheet, but ActiveSheetIndex doesn't return it.
+	sheet := ""
+	for _, sh := range xlr.GetSheetList() {
+		vis, err := xlr.GetSheetVisible(sh)
+		if err != nil {
+			return err
+		}
+		if vis {
+			sheet = sh
+			break
+		}
+	}
+	if sheet == "" {
+		return fmt.Errorf("no sheet available")
+	}
 	rows, err := xlr.GetRows(sheet)
 	if err != nil {
 		return err
 	}
 	if len(rows) == 0 {
-		return fmt.Errorf("no data to update in the first sheet: %v", sheet)
+		return fmt.Errorf("no data to update in sheet %q", sheet)
 	}
 	propFor := make(map[int]string)
 	labelRow := rows[0]
@@ -1317,10 +1331,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		propFor[i] = p
 	}
 	if nameIdx == -1 {
-		return fmt.Errorf("'name' field not found")
+		return fmt.Errorf("%q field not found in %q sheet", "name", sheet)
 	}
 	if parentIdx == -1 {
-		return fmt.Errorf("'parent' field not found")
+		return fmt.Errorf("%q field not found in %q sheet", "parent", sheet)
 	}
 	// To check the ancestor with db only once.
 	valueRows := rows[1:]
@@ -1340,10 +1354,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		// Create the entry.
 		parent := cols[parentIdx]
 		if parent == "" {
-			return fmt.Errorf("'parent' field empty")
+			return fmt.Errorf("row %s of %q field empty in %q sheet", strconv.Itoa(row+1), "parent", sheet)
 		}
 		if !path.IsAbs(parent) {
-			return fmt.Errorf("'parent' field should be abs path: %v", parent)
+			return fmt.Errorf("row %s of %q field should be abs path in %q sheet: got %v", strconv.Itoa(row+1), "parent", sheet, parent)
 		}
 		parent = path.Clean(parent)
 		if parent == "/" {
@@ -1354,7 +1368,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		}
 		name := cols[nameIdx]
 		if name == "" {
-			return fmt.Errorf("'name' field empty")
+			return fmt.Errorf("row %s of %q field empty in %q sheet", strconv.Itoa(row+1), "name", sheet)
 		}
 		entPath := path.Clean(path.Join(parent, name))
 		ent, err := h.server.GetEntry(ctx, entPath)

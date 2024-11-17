@@ -2410,7 +2410,12 @@ function submitForm(form) {
 		if (req.status == 200) {
 			location.reload();
 		} else {
-			printErrorStatus(req.responseText);
+			try {
+				let j = JSON.parse(req.responseText);
+				printErrorStatus(j.Err);
+			} catch {
+				printErrorStatus(req.responseText);
+			}
 		}
 	}
 	req.onerror = function(err) {
