@@ -295,27 +295,32 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				} else {
 					itemGlob = "'*" + v + "*'"
 				}
+				// date
 				dateCmp := ""
-				dateVal := ""
+				dateVals := make([]any, 0)
 				if wh.Cmp == "<" || wh.Cmp == "<=" || wh.Cmp == ">" || wh.Cmp == ">=" {
-					if wh.Cmp == "<" || wh.Cmp == "<=" {
-						dateCmp = "!= '' AND properties.val" + wh.Cmp
-					} else if wh.Cmp == ">" || wh.Cmp == ">=" {
-						dateCmp = "!= '' AND properties.val" + wh.Cmp
-					}
-					// rest fills rest date when user put imcomplete yy or yy/mm format
-					rest := "0000/00/00"
-					if wh.Cmp == ">" || wh.Cmp == "<=" {
-						rest = "9999/99/99"
-					}
-					dateVal = v
-					if len(v) < len(rest) {
-						dateVal += rest[len(v):]
+					ds, de := expandValueForDate(tx, ctx, v, wh.Cmp)
+					if de != "" {
+						// date range not suitable for these comparation types
+						dateCmp = "FALSE"
+					} else {
+						dateCmp = "properties.val != '' AND properties.val " + wh.Cmp + " ?"
+						dateVals = append(dateVals, ds)
 					}
 				} else {
-					dateCmp = eq
-					dateVal = vl
+					ds, de := expandValueForDate(tx, ctx, v, wh.Cmp)
+					if de == "" {
+						if !wh.Exact {
+							ds = "*" + ds + "*"
+						}
+						dateCmp = "properties.val " + eq + " ?"
+						dateVals = append(dateVals, ds)
+					} else {
+						dateCmp = "properties.val >= ? AND properties.val <= ?"
+						dateVals = append(dateVals, ds, de)
+					}
 				}
+				// user
 				userWhere := ""
 				whereVals := make([]any, 0)
 				if v != "" {
@@ -331,7 +336,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					(
 						(default_properties.type NOT IN ('tag', 'entry_link', 'user', 'date') AND properties.val %s ?) OR
 						(default_properties.type IN ('tag', 'entry_link') AND properties.val GLOB %s) OR
-						(default_properties.type='date' AND properties.val %s ?) OR
+						(default_properties.type='date' AND %s) OR
 						(default_properties.type='user' AND properties.id IN
 							(SELECT properties.id FROM properties
 								LEFT JOIN accessors ON properties.val=accessors.id
@@ -341,7 +346,8 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 						)
 					)
 				`, eq, itemGlob, dateCmp, userWhere)
-				queryVals = append(queryVals, vl, dateVal)
+				queryVals = append(queryVals, vl)
+				queryVals = append(queryVals, dateVals...)
 				queryVals = append(queryVals, whereVals...)
 				q += vq
 			}
@@ -559,13 +565,11 @@ func expandSpecialValue(tx *sql.Tx, ctx context.Context, v string) string {
 		if err != nil {
 			return v
 		}
-		if n > 10000 {
-			// time.Hour is already a big number and
-			// if n is also too big, i.e 10000000000,
-			// ParseDuration will raise error.
-			// let's limit n to +- 10000
-			n = 10000
-		}
+		// time.Hour is already a big number and
+		// if n is also too big, i.e 10000000000,
+		// ParseDuration will raise error.
+		// let's limit n to +- 10000
+		n = min(n, 10000)
 		d := time.Duration(n) * 24 * time.Hour
 		if op == '+' {
 			day = day.Add(d)
@@ -579,4 +583,73 @@ func expandSpecialValue(tx *sql.Tx, ctx context.Context, v string) string {
 		return user
 	}
 	return v
+}
+
+func expandValueForDate(tx *sql.Tx, ctx context.Context, v, cmp string) (string, string) {
+	day := time.Now().Local()
+	parseDate := func(v string) (string, bool) {
+		if v == "" {
+			// today
+			return day.Format("2006/01/02"), true
+		}
+		sign := v[0]
+		if sign != '+' && sign != '-' {
+			return v, false
+		}
+		n, err := strconv.Atoi(v[1:])
+		if err != nil {
+			return v, false
+		}
+		// time.Hour is already a big number and
+		// if n is also too big, i.e 10000000000,
+		// ParseDuration will raise error.
+		// let's limit n to +- 10000
+		n = min(n, 10000)
+		d := time.Duration(n) * 24 * time.Hour
+		var date time.Time
+		if sign == '+' {
+			date = day.Add(d)
+		} else {
+			date = day.Add(-d)
+		}
+		return date.Format("2006/01/02"), true
+	}
+	if !strings.HasPrefix(v, "+") && !strings.HasPrefix(v, "-") && !strings.HasPrefix(v, "..") {
+		if cmp != "=" && cmp != "!=" && cmp != ":" && cmp != "!:" {
+			// dateRest fills rest date when user put imcomplete yy or yy/mm format
+			// date <  2024  <=  date <  2024/00/00
+			// date <= 2024  <=  date <= 2024/99/99
+			// date >= 2024  =>  date >= 2024/00/00
+			// date >  2024  =>  date >  2024/99/99
+			// TODO: this complecates logic, is it worth?
+			rest := "0000/00/00"
+			if cmp == ">" || cmp == "<=" {
+				rest = "9999/99/99"
+			}
+			dv := v
+			if len(v) < len(rest) {
+				dv += rest[len(v):]
+			}
+			return dv, ""
+		}
+		return v, ""
+	}
+	if strings.Contains(v, "..") {
+		// range
+		toks := strings.SplitN(v, "..", 2)
+		ds, ok := parseDate(toks[0])
+		if !ok {
+			return v, ""
+		}
+		de, ok := parseDate(toks[1])
+		if !ok {
+			return v, ""
+		}
+		if ds > de {
+			ds, de = de, ds
+		}
+		return ds, de
+	}
+	ds, _ := parseDate(v)
+	return ds, ""
 }
