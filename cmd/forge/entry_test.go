@@ -104,8 +104,10 @@ var testDefaults = []testDefault{
 	{typ: "shot", ctg: "property", k: "tag", t: "tag", v: ""},
 	{typ: "shot", ctg: "property", k: "duration", t: "int", v: ""},
 	{typ: "shot", ctg: "property", k: "asset", t: "entry_link", v: ""},
+	{typ: "shot", ctg: "property", k: "undistort_resolution", t: "text", v: ""},
 	{typ: "shot", ctg: "property", k: "SHOT_PATH", t: "entry_path", v: ""},
 	{typ: "shot", ctg: "property", k: "SHOT", t: "entry_name", v: ""},
+	{typ: "shot", ctg: "global", k: "property_owner", t: "text", v: "undistort_resolution: match.assignee"},
 	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
 	{typ: "part", ctg: "property", k: "status", t: "text", v: ""},
 	{typ: "part", ctg: "property", k: "direction", t: "text", v: ""},
@@ -153,9 +155,20 @@ var testEntries = []testEntry{
 	{path: "/test/asset/set/cabin", typ: "asset"},
 	// check case sensitive search for entries,
 	{path: "/TEST", typ: "show"},
+	{path: "/prop_owner", typ: "show"},
+	{path: "/prop_owner/shot", typ: "category"},
+	{path: "/prop_owner/shot/cg", typ: "group"},
+	{path: "/prop_owner/shot/cg/0010", typ: "shot"},
+	{path: "/prop_owner/shot/cg/0010/match", typ: "part"},
+	{path: "/prop_owner/shot/cg/0020", typ: "shot"},
+	{path: "/prop_owner/shot/cg/0020/match", typ: "part"},
+	{path: "/prop_owner/shot/cg/0030", typ: "shot"},
+	{path: "/prop_owner/shot/cg/0030/match", typ: "part"},
+	{path: "/prop_owner/shot/cg/0040", typ: "shot"},
 }
 
 type testProperty struct {
+	updater string
 	path    string
 	k, t, v string
 	want    error
@@ -235,6 +248,15 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0030", k: "asset", v: "+/test/asset/char/human1", expect: "/test/asset/char/human1"},
 	{path: "/test/shot/cg/0030", k: "asset", v: "+/test/asset/char/human1", expect: "/test/asset/char/human1"},
 	{path: "/test/shot/cg/0030", k: "asset", v: "+/test/asset/set/cabin", expect: "/test/asset/char/human1\n/test/asset/set/cabin"},
+
+	// tests for property owner
+	{path: "/prop_owner/shot/cg/0010/match", k: "assignee", v: "reader@imagvfx.com", expect: "reader@imagvfx.com"},
+	{path: "/prop_owner/shot/cg/0020/match", k: "assignee", v: "reader@imagvfx.com", expect: "reader@imagvfx.com"},
+	{updater: "reader@imagvfx.com", path: "/prop_owner/shot/cg/0010", k: "undistort_resolution", v: "2880*1352", expect: "2880*1352"},
+	{updater: "reader@imagvfx.com", path: "/prop_owner/shot/cg/0020", k: "undistort_resolution", v: "2880*1352", expect: "2880*1352"},
+	{updater: "reader@imagvfx.com", path: "/prop_owner/shot/cg/0020", k: "due", v: "2024/12/22", want: errors.New("entry modification not allowed: /prop_owner/shot/cg/0020")},                 // not property owner of due
+	{updater: "reader@imagvfx.com", path: "/prop_owner/shot/cg/0030", k: "undistort_resolution", v: "2880*1352", want: errors.New("entry modification not allowed: /prop_owner/shot/cg/0030")}, // not match.assignee of the entry
+	{updater: "reader@imagvfx.com", path: "/prop_owner/shot/cg/0040", k: "undistort_resolution", v: "2880*1352", want: errors.New("entry modification not allowed: /prop_owner/shot/cg/0040")}, // no sub entry named match
 }
 
 type testSearch struct {
@@ -245,101 +267,103 @@ type testSearch struct {
 }
 
 var testSearches = []testSearch{
-	{path: "/", query: "admin", wantRes: []string{"/test", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
-	{path: "/test", query: "admin", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "", query: "cg/ mdl", wantRes: []string{}, wantErr: errors.New("entry path not specified")},
+	{path: "/", query: "type=show test", wantRes: []string{"/test"}},
+	{path: "/", query: "type=show TEST", wantRes: []string{"/TEST"}},
 	{path: "/", query: "type=show admin@imagvfx.com", wantRes: []string{"/test"}},
-	{path: "/", query: "type=shot admin@imagvfx.com", wantRes: []string{}},
-	{path: "/", query: "type=part admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
-	{path: "/", query: "some random words", wantRes: []string{}},
-	{path: "/", query: "cg/0010/", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
-	{path: "/", query: "cg/ mdl", wantRes: []string{"/test/shot/cg/0010/mdl"}},
-	{path: "/", query: "name:ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "path:/0020/", wantRes: []string{"/test/shot/cg/0020/ani"}},
-	{path: "/test", query: "path:/cg/ type=shot", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
-	{path: "/", query: "assignee=", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "assignee=,admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "ani.assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "mdl.assignee:admin", wantRes: []string{}},
-	{path: "/", query: "type=shot (sub).assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "type=shot (sub).assignee=", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
-	{path: "/", query: "type=shot (sub).assignee=xyz@imagvfx.com", wantRes: []string{}},
-	{path: "/", query: "assignee:admin status=inprogress", wantRes: []string{"/test/shot/cg/0010/lgt"}},
-	{path: "/", query: "status=,inprogress,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "status!=", wantRes: []string{"/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
-	{path: "/", query: "status!=omit status!=done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "status!=omit,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "ani.assignee=admin@imagvfx.com ani.status=done", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "ani.assignee=admin@imagvfx.com ani.status!=done", wantRes: []string{}},
 	{path: "/", query: "(sub).sup=admin@imagvfx.com", wantRes: []string{"/"}},
 	{path: "/", query: "(sub).sup!=,admin@imagvfx.com", wantRes: []string{}},
-	{path: "/", query: "(sub).cg:remove", wantRes: []string{"/test/shot/cg"}},
-	{path: "/", query: "(sub).assignee=admin@imagvfx.com (sub).status=done", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "(sub).name=ani (sub).assignee=reader@imagvfx.com", wantRes: []string{"/test/shot/cg/0020"}},
-	{path: "/", query: "(sub).name=ani (sub).assignee:reader", wantRes: []string{"/test/shot/cg/0020"}},
-	{path: "", query: "cg/ mdl", wantRes: []string{}, wantErr: errors.New("entry path not specified")},
-	{path: "/", query: ":", wantRes: []string{}},
-	{path: "/", query: ":val", wantRes: []string{}},
-	{path: "/", query: "=", wantRes: []string{}},
-	{path: "/", query: "=val", wantRes: []string{}},
-	{path: "/", query: ".=", wantRes: []string{}},
-	{path: "/", query: ".=val", wantRes: []string{}},
-	{path: "/", query: ".cg=val", wantRes: []string{}},
-	{path: "/", query: "(sub).=val", wantRes: []string{}},
-	{path: "/", query: "comp.=val", wantRes: []string{}},
-	{path: "/", query: "comp.x=val", wantRes: []string{}},
-	{path: "/", query: "comp.x=val", wantRes: []string{}},
+	{path: "/test", query: "admin", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "admin", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "type=shot admin@imagvfx.com", wantRes: []string{}},
+	{path: "/test", query: "type=part admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "some random words", wantRes: []string{}},
+	{path: "/test", query: "cg/0010/", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "cg/ mdl", wantRes: []string{"/test/shot/cg/0010/mdl"}},
+	{path: "/test", query: "name:ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "path:/0020/", wantRes: []string{"/test/shot/cg/0020/ani"}},
+	{path: "/test", query: "path:/cg/ type=shot", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "assignee=", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "assignee=,admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "assignee:", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "ani.assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "mdl.assignee:admin", wantRes: []string{}},
+	{path: "/test", query: "type=shot (sub).assignee=admin@imagvfx.com", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "type=shot (sub).assignee=", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
+	{path: "/test", query: "type=shot (sub).assignee=xyz@imagvfx.com", wantRes: []string{}},
+	{path: "/test", query: "assignee:admin status=inprogress", wantRes: []string{"/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "status=,inprogress,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "status!=", wantRes: []string{"/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt"}},
+	{path: "/test", query: "status!=omit status!=done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "status!=omit,done", wantRes: []string{"/test/shot/cg/0010/mdl", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "ani.assignee=admin@imagvfx.com ani.status=done", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "ani.assignee=admin@imagvfx.com ani.status!=done", wantRes: []string{}},
+	{path: "/test", query: "(sub).cg:remove", wantRes: []string{"/test/shot/cg"}},
+	{path: "/test", query: "(sub).assignee=admin@imagvfx.com (sub).status=done", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "(sub).name=ani (sub).assignee=reader@imagvfx.com", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/test", query: "(sub).name=ani (sub).assignee:reader", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/test", query: ":", wantRes: []string{}},
+	{path: "/test", query: ":val", wantRes: []string{}},
+	{path: "/test", query: "=", wantRes: []string{}},
+	{path: "/test", query: "=val", wantRes: []string{}},
+	{path: "/test", query: ".=", wantRes: []string{}},
+	{path: "/test", query: ".=val", wantRes: []string{}},
+	{path: "/test", query: ".cg=val", wantRes: []string{}},
+	{path: "/test", query: "(sub).=val", wantRes: []string{}},
+	{path: "/test", query: "comp.=val", wantRes: []string{}},
+	{path: "/test", query: "comp.x=val", wantRes: []string{}},
+	{path: "/test", query: "comp.x=val", wantRes: []string{}},
 	{path: "/test", query: "type=shot ani.status!=done", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 	{path: "/test", query: "path:/test/shot", wantRes: []string{"/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0010/mdl", "/test/shot/cg/0010/match", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0020", "/test/shot/cg/0020/ani", "/test/shot/cg/0030", "/test/shot/cg/0030/ani"}},
 	{path: "/test", query: "path!:/test/shot", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/char/android", "/test/asset/char/human1", "/test/asset/char/human2", "/test/asset/char/yb", "/test/asset/set", "/test/asset/set/cabin"}},
 	{path: "/test", query: "type=shot path=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0010"}},
 	{path: "/test", query: "type=shot path!=/test/shot/cg/0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "type=shot name=0010", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "type=shot name!=0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "type=part name=ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
-	{path: "/", query: "tag=due=2023/05/21", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "tag!=due=2023/05/21", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "tag:due", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
-	{path: "/", query: "tag!:due", wantRes: []string{"/test/shot/cg/0030"}},
-	{path: "/", query: "tag:due tag=important", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "tag=important", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "tag!=important", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "tag=important,test", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
-	{path: "/", query: "due<", wantRes: []string{}},
-	{path: "/", query: "due>", wantRes: []string{}},
-	{path: "/", query: "due<2023", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "due>2022", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "due<=2023/06", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
-	{path: "/", query: "due>=2023/06", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "due<2023/06", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "due>2023/06", wantRes: []string{"/test/shot/cg/0030"}},
-	{path: "/", query: "due!:2023", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "due:2023", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "due:2022,2023", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "due:2023/06", wantRes: []string{"/test/shot/cg/0020"}},
-	{path: "/", query: "due!=2023/06/19", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
-	{path: "/", query: "due=2023/06/19", wantRes: []string{"/test/shot/cg/0020"}},
-	{path: "/", query: "due=", wantRes: []string{}},
-	{path: "/", query: "due!=", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "asset=", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "asset!=", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "asset=/test/asset/char/human1", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "asset=/test/asset/not-existing", wantRes: []string{}},
-	{path: "/", query: "asset:human", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "asset:/set/", wantRes: []string{"/test/shot/cg/0030"}},
-	{path: "/", query: "asset!:/set/", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
+	{path: "/test", query: "type=shot name=0010", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "type=shot name!=0010", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "type=part name=ani", wantRes: []string{"/test/shot/cg/0010/ani", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "tag=due=2023/05/21", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "tag!=due=2023/05/21", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "tag:due", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
+	{path: "/test", query: "tag!:due", wantRes: []string{"/test/shot/cg/0030"}},
+	{path: "/test", query: "tag:due tag=important", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "tag=important", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "tag!=important", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "tag=important,test", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
+	{path: "/test", query: "due<", wantRes: []string{}},
+	{path: "/test", query: "due>", wantRes: []string{}},
+	{path: "/test", query: "due<2023", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "due>2022", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "due<=2023/06", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
+	{path: "/test", query: "due>=2023/06", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "due<2023/06", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "due>2023/06", wantRes: []string{"/test/shot/cg/0030"}},
+	{path: "/test", query: "due!:2023", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "due:2023", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "due:2022,2023", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "due:2023/06", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/test", query: "due!=2023/06/19", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0030"}},
+	{path: "/test", query: "due=2023/06/19", wantRes: []string{"/test/shot/cg/0020"}},
+	{path: "/test", query: "due=", wantRes: []string{}},
+	{path: "/test", query: "due!=", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "asset=", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "asset!=", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "asset=/test/asset/char/human1", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "asset=/test/asset/not-existing", wantRes: []string{}},
+	{path: "/test", query: "asset:human", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "asset:/set/", wantRes: []string{"/test/shot/cg/0030"}},
+	{path: "/test", query: "asset!:/set/", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020"}},
 	// check leaf entries
-	{path: "/", query: "has=", wantRes: []string{"/TEST", "/test/asset/char/android", "/test/asset/char/human1", "/test/asset/char/human2", "/test/asset/char/yb", "/test/asset/set/cabin", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/match", "/test/shot/cg/0010/mdl", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
+	{path: "/test", query: "has=", wantRes: []string{"/test/asset/char/android", "/test/asset/char/human1", "/test/asset/char/human2", "/test/asset/char/yb", "/test/asset/set/cabin", "/test/shot/cg/0010/ani", "/test/shot/cg/0010/lgt", "/test/shot/cg/0010/match", "/test/shot/cg/0010/mdl", "/test/shot/cg/0020/ani", "/test/shot/cg/0030/ani"}},
 	// check non-leaf entries
-	{path: "/", query: "has!=", wantRes: []string{"/", "/test", "/test/asset", "/test/asset/char", "/test/asset/set", "/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "type=shot has=ani", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "type:shot has:ani", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "type=shot has=ani,lgt", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
-	{path: "/", query: "type=shot has=ani has=lgt", wantRes: []string{"/test/shot/cg/0010"}},
-	{path: "/", query: "type=shot has!=ani", wantRes: []string{}},
-	{path: "/", query: "type=shot has!:ani", wantRes: []string{}},
-	{path: "/", query: "type=shot has!=lgt", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "has!=", wantRes: []string{"/test/asset", "/test/asset/char", "/test/asset/set", "/test/shot", "/test/shot/cg", "/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "type=shot has=ani", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "type:shot has:ani", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "type=shot has=ani,lgt", wantRes: []string{"/test/shot/cg/0010", "/test/shot/cg/0020", "/test/shot/cg/0030"}},
+	{path: "/test", query: "type=shot has=ani has=lgt", wantRes: []string{"/test/shot/cg/0010"}},
+	{path: "/test", query: "type=shot has!=ani", wantRes: []string{}},
+	{path: "/test", query: "type=shot has!:ani", wantRes: []string{}},
+	{path: "/test", query: "type=shot has!=lgt", wantRes: []string{"/test/shot/cg/0020", "/test/shot/cg/0030"}},
 }
 
 func ptr[T any](value T) *T {
@@ -507,16 +531,17 @@ func TestEntries(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer db.Close()
-	ctx := context.Background()
+	bgCtx := context.Background()
+	adminCtx := forge.ContextWithUserName(bgCtx, "admin@imagvfx.com")
 	// first user who was added to the db becomes an admin
 	for _, user := range testAddUsers {
-		err = server.AddUser(ctx, &forge.User{Name: user.name})
+		err = server.AddUser(bgCtx, &forge.User{Name: user.name})
 		if !equalError(user.wantErr, err) {
 			t.Fatalf("want err %q, got %q", errorString(user.wantErr), errorString(err))
 		}
 	}
 	for _, user := range testUpdateUserCalled {
-		ctx := forge.ContextWithUserName(ctx, user.name)
+		ctx := forge.ContextWithUserName(bgCtx, user.name)
 		err = server.UpdateUserCalled(ctx, user.name, user.called)
 		if !equalError(user.updateErr, err) {
 			t.Fatalf("%v.called=%q update: want err %q, got %q", user.name, user.called, errorString(user.updateErr), errorString(err))
@@ -536,7 +561,7 @@ func TestEntries(t *testing.T) {
 		}
 	}
 	for _, user := range testUpdateUserDisabled {
-		ctx := forge.ContextWithUserName(ctx, user.name)
+		ctx := forge.ContextWithUserName(bgCtx, user.name)
 		err = server.UpdateUserDisabled(ctx, user.name, user.disabled)
 		if !equalError(user.wantErr, err) {
 			t.Fatalf("%v.disabled=%v update: want err %q, got %q", user.name, user.disabled, errorString(user.wantErr), errorString(err))
@@ -552,7 +577,7 @@ func TestEntries(t *testing.T) {
 			t.Fatalf("%v.disabled=%v: got %v", user.name, user.disabled, u.Disabled)
 		}
 	}
-	allUsers, err := server.AllUsers(ctx)
+	allUsers, err := server.AllUsers(adminCtx)
 	if err != nil {
 		t.Fatalf("all users: %v", err)
 	}
@@ -563,7 +588,7 @@ func TestEntries(t *testing.T) {
 	if !reflect.DeepEqual(gotAllUsers, testAllUsers) {
 		t.Fatalf("all users: want %q, got %q", testAllUsers, gotAllUsers)
 	}
-	activeUsers, err := server.ActiveUsers(ctx)
+	activeUsers, err := server.ActiveUsers(adminCtx)
 	if err != nil {
 		t.Fatalf("active users: %v", err)
 	}
@@ -574,7 +599,7 @@ func TestEntries(t *testing.T) {
 	if !reflect.DeepEqual(gotActiveUsers, testActiveUsers) {
 		t.Fatalf("active users: want %q, got %q", testActiveUsers, gotActiveUsers)
 	}
-	disabledUsers, err := server.DisabledUsers(ctx)
+	disabledUsers, err := server.DisabledUsers(adminCtx)
 	if err != nil {
 		t.Fatalf("disabled users: %v", err)
 	}
@@ -585,18 +610,17 @@ func TestEntries(t *testing.T) {
 	if !reflect.DeepEqual(gotDisabledUsers, testDisabledUsers) {
 		t.Fatalf("disabled users: want %q, got %q", testDisabledUsers, gotDisabledUsers)
 	}
-	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	groupMembers := map[string][]string{
 		"readers": {"reader@imagvfx.com", "readwriter@imagvfx.com"},
 		"writers": {"readwriter@imagvfx.com"},
 	}
 	for group, members := range groupMembers {
-		err = server.AddGroup(ctx, &forge.Group{Name: group})
+		err = server.AddGroup(adminCtx, &forge.Group{Name: group})
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, member := range members {
-			err = server.AddGroupMember(ctx, group, member)
+			err = server.AddGroupMember(adminCtx, group, member)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -607,35 +631,44 @@ func TestEntries(t *testing.T) {
 		"writers": "rw",
 	}
 	for group, access := range access {
-		err = server.AddAccess(ctx, "/", group, access)
+		err = server.AddAccess(adminCtx, "/", group, access)
 	}
 	for _, typ := range testEntryTypes {
-		err := server.AddEntryType(ctx, typ.name)
+		err := server.AddEntryType(adminCtx, typ.name)
 		if !equalError(typ.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(typ.want), errorString(err))
 		}
 	}
 	for _, def := range testDefaults {
-		err := server.AddDefault(ctx, def.typ, def.ctg, def.k, def.t, def.v)
+		var err error
+		if def.ctg == "global" {
+			err = server.AddGlobal(adminCtx, def.typ, def.k, def.t, def.v)
+		} else {
+			err = server.AddDefault(adminCtx, def.typ, def.ctg, def.k, def.t, def.v)
+		}
 		if !equalError(def.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(def.want), errorString(err))
 		}
 	}
 	for _, ent := range testEntries {
-		err := server.AddEntry(ctx, ent.path, ent.typ)
+		err := server.AddEntry(adminCtx, ent.path, ent.typ)
 		if !equalError(ent.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(ent.want), errorString(err))
 		}
 	}
 	for _, prop := range testUpdateProps {
-		err := server.UpdateProperty(ctx, prop.path, prop.k, prop.v)
+		updCtx := adminCtx
+		if prop.updater != "" {
+			updCtx = forge.ContextWithUserName(bgCtx, prop.updater)
+		}
+		err := server.UpdateProperty(updCtx, prop.path, prop.k, prop.v)
 		if !equalError(prop.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(prop.want), errorString(err))
 		}
 		if prop.want != nil {
 			continue
 		}
-		got, err := server.GetProperty(ctx, prop.path, prop.k)
+		got, err := server.GetProperty(updCtx, prop.path, prop.k)
 		if err != nil {
 			t.Fatalf("couldn't get updated property: %v", err)
 		}
@@ -645,11 +678,10 @@ func TestEntries(t *testing.T) {
 	}
 
 	// test renames and revert it back.
-	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	for _, rename := range testRenames {
 		dir := path.Dir(rename.path)
 		oldName := path.Base(rename.path)
-		err := server.RenameEntry(ctx, rename.path, rename.newName)
+		err := server.RenameEntry(adminCtx, rename.path, rename.newName)
 		if !equalError(rename.wantErr, err) {
 			t.Fatalf("rename %q to %q: want err %q, got %q", rename.path, rename.newName, errorString(rename.wantErr), errorString(err))
 		}
@@ -659,7 +691,7 @@ func TestEntries(t *testing.T) {
 		}
 		// revert
 		newPath := path.Join(dir, rename.newName)
-		err = server.RenameEntry(ctx, newPath, oldName)
+		err = server.RenameEntry(adminCtx, newPath, oldName)
 		if err != nil {
 			t.Fatalf("rename %q to %q: revert got unwanted err: %v", rename.path, rename.newName, err)
 		}
@@ -668,7 +700,7 @@ func TestEntries(t *testing.T) {
 	// search
 	whoCanRead := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com"}
 	for _, user := range whoCanRead {
-		ctx = forge.ContextWithUserName(ctx, user)
+		ctx := forge.ContextWithUserName(bgCtx, user)
 		for _, s := range testSearches {
 			ents, err := server.SearchEntries(ctx, s.path, s.query)
 			if !equalError(s.wantErr, err) {
@@ -687,7 +719,7 @@ func TestEntries(t *testing.T) {
 	}
 	whoCannotRead := []string{"uninvited@imagvfx.com"}
 	for _, user := range whoCannotRead {
-		ctx = forge.ContextWithUserName(ctx, user)
+		ctx := forge.ContextWithUserName(bgCtx, user)
 		for _, s := range testSearches {
 			ents, _ := server.SearchEntries(ctx, s.path, s.query)
 			got := make([]string, 0)
@@ -705,9 +737,8 @@ func TestEntries(t *testing.T) {
 	}
 
 	// test find
-	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	for _, f := range testFinds {
-		ents, err := server.FindEntries(ctx, f.finder)
+		ents, err := server.FindEntries(adminCtx, f.finder)
 		if err != nil {
 			t.Fatalf("find: %v", err)
 		}
@@ -723,36 +754,34 @@ func TestEntries(t *testing.T) {
 	}
 
 	// test delete
-	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	for _, delete := range testDeletes {
-		err := server.DeleteEntry(ctx, delete.path)
+		err := server.DeleteEntry(adminCtx, delete.path)
 		if !equalError(delete.wantErr, err) {
 			t.Fatalf("delete %q: want err %q, got %q", delete.path, errorString(delete.wantErr), errorString(err))
 		}
 	}
 
 	// test user data
-	ctx = forge.ContextWithUserName(ctx, "admin@imagvfx.com")
 	for _, c := range userDataCases {
-		err := server.SetUserData(ctx, c.user, c.section, c.key, c.value)
+		err := server.SetUserData(adminCtx, c.user, c.section, c.key, c.value)
 		if !equalError(c.wantErr, err) {
 			t.Fatalf("add %q: want err %q, got %q", c.label, errorString(c.wantErr), errorString(err))
 		}
 		if c.wantErr != nil {
 			continue
 		}
-		value, err := server.GetUserData(ctx, c.user, c.section, c.key)
+		value, err := server.GetUserData(adminCtx, c.user, c.section, c.key)
 		if err != nil {
 			t.Fatalf("get %q: %v", c.label, err)
 		}
 		if value != c.value {
 			t.Fatalf("get %q: want %q, got %q", c.label, c.value, value)
 		}
-		err = server.SetUserData(ctx, c.user, c.section, c.key, "")
+		err = server.SetUserData(adminCtx, c.user, c.section, c.key, "")
 		if err != nil {
 			t.Fatalf("update %q: %v", c.label, err)
 		}
-		value, err = server.GetUserData(ctx, c.user, c.section, c.key)
+		value, err = server.GetUserData(adminCtx, c.user, c.section, c.key)
 		if err != nil {
 			t.Fatalf("get after update %q: %v", c.label, err)
 		}
@@ -764,12 +793,12 @@ func TestEntries(t *testing.T) {
 		if c.wantErr != nil {
 			continue
 		}
-		err = server.DeleteUserData(ctx, c.user, c.section, c.key)
+		err = server.DeleteUserData(adminCtx, c.user, c.section, c.key)
 		if err != nil {
 			t.Fatalf("delete %q: %v", c.label, err)
 		}
 	}
-	data, err := server.FindUserData(ctx, forge.UserDataFinder{User: "admin@imagvfx.com"})
+	data, err := server.FindUserData(adminCtx, forge.UserDataFinder{User: "admin@imagvfx.com"})
 	if err != nil {
 		t.Fatalf("find: %v", err)
 	}
@@ -779,7 +808,7 @@ func TestEntries(t *testing.T) {
 
 	// test environ after user data as environ overrided by user data.
 	for _, c := range testEntryEnviron {
-		envs, err := server.EntryEnvirons(ctx, c.path)
+		envs, err := server.EntryEnvirons(adminCtx, c.path)
 		if !equalError(c.wantErr, err) {
 			t.Fatalf("environ: %q: %v", c.label, err)
 		}
