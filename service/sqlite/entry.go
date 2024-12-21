@@ -303,6 +303,29 @@ func getEntryID(tx *sql.Tx, ctx context.Context, path string) (int, error) {
 	return id, nil
 }
 
+func getEntryType(tx *sql.Tx, ctx context.Context, path string) (string, error) {
+	rows, err := tx.QueryContext(ctx, `
+		SELECT entry_types.name
+		FROM entries
+		LEFT JOIN entry_types ON entries.type_id=entry_types.id
+		WHERE entries.path=?`,
+		path,
+	)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return "", forge.NotFound("entry not found: %v", path)
+	}
+	var typ string
+	err = rows.Scan(&typ)
+	if err != nil {
+		return "", err
+	}
+	return typ, nil
+}
+
 func AddEntry(db *sql.DB, ctx context.Context, e *forge.Entry) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

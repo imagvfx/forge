@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
@@ -298,13 +299,75 @@ func UpdateProperty(db *sql.DB, ctx context.Context, upd forge.PropertyUpdater) 
 }
 
 func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) error {
+	var deferredErr error
 	err := userWrite(tx, ctx, upd.EntryPath)
 	if err != nil {
-		return err
+		e := &forge.UnauthorizedError{}
+		if !errors.As(err, &e) {
+			return err
+		}
+		deferredErr = err
 	}
 	old, err := getProperty(tx, ctx, upd.EntryPath, upd.Name)
 	if err != nil {
 		return err
+	}
+	if deferredErr != nil {
+		// check whether the context user is property_owner.
+		// if so, allow update.
+		ctxUser := forge.UserNameFromContext(ctx)
+		entType, err := getEntryType(tx, ctx, upd.EntryPath)
+		if err != nil {
+			return err
+		}
+		gl, err := getGlobal(tx, ctx, entType, "property_owner")
+		if err != nil {
+			e := &forge.NotFoundError{}
+			if !errors.As(err, &e) {
+				return err
+			}
+			return deferredErr
+		}
+		for _, ln := range strings.Split(gl.Value, "\n") {
+			// eg. "undistort_resolution: match.assignee"
+			// multiple owners for a property should be defined at another line.
+			ln = strings.TrimSpace(ln)
+			if ln == "" {
+				continue
+			}
+			prop, owner, ok := strings.Cut(ln, ":")
+			if !ok {
+				continue
+			}
+			prop = strings.TrimSpace(prop)
+			if prop != upd.Name {
+				continue
+			}
+			owner = strings.TrimSpace(owner)
+			sub, userProp, ok := strings.Cut(owner, ".")
+			if !ok {
+				continue
+			}
+			subPath := path.Join(upd.EntryPath, sub)
+			p, err := getProperty(tx, ctx, subPath, userProp)
+			if err != nil {
+				e := &forge.NotFoundError{}
+				if !errors.As(err, &e) {
+					return err
+				}
+				// subPath not exists.
+				continue
+			}
+			if p.Value != ctxUser {
+				continue
+			}
+			// user have right to update.
+			deferredErr = nil
+			break
+		}
+		if deferredErr != nil {
+			return deferredErr
+		}
 	}
 	p := &forge.Property{EntryPath: upd.EntryPath, Name: upd.Name, Type: old.Type}
 	keys := make([]string, 0)
