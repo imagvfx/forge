@@ -18,6 +18,10 @@ import (
 // Invalid value can come from manual modification of db, or formatting change to property type.
 // Eg. It once saved string path of an entry for entry_path, but now saves the id.
 func evalProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	handled := evalSpecialProperty(tx, ctx, p)
+	if handled {
+		return
+	}
 	evalFn := map[string]func(tx *sql.Tx, ctx context.Context, p *forge.Property){
 		"timecode":   evalTimecode,
 		"text":       evalText,
@@ -185,11 +189,9 @@ func evalSearch(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	p.Value = p.RawValue
 }
 
-// evalSpecialProperty evaluates special properties that starts with dot (.).
-// For normal properties, it will return the input value unmodified.
-//
-// TODO: Match the arugments to other eval functions?
-func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+// evalSpecialProperty evaluates special properties that defined in forge.
+// It will return true when given property was special property.
+func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) bool {
 	// TODO: .sub_entry_types
 	name := p.Name
 	val := p.RawValue
@@ -201,14 +203,14 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 			toks := strings.Split(nt, ":")
 			if len(toks) != 2 {
 				p.ValueError = fmt.Errorf(".predefined_sub_entries value should consists of 'subent:type' tokens: %v", nt)
-				return
+				return true
 			}
 			sub := strings.TrimSpace(toks[0])
 			typeID := strings.TrimSpace(toks[1])
 			id, err := strconv.Atoi(typeID)
 			if err != nil {
 				p.ValueError = fmt.Errorf("invalid entry type id for '%v' in .predefined_sub_entries: %v", name, typeID)
-				return
+				return true
 			}
 			// Internally it saves with entry type id. Get the type name.
 			typ, err := getEntryTypeByID(tx, ctx, id)
@@ -216,10 +218,10 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 				var e *forge.NotFoundError
 				if !errors.As(err, &e) {
 					p.ValueError = err
-					return
+					return true
 				}
 				p.ValueError = fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
-				return
+				return true
 			}
 			subNameType[sub] = typ
 		}
@@ -237,8 +239,7 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 		}
 		p.Eval = val
 		p.Value = val
-		return
+		return true
 	}
-	p.Eval = val
-	p.Value = val
+	return false
 }

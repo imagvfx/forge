@@ -105,11 +105,7 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 		if err != nil {
 			return nil, fmt.Errorf("find properties: %w", err)
 		}
-		if strings.HasPrefix(p.Name, ".") {
-			evalSpecialProperty(tx, ctx, p)
-		} else {
-			evalProperty(tx, ctx, p)
-		}
+		evalProperty(tx, ctx, p)
 		props = append(props, p)
 	}
 	return props, nil
@@ -148,11 +144,7 @@ func propertiesByDefaultID(tx *sql.Tx, ctx context.Context, defaultID int) ([]*f
 		if err != nil {
 			return nil, fmt.Errorf("properties from default id: %w", err)
 		}
-		if strings.HasPrefix(p.Name, ".") {
-			evalSpecialProperty(tx, ctx, p)
-		} else {
-			evalProperty(tx, ctx, p)
-		}
+		evalProperty(tx, ctx, p)
 		props = append(props, p)
 	}
 	return props, nil
