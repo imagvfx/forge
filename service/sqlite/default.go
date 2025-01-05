@@ -168,12 +168,6 @@ func findDefaultProperties(tx *sql.Tx, ctx context.Context, find forge.DefaultFi
 		if err != nil {
 			return nil, err
 		}
-		if strings.HasPrefix(d.Name, ".") {
-			p := &forge.Property{Name: d.Name, RawValue: d.Value}
-			evalSpecialProperty(tx, ctx, p)
-			d.Value = p.Value
-			// TODO: what should I do when there was an evaluation error?
-		}
 		defaults = append(defaults, d)
 	}
 	return defaults, nil
@@ -429,10 +423,6 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 	if err != nil {
 		return err
 	}
-	err = validateProperty(tx, ctx, &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}, nil)
-	if err != nil {
-		return err
-	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO default_properties (
 			entry_type_id,
@@ -485,11 +475,6 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 	if err != nil {
 		return err
 	}
-	p := &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}
-	err = validateProperty(tx, ctx, p, nil)
-	if err != nil {
-		return err
-	}
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO default_environs (
 			entry_type_id,
@@ -502,7 +487,7 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 		typeID,
 		d.Name,
 		d.Type,
-		p.RawValue,
+		d.Value,
 	)
 	if err != nil {
 		return err
@@ -696,30 +681,22 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 	if err != nil {
 		return err
 	}
-	n := &forge.Property{Name: d.Name, Type: d.Type, Value: d.Value}
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.NewName != nil {
-		n.Name = *upd.NewName
 		keys = append(keys, "name=?")
 		vals = append(vals, *upd.NewName)
 	}
 	if upd.Type != nil {
-		n.Type = *upd.Type
 		keys = append(keys, "type=?")
 		vals = append(vals, *upd.Type)
 	}
 	if upd.Value != nil {
-		n.Value = *upd.Value
 		keys = append(keys, "value=?")
-		vals = append(vals, n.Value)
+		vals = append(vals, *upd.Value)
 	}
 	if len(keys) == 0 {
 		return fmt.Errorf("need at least one field to update default: %v %v %v", upd.EntryType, "property", upd.Name)
-	}
-	err = validateProperty(tx, ctx, n, nil)
-	if err != nil {
-		return err
 	}
 	typeID, err := getEntryTypeID(tx, ctx, upd.EntryType)
 	if err != nil {
