@@ -192,13 +192,10 @@ func evalSearch(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 // evalSpecialProperty evaluates special properties that defined in forge.
 // It will return true when given property was special property.
 func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) bool {
-	// TODO: .sub_entry_types
-	name := p.Name
-	val := p.RawValue
-	switch name {
+	switch p.Name {
 	case ".predefined_sub_entries":
 		subNameType := make(map[string]string)
-		for _, nt := range strings.Split(val, ",") {
+		for _, nt := range strings.Split(p.RawValue, ",") {
 			nt = strings.TrimSpace(nt)
 			toks := strings.Split(nt, ":")
 			if len(toks) != 2 {
@@ -209,7 +206,7 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) boo
 			typeID := strings.TrimSpace(toks[1])
 			id, err := strconv.Atoi(typeID)
 			if err != nil {
-				p.ValueError = fmt.Errorf("invalid entry type id for '%v' in .predefined_sub_entries: %v", name, typeID)
+				p.ValueError = fmt.Errorf("invalid entry type id for '%v' in .predefined_sub_entries: %v", p.Name, typeID)
 				return true
 			}
 			// Internally it saves with entry type id. Get the type name.
@@ -220,7 +217,7 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) boo
 					p.ValueError = err
 					return true
 				}
-				p.ValueError = fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", name, typ)
+				p.ValueError = fmt.Errorf("not found the entry type defined for '%v' in .predefined_sub_entries: %v", p.Name, typ)
 				return true
 			}
 			subNameType[sub] = typ
@@ -230,7 +227,7 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) boo
 			subNames = append(subNames, sub)
 		}
 		sort.Slice(subNames, func(i, j int) bool { return subNames[i] < subNames[j] })
-		val = ""
+		val := ""
 		for i, sub := range subNames {
 			if i != 0 {
 				val += ", "
@@ -239,6 +236,10 @@ func evalSpecialProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) boo
 		}
 		p.Eval = val
 		p.Value = val
+		return true
+	case ".sub_entry_types":
+		p.Eval = p.RawValue
+		p.Value = p.RawValue
 		return true
 	}
 	return false
