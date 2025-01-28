@@ -593,7 +593,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	sortProps(mainEntryHiddenProps)
 	// Get grand sub entries if needed.
 	grandSubEntGroups := make(map[string][][]*forge.Entry)
-	grandSubTypes := make(map[string]string)
+	grandSubTypes := make(map[string][]string)
 	showGrandSub := make(map[string]bool)
 	summaryGrandSub := make(map[string]bool)
 	validTypes, err := h.server.FindEntryTypes(ctx)
@@ -619,7 +619,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			continue
 		}
 		showGrandSub[sub.Type] = true
-		grandSubTypes[sub.Type] = subtypes.Value
+		grandSubTypes[sub.Type] = strings.Fields(subtypes.Value)
 		// summary_sub_entries needs expose_sub_entries to effect
 		_, err = h.server.GetGlobal(ctx, sub.Type, "summary_sub_entries")
 		if err != nil {
@@ -633,13 +633,12 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	grandSubEnts := make(map[*forge.Entry][]*forge.Entry)
 	for _, sub := range subEnts {
-		subtypes, ok := grandSubTypes[sub.Type]
+		typs, ok := grandSubTypes[sub.Type]
 		if !ok {
 			continue
 		}
 		gsubEnts := make([]*forge.Entry, 0)
-		subtypes = strings.TrimSpace(subtypes)
-		if subtypes == "" {
+		if len(typs) == 0 {
 			// get direct children
 			gsub, err := h.server.SubEntries(ctx, sub.Path)
 			if err != nil {
@@ -648,7 +647,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			gsubEnts = gsub
 		} else {
 			// find grand children of the type recursively
-			typs := strings.Fields(subtypes)
 			valids := []string{}
 			for _, typ := range typs {
 				if !validType[typ] {
@@ -713,6 +711,33 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			groups = append(groups, grp)
 		}
 		grandSubEntGroups[sub.Path] = groups
+	}
+	hideDueStatus := make(map[string]map[string]bool)
+	for typ, gtyps := range grandSubTypes {
+		// TODO: weird way to get all sub types, fix when we have a global one.
+		typs := gtyps
+		typs = append(typs, typ)
+		for _, t := range typs {
+			if hideDueStatus[t] != nil {
+				continue
+			}
+			hideDueStatus[t] = make(map[string]bool)
+			g, err := h.server.GetGlobal(ctx, t, "hide_due_status")
+			if err != nil {
+				var e *forge.NotFoundError
+				if !errors.As(err, &e) {
+					return err
+				}
+				continue
+			}
+			stats := strings.Fields(g.Value)
+			for _, s := range stats {
+				if s == "_" {
+					s = ""
+				}
+				hideDueStatus[t][s] = true
+			}
+		}
 	}
 	// Get possible status for entry types defines it.
 	possibleStatus := make(map[string][]forge.Status)
@@ -834,6 +859,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		GroupByProp               string
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
+		HideDueStatus             map[string]map[string]bool
 		Searches                  [][][2]string // [at][][name, query]
 		SubEntryTags              map[string][]string
 		ShowGrandSub              map[string]bool
@@ -870,6 +896,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		GroupByProp:               groupByProp,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
+		HideDueStatus:             hideDueStatus,
 		Searches:                  searches,
 		SubEntryTags:              subEntryTags,
 		ShowGrandSub:              showGrandSub,
