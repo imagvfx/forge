@@ -151,6 +151,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	subVals := make(map[string][]any)
 	allSubQueries := make(map[string][]string)
 	allSubVals := make(map[string][]any)
+	allSubInclusive := make(map[string]bool)
 
 	innerQueries := make([]string, 0)
 	innerVals := make([]any, 0)
@@ -365,9 +366,12 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				}
 				allSubQueries[sub] = append(allSubQueries[sub], queries...)
 				allSubVals[sub] = append(allSubVals[sub], queryVals...)
+				allSubInclusive[sub] = true
 			} else if sub == "(sub)" {
-				subQueries[""] = append(subQueries[""], queries...)
-				subVals[""] = append(subVals[""], queryVals...)
+				sub = "**" // trick to distinquish it from * query
+				allSubQueries[sub] = append(allSubQueries[sub], queries...)
+				allSubVals[sub] = append(allSubVals[sub], queryVals...)
+				allSubInclusive[sub] = false
 			} else {
 				subQueries[sub] = append(subQueries[sub], queries...)
 				subVals[sub] = append(subVals[sub], queryVals...)
@@ -444,16 +448,17 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 					UNION ALL
 					SELECT
 						parent_of.id,
-						(SELECT parent_id from entries WHERE id=parent_of.parent_id) ancestor
+						(SELECT parent_id from entries WHERE entries.id=parent_of.parent_id) ancestor
 					FROM parent_of
 					WHERE ancestor IS NOT NULL
 				)
-				SELECT DISTINCT parent_of.parent_id FROM parent_of
+				SELECT DISTINCT parent_of.parent_id FROM parent_of`, subQuery)
+			if allSubInclusive[sub] {
+				query += `
 				UNION
-				SELECT id FROM (%v)
-			`, subQuery, subQuery)
+				SELECT DISTINCT parent_of.id FROM parent_of`
+			}
 			innerQueries = append([]string{query}, innerQueries...)
-			innerVals = append(allV, innerVals...)
 			innerVals = append(allV, innerVals...)
 		}
 	}
