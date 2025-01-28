@@ -286,14 +286,18 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		if possiblePrefix == '-' {
 			day *= -1
 		}
-		if old.Value == "" {
-			// TODO: would it better to use today instead?
-			return fmt.Errorf("invalid date operation: +/- operation could be applied only non-empty date: %v", p.Value[1:])
+		var t time.Time
+		if old.Value != "" {
+			var err error
+			t, err = time.Parse("2006/01/02", old.Value)
+			if err != nil {
+				return fmt.Errorf("invalid date string: %v", err)
+			}
+		} else {
+			// assumed the user wants to set date from today
+			t = time.Now().Local()
 		}
-		t, err := time.Parse("2006/01/02", old.Value)
-		if err != nil {
-			return fmt.Errorf("invalid date string: %v", err)
-		}
+
 		t = t.AddDate(0, 0, day)
 		val := t.Format("2006/01/02")
 		p.RawValue = val
