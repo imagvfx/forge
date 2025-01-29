@@ -512,23 +512,27 @@ window.onload = function() {
 					popup.style.removeProperty("right");
 					let right = sel.closest(".right");
 					let offset = offsetFrom(sel, right);
-					popup.style.left = String(offset.left - 6) + "px";
-					popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
-					popup.classList.add("expose");
-					if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
-						// some times popup placed outside of window. prevent it.
-						popup.style.removeProperty("left");
-						popup.style.right = "0px";
-						let margin = popup.getBoundingClientRect().right - sel.getBoundingClientRect().left;
-						popup.style.right = String(margin - 125) + "px";
-					}
 					let status = popup.querySelector(".selectStatusMenu");
 					let picker = popup.querySelector(".propertyPicker");
+					popup.style.left = String(offset.left - 6) + "px";
+					popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
+					popup.insertBefore(status, picker); // default style
+					// some times popup placed outside of window. prevent it.
+					// but only when the popup fits in the window by switching positions.
+					if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
+						if (status.getBoundingClientRect().x - picker.getBoundingClientRect().width > 0) {
+							popup.style.removeProperty("left");
+							popup.style.right = "0px";
+							let margin = popup.getBoundingClientRect().right - sel.getBoundingClientRect().left;
+							popup.style.right = String(margin - 125) + "px";
+						}
+					}
 					if (popup.style.right) {
 						popup.insertBefore(picker, status);
 					} else {
 						popup.insertBefore(status, picker);
 					}
+					popup.classList.add("expose");
 				} else {
 					// an element inside of #updatePropertyPopup clicked
 					let popup = handle;
