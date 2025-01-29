@@ -427,40 +427,35 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	for sub := range allSubQueries {
 		allQ := allSubQueries[sub]
 		allV := allSubVals[sub]
-		if len(allQ) != 0 {
-			// for example, search "(*).prop=val"
-			queries := make([]string, 0, len(allQ))
-			for _, q := range allQ {
-				queries = append(queries, fmt.Sprintf(`
+		queries := make([]string, 0)
+		// for example, search "(*).prop=val"
+		for _, q := range allQ {
+			query := fmt.Sprintf(`
+			WITH RECURSIVE parent_of as (
+				SELECT id, parent_id from (
 					SELECT entries.id, entries.parent_id FROM entries
 					LEFT JOIN properties on entries.id=properties.entry_id
 					LEFT JOIN default_properties ON properties.default_id=default_properties.id
 					LEFT JOIN entry_types ON entries.type_id = entry_types.id
 					WHERE entries.path GLOB %v AND %v
-				`, "'*/"+sub+"'", q))
-			}
-			subQuery := strings.Join(queries, " INTERSECT ")
-			query := fmt.Sprintf(`
-				WITH RECURSIVE parent_of as (
-					SELECT id, parent_id from (
-						%v
-					)
-					UNION ALL
-					SELECT
-						parent_of.id,
-						(SELECT parent_id from entries WHERE entries.id=parent_of.parent_id) ancestor
-					FROM parent_of
-					WHERE ancestor IS NOT NULL
 				)
-				SELECT DISTINCT parent_of.parent_id FROM parent_of`, subQuery)
+				UNION ALL
+				SELECT
+					parent_of.id,
+					(SELECT parent_id from entries WHERE entries.id=parent_of.parent_id) ancestor
+				FROM parent_of
+				WHERE ancestor IS NOT NULL
+			)
+			SELECT DISTINCT parent_of.parent_id FROM parent_of`, "'*/"+sub+"'", q)
 			if allSubInclusive[sub] {
 				query += `
-				UNION
-				SELECT DISTINCT parent_of.id FROM parent_of`
+			UNION
+			SELECT DISTINCT parent_of.id FROM parent_of`
 			}
-			innerQueries = append([]string{query}, innerQueries...)
-			innerVals = append(allV, innerVals...)
+			queries = append(queries, query)
 		}
+		innerQueries = append(queries, innerQueries...)
+		innerVals = append(allV, innerVals...)
 	}
 	// build main query
 	queryTmpl := `
@@ -486,7 +481,14 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	vals = append(vals, search.SearchRoot+`/*`)
 	whereInner := "TRUE"
 	if len(innerQueries) != 0 {
-		whereInner = fmt.Sprintf("entries.id IN (%s)", strings.Join(innerQueries, " INTERSECT "))
+		whereInner = ""
+		for i, q := range innerQueries {
+			if i != 0 {
+				whereInner += `
+		AND `
+			}
+			whereInner += fmt.Sprintf("entries.id IN (%s)", q)
+		}
 		vals = append(vals, innerVals...)
 	}
 	query := fmt.Sprintf(queryTmpl, whereArchived, whereRoot, whereInner)
