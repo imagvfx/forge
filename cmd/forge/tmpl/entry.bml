@@ -433,7 +433,7 @@
 												{{end}}
 												<span> []
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
-												{{if not (index $.HideDueStatus $ent.Type $status)}}
+												{{if not (index $.EndStatus $ent.Type $status)}}
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
 												{{$l := dayLeft $due.Value}}
 												<div class="dueLabel {{if (eq $l "D-0" "D-1" "D-2" "D-3")}}dueComming{{end}}" data-due="{{$due.Value}}"> [{{$l}}]
@@ -488,7 +488,7 @@
 														]
 														<div class="gsInfo"> [
 															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> []
-															{{if not (index $.HideDueStatus $gs.Type $status)}}
+															{{if not (index $.EndStatus $gs.Type $status)}}
 															<div class="dueLabel" data-due="{{$due}}"> []
 															{{end}}
 														]

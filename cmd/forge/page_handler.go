@@ -712,17 +712,17 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		}
 		grandSubEntGroups[sub.Path] = groups
 	}
-	hideDueStatus := make(map[string]map[string]bool)
+	endStatus := make(map[string]map[string]bool)
 	for typ, gtyps := range grandSubTypes {
 		// TODO: weird way to get all sub types, fix when we have a global one.
 		typs := gtyps
 		typs = append(typs, typ)
 		for _, t := range typs {
-			if hideDueStatus[t] != nil {
+			if endStatus[t] != nil {
 				continue
 			}
-			hideDueStatus[t] = make(map[string]bool)
-			g, err := h.server.GetGlobal(ctx, t, "hide_due_status")
+			endStatus[t] = make(map[string]bool)
+			g, err := h.server.GetGlobal(ctx, t, "end_status")
 			if err != nil {
 				var e *forge.NotFoundError
 				if !errors.As(err, &e) {
@@ -735,7 +735,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				if s == "_" {
 					s = ""
 				}
-				hideDueStatus[t][s] = true
+				endStatus[t][s] = true
 			}
 		}
 	}
@@ -859,7 +859,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		GroupByProp               string
 		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
 		StatusSummary             map[string]map[string]int
-		HideDueStatus             map[string]map[string]bool
+		EndStatus                 map[string]map[string]bool
 		Searches                  [][][2]string // [at][][name, query]
 		SubEntryTags              map[string][]string
 		ShowGrandSub              map[string]bool
@@ -896,7 +896,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		GroupByProp:               groupByProp,
 		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
 		StatusSummary:             statusSummary,
-		HideDueStatus:             hideDueStatus,
+		EndStatus:                 endStatus,
 		Searches:                  searches,
 		SubEntryTags:              subEntryTags,
 		ShowGrandSub:              showGrandSub,
