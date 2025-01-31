@@ -427,16 +427,25 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	for sub := range allSubQueries {
 		allQ := allSubQueries[sub]
 		allV := allSubVals[sub]
-		queries := make([]string, 0)
 		// for example, search "(*).prop=val"
-		for _, q := range allQ {
-			query := fmt.Sprintf(`
+		where := ""
+		for i, q := range allQ {
+			if i != 0 {
+				where += `
+					AND `
+			}
+			where += fmt.Sprintf(`entries.id IN (
+						SELECT entries.id FROM entries
+						LEFT JOIN properties on entries.id=properties.entry_id
+						LEFT JOIN default_properties ON properties.default_id=default_properties.id
+						LEFT JOIN entry_types ON entries.type_id = entry_types.id
+						WHERE %v
+				)`, q)
+		}
+		query := fmt.Sprintf(`
 			WITH RECURSIVE parent_of as (
 				SELECT id, parent_id from (
 					SELECT entries.id, entries.parent_id FROM entries
-					LEFT JOIN properties on entries.id=properties.entry_id
-					LEFT JOIN default_properties ON properties.default_id=default_properties.id
-					LEFT JOIN entry_types ON entries.type_id = entry_types.id
 					WHERE entries.path GLOB %v AND %v
 				)
 				UNION ALL
@@ -446,15 +455,13 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				FROM parent_of
 				WHERE ancestor IS NOT NULL
 			)
-			SELECT DISTINCT parent_of.parent_id FROM parent_of`, "'*/"+sub+"'", q)
-			if allSubInclusive[sub] {
-				query += `
+			SELECT DISTINCT parent_of.parent_id FROM parent_of`, "'*/"+sub+"'", where)
+		if allSubInclusive[sub] {
+			query += `
 			UNION
 			SELECT DISTINCT parent_of.id FROM parent_of`
-			}
-			queries = append(queries, query)
 		}
-		innerQueries = append(queries, innerQueries...)
+		innerQueries = append([]string{query}, innerQueries...)
 		innerVals = append(allV, innerVals...)
 	}
 	// build main query
