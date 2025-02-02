@@ -976,6 +976,76 @@ window.onload = function() {
 
 			event.preventDefault();
 
+			let popup = document.querySelector("#updatePropertyPopup");
+			let namePicker = popup.querySelector(".propertyPickerName");
+			if (copyable == namePicker) {
+				// propertyPickerName is .copyable, but has special logic for itself.
+				// TODO: need to generalize the logic.
+				let entPath = popup.dataset.entryPath;
+				let prop = namePicker.dataset.value;
+				if (prop == "") {
+					return;
+				}
+				if (prop.startsWith("*")) {
+					printStatus("not support copy: " + prop);
+					return;
+				}
+				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`);
+				let selectedEnts = document.querySelectorAll(".subEntry.selected");
+				if (selectedEnts.length != 0) {
+					let inSel = false;
+					for (let ent of selectedEnts) {
+						if (entPath == ent.dataset.entryPath) {
+							inSel = true;
+							break;
+						}
+					}
+					if (!inSel) {
+						printErrorStatus("entry not in selection: " + entPath);
+						return;
+					}
+				}
+				if (selectedEnts.length == 0) {
+					selectedEnts = [thisEnt];
+				}
+				let sub = popup.dataset.sub;
+				let paths = []
+				for (let ent of selectedEnts) {
+					let path = ent.dataset.entryPath;
+					if (sub != "") {
+						if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
+							continue
+						}
+						path += "/" + sub;
+					}
+					paths.push(path);
+				}
+				getProperties(paths, prop, function(ps) {
+					let data = "";
+					for (let p of ps) {
+						data += p.Eval
+						data += "\n"
+					}
+					let succeeded = function() {
+						let show = data;
+						if (show.length > 50) {
+							show = show.slice(0, 50) + "...";
+						}
+						printStatus(prop + " copied from " + ps.length + " entries: " + show);
+						copyable.classList.add("highlight");
+						setTimeout(function() {
+							copyable.classList.remove("highlight");
+						}, 500)
+					}
+					let failed = function() {
+						printStatus("failed to copy data");
+					}
+					navigator.clipboard.writeText(data).then(succeeded, failed);
+					return;
+				});
+				return;
+			}
+
 			let subEnt = copyable.closest(".subEntry");
 			if (!subEnt || !copyable.dataset.copyKey) {
 				let field = copyable.dataset.copyField;
@@ -1001,6 +1071,7 @@ window.onload = function() {
 				navigator.clipboard.writeText(data).then(succeeded, failed);
 				return;
 			}
+
 			let selEnts = document.querySelectorAll(".subEntry.selected");
 			if (selEnts.length == 0) {
 				selEnts = document.querySelectorAll(".subEntry:hover");
@@ -3452,6 +3523,15 @@ function getProperty(path, prop, onsuccess) {
 	data.append("path", path)
 	data.append("name", prop)
 	postForge("/api/get-property", data, onsuccess);
+}
+
+function getProperties(paths, prop, onsuccess) {
+	let data = new FormData();
+	for (let path of paths) {
+		data.append("path", path)
+		data.append("name", prop)
+	}
+	postForge("/api/get-properties", data, onsuccess);
 }
 
 function getEntryEnvirons(path, onsuccess) {

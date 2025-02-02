@@ -422,6 +422,32 @@ func (h *apiHandler) handleGetProperty(ctx context.Context, w http.ResponseWrite
 	return nil
 }
 
+func (h *apiHandler) handleGetProperties(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return fmt.Errorf("path not defined")
+	}
+	names := r.PostForm["name"]
+	if len(names) == 0 {
+		return fmt.Errorf("name not defined")
+	}
+	if len(entPaths) != len(names) {
+		return fmt.Errorf("number of paths and names should be matched")
+	}
+	ps := make([]*forge.Property, 0, len(entPaths))
+	for i := range entPaths {
+		entPath := entPaths[i]
+		name := names[i]
+		p, err := h.server.GetProperty(ctx, entPath, name)
+		if err != nil {
+			h.WriteResponse(w, nil, err)
+		}
+		ps = append(ps, p)
+	}
+	h.WriteResponse(w, ps, nil)
+	return nil
+}
+
 func (h *apiHandler) handleAddEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	r.FormValue("") // To parse multipart form.
 	entPaths := r.PostForm["path"]

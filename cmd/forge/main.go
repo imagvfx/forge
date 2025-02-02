@@ -232,6 +232,7 @@ func main() {
 	mux.HandleFunc("/api/count-all-sub-entries", api.Handler(api.handleCountAllSubEntries))
 	mux.HandleFunc("/api/update-property", api.Handler(api.handleUpdateProperty))
 	mux.HandleFunc("/api/get-property", api.Handler(api.handleGetProperty))
+	mux.HandleFunc("/api/get-properties", api.Handler(api.handleGetProperties))
 	mux.HandleFunc("/api/add-environ", api.Handler(api.handleAddEnviron))
 	mux.HandleFunc("/api/update-environ", api.Handler(api.handleUpdateEnviron))
 	mux.HandleFunc("/api/add-or-update-environ", api.Handler(api.handleAddOrUpdateEnviron))
