@@ -517,6 +517,7 @@ window.onload = function() {
 					popup.style.left = String(offset.left - 6) + "px";
 					popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
 					popup.insertBefore(status, picker); // default style
+					popup.classList.add("expose");
 					// some times popup placed outside of window. prevent it.
 					// but only when the popup fits in the window by switching positions.
 					if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
@@ -532,7 +533,6 @@ window.onload = function() {
 					} else {
 						popup.insertBefore(status, picker);
 					}
-					popup.classList.add("expose");
 				} else {
 					// an element inside of #updatePropertyPopup clicked
 					let popup = handle;
