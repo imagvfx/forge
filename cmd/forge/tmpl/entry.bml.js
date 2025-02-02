@@ -1974,9 +1974,9 @@ window.onload = function() {
 				}
 				selectedEnts = [thisEnt];
 			}
-			let ents = []
+			let paths = []
 			for (let ent of selectedEnts) {
-				ents.push(ent.dataset.entryPath);
+				paths.push(ent.dataset.entryPath);
 			}
 			let onsuccess = function() {
 				let called = CalledByName[value];
@@ -1986,7 +1986,7 @@ window.onload = function() {
 					inp.value = called;
 				}
 			}
-			requestPropertyUpdate(ents, "assignee", value, onsuccess);
+			updateProperty(paths, "assignee", value, onsuccess);
 		});
 	}
 	let grandSubAdderInputs = document.querySelectorAll(".grandSubAdderInput");
@@ -3322,30 +3322,6 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	return clean;
 }
 
-function requestPropertyUpdate(ents, prop, value, onsuccess) {
-	let req = new XMLHttpRequest();
-	let formData = new FormData();
-	for (let ent of ents) {
-		formData.append("path", ent);
-	}
-	formData.append("name", "assignee");
-	formData.append("ctg", "property");
-	formData.append("value", value);
-	req.open("post", "/api/update-property");
-	req.send(formData);
-	req.onerror = function() {
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
-	req.onload = function() {
-		if (req.status != 200) {
-			printErrorStatus(req.responseText);
-			return;
-		}
-		onsuccess();
-		printStatus("done");
-	}
-}
-
 // cleanAutoComplete is a function clears autoComplete handlers binded to .propertyPickerValue.
 // Feel not so good, but I couldn't think better way to clear it. At least for now.
 let cleanAutoComplete = null;
@@ -3438,7 +3414,7 @@ function reloadPropertyPicker(popup, prop) {
 						selectedEnts = [thisEnt];
 					}
 					let sub = popup.dataset.sub;
-					let ents = []
+					let paths = []
 					for (let ent of selectedEnts) {
 						let path = ent.dataset.entryPath;
 						if (sub != "") {
@@ -3447,7 +3423,7 @@ function reloadPropertyPicker(popup, prop) {
 							}
 							path += "/" + sub;
 						}
-						ents.push(path);
+						paths.push(path);
 					}
 					let onsuccess = function() {
 						valueInput.value = CalledByName[value];
@@ -3463,7 +3439,7 @@ function reloadPropertyPicker(popup, prop) {
 							}
 						}
 					}
-					requestPropertyUpdate(ents, nameInput.value, value, onsuccess);
+					updateProperty(paths, nameInput.value, value, onsuccess);
 				});
 			}
 			printStatus("done");
@@ -3472,31 +3448,49 @@ function reloadPropertyPicker(popup, prop) {
 }
 
 function getProperty(path, prop, onsuccess) {
-	postForge("/api/get-property", {"path":path, "name":prop}, onsuccess);
+	let data = new FormData();
+	data.append("path", path)
+	data.append("name", prop)
+	postForge("/api/get-property", data, onsuccess);
 }
 
 function getEntryEnvirons(path, onsuccess) {
-	postForge("/api/entry-environs", {"path":path}, onsuccess);
+	let data = new FormData();
+	data.append("path", path)
+	postForge("/api/entry-environs", data, onsuccess);
 }
 
 function getEntryAccessList(path, onsuccess) {
-	postForge("/api/entry-access-list", {"path":path}, onsuccess);
+	let data = new FormData();
+	data.append("path", path)
+	postForge("/api/entry-access-list", data, onsuccess);
+}
+
+function updateProperty(paths, prop, value, onsuccess) {
+	let data = new FormData();
+	for (let path of paths) {
+		data.append("path", path);
+	}
+	data.append("name", prop);
+	data.append("value", value);
+	postForge("/api/update-property", data, onsuccess);
 }
 
 function postForge(api, data, onsuccess) {
 	let r = new XMLHttpRequest();
-	let fdata = new FormData();
-	for (let k in data) {
-		fdata.append(k, data[k])
-	}
 	r.open("post", api);
-	r.send(fdata);
+	r.send(data);
 	r.onerror = function() {
 		printErrorStatus("network error occurred. please check whether the server is down.");
 	}
 	r.onload = function() {
 		if (r.status != 200) {
 			printErrorStatus(r.responseText);
+			return;
+		}
+		// update api doesn't respond anything, when it is done without an error.
+		if (!r.responseText) {
+			onsuccess();
 			return;
 		}
 		let j = JSON.parse(r.responseText);
