@@ -3372,15 +3372,122 @@ function reloadPropertyPicker(popup, prop) {
 	if (popup.dataset.sub != "") {
 		path += "/" + popup.dataset.sub
 	}
+	let updateInputs = function(type, value) {
+		if (cleanAutoComplete != null) {
+			cleanAutoComplete();
+			cleanAutoComplete = null;
+		}
+		nameInput.dataset.type = type;
+		nameInput.dataset.error = "";
+		nameInput.dataset.modified = "";
+		valueInput.value = value;
+	}
+	if (prop == "*environ") {
+		getEntryEnvirons(path, function(envs) {
+			let environs = [];
+			for (let e of envs) {
+				let l = e.Name + "=" + e.Value;
+				if (e.Path != path) {
+					l = "~" + l;
+				}
+				environs.push(l);
+			}
+			environs.sort();
+			updateInputs("environ", environs.join("\n"));
+			printStatus("done");
+		});
+	} else if (prop == "*access") {
+		getEntryAccessList(path, function(accs) {
+			let accessList = [];
+			for (let a of accs) {
+				let l = a.Name + "=" + a.Value;
+				if (a.Path != path) {
+					l = "~" + l;
+				}
+				accessList.push(l);
+			}
+			accessList.sort();
+			updateInputs("access", accessList.join("\n"));
+			printStatus("done");
+		});
+		return;
+	} else {
+		getProperty(path, prop, function(p) {
+			updateInputs(p.Type, p.Eval);
+			if (nameInput.dataset.type == "user") {
+				let menuAt = getOffset(valueInput);
+				menuAt.top += valueInput.getBoundingClientRect().height + 4;
+				cleanAutoComplete = autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
+					let entPath = popup.dataset.entryPath;
+					let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
+					let selectedEnts = document.querySelectorAll(".subEntry.selected");
+					if (selectedEnts.length != 0) {
+						let inSel = false;
+						for (let ent of selectedEnts) {
+							if (entPath == ent.dataset.entryPath) {
+								inSel = true;
+								break;
+							}
+						}
+						if (!inSel) {
+							printErrorStatus("entry not in selection: " + entPath);
+							return;
+						}
+					}
+					if (selectedEnts.length == 0) {
+						selectedEnts = [thisEnt];
+					}
+					let sub = popup.dataset.sub;
+					let ents = []
+					for (let ent of selectedEnts) {
+						let path = ent.dataset.entryPath;
+						if (sub != "") {
+							if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
+								continue
+							}
+							path += "/" + sub;
+						}
+						ents.push(path);
+					}
+					let onsuccess = function() {
+						valueInput.value = CalledByName[value];
+						nameInput.dataset.error = "";
+						nameInput.dataset.modified = "";
+						if (nameInput.dataset.value == "assignee" && popup.dataset.sub != "") {
+							for (let ent of selectedEnts) {
+								let dot = ent.querySelector(`.statusSelector[data-sub="${popup.dataset.sub}"]`);
+								if (!dot) {
+									continue;
+								}
+								dot.dataset.assignee = value;
+							}
+						}
+					}
+					requestPropertyUpdate(ents, nameInput.value, value, onsuccess);
+				});
+			}
+			printStatus("done");
+		});
+	}
+}
+
+function getProperty(path, prop, onsuccess) {
+	postForge("/api/get-property", {"path":path, "name":prop}, onsuccess);
+}
+
+function getEntryEnvirons(path, onsuccess) {
+	postForge("/api/entry-environs", {"path":path}, onsuccess);
+}
+
+function getEntryAccessList(path, onsuccess) {
+	postForge("/api/entry-access-list", {"path":path}, onsuccess);
+}
+
+function postForge(api, data, onsuccess) {
 	let r = new XMLHttpRequest();
 	let fdata = new FormData();
-	fdata.append("path", path);
-	fdata.append("name", prop);
-	let api = "/api/get-property";
-	if (prop == "*environ") {
-		api = "/api/entry-environs";
-	} else if (prop == "*access") {
-		api = "/api/entry-access-list";
+	for (let k in data) {
+		fdata.append(k, data[k])
 	}
 	r.open("post", api);
 	r.send(fdata);
@@ -3397,101 +3504,6 @@ function reloadPropertyPicker(popup, prop) {
 			printErrorStatus(j.Err);
 			return;
 		}
-		if (valueInput) {
-			if (cleanAutoComplete != null) {
-				cleanAutoComplete();
-				cleanAutoComplete = null;
-			}
-		}
-		let val = "";
-		let type = "";
-		if (prop == "*environ") {
-			let envs = j.Msg;
-			let environs = [];
-			for (let e of envs) {
-				let l = e.Name + "=" + e.Value;
-				if (e.Path != entPath) {
-					l = "~" + l;
-				}
-				environs.push(l);
-			}
-			environs.sort();
-			val = environs.join("\n");
-			type = "environ";
-		} else if (prop == "*access") {
-			let accs = j.Msg;
-			let accessList = [];
-			for (let a of accs) {
-				let l = a.Name + "=" + a.Value;
-				if (a.Path != entPath) {
-					l = "~" + l;
-				}
-				accessList.push(l);
-			}
-			accessList.sort();
-			val = accessList.join("\n");
-			type = "access";
-		} else {
-			val = j.Msg.Eval;
-			type = j.Msg.Type;
-		}
-		valueInput.value = val;
-		nameInput.dataset.type = type;
-		nameInput.dataset.error = "";
-		nameInput.dataset.modified = "";
-
-		if (nameInput.dataset.type == "user") {
-			let menuAt = getOffset(valueInput);
-			menuAt.top += valueInput.getBoundingClientRect().height + 4;
-			cleanAutoComplete = autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
-				let entPath = popup.dataset.entryPath;
-				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
-				let selectedEnts = document.querySelectorAll(".subEntry.selected");
-				if (selectedEnts.length != 0) {
-					let inSel = false;
-					for (let ent of selectedEnts) {
-						if (entPath == ent.dataset.entryPath) {
-							inSel = true;
-							break;
-						}
-					}
-					if (!inSel) {
-						printErrorStatus("entry not in selection: " + entPath);
-						return;
-					}
-				}
-				if (selectedEnts.length == 0) {
-					selectedEnts = [thisEnt];
-				}
-				let sub = popup.dataset.sub;
-				let ents = []
-				for (let ent of selectedEnts) {
-					let path = ent.dataset.entryPath;
-					if (sub != "") {
-						if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
-							continue
-						}
-						path += "/" + sub;
-					}
-					ents.push(path);
-				}
-				let onsuccess = function() {
-					valueInput.value = CalledByName[value];
-					nameInput.dataset.error = "";
-					nameInput.dataset.modified = "";
-					if (nameInput.dataset.value == "assignee" && popup.dataset.sub != "") {
-						for (let ent of selectedEnts) {
-							let dot = ent.querySelector(`.statusSelector[data-sub="${popup.dataset.sub}"]`);
-							if (!dot) {
-								continue;
-							}
-							dot.dataset.assignee = value;
-						}
-					}
-				}
-				requestPropertyUpdate(ents, nameInput.value, value, onsuccess);
-			});
-		}
-		printStatus("done");
+		onsuccess(j.Msg);
 	}
 }
