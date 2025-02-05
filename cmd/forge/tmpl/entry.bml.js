@@ -127,48 +127,62 @@ window.onload = function() {
 				// not supported yet
 				return;
 			}
+			let summary = counter.closest(".statusSummary");
 			let group = counter.closest(".statusGroup");
-			let sum = group.closest(".statusSummary");
-			let entType = group.dataset.entryType;
-			let status = counter.dataset.status;
-			if (sum.dataset.selected == "1" && sum.dataset.selectedEntryType == entType && sum.dataset.selectedStatus == status) {
-				sum.dataset.selected = "";
+			let oldGroup = summary.querySelector(".selected.statusGroup");
+			if (oldGroup != null && oldGroup != group) {
+				let sels = oldGroup.querySelectorAll(".selected.statusCounter");
+				for (let s of sels) {
+					s.classList.remove("selected");
+				}
+				oldGroup.classList.remove("selected");
+			}
+			if (counter.classList.contains("selected")) {
+				counter.classList.remove("selected");
+				if (!group.querySelector(".selected.statusCounter")) {
+					group.classList.remove("selected");
+				}
 			} else {
-				sum.dataset.selected = "1";
-				sum.dataset.selectedEntryType = entType;
-				sum.dataset.selectedStatus = status;
+				counter.classList.add("selected");
+				group.classList.add("selected");
+			}
+			if (group.classList.contains("selected")) {
+				summary.classList.add("activated");
+			} else {
+				summary.classList.remove("activated");
+			}
+			let showType = "";
+			if (group.classList.contains("selected")) {
+				showType = group.dataset.entryType;
+			}
+			let showStatus = [];
+			for (let s of summary.querySelectorAll(".selected.statusCounter")) {
+				showStatus.push(s.dataset.status);
 			}
 			let hadSelectedEntries = false;
 			if (document.querySelector(".subEntry.selected")) {
 				hadSelectedEntries = true;
 			}
+			let entType = group.dataset.entryType;
 			let forTypes = document.querySelectorAll(".subEntryListForType");
 			for (let forType of forTypes) {
 				let typ = forType.dataset.entryType;
 				for (let ent of forType.querySelectorAll(".subEntry")) {
-					if (sum.dataset.selected != "1") {
+					if (!summary.classList.contains("activated")) {
 						ent.classList.remove("hidden");
 						continue;
 					}
-					if (forType.dataset.entryType != entType) {
+					if (typ != showType) {
 						ent.classList.add("hidden");
 						ent.classList.remove("selected");
 						continue;
 					}
 					let dot = ent.querySelector(".statusDot");
-					if (dot) {
-						if (dot.dataset.value != sum.dataset.selectedStatus) {
-							ent.classList.add("hidden");
-							ent.classList.remove("selected");
-							continue;
-						}
-					} else {
-						// Should work for entries of type that doesn't have status.
-						if (sum.dataset.selectedStatus != "") {
-							ent.classList.add("hidden");
-							ent.classList.remove("selected");
-							continue;
-						}
+					let status = dot.dataset.value;
+					if (!showStatus.includes(status)) {
+						ent.classList.add("hidden");
+						ent.classList.remove("selected");
+						continue;
 					}
 					ent.classList.remove("hidden");
 				}

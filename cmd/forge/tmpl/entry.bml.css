@@ -404,23 +404,23 @@
 	margin-top: 0.05rem;
 }
 
-{{range $entType, $status := $.PossibleStatus}}
-.statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
+.statusCounter[data-status=""] {
 	color: #AAA;
 	background-color: #DDD8;
 }
 
-.statusSummary[data-selected="1"][data-selected-entry-type="{{$entType}}"][data-selected-status=""] .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status=""] {
+.selected.statusCounter[data-status=""] {
 	color: black;
 	background-color: white;
 }
 
+{{range $entType, $status := $.PossibleStatus}}
 {{range $s := $status}}
 .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status="{{$s.Name}}"] {
 	background-color: {{setAlphaToColor $s.Color 0.4}};
 }
 
-.statusSummary[data-selected="1"][data-selected-entry-type="{{$entType}}"][data-selected-status="{{$s.Name}}"] .statusGroup[data-entry-type="{{$entType}}"] .statusCounter[data-status="{{$s.Name}}"] {
+.statusGroup[data-entry-type="{{$entType}}"] .selected.statusCounter[data-status="{{$s.Name}}"] {
 	color: white;
 	background-color: {{$s.Color}};
 }
