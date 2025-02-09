@@ -364,7 +364,7 @@
 
 .statusGroupChart {
 	display: flex;
-	height: 0.8rem;
+	height: 0.9rem;
 	border-radius: 1rem;
 	overflow: auto;
 	user-select: none;

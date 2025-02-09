@@ -137,14 +137,25 @@ window.onload = function() {
 				}
 				oldGroup.classList.remove("selected");
 			}
-			if (counter.classList.contains("selected")) {
-				counter.classList.remove("selected");
-				if (!group.querySelector(".selected.statusCounter")) {
-					group.classList.remove("selected");
+			let selected = counter.classList.contains("selected");
+			let oldSelection = group.querySelectorAll(".selected.statusCounter");
+			if (!event.shiftKey) {
+				let sels = group.querySelectorAll(".selected.statusCounter");
+				for (let s of sels) {
+					s.classList.remove("selected");
 				}
-			} else {
+			}
+			if (oldSelection.length != 1) {
 				counter.classList.add("selected");
+			} else if (!selected) {
+				counter.classList.add("selected");
+			} else {
+				counter.classList.remove("selected")
+			}
+			if (group.querySelector(".selected.statusCounter")) {
 				group.classList.add("selected");
+			} else {
+				group.classList.remove("selected");
 			}
 			if (group.classList.contains("selected")) {
 				summary.classList.add("activated");
