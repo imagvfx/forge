@@ -860,6 +860,12 @@ func (h *apiHandler) handleGetSessionUser(ctx context.Context, w http.ResponseWr
 	return nil
 }
 
+func (h *apiHandler) handleTestSession(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	// reaching here is the evidence of success.
+	h.WriteResponse(w, true, nil)
+	return nil
+}
+
 func (h *apiHandler) handleGetAllUsers(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	users, err := h.server.AllUsers(ctx)
 	h.WriteResponse(w, users, err)

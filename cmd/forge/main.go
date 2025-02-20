@@ -259,6 +259,7 @@ func main() {
 	mux.HandleFunc("/api/add-group-member", api.Handler(api.handleAddGroupMember))
 	mux.HandleFunc("/api/delete-group-member", api.Handler(api.handleDeleteGroupMember))
 	mux.HandleFunc("/api/get-session-user", api.Handler(api.handleGetSessionUser))
+	mux.HandleFunc("/api/test-session", api.Handler(api.handleTestSession))
 	mux.HandleFunc("/api/add-user", api.Handler(api.handleAddUser))
 	mux.HandleFunc("/api/get-all-users", api.Handler(api.handleGetAllUsers))
 	mux.HandleFunc("/api/get-active-users", api.Handler(api.handleGetActiveUsers))
