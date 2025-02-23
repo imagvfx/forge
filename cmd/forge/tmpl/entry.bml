@@ -435,7 +435,7 @@
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
 												{{if not (index $.EndStatus $ent.Type $status)}}
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
-												<div class="dueLabel" data-due="{{$due.Value}}"> []
+												<div class="dueLabel" data-due="{{$due.Value}}" title="{{$due.Value}}"> []
 												{{end}}{{end}}
 												{{end}}
 											]
@@ -488,7 +488,7 @@
 														<div class="gsInfo"> [
 															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> []
 															{{if not (index $.EndStatus $gs.Type $status)}}
-															<div class="dueLabel" data-due="{{$due}}"> []
+															<div class="dueLabel" data-due="{{$due}}" title="{{$due}}"> []
 															{{end}}
 														]
 														]
