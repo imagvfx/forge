@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -226,29 +225,6 @@ var pageHandlerFuncs = template.FuncMap{
 			return true, nil
 		}
 		return false, nil
-	},
-	"dayLeft": func(timestr string) string {
-		if timestr == "" {
-			return ""
-		}
-		t, err := time.ParseInLocation("2006/01/02", timestr, time.Local)
-		if err != nil {
-			return "!"
-		}
-		remain := time.Now().Sub(t)
-		day := int(remain / (24 * time.Hour))
-		if remain < 0 {
-			day -= 1
-		}
-		left := strconv.Itoa(day)
-		if day == 0 {
-			left = "D-" + left
-		} else if day < 0 {
-			left = "D" + left
-		} else {
-			left = "D+" + left
-		}
-		return left
 	},
 	"dir":  filepath.Dir,
 	"base": filepath.Base,
