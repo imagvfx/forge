@@ -1979,7 +1979,9 @@ window.onload = function() {
 			let due = labeler.dataset.due;
 			if (due != "") {
 				label.innerText += " / "
-				let t = dday(due);
+				let start = new Date();
+				let end = new Date(due);
+				let t = ddayForm(workdayLeft(start, end));
 				label.innerText += t;
 			}
 			label.style.fontSize = "0.6rem";
@@ -2369,7 +2371,12 @@ window.onload = function() {
 	resize.observe(pickedPropertyInput);
 	let dueLabels = document.querySelectorAll(".dueLabel")
 	for (let el of dueLabels) {
-		el.innerText = dday(el.dataset.due);
+		let due = el.dataset.due;
+		if (due) {
+			let start = new Date();
+			let end = new Date(due);
+			el.innerText = ddayForm(workdayLeft(start, end));
+		}
 	}
 	let assigneeLabels = document.querySelectorAll(".assigneeLabel")
 	for (let el of assigneeLabels) {
@@ -2554,19 +2561,23 @@ function goSearch(query) {
 	location.href = area.dataset.searchFrom + "?" + p.toString();
 }
 
-function dday(due) {
-	if (!due) {
-		return "";
-	}
-	let then = new Date(due);
-	let now = new Date();
-	let today = new Date(now.toDateString());
+function workdayLeft(start, end) {
+	let startDay = new Date(start.toDateString());
+	let endDay = new Date(end.toDateString());
 	let day = 24 * 60 * 60 * 1000;
-	let n = Math.floor((today - then) / day);
-	let t = String(Math.abs(n))
-	let c = "-"
+	let startWeek = startDay - (startDay.getDay()  * day);
+	let endWeek = endDay - (endDay.getDay()  * day);
+	let n = (endWeek - startWeek) / (7 * day) * 5;
+	n -= Math.min(startDay.getDay(), 5);
+	n += Math.min(endDay.getDay(), 5);
+	return n
+}
+
+function ddayForm(n) {
+	let t = String(Math.abs(n));
+	let c = "+";
 	if (n > 0) {
-		c = "+"
+		c = "-";
 	}
 	return "D" + c + t;
 }
