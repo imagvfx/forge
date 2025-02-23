@@ -436,7 +436,7 @@
 												{{if not (index $.EndStatus $ent.Type $status)}}
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
 												{{$l := dayLeft $due.Value}}
-												<div class="dueLabel {{if (eq $l "D-0" "D-1" "D-2" "D-3")}}dueComming{{end}}" data-due="{{$due.Value}}"> [{{$l}}]
+												<div class="dueLabel" data-due="{{$due.Value}}"> [{{$l}}]
 												{{end}}{{end}}
 												{{end}}
 											]

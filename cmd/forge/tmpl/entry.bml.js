@@ -2375,7 +2375,11 @@ window.onload = function() {
 		if (due) {
 			let start = new Date();
 			let end = new Date(due);
-			el.innerText = ddayForm(workdayLeft(start, end));
+			let n = workdayLeft(start, end);
+			if (n <= 3) {
+				el.classList.add("dueComming");
+			}
+			el.innerText = ddayForm(n);
 		}
 	}
 	let assigneeLabels = document.querySelectorAll(".assigneeLabel")
