@@ -2580,7 +2580,7 @@ function workdayLeft(start, end) {
 function ddayForm(n) {
 	let t = String(Math.abs(n));
 	let c = "+";
-	if (n > 0) {
+	if (n >= 0) {
 		c = "-";
 	}
 	return "D" + c + t;
