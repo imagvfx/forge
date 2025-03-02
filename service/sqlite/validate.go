@@ -345,7 +345,7 @@ func validateInt(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
 	have := make(map[string]bool)
 	if old != nil {
-		for _, v := range strings.Split(old.RawValue, "\n") {
+		for _, v := range strings.Split(old.Value, "\n") {
 			if strings.TrimSpace(v) == "" {
 				continue
 			}
@@ -390,7 +390,12 @@ func validateTag(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error 
 	rawVal := strings.Join(newlines, "\n")
 	if rawVal != "" {
 		// for line matching search in sqlite
-		rawVal = "\n" + rawVal + "\n"
+		// new form of tag adds '[' and ']' to not allow sqlite
+		// to trim newline characters at start and end.
+		// (when the value only have a int)
+		// those are needed for search.
+
+		rawVal = "[\n" + rawVal + "\n]"
 	}
 	p.RawValue = rawVal
 	return nil

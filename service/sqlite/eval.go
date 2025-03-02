@@ -180,8 +180,14 @@ func evalInt(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 }
 
 func evalTag(tx *sql.Tx, ctx context.Context, p *forge.Property) {
-	p.Eval = strings.TrimSpace(p.RawValue)
-	p.Value = strings.TrimSpace(p.RawValue)
+	val := p.RawValue
+	if strings.HasPrefix(val, "[") && strings.HasSuffix(val, "]") {
+		// new form of tag adds '[' and ']',
+		// see comment on validateTag function for the reason.
+		val = p.RawValue[1 : len(val)-1]
+	}
+	p.Eval = strings.TrimSpace(val)
+	p.Value = strings.TrimSpace(val)
 }
 
 func evalSearch(tx *sql.Tx, ctx context.Context, p *forge.Property) {
