@@ -2514,6 +2514,7 @@ window.onpageshow = function() {
 }
 
 function submitForm(form) {
+	printStatus("updating...")
 	let req = new XMLHttpRequest();
 	req.open(form.method, form.action);
 	req.send(new FormData(form));
