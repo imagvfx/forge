@@ -1345,11 +1345,21 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	propFor := make(map[int]string)
 	labelRow := rows[0]
 	nameIdx := -1
+	idIdx := -1
+	idProp := ""
 	parentIdx := -1
 	thumbnailIdx := -1
 	for i, p := range labelRow {
 		if p == "name" {
 			nameIdx = i
+			continue
+		}
+		if p == "id" {
+			return fmt.Errorf("invalid 'id' field formatting in %q sheet: need id={property}, eg) id=shotcode", sheet)
+		}
+		if strings.HasPrefix(p, "id=") {
+			idIdx = i
+			idProp = strings.TrimPrefix(p, "id=")
 			continue
 		}
 		if p == "parent" {
@@ -1362,11 +1372,14 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		}
 		propFor[i] = p
 	}
-	if nameIdx == -1 {
-		return fmt.Errorf("%q field not found in %q sheet", "name", sheet)
+	if nameIdx == -1 && idIdx == -1 {
+		return fmt.Errorf("neither 'name' nor 'id' field exists in %q sheet", sheet)
+	}
+	if nameIdx != -1 && idIdx != -1 {
+		return fmt.Errorf("should not use both 'name' and 'id' field at a same time in %q sheet", sheet)
 	}
 	if parentIdx == -1 {
-		return fmt.Errorf("%q field not found in %q sheet", "parent", sheet)
+		return fmt.Errorf("'parent' field not found in %q sheet", sheet)
 	}
 	// To check the ancestor with db only once.
 	valueRows := rows[1:]
@@ -1398,11 +1411,31 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 			// Maybe it wouldn't sufficient to prevent disaster, but better than nothing.
 			return fmt.Errorf("cannot create a direct child of root from bulk update")
 		}
-		name := cols[nameIdx]
-		if name == "" {
-			return fmt.Errorf("row %s of %q field empty in %q sheet", strconv.Itoa(row+1), "name", sheet)
+		entPath := ""
+		if nameIdx != -1 {
+			name := cols[nameIdx]
+			if name == "" {
+				return fmt.Errorf("row %s of 'name' field empty in %q sheet", strconv.Itoa(row+1), sheet)
+			}
+			entPath = path.Clean(path.Join(parent, name))
+		} else {
+			// idIdx should not be -1.
+			id := cols[idIdx]
+			if id == "" {
+				return fmt.Errorf("row %s of 'id' field empty in %q sheet", strconv.Itoa(row+1), sheet)
+			}
+			ents, err := h.server.SearchEntries(ctx, parent, idProp+"="+id)
+			if err != nil {
+				return fmt.Errorf("searching %q from %q in %q sheet: %v", idProp+"="+id, parent, sheet, err)
+			}
+			if len(ents) == 0 {
+				return fmt.Errorf("searching %q from %q in %q sheet: not found entry", idProp+"="+id, parent, sheet)
+			}
+			if len(ents) > 1 {
+				return fmt.Errorf("searching %q from %q in %q sheet: found multiple entries", idProp+"="+id, parent, sheet)
+			}
+			entPath = ents[0].Path
 		}
-		entPath := path.Clean(path.Join(parent, name))
 		ent, err := h.server.GetEntry(ctx, entPath)
 		if err != nil {
 			e := &forge.NotFoundError{}
@@ -1445,7 +1478,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 					// Error on thumbnail parsing shouldn't interrupt whole update process.
 					// This is an TEMPORARY fix.
 					// TODO: think better way to handle these errors
-					log.Printf("failed to decode image on %v/%v: %v\n", parent, name, err)
+					log.Printf("failed to decode image on %v: %v\n", entPath, err)
 					return nil
 				}
 				if ent.HasThumbnail {
