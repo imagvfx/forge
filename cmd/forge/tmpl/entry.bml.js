@@ -7,8 +7,8 @@ window.onload = function() {
 			return;
 		}
 		if (event.target.classList.contains("copyCurrentPathButton")) {
-			let mainEntry = event.target.closest(".mainEntry");
-			let ptxt = mainEntry.dataset.entryPath;
+			let dirEntry = event.target.closest(".dirEntry");
+			let ptxt = dirEntry.dataset.entryPath;
 			let succeeded = function() {
 				printStatus("entry path copied: " + ptxt);
 			}
@@ -369,7 +369,7 @@ window.onload = function() {
 		}
 		let show_hidden = event.target.closest(".showHiddenProperty");
 		if (show_hidden) {
-			let bottom = document.querySelector(".mainEntryBottom");
+			let bottom = document.querySelector(".dirEntryBottom");
 			if (bottom.dataset.showHidden == "") {
 				bottom.dataset.showHidden = "1";
 			} else {
@@ -1440,13 +1440,13 @@ window.onload = function() {
 	let backupAsExcelButton = document.getElementById("backupAsExcelButton");
 	if (backupAsExcelButton != null) {
 		backupAsExcelButton.onclick = function() {
-			let mainEntry = document.querySelector(".mainEntry");
-			if (!mainEntry) {
+			let dirEntry = document.querySelector(".dirEntry");
+			if (!dirEntry) {
 				console.log("no directory entry exists to archive")
 				return;
 			}
 			let formData = new FormData();
-			formData.append("root", mainEntry.dataset.entryPath);
+			formData.append("root", dirEntry.dataset.entryPath);
 			let req = new XMLHttpRequest();
 			req.responseType = "blob";
 			req.open("post", "/backup-as-excel");
@@ -2781,7 +2781,7 @@ function submitUpdaterOrAdder(ev, input) {
 	formData.delete("path"); // will be refilled
 	let submitEntPaths = [];
 	let thisEntry = document.querySelector(`.entry[data-entry-path="${entPath}"]`);
-	if (!thisEntry || thisEntry.classList.contains("mainEntry")) {
+	if (!thisEntry || thisEntry.classList.contains("dirEntry")) {
 		// thisEntry can be null if it is an inherited info.
 		submitEntPaths = [entPath];
 	} else {
@@ -2953,7 +2953,7 @@ function refreshInfoValue(path, ctg, name, p) {
 }
 
 function showCategoryInfos(ctg) {
-	let cont = document.querySelector(".mainEntryBottom");
+	let cont = document.querySelector(".dirEntryBottom");
 	if (cont.dataset.selectedCategory == ctg) {
 		ctg = ""
 	}

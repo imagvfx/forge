@@ -580,17 +580,17 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	for _, props := range hiddenProps {
 		sortProps(props)
 	}
-	mainEntryVisibleProp := make(map[string]bool)
+	dirEntryVisibleProp := make(map[string]bool)
 	for _, p := range propFilters[ent.Type] {
-		mainEntryVisibleProp[p] = true
+		dirEntryVisibleProp[p] = true
 	}
-	mainEntryHiddenProps := make([]string, 0)
+	dirEntryHiddenProps := make([]string, 0)
 	for _, p := range ent.Property {
-		if !mainEntryVisibleProp[p.Name] {
-			mainEntryHiddenProps = append(mainEntryHiddenProps, p.Name)
+		if !dirEntryVisibleProp[p.Name] {
+			dirEntryHiddenProps = append(dirEntryHiddenProps, p.Name)
 		}
 	}
-	sortProps(mainEntryHiddenProps)
+	sortProps(dirEntryHiddenProps)
 	// Get grand sub entries if needed.
 	grandSubEntGroups := make(map[string][][]*forge.Entry)
 	grandSubTypes := make(map[string][]string)
@@ -842,79 +842,79 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		return err
 	}
 	recipe := struct {
-		User                      *forge.User
-		UserIsAdmin               bool
-		UserSetting               *forge.UserSetting
-		PageSetting               *forge.UserDataSection
-		Entry                     *forge.Entry
-		EntryByPath               map[string]*forge.Entry
-		PrevEntry                 *forge.Entry
-		NextEntry                 *forge.Entry
-		EntryPinned               bool
-		SearchEntryType           string
-		Search                    string
-		QueryHasType              bool
-		ResultsFromSearch         bool
-		GroupByOverride           string
-		GroupByProp               string
-		SubEntriesByTypeByGroup   map[string]map[string][]*forge.Entry
-		StatusSummary             map[string]map[string]int
-		EndStatus                 map[string]map[string]bool
-		Searches                  [][][2]string // [at][][name, query]
-		SubEntryTags              map[string][]string
-		ShowGrandSub              map[string]bool
-		SummaryGrandSub           map[string]bool
-		GrandSubEntGroups         map[string][][]*forge.Entry
-		PropertyTypes             []string
-		MainEntryHiddenProperties []string
-		HiddenProperties          map[string][]string
-		PropertyFilters           map[string][]string
-		PossibleStatus            map[string][]forge.Status
-		Properties                []*forge.Property
-		Environs                  []*forge.Property
-		AccessorTypes             []string
-		AccessList                []*forge.Access
-		ThumbnailPath             map[string]string
-		BaseEntryTypes            []string
-		Users                     []*forge.User
-		DisabledUsers             []*forge.User
+		User                     *forge.User
+		UserIsAdmin              bool
+		UserSetting              *forge.UserSetting
+		PageSetting              *forge.UserDataSection
+		Entry                    *forge.Entry
+		EntryByPath              map[string]*forge.Entry
+		PrevEntry                *forge.Entry
+		NextEntry                *forge.Entry
+		EntryPinned              bool
+		SearchEntryType          string
+		Search                   string
+		QueryHasType             bool
+		ResultsFromSearch        bool
+		GroupByOverride          string
+		GroupByProp              string
+		SubEntriesByTypeByGroup  map[string]map[string][]*forge.Entry
+		StatusSummary            map[string]map[string]int
+		EndStatus                map[string]map[string]bool
+		Searches                 [][][2]string // [at][][name, query]
+		SubEntryTags             map[string][]string
+		ShowGrandSub             map[string]bool
+		SummaryGrandSub          map[string]bool
+		GrandSubEntGroups        map[string][][]*forge.Entry
+		PropertyTypes            []string
+		DirEntryHiddenProperties []string
+		HiddenProperties         map[string][]string
+		PropertyFilters          map[string][]string
+		PossibleStatus           map[string][]forge.Status
+		Properties               []*forge.Property
+		Environs                 []*forge.Property
+		AccessorTypes            []string
+		AccessList               []*forge.Access
+		ThumbnailPath            map[string]string
+		BaseEntryTypes           []string
+		Users                    []*forge.User
+		DisabledUsers            []*forge.User
 	}{
-		User:                      u,
-		UserIsAdmin:               isAdmin,
-		UserSetting:               setting,
-		PageSetting:               pageSetting,
-		Entry:                     ent,
-		EntryByPath:               entryByPath,
-		PrevEntry:                 prevEntry,
-		NextEntry:                 nextEntry,
-		EntryPinned:               entryPinned,
-		SearchEntryType:           searchEntryType,
-		Search:                    search,
-		QueryHasType:              queryHasType,
-		ResultsFromSearch:         resultsFromSearch,
-		GroupByOverride:           groupByOverride,
-		GroupByProp:               groupByProp,
-		SubEntriesByTypeByGroup:   subEntsByTypeByGroup,
-		StatusSummary:             statusSummary,
-		EndStatus:                 endStatus,
-		Searches:                  searches,
-		SubEntryTags:              subEntryTags,
-		ShowGrandSub:              showGrandSub,
-		SummaryGrandSub:           summaryGrandSub,
-		GrandSubEntGroups:         grandSubEntGroups,
-		PropertyTypes:             forge.PropertyTypes(),
-		MainEntryHiddenProperties: mainEntryHiddenProps,
-		HiddenProperties:          hiddenProps,
-		PropertyFilters:           propFilters,
-		PossibleStatus:            possibleStatus,
-		Properties:                props,
-		Environs:                  envs,
-		AccessorTypes:             forge.AccessorTypes(),
-		AccessList:                acs,
-		ThumbnailPath:             thumbnailPath,
-		BaseEntryTypes:            baseTypes,
-		Users:                     users,
-		DisabledUsers:             disabledUsers,
+		User:                     u,
+		UserIsAdmin:              isAdmin,
+		UserSetting:              setting,
+		PageSetting:              pageSetting,
+		Entry:                    ent,
+		EntryByPath:              entryByPath,
+		PrevEntry:                prevEntry,
+		NextEntry:                nextEntry,
+		EntryPinned:              entryPinned,
+		SearchEntryType:          searchEntryType,
+		Search:                   search,
+		QueryHasType:             queryHasType,
+		ResultsFromSearch:        resultsFromSearch,
+		GroupByOverride:          groupByOverride,
+		GroupByProp:              groupByProp,
+		SubEntriesByTypeByGroup:  subEntsByTypeByGroup,
+		StatusSummary:            statusSummary,
+		EndStatus:                endStatus,
+		Searches:                 searches,
+		SubEntryTags:             subEntryTags,
+		ShowGrandSub:             showGrandSub,
+		SummaryGrandSub:          summaryGrandSub,
+		GrandSubEntGroups:        grandSubEntGroups,
+		PropertyTypes:            forge.PropertyTypes(),
+		DirEntryHiddenProperties: dirEntryHiddenProps,
+		HiddenProperties:         hiddenProps,
+		PropertyFilters:          propFilters,
+		PossibleStatus:           possibleStatus,
+		Properties:               props,
+		Environs:                 envs,
+		AccessorTypes:            forge.AccessorTypes(),
+		AccessList:               acs,
+		ThumbnailPath:            thumbnailPath,
+		BaseEntryTypes:           baseTypes,
+		Users:                    users,
+		DisabledUsers:            disabledUsers,
 	}
 	err = Tmpl.ExecuteTemplate(w, "entry.bml", recipe)
 	if err != nil {

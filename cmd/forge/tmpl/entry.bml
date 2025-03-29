@@ -96,12 +96,12 @@
 				]
 				{{if not $.ResultsFromSearch}}
 				<!-- This Entry -->
-				<div class="mainEntry entry copyable" data-entry-path="{{$.Entry.Path}}" data-copy-key="path" data-copy-field="entryPath" style="padding:1.5rem 1.2rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
-					<div class="mainEntryTop"> [
+				<div class="dirEntry entry copyable" data-entry-path="{{$.Entry.Path}}" data-copy-key="path" data-copy-field="entryPath" style="padding:1.5rem 1.2rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
+					<div class="dirEntryTop"> [
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 						{{$s := index $.Entry.Property "status"}}
 						<div class="statusDot statusSelector statusLabeler" data-sub="" data-entry-type="{{$.Entry.Type}}" data-value="{{if $s}}{{$s.Value}}{{end}}"> []
-						<div class="mainEntryTitle"> [
+						<div class="dirEntryTitle"> [
 							{{pathLinks $.Entry.Path}}
 							<div class="recentlyUpdatedDot forEntry {{if not (recent $.Entry.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $.Entry.UpdatedAt}}"> []
 							<div class="copyCurrentPathButton"> []
@@ -110,7 +110,7 @@
 						<div class="archivedLabel" style="font-size:0.8rem"> [Archived]
 						{{end}}
 						<div style="flex:1"> []
-						<div class="mainEntryFunctions"> [
+						<div class="dirEntryFunctions"> [
 							<form action="/api/update-user-setting" method="POST"> [
 								<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
 								<input name="pinned_path_at" type="hidden" value="{{if $.EntryPinned}}-1{{else}}{{len $.UserSetting.PinnedPaths}}{{end}}"> []
@@ -145,8 +145,8 @@
 							{{end}}
 						]
 					]
-					<div class="mainEntryBottom" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
-						<div class="mainEntryThumbnailContainer"> [
+					<div class="dirEntryBottom" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
+						<div class="dirEntryThumbnailContainer"> [
 							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
 							<div class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}"> [
 								<div class="thumbnailContainer"> [
@@ -166,9 +166,9 @@
 								]
 							]
 						]
-						<div class="mainEntryInfoContainer"> [
+						<div class="dirEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
-							<div class="mainEntryInfoCategoryToggles"> [
+							<div class="dirEntryInfoCategoryToggles"> [
 								<div class="infoCategoryToggle" data-category="property"> [
 									<div class="infoSelector"> [Property ({{len $.Properties}})]
 									<div class="showHiddenProperty"> []
@@ -184,11 +184,11 @@
 							]
 						]
 						<!-- Property / Environ / Access Items -->
-						<div class="mainEntryInfos"> [
+						<div class="dirEntryInfos"> [
 							{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 							{{range $name := $propFilters}}
 							{{with $p := index $.Entry.Property $name}}
-							<div class="mainEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+							<div class="dirEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 								<div class="infoTop"> [
 									<div class="infoTitle"> [
 										<div> [{{$p.Name}}]
@@ -202,9 +202,9 @@
 							]
 							{{end}}
 							{{end}}
-							{{range $name := $.MainEntryHiddenProperties}}
+							{{range $name := $.DirEntryHiddenProperties}}
 							{{with $p := index $.Entry.Property $name}}
-							<div class="mainEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+							<div class="dirEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 								<div class="infoTop"> [
 									<div class="infoTitle"> [
 										<div class="hiddenPropertyIcon"> []
@@ -220,7 +220,7 @@
 							{{end}}
 							{{end}}
 							{{range $e := $.Environs}}
-							<div class="mainEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
+							<div class="dirEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
 								<div class="infoTop"> [
 									{{if eq $e.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
@@ -237,7 +237,7 @@
 							]
 							{{end}}
 							{{range $a := $.AccessList}}
-							<div class="mainEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
+							<div class="dirEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
 								<div class="infoTop"> [
 									{{if eq $a.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
