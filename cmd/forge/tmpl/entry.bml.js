@@ -447,14 +447,7 @@ window.onload = function() {
 						}
 						let selectedEnts = selectedEntries();
 						if (selectedEnts.length != 0) {
-							let inSel = false;
-							for (let ent of selectedEnts) {
-								if (entPath == ent.dataset.entryPath) {
-									inSel = true;
-									break;
-								}
-							}
-							if (!inSel) {
+							if (!selectedEnts.includes(thisEnt)) {
 								let popup = document.querySelector("#updatePropertyPopup");
 								popup.classList.remove("expose");
 								printErrorStatus("entry not in selection: " + entPath);
@@ -558,20 +551,12 @@ window.onload = function() {
 						// change status when user clicked .selectStatusMenuItem
 						let selectedEnts = selectedEntries();
 						if (selectedEnts.length != 0) {
-							let inSel = false;
-							for (let ent of selectedEnts) {
-								if (entPath == ent.dataset.entryPath) {
-									inSel = true;
-									break;
-								}
-							}
-							if (!inSel) {
+							if (!selectedEnts.includes(thisEnt)) {
 								popup.classList.remove("expose");
 								printErrorStatus("entry not in selection: " + entPath);
 								return;
 							}
-						}
-						if (selectedEnts.length == 0) {
+						} else {
 							selectedEnts = [thisEnt];
 						}
 						let sub = popup.dataset.sub;
@@ -1008,19 +993,11 @@ window.onload = function() {
 				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`);
 				let selectedEnts = selectedEntries();
 				if (selectedEnts.length != 0) {
-					let inSel = false;
-					for (let ent of selectedEnts) {
-						if (entPath == ent.dataset.entryPath) {
-							inSel = true;
-							break;
-						}
-					}
-					if (!inSel) {
+					if (!selectedEnts.includes(thisEnt)) {
 						printErrorStatus("entry not in selection: " + entPath);
 						return;
 					}
-				}
-				if (selectedEnts.length == 0) {
+				} else {
 					selectedEnts = [thisEnt];
 				}
 				let sub = popup.dataset.sub;
@@ -2044,19 +2021,11 @@ window.onload = function() {
 			let entPath = thisEnt.dataset.entryPath;
 			let selectedEnts = selectedEntries();
 			if (selectedEnts.length != 0) {
-				let inSel = false;
-				for (let ent of selectedEnts) {
-					if (entPath == ent.dataset.entryPath) {
-						inSel = true;
-						break;
-					}
-				}
-				if (!inSel) {
+				if (!selectedEnts.includes(thisEnt)) {
 					printErrorStatus("entry not in selection: " + entPath);
 					return;
 				}
-			}
-			if (selectedEnts.length == 0) {
+			} else {
 				if (value == input.dataset.oldValue) {
 					return;
 				}
@@ -2982,14 +2951,7 @@ function showInfoUpdater(info) {
 	if (thisEnt.classList.contains("subEntry")) {
 		let selectedEnts = selectedEntries();
 		if (selectedEnts.length != 0) {
-			let inSel = false;
-			for (let ent of selectedEnts) {
-				if (entPath == ent.dataset.entryPath) {
-					inSel = true;
-					break;
-				}
-			}
-			if (!inSel) {
+			if (!selectedEnts.includes(thisEnt)) {
 				printErrorStatus("entry not in selection: " + entPath);
 				return;
 			}
@@ -3500,19 +3462,11 @@ function reloadPropertyPicker(popup, prop) {
 					let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
 					let selectedEnts = selectedEntries();
 					if (selectedEnts.length != 0) {
-						let inSel = false;
-						for (let ent of selectedEnts) {
-							if (entPath == ent.dataset.entryPath) {
-								inSel = true;
-								break;
-							}
-						}
-						if (!inSel) {
+						if (!selectedEnts.includes(thisEnt)) {
 							printErrorStatus("entry not in selection: " + entPath);
 							return;
 						}
-					}
-					if (selectedEnts.length == 0) {
+					} else {
 						selectedEnts = [thisEnt];
 					}
 					let sub = popup.dataset.sub;
