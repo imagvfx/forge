@@ -354,7 +354,7 @@ window.onload = function() {
 			}
 			opt = event.target.closest(".subEntryListOption.deleteEntryOption");
 			if (opt) {
-				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let selEnts = selectedEntries();
 				if (selEnts.length == 0) {
 					printErrorStatus("no sub-entry selected");
 					return;
@@ -455,7 +455,7 @@ window.onload = function() {
 						if (!editMode) {
 							return;
 						}
-						let selectedEnts = document.querySelectorAll(".subEntry.selected");
+						let selectedEnts = selectedEntries();
 						if (selectedEnts.length != 0) {
 							let inSel = false;
 							for (let ent of selectedEnts) {
@@ -566,7 +566,7 @@ window.onload = function() {
 					let item = event.target.closest(".selectStatusMenuItem");
 					if (item != null) {
 						// change status when user clicked .selectStatusMenuItem
-						let selectedEnts = document.querySelectorAll(".subEntry.selected");
+						let selectedEnts = selectedEntries();
 						if (selectedEnts.length != 0) {
 							let inSel = false;
 							for (let ent of selectedEnts) {
@@ -684,7 +684,7 @@ window.onload = function() {
 				grandSubAdding.classList.remove("adding");
 			}
 			let subEnt = event.target.closest(".subEntry");
-			if (document.querySelectorAll(".subEntry.selected").length != 0 && !subEnt.classList.contains("selected")) {
+			if (selectedEntries().length != 0 && !subEnt.classList.contains("selected")) {
 				printErrorStatus("entry not in selection: " + subEnt.dataset.entryPath);
 				return;
 			}
@@ -710,7 +710,7 @@ window.onload = function() {
 		if (event.target.closest("#searchInput, #downloadAsExcelButton, .subEntry, #footer") == null) {
 			let subEntArea = document.querySelector(".subEntryArea");
 			if (subEntArea.classList.contains("editMode")) {
-				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let selEnts = selectedEntries();
 				if (selEnts.length == 0) {
 					subEntArea.classList.remove("editMode");
 					removeClass(subEntArea, "lastClicked");
@@ -778,7 +778,7 @@ window.onload = function() {
 			}
 			let subEntArea = document.querySelector(".subEntryArea");
 			if (subEntArea.classList.contains("editMode")) {
-				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let selEnts = selectedEntries();
 				if (selEnts.length == 0) {
 					subEntArea.classList.remove("editMode");
 					removeClass(subEntArea, "lastClicked");
@@ -808,7 +808,7 @@ window.onload = function() {
 				let mainDiv = document.querySelector(".main");
 				let entPath = popup.dataset.entryPath;
 				let sub = popup.dataset.sub;
-				let selEnts = document.querySelectorAll(".subEntry.selected");
+				let selEnts = selectedEntries();
 				if (selEnts.length == 0) {
 					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
 					selEnts = [thisEnt];
@@ -1016,7 +1016,7 @@ window.onload = function() {
 					return;
 				}
 				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`);
-				let selectedEnts = document.querySelectorAll(".subEntry.selected");
+				let selectedEnts = selectedEntries();
 				if (selectedEnts.length != 0) {
 					let inSel = false;
 					for (let ent of selectedEnts) {
@@ -1097,7 +1097,7 @@ window.onload = function() {
 				return;
 			}
 
-			let selEnts = document.querySelectorAll(".subEntry.selected");
+			let selEnts = selectedEntries();
 			if (selEnts.length == 0) {
 				selEnts = document.querySelectorAll(".subEntry:hover");
 			}
@@ -2052,7 +2052,7 @@ window.onload = function() {
 		autoComplete(input, AllUserLabels, AllUserNames, menuAt, function(value) {
 			let thisEnt = input.closest(".subEntry");
 			let entPath = thisEnt.dataset.entryPath;
-			let selectedEnts = document.querySelectorAll(".subEntry.selected");
+			let selectedEnts = selectedEntries();
 			if (selectedEnts.length != 0) {
 				let inSel = false;
 				for (let ent of selectedEnts) {
@@ -2098,7 +2098,7 @@ window.onload = function() {
 					printErrorStatus("cannot create entry with name that has space: " + sub);
 					return;
 				}
-				let selected = document.querySelectorAll(".subEntry.selected");
+				let selected = selectedEntries();
 				if (selected.length == 0) {
 					selected = [thisEnt];
 				}
@@ -2786,7 +2786,7 @@ function submitUpdaterOrAdder(ev, input) {
 		submitEntPaths = [entPath];
 	} else {
 		// subEntry
-		let selectedEnts = document.querySelectorAll(".subEntry.selected");
+		let selectedEnts = selectedEntries();
 		if (selectedEnts.length == 0) {
 			submitEntPaths = [entPath];
 		} else {
@@ -2990,7 +2990,7 @@ function showInfoUpdater(info) {
 	let value = info.dataset.value;
 	let label = entPath;
 	if (thisEnt.classList.contains("subEntry")) {
-		let selectedEnts = document.querySelectorAll(".subEntry.selected");
+		let selectedEnts = selectedEntries();
 		if (selectedEnts.length != 0) {
 			let inSel = false;
 			for (let ent of selectedEnts) {
@@ -3114,7 +3114,7 @@ function clearStatus() {
 }
 
 function printSelectionStatus() {
-	let sel = document.querySelectorAll(".subEntry.selected");
+	let sel = selectedEntries();
 	let what = "";
 	let n = sel.length;
 	if (n == 0) {
@@ -3508,7 +3508,7 @@ function reloadPropertyPicker(popup, prop) {
 				cleanAutoComplete = autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
 					let entPath = popup.dataset.entryPath;
 					let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
-					let selectedEnts = document.querySelectorAll(".subEntry.selected");
+					let selectedEnts = selectedEntries();
 					if (selectedEnts.length != 0) {
 						let inSel = false;
 						for (let ent of selectedEnts) {
@@ -3557,6 +3557,10 @@ function reloadPropertyPicker(popup, prop) {
 			printStatus("done");
 		});
 	}
+}
+
+function selectedEntries() {
+	return Array.from(document.querySelectorAll(".subEntry.selected"));
 }
 
 function getProperty(path, prop, onsuccess) {
