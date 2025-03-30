@@ -395,28 +395,18 @@ window.onload = function() {
 		let expander = event.target.closest(".thumbnailViewExpander");
 		if (expander) {
 			let thisEnt = expander.closest(".subEntry");
+			let entPath = thisEnt.dataset.entryPath;
 			let expand = !thisEnt.classList.contains("expanded");
-			let selected = {}
-			for (let ent of document.querySelectorAll(".subEntry")) {
-				if (ent.classList.contains("selected")) {
-					selected[ent.dataset.entryPath] = true;
-				}
+			let selEnts = selectedEntries();
+			if (!selEnts.includes(thisEnt)) {
+				 printErrorStatus("entry not in selection: " + entPath);
+				 return;
 			}
-			if (Object.keys(selected).length != 0) {
-				if (!selected[thisEnt.dataset.entryPath]) {
-					printErrorStatus("entry not in selection: " + thisEnt.dataset.entryPath);
-					return;
-				}
-			} else {
-				selected[thisEnt.dataset.entryPath] = true;
-			}
-			for (let ent of document.querySelectorAll(".subEntry")) {
-				if (selected[ent.dataset.entryPath] != null) {
-					if (expand) {
-						ent.classList.add("expanded");
-					} else {
-						ent.classList.remove("expanded");
-					}
+			for (let ent of selEnts) {
+				if (expand) {
+					ent.classList.add("expanded");
+				} else {
+					ent.classList.remove("expanded");
 				}
 			}
 			return;
