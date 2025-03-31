@@ -100,25 +100,19 @@ window.onload = function() {
 			} else {
 				left.classList.add("hideSideMenu");
 			}
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
-			formData.append("update_entry_page_hide_side_menu", "1");
 			let hide = "1"
 			if (hidden) {
 				hide = "0"
 			}
-			formData.append("hide", hide);
-			req.open("post", "/api/update-user-setting");
-			req.onerror = function() {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status != 200) {
-					printErrorStatus(req.responseText);
+			let data = new FormData();
+			data.append("entry_page_hide_side_menu", 1);
+			data.append("hide", hide);
+			updateUserSetting(data, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
 					return;
 				}
-			}
-			req.send(formData);
+			});
 			return;
 		}
 		let counter = event.target.closest(".statusCounter");
@@ -251,21 +245,15 @@ window.onload = function() {
 				}
 				let area = event.target.closest(".subEntryArea");
 				area.dataset.view = opt.dataset.value;
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
-				formData.append("update_search_view", "1");
-				formData.append("view", opt.dataset.value);
-				req.open("post", "/api/update-user-setting");
-				req.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
-						printErrorStatus(req.responseText);
+				let data = new FormData();
+				data.append("update_search_view", "1");
+				data.append("view", opt.dataset.value);
+				updateUserSetting(data, function(_, err) {
+					if (err) {
+						printErrorStatus(err);
 						return;
 					}
-				}
-				req.send(formData);
+				});
 				return;
 			}
 			opt = event.target.closest(".subEntryListOption.editModeOption");
@@ -293,21 +281,15 @@ window.onload = function() {
 					subEntArea.classList.add("expandProperty");
 					opt.dataset.expand = "true";
 				}
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
-				formData.append("update_entry_page_expand_property", "1");
-				formData.append("expand", opt.dataset.expand);
-				req.open("post", "/api/update-user-setting");
-				req.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
-						printErrorStatus(req.responseText);
+				let data = new FormData();
+				data.append("update_entry_page_expand_property", "1");
+				data.append("expand", opt.dataset.expand);
+				updateUserSetting(data, function(_, err) {
+					if (err) {
+						printErrorStatus(err);
 						return;
 					}
-				}
-				req.send(formData);
+				});
 				return;
 			}
 			opt = event.target.closest(".subEntryListOption.detailViewOption");
@@ -375,21 +357,15 @@ window.onload = function() {
 			} else {
 				bottom.dataset.showHidden = "";
 			}
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
-			formData.append("update_entry_page_show_hidden_property", "1");
-			formData.append("show_hidden", bottom.dataset.showHidden);
-			req.open("post", "/api/update-user-setting");
-			req.onerror = function() {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status != 200) {
-					printErrorStatus(req.responseText);
+			let data = new FormData();
+			data.append("update_entry_page_show_hidden_property", "1");
+			data.append("show_hidden", bottom.dataset.showHidden);
+			updateUserSetting(data, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
 					return;
 				}
-			}
-			req.send(formData);
+			});
 			return;
 		}
 		let expander = event.target.closest(".thumbnailViewExpander");
@@ -1154,48 +1130,36 @@ window.onload = function() {
 			nameInput.dataset.value = nameInput.value;
 			let valueInput = popup.querySelector(".propertyPickerValue");
 			let prop = nameInput.value.trim();
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
+			let data = new FormData();
 			let entType = popup.dataset.entryType;
 			if (entType == "") {
 				printErrorStatus("entry type should not be empty.");
 				return;
 			}
-			formData.append("update_picked_property", "1");
-			formData.append("entry_type", entType);
-			formData.append("picked_property", prop);
-			req.open("post", "/api/update-user-setting");
-			req.send(formData);
-			req.onerror = function() {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status != 200) {
-					printErrorStatus(req.responseText);
+			data.append("update_picked_property", "1");
+			data.append("entry_type", entType);
+			data.append("picked_property", prop);
+			updateUserSetting(data, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
 					return;
 				}
 				reloadPropertyPicker(popup, prop);
-			}
+			});
 			return;
 		}
 		let opt = event.target.closest(".subEntryListOption.groupByOption");
 		if (opt) {
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
-			formData.append("update_entry_group_by", "1");
-			formData.append("group_by", opt.value);
-			req.open("post", "/api/update-user-setting");
-			req.onerror = function() {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status != 200) {
-					printErrorStatus(req.responseText);
+			let data = new FormData();
+			data.append("update_entry_group_by", "1");
+			data.append("group_by", opt.value);
+			updateUserSetting(data, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
 					return;
 				}
 				location.reload();
-			}
-			req.send(formData);
+			});
 			return;
 		}
 	}
@@ -1268,22 +1232,16 @@ window.onload = function() {
 		if (typeInQuery || !searchFormParam.get("search_entry_type")) {
 			searchFormParam.delete("search_entry_type");
 		}
-		let req = new XMLHttpRequest();
-		let formData = new FormData(addQuickSearchForm);
-		formData.set("update_quick_search", "1");
-		formData.set("quick_search_value", searchFormParam.toString());
-		req.open("post", "/api/update-user-setting");
-		req.onerror = function() {
-			printErrorStatus("network error occurred. please check whether the server is down.");
-		}
-		req.onload = function() {
-			if (req.status != 200) {
-				printErrorStatus(req.responseText);
+		let data = new FormData(addQuickSearchForm);
+		data.set("update_quick_search", "1");
+		data.set("quick_search_value", searchFormParam.toString());
+		updateUserSetting(data, function(_, err) {
+			if (err) {
+				printErrorStatus(err);
 				return;
 			}
 			location.reload();
-		}
-		req.send(formData);
+		});
 		return false;
 	}
 	let allInputs = document.getElementsByTagName("input");
@@ -1893,20 +1851,15 @@ window.onload = function() {
 					let w = width.slice(0, -2);
 					let h = height.slice(0, -2);
 					let size = w + "x" + h;
-					let req = new XMLHttpRequest();
-					let formData = new FormData();
-					formData.append("update_picked_property_input_size", size);
-					formData.append("size", size);
-					req.open("post", "/api/update-user-setting");
-					req.onerror = function() {
-						printErrorStatus("network error occurred. please check whether the server is down.");
-					}
-					req.onload = function() {
-						if (req.status != 200) {
-							printErrorStatus(req.responseText);
+					let data = new FormData();
+					data.append("update_picked_property_input_size", size);
+					data.append("size", size);
+					updateUserSetting(data, function(_, err) {
+						if (err) {
+							printErrorStatus(err);
+							return;
 						}
-					}
-					req.send(formData);
+					});
 				}
 			}
 		}
@@ -2594,46 +2547,34 @@ function removeDragDropEvents(el) {
 }
 
 function updatePinnedPath(path, at) {
-	let req = new XMLHttpRequest();
-	let formData = new FormData();
-	formData.append("update_pinned_path", "1");
-	formData.append("pinned_path", path);
-	formData.append("pinned_path_at", at);
-	req.open("post", "/api/update-user-setting");
-	req.send(formData);
-	req.onload = function() {
-		if (req.status == 200) {
-			location.reload();
-		} else {
-			printErrorStatus(req.responseText);
+	let data = new FormData();
+	data.append("update_pinned_path", "1");
+	data.append("pinned_path", path);
+	data.append("pinned_path_at", at);
+	updateUserSetting(data, function(_, err) {
+		if (err) {
+			printErrorStatus(err);
+			return;
 		}
-	}
-	req.onerror = function(err) {
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
+		location.reload();
+	});
 }
 
 function updateQuickSearch(path, at, override) {
-	let req = new XMLHttpRequest();
-	let formData = new FormData();
-	formData.append("update_quick_search", "1");
-	formData.append("quick_search_name", path);
-	formData.append("quick_search_at", at);
+	let data = new FormData();
+	data.append("update_quick_search", "1");
+	data.append("quick_search_name", path);
+	data.append("quick_search_at", at);
 	if (override) {
-		formData.append("quick_search_override", "1");
+		data.append("quick_search_override", "1");
 	}
-	req.open("post", "/api/update-user-setting");
-	req.send(formData);
-	req.onload = function() {
-		if (req.status == 200) {
-			location.reload();
-		} else {
-			printErrorStatus(req.responseText);
+	updateUserSetting(data, function(_, err) {
+		if (err) {
+			printErrorStatus(err);
+			return;
 		}
-	}
-	req.onerror = function(err) {
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
+		location.reload();
+	});
 }
 
 function toggleRenameInput() {
@@ -2924,20 +2865,15 @@ function showCategoryInfos(ctg) {
 		ctg = ""
 	}
 	cont.dataset.selectedCategory = ctg;
-	let req = new XMLHttpRequest();
-	let formData = new FormData();
-	formData.append("update_entry_page_selected_category", "1")
-	formData.append("category", ctg)
-	req.open("post", "/api/update-user-setting");
-	req.onerror = function() {
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
-	req.onload = function() {
-		if (req.status != 200) {
-			printErrorStatus(req.responseText);
+	let data = new FormData();
+	data.append("update_entry_page_selected_category", "1")
+	data.append("category", ctg)
+	updateUserSetting(data, function(_, err) {
+		if (err) {
+			printErrorStatus(err);
+			return;
 		}
-	}
-	req.send(formData);
+	});
 }
 
 function showInfoUpdater(info) {
@@ -3565,6 +3501,10 @@ function updateProperty(paths, prop, value, handler) {
 	data.append("name", prop);
 	data.append("value", value);
 	postForge("/api/update-property", data, handler);
+}
+
+function updateUserSetting(data, handler) {
+	postForge("/api/update-user-setting", data, handler);
 }
 
 function postForge(api, data, handler) {
