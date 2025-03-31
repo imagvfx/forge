@@ -1012,7 +1012,11 @@ window.onload = function() {
 					}
 					paths.push(path);
 				}
-				getProperties(paths, prop, function(ps) {
+				getProperties(paths, prop, function(ps, err) {
+					if (err) {
+						printErrorStatus(err);
+						return;
+					}
 					let data = "";
 					for (let p of ps) {
 						data += p.Eval
@@ -2035,15 +2039,18 @@ window.onload = function() {
 			for (let ent of selectedEnts) {
 				paths.push(ent.dataset.entryPath);
 			}
-			let onsuccess = function() {
+			updateProperty(paths, "assignee", value, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
+					return;
+				}
 				let called = CalledByName[value];
 				for (let ent of selectedEnts) {
 					let inp = ent.getElementsByClassName("assigneeInput")[0];
 					inp.dataset.oldValue = called;
 					inp.value = called;
 				}
-			}
-			updateProperty(paths, "assignee", value, onsuccess);
+			});
 		});
 	}
 	let grandSubAdderInputs = document.querySelectorAll(".grandSubAdderInput");
@@ -3423,7 +3430,11 @@ function reloadPropertyPicker(popup, prop) {
 		valueInput.value = value;
 	}
 	if (prop == "*environ") {
-		getEntryEnvirons(path, function(envs) {
+		getEntryEnvirons(path, function(envs, err) {
+			if (err) {
+				printErrorStatus(err);
+				return;
+			}
 			let environs = [];
 			for (let e of envs) {
 				let l = e.Name + "=" + e.Value;
@@ -3437,7 +3448,11 @@ function reloadPropertyPicker(popup, prop) {
 			printStatus("done");
 		});
 	} else if (prop == "*access") {
-		getEntryAccessList(path, function(accs) {
+		getEntryAccessList(path, function(accs, err) {
+			if (err) {
+				printErrorStatus(err);
+				return;
+			}
 			let accessList = [];
 			for (let a of accs) {
 				let l = a.Name + "=" + a.Value;
@@ -3452,7 +3467,11 @@ function reloadPropertyPicker(popup, prop) {
 		});
 		return;
 	} else {
-		getProperty(path, prop, function(p) {
+		getProperty(path, prop, function(p, err) {
+			if (err) {
+				printErrorStatus(err);
+				return;
+			}
 			updateInputs(p.Type, p.Eval);
 			if (nameInput.dataset.type == "user") {
 				let menuAt = getOffset(valueInput);
@@ -3481,7 +3500,11 @@ function reloadPropertyPicker(popup, prop) {
 						}
 						paths.push(path);
 					}
-					let onsuccess = function() {
+					updateProperty(paths, nameInput.value, value, function(_, err) {
+						if (err) {
+							printErrorStatus(err);
+							return;
+						}
 						valueInput.value = CalledByName[value];
 						nameInput.dataset.error = "";
 						nameInput.dataset.modified = "";
@@ -3494,8 +3517,7 @@ function reloadPropertyPicker(popup, prop) {
 								dot.dataset.assignee = value;
 							}
 						}
-					}
-					updateProperty(paths, nameInput.value, value, onsuccess);
+					});
 				});
 			}
 			printStatus("done");
@@ -3507,66 +3529,66 @@ function selectedEntries() {
 	return Array.from(document.querySelectorAll(".subEntry.selected"));
 }
 
-function getProperty(path, prop, onsuccess) {
+function getProperty(path, prop, handler) {
 	let data = new FormData();
 	data.append("path", path)
 	data.append("name", prop)
-	postForge("/api/get-property", data, onsuccess);
+	postForge("/api/get-property", data, handler);
 }
 
-function getProperties(paths, prop, onsuccess) {
+function getProperties(paths, prop, handler) {
 	let data = new FormData();
 	for (let path of paths) {
 		data.append("path", path)
 		data.append("name", prop)
 	}
-	postForge("/api/get-properties", data, onsuccess);
+	postForge("/api/get-properties", data, handler);
 }
 
-function getEntryEnvirons(path, onsuccess) {
+function getEntryEnvirons(path, handler) {
 	let data = new FormData();
 	data.append("path", path)
-	postForge("/api/entry-environs", data, onsuccess);
+	postForge("/api/entry-environs", data, handler);
 }
 
-function getEntryAccessList(path, onsuccess) {
+function getEntryAccessList(path, handler) {
 	let data = new FormData();
 	data.append("path", path)
-	postForge("/api/entry-access-list", data, onsuccess);
+	postForge("/api/entry-access-list", data, handler);
 }
 
-function updateProperty(paths, prop, value, onsuccess) {
+function updateProperty(paths, prop, value, handler) {
 	let data = new FormData();
 	for (let path of paths) {
 		data.append("path", path);
 	}
 	data.append("name", prop);
 	data.append("value", value);
-	postForge("/api/update-property", data, onsuccess);
+	postForge("/api/update-property", data, handler);
 }
 
-function postForge(api, data, onsuccess) {
+function postForge(api, data, handler) {
 	let r = new XMLHttpRequest();
 	r.open("post", api);
 	r.send(data);
 	r.onerror = function() {
-		printErrorStatus("network error occurred. please check whether the server is down.");
+		handler(null, "network error occurred. please check whether the server is down.");
 	}
 	r.onload = function() {
 		if (r.status != 200) {
-			printErrorStatus(r.responseText);
+			handler(null, r.responseText);
 			return;
 		}
 		// update api doesn't respond anything, when it is done without an error.
 		if (!r.responseText) {
-			onsuccess();
+			handler(null, null);
 			return;
 		}
 		let j = JSON.parse(r.responseText);
 		if (j.Err != "") {
-			printErrorStatus(j.Err);
+			handler(null, j.Err);
 			return;
 		}
-		onsuccess(j.Msg);
+		handler(j.Msg, null);
 	}
 }
