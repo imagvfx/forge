@@ -419,12 +419,10 @@
 													<label class="updateThumbnailButton thumbnailButton"> [+
 														<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 													]
-													<input readonly name="back_to_referer" type="hidden" value="1"> []
 												]
 												<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
 													<input name="path" type="hidden" value="{{$ent.Path}}"> []
 													<label class="deleteThumbnailButton thumbnailButton"> [-]
-													<input readonly name="back_to_referer" type="hidden" value="1"> []
 												]
 											]
 											<div class="subInfoArea"> [
@@ -595,7 +593,6 @@
 							<input name="type" class="typeInput typeHolder" type="hidden"> []
 							<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
 							<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button style="width:5rem"> [Update]
 						]
 					]
@@ -613,7 +610,6 @@
 							<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
 							<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
 							<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button style="width:5rem"> [Add]
 						]
 					]

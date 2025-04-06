@@ -302,36 +302,24 @@ window.onload = function() {
 					subEntArea.classList.add("detailView");
 					opt.dataset.value = "1";
 				}
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
-				formData.append("section", "entry_page");
-				req.open("post", "/api/ensure-user-data-section");
-				req.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
-						printErrorStatus(req.responseText);
+				let data = new FormData();
+				data.append("section", "entry_page");
+				postForge("/api/ensure-user-data-section", data, function(_, err) {
+					if (err) {
+						printErrorStatus(err);
 						return;
 					}
-					let r = new XMLHttpRequest();
-					let data = new FormData();
-					data.append("section", "entry_page");
-					data.append("key", "detail_view");
-					data.append("value", opt.dataset.value);
-					r.open("post", "/api/set-user-data");
-					r.onerror = function() {
-						printErrorStatus("network error occurred. please check whether the server is down.");
-					}
-					r.onload = function() {
-						if (r.status != 200) {
-							printErrorStatus(req.responseText);
+					let d = new FormData();
+					d.append("section", "entry_page");
+					d.append("key", "detail_view");
+					d.append("value", opt.dataset.value);
+					postForge("/api/set-user-data", d, function(_, err) {
+						if (err) {
+							printErrorStatus(err);
 							return;
 						}
-					}
-					r.send(data);
-				}
-				req.send(formData);
+					});
+				});
 				return;
 			}
 			opt = event.target.closest(".subEntryListOption.deleteEntryOption");
@@ -536,8 +524,7 @@ window.onload = function() {
 							selectedEnts = [thisEnt];
 						}
 						let sub = popup.dataset.sub;
-						let req = new XMLHttpRequest();
-						let formData = new FormData();
+						let data = new FormData();
 						for (let ent of selectedEnts) {
 							let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
 							if (!dot) {
@@ -547,30 +534,25 @@ window.onload = function() {
 							if (sub != "") {
 								path += "/" + sub;
 							}
-							formData.append("path", path);
+							data.append("path", path);
 						}
-						formData.append("name", "status");
-						formData.append("value", item.dataset.value);
-						req.open("post", "/api/update-property");
-						req.send(formData);
-						req.onload = function() {
-							if (req.status == 200) {
-								for (let ent of selectedEnts) {
-									let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
-									if (!dot) {
-										continue;
-									}
-									dot.dataset.value = item.dataset.value;
-								}
-								let popup = document.querySelector("#updatePropertyPopup");
-								popup.classList.remove("expose");
-							} else {
-								printErrorStatus(req.responseText);
+						data.append("name", "status");
+						data.append("value", item.dataset.value);
+						postForge("/api/update-property", data, function(_, err) {
+							if (err) {
+								printErrorStatus(err);
+								return;
 							}
-						}
-						req.onerror = function(err) {
-							printErrorStatus("network error occurred. please check whether the server is down.");
-						}
+							for (let ent of selectedEnts) {
+								let dot = ent.querySelector(`.statusSelector[data-sub="${sub}"]`);
+								if (!dot) {
+									continue;
+								}
+								dot.dataset.value = item.dataset.value;
+							}
+							let popup = document.querySelector("#updatePropertyPopup");
+							popup.classList.remove("expose");
+						});
 					}
 					let history = event.target.closest(".propertyPickerHistory");
 					if (history != null) {
@@ -798,67 +780,52 @@ window.onload = function() {
 						let key = keyVal.slice(0, idx).trim();
 						let val = keyVal.slice(idx+1).trim();
 
-						let req = new XMLHttpRequest();
-						let formData = new FormData();
+						let data = new FormData();
 						for (let path of paths) {
-							formData.append("path", path);
+							data.append("path", path);
 						}
-						formData.append("name", key);
+						data.append("name", key);
 						let api = "";
 						if (prefix == "+") {
 							api = "/api/add-or-update-" + updateType;
-							formData.append("value", val);
+							data.append("value", val);
 						} else if (prefix == "-") {
 							api = "/api/delete-" + updateType;
-							formData.append("generous", "1");
+							data.append("generous", "1");
 						}
-						req.open("post", api);
-						req.send(formData);
-						req.onerror = function() {
-							nameInput.dataset.error = "1";
-							printErrorStatus("network error occurred. please check whether the server is down.");
-						}
-						req.onload = function() {
-							if (req.status != 200) {
+						postForge(api, data, function(err) {
+							if (err) {
 								nameInput.dataset.error = "1";
-								printErrorStatus(req.responseText);
-								console.log(req.responseText);
+								printErrorStatus(err);
 								return;
 							}
 							nameInput.dataset.error = "";
 							nameInput.dataset.modified = "";
 							reloadPropertyPicker(popup, prop);
 							printStatus("done");
-						}
+						});
 					}
 					if (!modify) {
 						printStatus("nothing to do");
 					}
 					return;
 				}
-				let req = new XMLHttpRequest();
-				let formData = new FormData();
+				let data = new FormData();
 				for (let path of paths) {
-					formData.append("path", path);
+					data.append("path", path);
 				}
-				formData.append("name", prop);
-				formData.append("value", valueInput.value.trim());
-				req.open("post", "/api/update-property");
-				req.send(formData);
-				req.onerror = function() {
-					nameInput.dataset.error = "1";
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
+				data.append("name", prop);
+				data.append("value", valueInput.value.trim());
+				postForge("/api/update-property", data, function(_, err) {
+					if (err) {
 						nameInput.dataset.error = "1";
-						printErrorStatus(req.responseText);
+						printErrorStatus(err);
 						return;
 					}
 					nameInput.dataset.error = "";
 					nameInput.dataset.modified = "";
 					printStatus("done");
-				}
+				});
 			}
 			return;
 		}
@@ -2041,40 +2008,28 @@ window.onload = function() {
 					printStatus("nothing to do; all the entries already have '" + sub + "' entry");
 					return;
 				}
-				let formData = new FormData();
+				let data = new FormData();
 				for (let i in paths) {
-					formData.append("path", paths[i]);
-					formData.append("type", types[i]);
+					data.append("path", paths[i]);
+					data.append("type", types[i]);
 				}
-				let req = new XMLHttpRequest();
-				req.open("post", "/api/add-entry");
-				req.onerror = function() {
-					printErrorStatus("network error occurred. please check whether the server is down.");
-				}
-				req.onload = function() {
-					if (req.status != 200) {
-						printErrorStatus("cannot add entry: " + req.responseText);
+				postForge("/api/add-entry", data, function(_, err) {
+					if (err) {
+						printErrorStatus("cannot add entry: " + err);
 						return;
 					}
-					let r = new XMLHttpRequest();
-					let fdata = new FormData();
+					let d = new FormData();
 					for (let path of paths) {
 						let toks = path.split("/");
 						let sub = toks.pop();
 						let parent = toks.join("/");
-						fdata.append("path", path);
+						d.append("path", path);
 					}
-					r.open("post", "/api/get-entries");
-					r.onerror = function() {
-						printErrorStatus("network error occurred. please check whether the server is down.");
-					}
-					r.onload = function() {
-						if (r.status != 200) {
-							printErrorStatus("cannot get entry: " + req.responseText);
+					postForge("/api/get-entries", d, function(ents, err) {
+						if (err) {
+							printErrorStatus("cannot get entry: " + err);
 							return;
 						}
-						let resp = JSON.parse(r.responseText);
-						let ents = resp.Msg;
 						for (let ent of ents) {
 							let path = ent.Path;
 							if (!path.endsWith(sub)) {
@@ -2121,10 +2076,9 @@ window.onload = function() {
 						let adderInput = thisEnt.querySelector(".grandSubAdderInput");
 						adderInput.innerHTML = "";
 						printStatus("done");
-					}
-					r.send(fdata);
-				}
-				req.send(formData);
+					});
+
+				});
 			}
 		}
 	}
@@ -2206,22 +2160,17 @@ window.onload = function() {
 				}
 				let confirmBtn = dlg.querySelector(".confirmButton");
 				confirmBtn.onclick = function() {
-					let req = new XMLHttpRequest();
-					let formData = new FormData();
-					formData.append("path", info.dataset.entryPath);
-					formData.append("name", info.dataset.name);
-					req.open("post", "/api/delete-" + info.dataset.category);
-					req.send(formData);
-					req.onload = function() {
-						if (req.status == 200) {
-							location.reload();
-						} else {
-							printErrorStatus(req.responseText);
+					let api = "/api/delete-" + info.dataset.category;
+					let data = new FormData();
+					data.append("path", info.dataset.entryPath);
+					data.append("name", info.dataset.name);
+					postForge(api, data, function(_, err) {
+						if (err) {
+							printErrorStatus(err);
+							return;
 						}
-					}
-					req.onerror = function(err) {
-						printErrorStatus("network error occurred. please check whether the server is down.");
-					}
+						location.reload();
+					});
 				}
 			}
 			let x = loader.offsetLeft;
@@ -2246,25 +2195,19 @@ window.onload = function() {
 				parent = "";
 			}
 			let type = form.dataset.type;
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
+			let data = new FormData();
 			for (let name of form.name.value.split(" ")) {
 				let path = parent + "/" + name;
-				formData.append("path", path);
-				formData.append("type", type);
+				data.append("path", path);
+				data.append("type", type);
 			}
-			req.open("post", "/api/add-entry");
-			req.onerror = function() {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status == 200) {
-					location.reload(true);
-				} else {
-					printErrorStatus(req.responseText);
+			postForge("/api/add-entry", data, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
+					return;
 				}
-			}
-			req.send(formData);
+				location.reload(true);
+			});
 			// Handled already, no need to submit again.
 			return false;
 		}
@@ -2386,29 +2329,16 @@ function getEntry(path, onget, onfail) {
 	}
 	EntryCache[path] = null; // mark as the entry is on checking.
 	let r = new XMLHttpRequest();
-	let fdata = new FormData();
-	fdata.append("path", path);
-	r.open("post", "/api/get-entry");
-	r.send(fdata);
-	r.onerror = function() {
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
-	r.onload = function() {
-		let j = null;
-		try {
-			j = JSON.parse(r.responseText);
-		} catch(err) {
-			onfail(r.responseText);
+	let data = new FormData();
+	data.append("path", path);
+	postForge("/api/get-entry", data, function(ent, err) {
+		if (err) {
+			onfail(err);
 			return;
 		}
-		if (j.Err != "") {
-			onfail(j.Err);
-			return;
-		}
-		let ent = j.Msg;
 		EntryCache[path] = ent;
 		onget(ent);
-	}
+	});
 }
 
 function scrollToTopOpacity() {
@@ -2622,55 +2552,42 @@ function updateThumbnail(thumb) {
 		}
 	}
 	thumb.dataset.lastUpload = String(now);
-	let req = new XMLHttpRequest();
 	if (thumb.classList.contains("exists")) {
 		form.action = form.action.replace("/api/add", "/api/update");
 	} else {
 		form.action = form.action.replace("/api/update", "/api/add");
 	}
-	req.open(form.method, form.action);
-	req.send(new FormData(form));
-	req.onload = function() {
-		if (req.status == 200) {
-			let entryPath = thumb.closest(".entry").dataset.entryPath;
-			img.src = "/thumbnail" + entryPath + "?t=" + new Date().getTime();
-			thumb.classList.remove("inherited");
-			thumb.classList.add("exists");
-			printStatus("done");
-		} else {
+	let data = new FormData(form);
+	postForge(form.action, data, function(_, err) {
+		if (err) {
 			img.parentElement.style.border = "1px solid #D72";
-			printErrorStatus(req.responseText);
+			printErrorStatus(err);
+			return;
 		}
-	}
-	req.onerror = function(err) {
-		img.parentElement.style.border = "1px solid #D72";
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
+		let entryPath = thumb.closest(".entry").dataset.entryPath;
+		img.src = "/thumbnail" + entryPath + "?t=" + new Date().getTime();
+		thumb.classList.remove("inherited");
+		thumb.classList.add("exists");
+		printStatus("done");
+	})
 }
 
 function deleteThumbnail(thumb) {
 	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("deleteThumbnailForm")[0];
-	let req = new XMLHttpRequest();
-	req.open(form.method, form.action);
-	req.send(new FormData(form));
-	req.onload = function() {
-		if (req.status == 200) {
-			// the image is gone, reflect it to img tag (even if it will not visible).
-			// TODO: inherit parent thumbnail
-			img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
-			form.action = form.action.replace("/api/update", "/api/add");
-			thumb.classList.remove("exists");
-			printStatus("done");
-		} else {
+	let data = new FormData(form);
+	postForge(form.action, data, function(_, err) {
+		if (err) {
 			img.parentElement.style.border = "1px solid #D72";
-			printErrorStatus(req.responseText);
+			printErrorStatus(err);
 		}
-	}
-	req.onerror = function(err) {
-		img.parentElement.style.border = "1px solid #D72";
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
+		// the image is gone, reflect it to img tag (even if it will not visible).
+		// TODO: inherit parent thumbnail
+		img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
+		form.action = form.action.replace("/api/update", "/api/add");
+		thumb.classList.remove("exists");
+		printStatus("done");
+	});
 }
 
 function resizeTextArea(textarea) {
@@ -2683,9 +2600,9 @@ function submitUpdaterOrAdder(ev, input) {
 	ev.preventDefault();
 	let req = new XMLHttpRequest();
 	let form = input.parentElement;
-	let formData = new FormData(input.parentElement);
-	let entPath = formData.get("path");
-	formData.delete("path"); // will be refilled
+	let data = new FormData(input.parentElement);
+	let entPath = data.get("path");
+	data.delete("path"); // will be refilled
 	let submitEntPaths = [];
 	let thisEntry = document.querySelector(`.entry[data-entry-path="${entPath}"]`);
 	if (!thisEntry || thisEntry.classList.contains("dirEntry")) {
@@ -2707,53 +2624,38 @@ function submitUpdaterOrAdder(ev, input) {
 		}
 	}
 	for (let path of submitEntPaths) {
-		formData.append("path", path);
+		data.append("path", path);
 	}
-	let ctg = formData.get("ctg");
-	let name = formData.get("name");
+	let ctg = data.get("ctg");
+	let name = data.get("name");
 	let marker = form.getElementsByClassName("updatingMarker")[0];
-	req.onerror = function(err) {
-		marker.classList.add("invisible");
-		printErrorStatus("network error occurred. please check whether the server is down.");
-	}
-	req.onload = function() {
-		marker.classList.add("invisible");
-		if (req.status == 200) {
-			// we know the value we just send,
-			// but let's get the corrected value from server.
-			let get = new XMLHttpRequest();
-			let getFormData = new FormData();
-			for (let path of submitEntPaths) {
-				getFormData.append("path", path);
-			}
-			getFormData.append("name", name);
-			get.onerror = function(err) {
-				printErrorStatus("network error occurred. please check whether the server is down.");
-			}
-			get.onload = function() {
-				if (get.status == 200) {
-					let j = JSON.parse(get.responseText);
-					if (j.Err != "") {
-						printErrorStatus(j.Err);
-						return;
-					}
-					for (let path of submitEntPaths) {
-						refreshInfoValue(path, ctg, name, j.Msg);
-					}
-					printStatus("done");
-				} else {
-					printErrorStatus("update done, but failed to get the new value:" + get.responseText);
-				}
-			}
-			get.open("post", "/api/get-" + ctg);
-			get.send(getFormData);
-		} else {
-			printErrorStatus(req.responseText);
-		}
-	}
-	req.open(form.method, form.action);
-	req.send(formData);
 	marker.classList.remove("invisible");
+	postForge(form.action, data, function(_, err) {
+		marker.classList.add("invisible");
+		if (err) {
+			printErrorStatus(err);
+			return;
+		}
+		// we know the value we just send,
+		// but let's get the corrected value from server.
+		let get = new XMLHttpRequest();
+		let d = new FormData();
+		for (let path of submitEntPaths) {
+			d.append("path", path);
+		}
+		d.append("name", name);
+		let api = "/api/get-" + ctg;
+		postForge(api, d, function(info, err) {
+			if (err) {
+				printErrorStatus("update done, but failed to get the new value: " + err);
+				return;
+			}
+			for (let path of submitEntPaths) {
+				refreshInfoValue(path, ctg, name, info);
+			}
+			printStatus("done");
+		});
+	});
 }
 
 function refreshInfoValue(path, ctg, name, p) {
@@ -3068,27 +2970,15 @@ function openDeleteEntryDialog(paths) {
 	let proms = [];
 	for (let path of paths) {
 		let p = new Promise((resolve, reject) => {
-			let req = new XMLHttpRequest();
-			let formData = new FormData();
-			formData.append("path", path);
-			req.open("post", "/api/count-all-sub-entries");
-			req.send(formData);
-			req.onerror = function(err) {
-				reject("network error occurred. please check whether the server is down.");
-			}
-			req.onload = function() {
-				if (req.status != 200) {
-					reject(req.responseText);
+			let data = new FormData();
+			data.append("path", path);
+			postForge("/api/count-all-sub-entries", data, function(num, err) {
+				if (err) {
+					reject(err);
 					return;
 				}
-				let j = JSON.parse(req.responseText);
-				if (j.Err != "") {
-					reject(j.Err);
-					return;
-				}
-				let numSubEntries = j.Msg;
-				resolve(path + " (+" + String(numSubEntries) + ")");
-			}
+				resolve(path + " (+" + String(num) + ")");
+			});
 		});
 		proms.push(p);
 	}
@@ -3114,24 +3004,18 @@ function openDeleteEntryDialog(paths) {
 	}
 	let confirmBtn = dlg.querySelector(".confirmButton");
 	confirmBtn.onclick = function() {
-		let req = new XMLHttpRequest();
-		let formData = new FormData();
+		let data = new FormData();
 		for (let path of paths) {
-			formData.append("path", path);
+			data.append("path", path);
 		}
-		formData.append("recursive", "1");
-		req.open("post", "/api/delete-entry");
-		req.send(formData);
-		req.onload = function() {
-			if (req.status == 200) {
-				location.reload();
-			} else {
-				printErrorStatus(req.responseText);
+		data.append("recursive", "1");
+		postForge("/api/delete-entry", data, function(_, err) {
+			if (err) {
+				printErrorStatus(err);
+				return;
 			}
-		}
-		req.onerror = function(err) {
-			printErrorStatus("network error occurred. please check whether the server is down.");
-		}
+			location.reload();
+		});
 	}
 }
 
