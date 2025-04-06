@@ -107,7 +107,7 @@ window.onload = function() {
 			let data = new FormData();
 			data.append("entry_page_hide_side_menu", 1);
 			data.append("hide", hide);
-			updateUserSetting(data, function(_, err) {
+			postForge("/api/update-user-setting", data, function(_, err) {
 				if (err) {
 					printErrorStatus(err);
 					return;
@@ -248,7 +248,7 @@ window.onload = function() {
 				let data = new FormData();
 				data.append("update_search_view", "1");
 				data.append("view", opt.dataset.value);
-				updateUserSetting(data, function(_, err) {
+				postForge("/api/update-user-setting", data, function(_, err) {
 					if (err) {
 						printErrorStatus(err);
 						return;
@@ -284,7 +284,7 @@ window.onload = function() {
 				let data = new FormData();
 				data.append("update_entry_page_expand_property", "1");
 				data.append("expand", opt.dataset.expand);
-				updateUserSetting(data, function(_, err) {
+				postForge("/api/update-user-setting", data, function(_, err) {
 					if (err) {
 						printErrorStatus(err);
 						return;
@@ -348,7 +348,7 @@ window.onload = function() {
 			let data = new FormData();
 			data.append("update_entry_page_show_hidden_property", "1");
 			data.append("show_hidden", bottom.dataset.showHidden);
-			updateUserSetting(data, function(_, err) {
+			postForge("/api/update-user-setting", data, function(_, err) {
 				if (err) {
 					printErrorStatus(err);
 					return;
@@ -955,7 +955,12 @@ window.onload = function() {
 					}
 					paths.push(path);
 				}
-				getProperties(paths, prop, function(ps, err) {
+				let data = new FormData();
+				for (let path of paths) {
+					data.append("path", path)
+					data.append("name", prop)
+				}
+				postForge("/api/get-properties", data, function(ps, err) {
 					if (err) {
 						printErrorStatus(err);
 						return;
@@ -1106,7 +1111,7 @@ window.onload = function() {
 			data.append("update_picked_property", "1");
 			data.append("entry_type", entType);
 			data.append("picked_property", prop);
-			updateUserSetting(data, function(_, err) {
+			postForge("/api/update-user-setting", data, function(_, err) {
 				if (err) {
 					printErrorStatus(err);
 					return;
@@ -1120,7 +1125,7 @@ window.onload = function() {
 			let data = new FormData();
 			data.append("update_entry_group_by", "1");
 			data.append("group_by", opt.value);
-			updateUserSetting(data, function(_, err) {
+			postForge("/api/update-user-setting", data, function(_, err) {
 				if (err) {
 					printErrorStatus(err);
 					return;
@@ -1202,7 +1207,7 @@ window.onload = function() {
 		let data = new FormData(addQuickSearchForm);
 		data.set("update_quick_search", "1");
 		data.set("quick_search_value", searchFormParam.toString());
-		updateUserSetting(data, function(_, err) {
+		postForge("/api/update-user-setting", data, function(_, err) {
 			if (err) {
 				printErrorStatus(err);
 				return;
@@ -1821,7 +1826,7 @@ window.onload = function() {
 					let data = new FormData();
 					data.append("update_picked_property_input_size", size);
 					data.append("size", size);
-					updateUserSetting(data, function(_, err) {
+					postForge("/api/update-user-setting", data, function(_, err) {
 						if (err) {
 							printErrorStatus(err);
 							return;
@@ -1955,11 +1960,14 @@ window.onload = function() {
 				}
 				selectedEnts = [thisEnt];
 			}
+			let data = new FormData();
 			let paths = []
 			for (let ent of selectedEnts) {
-				paths.push(ent.dataset.entryPath);
+				data.append("path", ent.dataset.entryPath);
 			}
-			updateProperty(paths, "assignee", value, function(_, err) {
+			data.append("name", prop);
+			data.append("value", value);
+			postForge("/api/update-property", function(_, err) {
 				if (err) {
 					printErrorStatus(err);
 					return;
@@ -2481,7 +2489,7 @@ function updatePinnedPath(path, at) {
 	data.append("update_pinned_path", "1");
 	data.append("pinned_path", path);
 	data.append("pinned_path_at", at);
-	updateUserSetting(data, function(_, err) {
+	postForge("/api/update-user-setting", data, function(_, err) {
 		if (err) {
 			printErrorStatus(err);
 			return;
@@ -2498,7 +2506,7 @@ function updateQuickSearch(path, at, override) {
 	if (override) {
 		data.append("quick_search_override", "1");
 	}
-	updateUserSetting(data, function(_, err) {
+	postForge("/api/update-user-setting", data, function(_, err) {
 		if (err) {
 			printErrorStatus(err);
 			return;
@@ -2770,7 +2778,7 @@ function showCategoryInfos(ctg) {
 	let data = new FormData();
 	data.append("update_entry_page_selected_category", "1")
 	data.append("category", ctg)
-	updateUserSetting(data, function(_, err) {
+	postForge("/api/update-user-setting", data, function(_, err) {
 		if (err) {
 			printErrorStatus(err);
 			return;
@@ -3250,7 +3258,9 @@ function reloadPropertyPicker(popup, prop) {
 		valueInput.value = value;
 	}
 	if (prop == "*environ") {
-		getEntryEnvirons(path, function(envs, err) {
+		let data = new FormData();
+		data.append("path", path)
+		postForge("/api/entry-environs", data, function(envs, err) {
 			if (err) {
 				printErrorStatus(err);
 				return;
@@ -3268,7 +3278,9 @@ function reloadPropertyPicker(popup, prop) {
 			printStatus("done");
 		});
 	} else if (prop == "*access") {
-		getEntryAccessList(path, function(accs, err) {
+		let data = new FormData();
+		data.append("path", path);
+		postForge("/api/entry-access-list", data, function(accs, err) {
 			if (err) {
 				printErrorStatus(err);
 				return;
@@ -3287,7 +3299,10 @@ function reloadPropertyPicker(popup, prop) {
 		});
 		return;
 	} else {
-		getProperty(path, prop, function(p, err) {
+		let data = new FormData();
+		data.append("path", path)
+		data.append("name", prop)
+		postForge("/api/get-property", data, function(p, err) {
 			if (err) {
 				printErrorStatus(err);
 				return;
@@ -3309,7 +3324,7 @@ function reloadPropertyPicker(popup, prop) {
 						selectedEnts = [thisEnt];
 					}
 					let sub = popup.dataset.sub;
-					let paths = []
+					let paths = [];
 					for (let ent of selectedEnts) {
 						let path = ent.dataset.entryPath;
 						if (sub != "") {
@@ -3320,7 +3335,13 @@ function reloadPropertyPicker(popup, prop) {
 						}
 						paths.push(path);
 					}
-					updateProperty(paths, nameInput.value, value, function(_, err) {
+					let data = new FormData();
+					for (let path of paths) {
+						data.append("path", path);
+					}
+					data.append("name", prop);
+					data.append("value", value);
+					postForge("/api/update-property", data, function(_, err) {
 						if (err) {
 							printErrorStatus(err);
 							return;
@@ -3347,48 +3368,6 @@ function reloadPropertyPicker(popup, prop) {
 
 function selectedEntries() {
 	return Array.from(document.querySelectorAll(".subEntry.selected"));
-}
-
-function getProperty(path, prop, handler) {
-	let data = new FormData();
-	data.append("path", path)
-	data.append("name", prop)
-	postForge("/api/get-property", data, handler);
-}
-
-function getProperties(paths, prop, handler) {
-	let data = new FormData();
-	for (let path of paths) {
-		data.append("path", path)
-		data.append("name", prop)
-	}
-	postForge("/api/get-properties", data, handler);
-}
-
-function getEntryEnvirons(path, handler) {
-	let data = new FormData();
-	data.append("path", path)
-	postForge("/api/entry-environs", data, handler);
-}
-
-function getEntryAccessList(path, handler) {
-	let data = new FormData();
-	data.append("path", path)
-	postForge("/api/entry-access-list", data, handler);
-}
-
-function updateProperty(paths, prop, value, handler) {
-	let data = new FormData();
-	for (let path of paths) {
-		data.append("path", path);
-	}
-	data.append("name", prop);
-	data.append("value", value);
-	postForge("/api/update-property", data, handler);
-}
-
-function updateUserSetting(data, handler) {
-	postForge("/api/update-user-setting", data, handler);
 }
 
 function postForge(api, data, handler) {
