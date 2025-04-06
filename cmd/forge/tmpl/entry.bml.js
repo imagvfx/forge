@@ -362,9 +362,13 @@ window.onload = function() {
 			let entPath = thisEnt.dataset.entryPath;
 			let expand = !thisEnt.classList.contains("expanded");
 			let selEnts = selectedEntries();
-			if (!selEnts.includes(thisEnt)) {
-				 printErrorStatus("entry not in selection: " + entPath);
-				 return;
+			if (selEnts.length != 0) {
+				if (!selEnts.includes(thisEnt)) {
+					 printErrorStatus("entry not in selection: " + entPath);
+					 return;
+				}
+			} else {
+				selEnts = [thisEnt];
 			}
 			for (let ent of selEnts) {
 				if (expand) {
