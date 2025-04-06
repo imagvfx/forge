@@ -1257,6 +1257,45 @@ window.onload = function() {
 			submitForm(updateExcelForm);
 		}
 	}
+	let excelDateString = function(d) {
+		function pad(n) {
+			if (n < 10) {
+				return "0" + n.toString();
+			}
+			return n.toString();
+		}
+		let ymd = [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join("-");
+		let hms = [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join("-");
+		let date = ymd + "T" + hms;
+		return date;
+	}
+	let handleDownloadExcel = function(req, name) {
+		if (req.status != 200) {
+			let r = new FileReader();
+			r.onload = function() {
+				printErrorStatus(r.result);
+			}
+			r.readAsText(req.response);
+			return;
+		}
+		let disposition = req.getResponseHeader('Content-Disposition');
+		if (!disposition) {
+			printErrorStatus("reponse does not contain excel file");
+			return;
+		}
+		if (disposition.indexOf("attachment") == -1) {
+			printErrorStatus("reponse does not contain excel file");
+			return;
+		}
+		let downloadURL = window.URL.createObjectURL(req.response);
+		let a = document.createElement("a");
+		a.href = downloadURL;
+		a.download = name;
+		a.click();
+		setTimeout(function() {
+			URL.revokeObjectURL(downloadURL);
+		}, 100)
+	}
 	let downloadAsExcelButton = document.getElementById("downloadAsExcelButton");
 	if (downloadAsExcelButton != null) {
 		downloadAsExcelButton.onclick = function() {
@@ -1294,48 +1333,13 @@ window.onload = function() {
 			req.open("post", "/download-as-excel");
 			req.send(formData);
 			req.onload = function() {
-				if (req.status != 200) {
-					let r = new FileReader();
-					r.onload = function() {
-						printErrorStatus(r.result);
-					}
-					r.readAsText(req.response);
-					return;
-				}
-				let disposition = req.getResponseHeader('Content-Disposition');
-				if (!disposition) {
-					printErrorStatus("reponse does not contain excel file");
-					return;
-				}
-				if (disposition.indexOf("attachment") == -1) {
-					printErrorStatus("reponse does not contain excel file");
-					return;
-				}
-				let downloadURL = window.URL.createObjectURL(req.response);
-				let dateString = function(d) {
-					function pad(n) {
-						if (n < 10) {
-							return "0" + n.toString();
-						}
-						return n.toString();
-					}
-					let ymd = [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join("-");
-					let hms = [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join("-");
-					let date = ymd + "T" + hms;
-					return date;
-				}
-				let d = new Date();
-				let a = document.createElement("a");
-				a.href = downloadURL;
 				let suffix = ""
 				if (editMode) {
-					suffix = "-selected"
+					suffix = "-selected";
 				}
-				a.download = "forge-" + dateString(d) + suffix + ".xlsx";
-				a.click();
-				setTimeout(function() {
-					URL.revokeObjectURL(downloadURL);
-				}, 100)
+				let d = new Date();
+				let name = "forge-" + excelDateString(d) + suffix + ".xlsx";
+				handleDownloadExcel(req, name);
 			}
 			req.onerror = function(err) {
 				printErrorStatus("network error occurred. please check whether the server is down.");
@@ -1357,44 +1361,9 @@ window.onload = function() {
 			req.open("post", "/backup-as-excel");
 			req.send(formData);
 			req.onload = function() {
-				if (req.status != 200) {
-					let r = new FileReader();
-					r.onload = function() {
-						printErrorStatus(r.result);
-					}
-					r.readAsText(req.response);
-					return;
-				}
-				let disposition = req.getResponseHeader('Content-Disposition');
-				if (!disposition) {
-					printErrorStatus("reponse does not contain excel file");
-					return;
-				}
-				if (disposition.indexOf("attachment") == -1) {
-					printErrorStatus("reponse does not contain excel file");
-					return;
-				}
-				let downloadURL = window.URL.createObjectURL(req.response);
-				let dateString = function(d) {
-					function pad(n) {
-						if (n < 10) {
-							return "0" + n.toString();
-						}
-						return n.toString();
-					}
-					let ymd = [d.getFullYear(), pad(d.getMonth()+1), pad(d.getDate())].join("-");
-					let hms = [pad(d.getHours()), pad(d.getMinutes()), pad(d.getSeconds())].join("-");
-					let date = ymd + "T" + hms;
-					return date;
-				}
 				let d = new Date();
-				let a = document.createElement("a");
-				a.href = downloadURL;
-				a.download = "forge-" + dateString(d) + ".xlsx";
-				a.click();
-				setTimeout(function() {
-					URL.revokeObjectURL(downloadURL);
-				}, 100)
+				let name = "forge-" + excelDateString(d) + "-backup" + ".xlsx";
+				handleDownloadExcel(req, name);
 			}
 			req.onerror = function(err) {
 				printErrorStatus("network error occurred. please check whether the server is down.");
