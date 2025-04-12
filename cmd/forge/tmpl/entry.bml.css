@@ -1068,7 +1068,7 @@
 {{end}}
 
 .summaryDot {
-	width: max-content;
+	width: fit-content;
 	height: auto;
 	border-radius: 7px;
 	padding: 0.1rem 0.3rem;
@@ -1134,6 +1134,8 @@
 .grandSub {
 	display: flex;
 	align-items: center;
+	gap: 0.15rem 0;
+	flex-wrap: wrap;
 }
 
 .grandSub.nonDirect {
@@ -1567,6 +1569,10 @@
 
 .detailView .gsInfo {
 	display: flex;
+}
+
+.assigneeLabel {
+	word-break: keep-all;
 }
 
 .assigneeLabel.my {
