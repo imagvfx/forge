@@ -271,17 +271,18 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		p.RawValue = ""
 		return nil
 	}
-	// Need 8 digits in what ever form.
-	isDigit := map[rune]bool{
-		'0': true, '1': true, '2': true, '3': true, '4': true,
-		'5': true, '6': true, '7': true, '8': true, '9': true,
-	}
 	// if the value starts with + or -, it will change the current date
-	possiblePrefix := rune(p.Value[0])
+	fromToday := false
+	val := p.Value
+	if rune(val[0]) == '=' {
+		fromToday = true
+		val = val[1:]
+	}
+	possiblePrefix := rune(val[0])
 	if possiblePrefix == '+' || possiblePrefix == '-' {
-		day, err := strconv.Atoi(p.Value[1:])
+		day, err := strconv.Atoi(val[1:])
 		if err != nil {
-			return fmt.Errorf("invalid date operation: +/- operation needs digits only, got: %v", p.Value[1:])
+			return fmt.Errorf("invalid date operation: +/- operation needs digits only, got: %v", val[1:])
 		}
 		if possiblePrefix == '-' {
 			day *= -1
@@ -294,16 +295,24 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 				return fmt.Errorf("invalid date string: %v", err)
 			}
 		} else {
-			// assumed the user wants to set date from today
+			if !fromToday {
+				// don't have reference date
+				p.RawValue = ""
+				return nil
+			}
 			t = time.Now().Local()
 		}
-
 		t = t.AddDate(0, 0, day)
-		val := t.Format("2006/01/02")
-		p.RawValue = val
+		p.Value = t.Format("2006/01/02")
+		p.RawValue = p.Value
 		return nil
 	}
-	// the value should be a date
+	// the value should be a plain date.
+	// need 8 digits in what ever form.
+	isDigit := map[rune]bool{
+		'0': true, '1': true, '2': true, '3': true, '4': true,
+		'5': true, '6': true, '7': true, '8': true, '9': true,
+	}
 	date := ""
 	for _, r := range p.Value {
 		if isDigit[r] {
@@ -313,17 +322,17 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 	if len(date) != 8 {
 		return fmt.Errorf("invalid date string: want yyyy/mm/dd, got %v", p.Value)
 	}
-	val := strings.Join(
+	rawval := strings.Join(
 		[]string{
 			date[0:4], date[4:6], date[6:8],
 		},
 		"/",
 	)
-	_, err := time.Parse("2006/01/02", val)
+	_, err := time.Parse("2006/01/02", rawval)
 	if err != nil {
 		return fmt.Errorf("invalid date string: %v", err)
 	}
-	p.Value = val
+	p.Value = rawval
 	p.RawValue = p.Value
 	return nil
 }

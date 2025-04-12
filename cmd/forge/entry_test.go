@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/imagvfx/forge"
 )
@@ -190,6 +191,9 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "due", v: "+0", expect: "2023/05/01"},
 	{path: "/test/shot/cg/0010", k: "due", v: "+ab", want: errors.New("invalid date operation: +/- operation needs digits only, got: ab")},
 	{path: "/test/shot/cg/0010", k: "due", v: "", expect: ""},
+	{path: "/test/shot/cg/0010", k: "due", v: "+7", expect: ""},
+	{path: "/test/shot/cg/0010", k: "due", v: "=+7", expect: time.Now().Local().AddDate(0, 0, 7).Format("2006/01/02")},
+	{path: "/test/shot/cg/0010", k: "due", v: "=-7", expect: time.Now().Local().Format("2006/01/02")}, // +7 - 7 == 0
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00:00:00", expect: "00:00:00:00"},
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00000000", expect: "00:00:00:00"},
 	{path: "/test/shot/cg/0010", k: "timecode", v: "00:00", want: errors.New("invalid timecode string: 00:00")},
