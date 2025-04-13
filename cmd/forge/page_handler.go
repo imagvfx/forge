@@ -146,6 +146,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			resultsFromSearch = true
 			queries := strings.Fields(search)
 			mode := ""
+			byProp := ""
 			query := ""
 			for i, q := range queries {
 				if i != 0 {
@@ -153,6 +154,10 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				}
 				if strings.HasPrefix(q, "-mode:") {
 					mode = q[len("-mode:"):]
+					continue
+				}
+				if strings.HasPrefix(q, "-by:") {
+					byProp = q[len("-by:"):]
 					continue
 				}
 				if strings.HasPrefix(q, "-get:") {
@@ -170,6 +175,8 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				query += q
 			}
 			if mode == "entry" {
+				// TODO: delete this mode when ui use '-by' search on Alt+Enter
+				//
 				// sql couldn't handle query if path list is too long
 				// so let's just get one by one
 				paths := make([]string, 0)
@@ -188,6 +195,19 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 						continue
 					}
 					subEnts = append(subEnts, ent)
+				}
+				return nil
+			}
+			if byProp != "" {
+				for _, q := range queries {
+					if strings.HasPrefix(q, "-") {
+						continue
+					}
+					ents, err := h.server.SearchEntries(ctx, path, byProp+"="+q)
+					if err != nil {
+						return err
+					}
+					subEnts = append(subEnts, ents...)
 				}
 				return nil
 			}
