@@ -1348,6 +1348,7 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 	idIdx := -1
 	idProp := ""
 	parentIdx := -1
+	subIdx := -1
 	thumbnailIdx := -1
 	for i, p := range labelRow {
 		if p == "name" {
@@ -1364,6 +1365,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 		}
 		if p == "parent" {
 			parentIdx = i
+			continue
+		}
+		if p == "sub" {
+			subIdx = i
 			continue
 		}
 		if p == "thumbnail" {
@@ -1435,6 +1440,10 @@ func (h *apiHandler) handleBulkUpdate(ctx context.Context, w http.ResponseWriter
 				return fmt.Errorf("searching %q from %q in %q sheet: found multiple entries", idProp+"="+id, parent, sheet)
 			}
 			entPath = ents[0].Path
+		}
+		if subIdx != -1 {
+			sub := cols[subIdx]
+			entPath = path.Join(entPath, sub)
 		}
 		ent, err := h.server.GetEntry(ctx, entPath)
 		if err != nil {
