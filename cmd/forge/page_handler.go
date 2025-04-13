@@ -134,6 +134,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}
 	queryHasType := false
 	groupByOverride := ""
+	subNames := []string{}
 	getTypes := []string{}
 	if search != "" || searchEntryType != "" {
 		// User pressed search button,
@@ -158,6 +159,11 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				}
 				if strings.HasPrefix(q, "-by:") {
 					byProp = q[len("-by:"):]
+					continue
+				}
+				if strings.HasPrefix(q, "-sub:") {
+					v := q[len("-sub:"):]
+					subNames = strings.Split(v, ",")
 					continue
 				}
 				if strings.HasPrefix(q, "-get:") {
@@ -234,6 +240,23 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 			return err
 		}
 		searchEntryType = setting.EntryPageSearchEntryType
+	}
+	if len(subNames) > 0 {
+		origSubEnts := subEnts
+		subEnts = make([]*forge.Entry, 0)
+		for _, ent := range origSubEnts {
+			for _, name := range subNames {
+				ent, err := h.server.GetEntry(ctx, ent.Path+"/"+name)
+				if err != nil {
+					var e *forge.NotFoundError
+					if !errors.As(err, &e) {
+						return err
+					}
+					continue
+				}
+				subEnts = append(subEnts, ent)
+			}
+		}
 	}
 	newSubEnts := make(map[string]*forge.Entry)
 	if len(getTypes) > 0 {
