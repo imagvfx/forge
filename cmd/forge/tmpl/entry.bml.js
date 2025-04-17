@@ -1938,9 +1938,9 @@ window.onload = function() {
 			for (let ent of selectedEnts) {
 				data.append("path", ent.dataset.entryPath);
 			}
-			data.append("name", prop);
+			data.append("name", "assignee");
 			data.append("value", value);
-			postForge("/api/update-property", function(_, err) {
+			postForge("/api/update-property", data, function(_, err) {
 				if (err) {
 					printErrorStatus(err);
 					return;
