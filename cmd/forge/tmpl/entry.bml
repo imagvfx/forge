@@ -72,14 +72,14 @@
 							<div id="searchButton" style="background-color:inherit"> [Go]
 						]
 						<div style="height:0.2rem"> []
-						<form id="addQuickSearchForm" action="/api/update-user-setting" style="display:flex;justify-content:end;color:#AAA;" method="post"> [
+						<form id="addQuickSearchForm" action="/api/update-user-setting" style="display:flex;justify-content:end;color:#AAA;" method="post" onSubmit="return submitAndReload(this);"> [
+							<input name="update_quick_search" type="hidden" value="1"> []
 							<input name="user" type="hidden" value="{{$.User.Name}}"> []
 							<input name="quick_search_name" style="width:7rem;border-radius:2px;background-color:inherit;font-size:0.7rem;border: 1px solid rgba(1, 1, 1, 0);" placeholder="add to quick search" value=""> []
 							<input name="quick_search_value" type="hidden" value="search_entry_type={{$.SearchEntryType}}&search={{escapeQuery $.Search}}"> []
 							<input name="quick_search_at" type="hidden" value="{{len $.UserSetting.QuickSearches}}"> []
 							<input name="quick_search_override" type="hidden" value="1"> []
-							<button name="update_quick_search" value="1" hidden> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
+							<button hidden> []
 						]
 						<div style="flex:1"> []
 						<div class="showSearches" style="display:flex;flex-wrap:wrap;justify-content:end;"> [
@@ -111,35 +111,34 @@
 						{{end}}
 						<div style="flex:1"> []
 						<div class="dirEntryFunctions"> [
-							<form action="/api/update-user-setting" method="POST"> [
+							<form action="/api/update-user-setting" method="POST" onSubmit="return submitAndReload(this);"> [
+								<input name="update_pinned_path" type="hidden" value="1"> []
 								<input name="pinned_path" type="hidden" value="{{$.Entry.Path}}">
 								<input name="pinned_path_at" type="hidden" value="{{if $.EntryPinned}}-1{{else}}{{len $.UserSetting.PinnedPaths}}{{end}}"> []
-								<button id="updatePinnedPathButton" name="update_pinned_path" value="1" hidden> []
+								<button id="updatePinnedPathButton" hidden> []
 								<label for="updatePinnedPathButton" style="cursor:pointer;"> [{{if $.EntryPinned}}Unpin{{else}}Pin{{end}}]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
-							<form action="/api/rename-entry" method="post"> [
+							<form action="/api/rename-entry" method="post" onSubmit="return renameEntry(this);"> [
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 								<input id="renameInput" class="nodisplay" name="new-name" type="text" value="{{$.Entry.Name}}"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
 							{{if $.UserIsAdmin}}
 							{{if $.Entry.Archived}}
-							<form action="/api/unarchive-entry" method="post"> [
+							<form action="/api/unarchive-entry" method="post" onSubmit="return submitAndReload(this);"> [
+								<input name="unarchive_entry" type="hidden" value="1"> []
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<button id="unarchiveEntryButton" name="unarchive_entry" value="1" hidden> []
+								<button id="unarchiveEntryButton" hidden> []
 								<label for="unarchiveEntryButton"> [Unarchive]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							{{else}}
 							<!-- Backup isn't working well in when the entry is in archive. I might dig it one day. -->
 							<div id="backupAsExcelButton"> [Backup]
-							<form action="/api/archive-entry" method="post"> [
+							<form action="/api/archive-entry" method="post" onSubmit="return submitAndReload(this);"> [
+								<input name="archive_entry" type="hidden" value="1"> []
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-								<button id="archiveEntryButton" name="archive_entry" value="1" hidden> []
+								<button id="archiveEntryButton" hidden> []
 								<label for="archiveEntryButton" style="cursor:pointer;"> [Archive]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							{{end}}
 							{{end}}
@@ -152,17 +151,15 @@
 								<div class="thumbnailContainer"> [
 									<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}"> []
 								]
-								<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
+								<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data" onSubmit="return submitAndReload(this);"> [
 									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 									<label class="updateThumbnailButton thumbnailButton"> [+
 										<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 									]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
 								]
-								<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
+								<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST" onSubmit="return submitAndReload(this);"> [
 									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 									<label class="deleteThumbnailButton thumbnailButton"> [-]
-									<input readonly name="back_to_referer" type="hidden" value="1"> []
 								]
 							]
 						]
@@ -314,18 +311,16 @@
 					]
 					<div class="subEntryFunctions"> [
 						<div style="flex:1"> []
-						<form id="addExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
+						<form id="addExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data" onSubmit="return submitAndReload(this);"> [
 							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input name="add" type="hidden" value="1"> []
 							<input id="addExcelFile" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
 							<label id="forAddExcelFile" for="addExcelFile" style="cursor:pointer;"> [Add]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
-						<form id="updateExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data"> [
+						<form id="updateExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data" onSubmit="return submitAndReload(this);"> [
 							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input id="updateExcelFile" class="nodisplay" name="file" type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"> []
 							<label id="forUpdateExcelFile" for="updateExcelFile" style="cursor:pointer;"> [Update]
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 						]
 						<div id="downloadAsExcelButton"> [Download]
 					]
@@ -342,20 +337,18 @@
 								<b class="subEntryTypeCount"> [({{$nInType}})]
 							]
 							<!-- Add SubEntry -->
-							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST"> [
+							<form class="addSubEntryForm" data-parent="{{$.Entry.Path}}" data-type="{{$entType}}" action="/api/add-entry" style="display:flex" method="POST" onSubmit="return submitAndReload(this);"> [
 								<input name="name" style="border-radius:2px 0 0 2px;" placeholder="name" {{if $.ResultsFromSearch}}disabled{{end}}> []
 								<button style="border-left:0;border-radius:0 2px 2px 0;width:1.2rem;" {{if $.ResultsFromSearch}}disabled{{end}}> [+]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 							]
 							<!-- Property Filter -->
-							<form action="/api/update-user-setting" style="flex:1;display:flex" method="POST"> [
+							<form action="/api/update-user-setting" style="flex:1;display:flex" method="POST" onSubmit="return submitAndReload(this);"> [
 								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
 								<input name="entry_page_property_filter" style="flex:1;" type="text" value="{{index $.UserSetting.EntryPagePropertyFilter $entType}}" placeholder="filter"> []
-								<button class="nodisplay" name="update_filter" value="1"> []
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
+								<input name="update_filter" type="hidden" value="1"> []
 							]
 							<!-- Sort -->
-							<form action="/api/update-user-setting" style="display:flex;align-items:center" method="POST"> [
+							<form action="/api/update-user-setting" style="display:flex;align-items:center" method="POST" onSubmit="return submitAndReload(this);"> [
 								<input name="entry_page_entry_type" type="hidden" value="{{$entType}}"> []
 								{{$sortProp := index $.UserSetting.EntryPageSortProperty $entType}}
 								{{$prop := sortProperty $sortProp}}
@@ -370,8 +363,8 @@
 									{{end}}
 								]
 								<input id="sort_desc_cb" name="entry_page_sort_desc" style="border-radius:2px 0 0 2px;width:1.2rem;" type="checkbox" {{if $desc}}checked{{end}}> []
-								<button name="update_sort" style="border-left:0;border-radius:0 2px 2px 0;width:2.5rem" value="1"> [Sort]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
+								<input name="update_sort" type="hidden" value="1"> []
+								<button style="border-left:0;border-radius:0 2px 2px 0;width:2.5rem"> [Sort]
 							]
 						]
 						{{range $group, $subEntries := $entsByGroup}}

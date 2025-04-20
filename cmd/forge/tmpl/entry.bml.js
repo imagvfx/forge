@@ -105,7 +105,7 @@ window.onload = function() {
 				hide = "0"
 			}
 			let data = new FormData();
-			data.append("entry_page_hide_side_menu", 1);
+			data.append("update_entry_page_hide_side_menu", 1);
 			data.append("hide", hide);
 			postForge("/api/update-user-setting", data, function(_, err) {
 				if (err) {
@@ -2500,6 +2500,19 @@ function toggleRenameInput() {
 	}
 }
 
+function renameEntry(form) {
+	let api = form.action;
+	let data = new FormData(form)
+	postForge(api, data, function(err) {
+		if (err) {
+			printErrorStatus(err);
+			return;
+		}
+		location.href = data.get("new-name");
+	})
+	return false;
+}
+
 function titleRecentlyUpdatedDot(dot) {
 	let then = new Date(dot.dataset.updatedAt);
 	let now = new Date();
@@ -3341,6 +3354,19 @@ function reloadPropertyPicker(popup, prop) {
 
 function selectedEntries() {
 	return Array.from(document.querySelectorAll(".subEntry.selected"));
+}
+
+function submitAndReload(form) {
+	let api = form.action;
+	let data = new FormData(form)
+	postForge(api, data, function(err) {
+		if (err) {
+			printErrorStatus(err);
+			return;
+		}
+		location.reload();
+	})
+	return false;
 }
 
 function postForge(api, data, handler) {
