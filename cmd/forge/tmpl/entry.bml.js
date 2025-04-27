@@ -997,14 +997,19 @@ window.onload = function() {
 			let subEnt = copyable.closest(".subEntry");
 			if (!subEnt || !copyable.dataset.copyKey) {
 				let field = copyable.dataset.copyField;
-				let data = copyable.dataset[field];
+				let c = copyable;
+				if (c.dataset.copyFrom) {
+					// it might want to get data from a parent
+					c = c.closest(c.dataset.copyFrom);
+				}
+				let data = c.dataset[field];
 				let show = data;
 				if (show.length > 50) {
 					show = show.slice(0, 50) + "...";
 				}
 				let copyKey = "data";
-				if (copyable.dataset.copyKey) {
-					copyKey = copyable.dataset.copyKey;
+				if (c.dataset.copyKey) {
+					copyKey = c.dataset.copyKey;
 				}
 				let succeeded = function() {
 					printStatus(copyKey + " copied: " + show);

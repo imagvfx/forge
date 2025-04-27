@@ -520,11 +520,15 @@
 
 .infoTop {
 	display: flex;
-	border: 1px solid #EEE;
+	outline: 1px solid #EEE;
 	border-radius: 4px;
 	background-color: #FEFEFE;
-	padding: 0 2px;
+	padding: 1px 3px;
 	overflow: auto;
+}
+
+.infoTop.highlight {
+	outline: 1px solid #88aadd;
 }
 
 .infoTitle {

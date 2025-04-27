@@ -202,7 +202,7 @@
 							{{range $name := $.DirEntryHiddenProperties}}
 							{{with $p := index $.Entry.Property $name}}
 							<div class="dirEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-								<div class="infoTop"> [
+								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									<div class="infoTitle"> [
 										<div class="hiddenPropertyIcon"> []
 										<div> [{{$p.Name}}]
@@ -218,7 +218,7 @@
 							{{end}}
 							{{range $e := $.Environs}}
 							<div class="dirEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
-								<div class="infoTop"> [
+								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									{{if eq $e.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
 									{{end}}
@@ -235,7 +235,7 @@
 							{{end}}
 							{{range $a := $.AccessList}}
 							<div class="dirEntryInfo info" data-category="access" data-entry-path="{{$a.EntryPath}}" data-name="{{$a.Name}}" data-type="{{$a.Type}}" data-value="{{$a.Value}}"> [
-								<div class="infoTop"> [
+								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									{{if eq $a.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
 									{{end}}
