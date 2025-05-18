@@ -3382,20 +3382,12 @@ function postForge(api, data, handler) {
 		handler(null, "network error occurred. please check whether the server is down.");
 	}
 	r.onload = function() {
-		if (r.status != 200) {
-			handler(null, r.responseText);
-			return;
-		}
-		// update api doesn't respond anything, when it is done without an error.
-		if (!r.responseText) {
-			handler(null, null);
-			return;
-		}
 		let j = JSON.parse(r.responseText);
 		if (j.Err != "") {
 			handler(null, j.Err);
 			return;
 		}
+		// j.Msg will be null, if it was an update operation.
 		handler(j.Msg, null);
 	}
 }
