@@ -3364,7 +3364,7 @@ function selectedEntries() {
 function submitAndReload(form) {
 	let api = form.action;
 	let data = new FormData(form)
-	postForge(api, data, function(err) {
+	postForge(api, data, function(_, err) {
 		if (err) {
 			printErrorStatus(err);
 			return;
