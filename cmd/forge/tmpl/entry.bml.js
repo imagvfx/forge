@@ -3361,7 +3361,7 @@ function selectedEntries() {
 	return Array.from(document.querySelectorAll(".subEntry.selected"));
 }
 
-function submitAndReload(form) {
+function submitAPI(form) {
 	let api = form.action;
 	let data = new FormData(form)
 	postForge(api, data, function(_, err) {
