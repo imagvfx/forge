@@ -1458,10 +1458,6 @@
 	opacity: 0;
 }
 
-#statusBar.error {
-	color: #A22;
-}
-
 .dialogBackground {
 	position: fixed;
 	left: 0;

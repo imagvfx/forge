@@ -58,3 +58,8 @@ a:hover {
 		display: none;
 	}
 }
+
+// all documents should have #statusBar
+#statusBar.error {
+	color: #A22;
+}
