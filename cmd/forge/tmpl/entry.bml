@@ -634,5 +634,11 @@
 	]
 ]
 
-<script> [```{{template "entry.bml.js" .}}```]
+<script> [```
+"use strict";
+
+{{template "common.js"}}
+
+{{template "entry.bml.js" .}}
+```]
 
