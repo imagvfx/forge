@@ -2,6 +2,7 @@
 <html> [
 	<head> [
 		<style> [`{{template "style.css"}}`]
+		<script> [`{{template "common.js"}}`]
 	]
 	<body> [
 		{{template "nav.bml" $}}
@@ -11,21 +12,19 @@
 					Groups
 				]
 				<h4> [
-					<form action="/api/add-group" method="post"> [
+					<form action="/api/add-group" method="post" onsubmit="return submitAPI(this)"> [
 						<div> [
 							<input name="group" type="text" value="" placeholder="group"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
 						]
 					]
 				]
 				<div> [
 				{{range $g := $.Groups}}
-					<form action="/api/rename-group" method="post"> [
+					<form action="/api/rename-group" method="post" onsubmit="return submitAPI(this)"> [
 						<div> [
 							<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
 							<input name="new-name" type="text" value="{{$g.Name}}" placeholder="group"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Set]
 						]
 					]
@@ -37,7 +36,7 @@
 				{{end}}
 				<div> [
 					<h4> [{{$g.Name}}]
-					<form action="/api/add-group-member" method="post"> [
+					<form action="/api/add-group-member" method="post" onsubmit="return submitAPI(this)"> [
 						<div> [
 							<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
 							<input name="member" type="text" value="" placeholder="user"> []
@@ -47,7 +46,7 @@
 					]
 					{{$members := index $.Members $g.Name}}
 					{{range $m := $members}}
-					<form action="/api/delete-group-member" method="post"> [
+					<form action="/api/delete-group-member" method="post" onsubmit="return submitAPI(this)"> [
 						<div> [
 							<input readonly name="group" type="hidden" value="{{$g.Name}}"> []
 							<input readonly name="member" value="{{$m.Member}}"> []
