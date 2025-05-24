@@ -2,6 +2,7 @@
 <html> [
 	<head> [
 		<style> [`{{template "style.css"}}`]
+		<script> [`{{template "common.js"}}`]
 	]
 	<body> [
 		{{template "nav.bml" $}}
@@ -11,48 +12,49 @@
 					<h1> [
 						Settings
 					]
-					<form action="/api/update-user-called" method="post"> [
+					<form action="/api/update-user-called" method="post" onsubmit="return submitAPI(this)"> [
 						<div style="display:flex;"> [
 							<div class="inputLabel"> [Name] <!-- internal representation is User.Called -->
 							<input name="user" type="hidden" placeholder="name" value="{{$.User.Name}}"> []
 							<input name="called" type="text" placeholder="name" value="{{$.User.Called}}"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button class="button" type="submit"> [Update]
 						]
 					]
 					<br>
-					<form action="/api/update-user-setting" method="post"> [
+					<form action="/api/update-user-setting" method="post" onsubmit="return submitAPI(this)"> [
 						<div style="display:flex;"> [
 							<div class="inputLabel"> [Update Marker Lasts]
+							<input hidden name="update_update_marker_lasts" value="1"> []
 							<input class="input" name="update_marker_lasts" type="text" placeholder="in days" value="{{$.Setting.UpdateMarkerLasts}}" autocomplete="off"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button class="button" name="update_update_marker_lasts" type="submit" value="1" > [Update]
+							<button class="button" type="submit"> [Update]
 						]
 					]
 					<br>
-					<form action="/api/update-user-setting" method="post"> [
+					<form action="/api/update-user-setting" method="post" onsubmit="return submitAPI(this)"> [
 						<div style="display:flex;"> [
 							<div class="inputLabel"> [Copy Path Remap]
+							<input hidden name="update_copy_path_remap"  value="1"> []
 							<input class="halfInput" name="from" type="text" placeholder="from" value="{{remapFrom $.Setting.CopyPathRemap}}" autocomplete="off"> []
 							<input class="halfInput" name="to" type="text" placeholder="to" value="{{remapTo $.Setting.CopyPathRemap}}" autocomplete="off"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button class="button" name="update_copy_path_remap" type="submit" value="1" > [Update]
+							<button class="button" type="submit"> [Update]
 						]
 					]
 					<br>
-					<form action="/api/update-user-setting" method="post"> [
+					<form action="/api/update-user-setting" method="post" onsubmit="return submitAPI(this)"> [
 						<div style="display:flex;"> [
 							<div class="inputLabel"> [Show Archived]
+							<input hidden name="update_show_archived" value="1"> []
 							<input class="input" name="show" type="text" placeholder="true/false" value="{{$.Setting.ShowArchived}}" autocomplete="off"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
-							<button class="button" name="update_show_archived" type="submit" value="1"> [Update]
+							<button class="button" type="submit"> [Update]
 						]
 					]
 					<div style="height:2rem"> []
 					<h2> [
 						User Data Sections
 					]
-					<input id="addUserDataSectionInput" placeholder="add section"> []
+					<form action="/api/ensure-user-data-section" method="post" onsubmit="return submitAPI(this)"> [
+						<input name="section" placeholder="add section"> []
+					]
 					<br>
 					<div style="font:1.2px"> [
 						{{range $i, $data := $.UserData -}}
@@ -61,6 +63,9 @@
 						{{- end}}
 					]
 				]
+			]
+			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;"> [
+				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
 			]
 		]
 	]
@@ -88,37 +93,4 @@
 #addUserDataSectionInput {
 	display: block;
 }
-`]
-
-<script> [`
-"use strict";
-
-window.onload = function() {
-	let inp = document.getElementById("addUserDataSectionInput");
-	inp.onkeydown = function(ev) {
-		if (ev.key == "Enter") {
-			addUserDataSection(inp.value);
-		}
-	}
-}
-
-function addUserDataSection(section) {
-	let req = new XMLHttpRequest();
-	let formData = new FormData();
-	formData.append("section", section);
-	req.open("post", "/api/ensure-user-data-section");
-	req.send(formData);
-	// TODO: show the error response to user
-	req.onload = function() {
-		if (req.status != 200) {
-			printErrorStatus(req.responseText);
-			return;
-		}
-		location.reload();
-	}
-	req.onerror = function() {
-		printErrorStatus(req.responseText);
-	}
-}
-
 `]
