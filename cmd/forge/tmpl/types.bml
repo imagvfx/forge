@@ -2,6 +2,7 @@
 <html> [
 	<head> [
 		<style> [`{{template "style.css"}}`]
+		<script> [`{{template "common.js"}}`]
 	]
 	<body> [
 		{{template "nav.bml" $}}
@@ -11,26 +12,27 @@
 					<div class="entryTypeListTitle title"> [
 						Entry Types
 					]
-					<form action="/api/add-entry-type" method="post"> [
+					<form action="/api/add-entry-type" method="post" onsubmit="return submitAPI(this)"> [
 						<div> [
 							<input name="name" type="text" value="" placeholder="name"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
 						]
 					]
 					<div style="height:1rem"> []
 					{{range $tname := $.EntryTypeNames}}
 					<div style="display:flex;justify-content:start;align-items:center;gap:0.2rem;margin-bottom:1rem;"> [
-						<form action="/api/rename-entry-type" method="post"> [
+						<form action="/api/rename-entry-type" method="post" onsubmit="return submitAPI(this)"> [
 							<input readonly name="name" type="hidden" value="{{$tname}}"> []
 							<input name="new_name" type="text" value="{{$tname}}"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button hidden type="submit"> [Rename]
 						]
 						<a href="/types/{{$tname}}" style="font-size:0.8rem;color:#2222AA"> [Edit]
 					]
 					{{end}}
 				]
+			]
+			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:2;"> [
+				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
 			]
 		]
 	]
