@@ -2,6 +2,7 @@
 <html> [
 	<head> [
 		<style> [`{{template "style.css"}}`]
+		<script> [`{{template "common.js"}}`]
 	]
 	<body> [
 		{{template "nav.bml" $}}
@@ -29,7 +30,6 @@
 							<input name="name" type="text" value="" placeholder="name" style="width:10rem;"> []
 							<input name="type" type="text" value="" placeholder="type" style="width:8rem;"> []
 							<input name="value" type="text" value="" placeholder="value" style="width:32rem;"> []
-							<input readonly name="back_to_referer" type="hidden" value="1"> []
 							<button type="submit"> [Add]
 						]
 						<div style="height:0.5rem"> []
@@ -43,7 +43,6 @@
 								<input name="new_name" type="text" value="{{$d.Name}}" style="width:10rem;"> []
 								<input name="type" type="text" value="{{$d.Type}}" style="width:8rem;"> []
 								<textarea class="valueEdit lastVisible" name="value" type="text"> [{{$d.Value}}]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button hidden type="submit"> [Set]
 							]
 						]
@@ -58,7 +57,6 @@
 								<input readonly name="new_name" type="text" value="{{$g.Name}}" style="width:10rem;"> []
 								<input name="type" type="text" value="{{$g.Type}}" style="width:8rem;"> []
 								<textarea class="valueEdit lastVisible" name="value" type="text"> [{{$g.Value}}]
-								<input readonly name="back_to_referer" type="hidden" value="1"> []
 								<button hidden type="submit"> [Set]
 							]
 						]
@@ -287,6 +285,17 @@ window.onload = function() {
 			if (formData.get("category") == "global") {
 				form.action = "/api/add-global";
 			}
+			return submitAPI(form);
+		}
+	}
+	let updateForms = document.getElementsByClassName("updateForm");
+	for (let form of updateForms) {
+		form.onsubmit = function() {
+			let formData = new FormData(form);
+			if (formData.get("category") == "global") {
+				form.action = "/api/update-global";
+			}
+			return submitAPI(form);
 		}
 	}
 	let valueEdits = document.getElementsByClassName("valueEdit");
@@ -305,29 +314,31 @@ window.onload = function() {
 		edit.onkeydown = function(ev) {
 			if ((ev.ctrlKey || ev.metaKey) && ev.key == "Enter") {
 				let form = edit.closest("form");
-				form.submit();
+				submitAPI(form);
 			}
 		}
 	}
 	let deleteTypeButtons = document.getElementsByClassName("entryTypeDeleteButton");
 	for (let btn of deleteTypeButtons) {
 		btn.onclick = function() {
-			let req = new XMLHttpRequest();
 			let formData = new FormData();
+			let type = btn.dataset.entryType;
 			formData.append("name", btn.dataset.entryType);
-			req.open("post", "/api/delete-entry-type");
-			req.send(formData);
-			// TODO: show the error response to user
-			req.onload = function() {
-				if (req.status != 200) {
-					printErrorStatus(req.responseText);
+			postForge("/api/delete-entry-type", formData, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
+					return;
+				}
+				if (location.pathname.endsWith("/"+type)) {
+					// the page no longer exists.
+					// go to the parent page.
+					let toks = location.pathname.split("/");
+					toks.pop();
+					location.pathname = toks.join("/");
 					return;
 				}
 				location.reload();
-			}
-			req.onerror = function() {
-				printErrorStatus(req.responseText);
-			}
+			});
 		}
 	}
 	let deleteButtons = document.getElementsByClassName("deleteButton");
@@ -346,22 +357,6 @@ window.onload = function() {
 			bg.classList.add("invisible");
 		}
 	}
-}
-
-function printStatus(s) {
-	let statusBar = document.getElementById("statusBar");
-	statusBar.classList.remove("error");
-	statusBar.innerHTML = s;
-}
-
-function printErrorStatus(e) {
-	let statusBar = document.getElementById("statusBar");
-	statusBar.classList.add("error");
-	statusBar.innerHTML = e;
-}
-
-function clearStatus() {
-	printStatus("");
 }
 
 function openDeleteDialog(action, type, ctg, name) {
@@ -388,20 +383,14 @@ function openDeleteDialog(action, type, ctg, name) {
 		formData.append("entry_type", type);
 		formData.append("category", ctg);
 		formData.append("name", name);
-		req.open("post", action);
-		req.send(formData);
-		req.onerror = function(err) {
-			printErrorStatus("network error occurred. please check whether the server is down.");
-			bg.classList.add("invisible");
-		}
-		req.onload = function() {
-			if (req.status != 200) {
-				printErrorStatus(req.responseText);
+		postForge(action, formData, function(_, err) {
+			if (err) {
+				printErrorStatus(err);
 				bg.classList.add("invisible");
 				return;
 			}
 			location.reload();
-		}
+		});
 	}
 }
 `]
