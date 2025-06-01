@@ -1848,6 +1848,10 @@ window.onload = function() {
 				// don't show '(none)' as it is too eye catch.
 				label.innerText += status;
 			}
+			let reviewer = labeler.dataset.reviewer;
+			if (reviewer != "") {
+				label.innerText += " ▸ " + reviewer;
+			}
 			let due = labeler.dataset.due;
 			if (due != "") {
 				label.innerText += " / "
