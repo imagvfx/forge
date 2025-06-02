@@ -186,7 +186,7 @@
 							{{range $name := $propFilters}}
 							{{with $p := index $.Entry.Property $name}}
 							<div class="dirEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-								<div class="infoTop"> [
+								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									<div class="infoTitle"> [
 										<div> [{{$p.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
