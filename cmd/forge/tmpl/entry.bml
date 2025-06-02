@@ -475,7 +475,7 @@
 														<div style="color:#aaa"> [+]
 														{{end}}
 														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} summaryLabeler statusSelector {{if ne $i 0}}nonDirect{{end}} grandSubEntry copyable" data-copy-key="{{$gsPath}} path" data-copy-field="entryPath" data-entry-path="{{$gs.Path}}" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}" data-assignee="{{$assignee}}" data-reviewer="{{$reviewer}}" data-due="{{$due}}"> [
-															{{$gsName}}{{with $reviewer}}▸{{end}}
+															{{$gsName}}{{with $reviewer}} ▸{{end}}
 														]
 														<div class="gsInfo"> [
 															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> []
