@@ -2118,6 +2118,11 @@ window.onload = function() {
 				console.log("info not found");
 				return;
 			}
+			let infoHistoryPage = "/logs?path=" + info.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
+			if (info.dataset.category == "property") {
+				location.href = infoHistoryPage;
+				return;
+			}
 			let menu = document.getElementById("infoContextMenu");
 			if (currentContextMenuLoader == loader) {
 				currentContextMenuLoader = null;
@@ -2125,7 +2130,7 @@ window.onload = function() {
 				return;
 			}
 			let infoHistory = menu.getElementsByClassName("infoHistory")[0];
-			infoHistory.href = "/logs?path=" + info.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
+			infoHistory.href = infoHistoryPage;
 			let infoDelete = menu.getElementsByClassName("infoDelete")[0];
 			infoDelete.classList.remove("nodisplay");
 			if (info.dataset.category == "property") {
