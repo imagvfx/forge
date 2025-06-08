@@ -34,7 +34,7 @@ func portForward(httpsPort string) func(http.ResponseWriter, *http.Request) {
 func main() {
 	var (
 		addr        string
-		domain    string
+		domain      string
 		host        string
 		insecure    bool
 		cert        string
@@ -44,8 +44,8 @@ func main() {
 		dbpath      string
 	)
 	flag.StringVar(&addr, "addr", "0.0.0.0:80:443", "address to bind. automatic port forwarding will be enabled, if two ports are specified")
-	flag.StringVar(&host, "host", "", "host name of the site let users access this program")
-	flag.StringVar(&domain, "domain", "", "domain name of the site, same as the host name if empty")
+	flag.StringVar(&host, "host", "", "host name of the site let users access this program. (env: FORGE_HOST)")
+	flag.StringVar(&domain, "domain", "", "domain name of the site, same as the host name if empty. (env: FORGE_DOMAIN)")
 	flag.BoolVar(&insecure, "insecure", false, "use http instead of https for testing")
 	flag.StringVar(&cert, "cert", "cert.pem", "https cert file")
 	flag.StringVar(&key, "key", "key.pem", "https key file")
@@ -62,10 +62,16 @@ func main() {
 	n := len(toks)
 	addr = toks[0]
 	if host == "" {
-		host = addr
+		host = os.Getenv("FORGE_HOST")
+		if host == "" {
+			host = addr
+		}
 	}
 	if domain == "" {
-		domain = host
+		domain = os.Getenv("FORGE_DOMAIN")
+		if domain == "" {
+			domain = host
+		}
 	}
 	if n == 2 {
 		if insecure {
@@ -278,6 +284,8 @@ func main() {
 	mux.Handle("/asset/", http.StripPrefix("/asset/", fs))
 	mux.Handle("/favicon.ico", fs)
 
+	log.Printf("host: %s", host)
+	log.Printf("domain: %s", domain)
 	if insecure {
 		log.Printf("bind to %v:%v", addr, httpPort)
 		err = http.ListenAndServe(addr+":"+httpPort, mux)
