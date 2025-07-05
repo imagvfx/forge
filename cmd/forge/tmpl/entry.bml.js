@@ -3127,6 +3127,9 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	}
 	// Don't set input.onkeydown, it will swipe default (typing characters) behavior of input.
 	let onkeydown = function(event) {
+		if (event.key == "Control" || event.key == "Alt" || event.key == "Shift") {
+			return;
+		}
 		let menu = document.getElementById("userAutoCompleteMenu");
 		let items = menu.getElementsByClassName("userAutoCompleteItem");
 		if (event.key == "Tab") {
