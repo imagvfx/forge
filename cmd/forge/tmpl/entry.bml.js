@@ -733,6 +733,11 @@ window.onload = function() {
 		}
 		if (event.target.closest(".propertyPickerValue")) {
 			if ((ctrlPressed && event.code == "Enter") || event.code == "NumpadEnter") {
+				if (cleanAutoComplete != null) {
+					// autoComplete binded to the .propertyPickerValue input.
+					// It will do the job instead.
+					return;
+				}
 				let popup = event.target.closest("#updatePropertyPopup");
 				let nameInput = popup.querySelector(".propertyPickerName");
 				let valueInput = popup.querySelector(".propertyPickerValue");
