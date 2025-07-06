@@ -940,7 +940,7 @@ window.onload = function() {
 					printStatus("not support copy: " + prop);
 					return;
 				}
-				let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`);
+				let thisEnt = document.querySelector(`.dirEntry[data-entry-path="${entPath}"]`);
 				let selectedEnts = selectedEntries();
 				if (selectedEnts.length != 0) {
 					if (!selectedEnts.includes(thisEnt)) {
@@ -3303,7 +3303,7 @@ function reloadPropertyPicker(popup, prop) {
 				menuAt.top += valueInput.getBoundingClientRect().height + 4;
 				cleanAutoComplete = autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
 					let entPath = popup.dataset.entryPath;
-					let thisEnt = document.querySelector(`.subEntry[data-entry-path="${entPath}"]`)
+					let thisEnt = document.querySelector(`.dirEntry[data-entry-path="${entPath}"]`)
 					let selectedEnts = selectedEntries();
 					if (selectedEnts.length != 0) {
 						if (!selectedEnts.includes(thisEnt)) {
