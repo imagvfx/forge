@@ -401,11 +401,9 @@ window.onload = function() {
 			let mainDiv = document.querySelector(".main");
 			let fn = function() {
 				if (handle.classList.contains("statusSelector")) {
-					// open or close updatePropertyPopup
 					let sel = handle;
 					let thisEnt = sel.closest(".entry");
 					let entPath = thisEnt.dataset.entryPath;
-					let entType = sel.dataset.entryType;
 					if (thisEnt.classList.contains("subEntry")) {
 						let editMode = subEntArea.classList.contains("editMode");
 						if (!editMode) {
@@ -421,91 +419,10 @@ window.onload = function() {
 							}
 						}
 					}
-					let popup = document.querySelector("#updatePropertyPopup");
-					if (popup.dataset.entryPath == entPath && popup.dataset.sub == sel.dataset.sub) {
-						// popup is already opened, close
-						if (popup.classList.contains("expose")) {
-							popup.classList.remove("expose");
-							hide = true;
-							return;
-						}
-					} else {
-						// recalcuate popup
-						popup.dataset.entryPath = entPath;
-						popup.dataset.sub = sel.dataset.sub;
-						// reset inner elements
-						popup.dataset.entryType = sel.dataset.entryType;
-						let menu = popup.querySelector(".selectStatusMenu");
-						menu.innerHTML = "";
-						let stats = PossibleStatus[sel.dataset.entryType];
-						if (stats.length != 0) {
-							menu.classList.remove("hidden");
-							for (let s of stats) {
-								let item = document.createElement("div");
-								item.dataset.value = s;
-								item.classList.add("selectStatusMenuItem");
-								let dot = document.createElement("div");
-								dot.classList.add("selectStatusMenuItemDot");
-								dot.classList.add("statusDot");
-								dot.dataset.entryType = sel.dataset.entryType;
-								dot.dataset.value = s;
-								let val = document.createElement("div");
-								val.classList.add("selectStatusMenuItemValue");
-								let t = s;
-								if (s == "") {
-									t = "(none)";
-									val.style.color = "#888888";
-								}
-								val.innerText = t;
-								item.appendChild(dot);
-								item.appendChild(val);
-								menu.appendChild(item);
-							}
-						} else {
-							menu.classList.add("hidden");
-						}
-						let select = popup.querySelector(".propertyPickerName");
-						select.innerHTML = "";
-						let props = Properties[sel.dataset.entryType].slice();
-						props.push("*environ", "*access");
-						let picked = LastPickedProperty[sel.dataset.entryType];
-						for (let p of props) {
-							let opt = document.createElement("option");
-							opt.value = p;
-							let t = p || ">";
-							opt.innerText = t;
-							if (p == picked) {
-								opt.selected = true;
-							}
-							select.appendChild(opt);
-						}
-						let nameInput = popup.querySelector(".propertyPickerName");
-						reloadPropertyPicker(popup, nameInput.value.trim());
-					}
-					// slight adjust of the popup position to make statusDots aligned.
-					popup.style.removeProperty("right");
-					let right = sel.closest(".right");
-					let offset = offsetFrom(sel, right);
-					let status = popup.querySelector(".selectStatusMenu");
-					let picker = popup.querySelector(".propertyPicker");
-					popup.style.left = String(offset.left - 6) + "px";
-					popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
-					popup.insertBefore(status, picker); // default style
-					popup.classList.add("expose");
-					// some times popup placed outside of window. prevent it.
-					// but only when the popup fits in the window by switching positions.
-					if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
-						if (status.getBoundingClientRect().x - picker.getBoundingClientRect().width > 0) {
-							popup.style.removeProperty("left");
-							popup.style.right = "0px";
-							let margin = popup.getBoundingClientRect().right - sel.getBoundingClientRect().left;
-							popup.style.right = String(margin - 125) + "px";
-						}
-					}
-					if (popup.style.right) {
-						popup.insertBefore(picker, status);
-					} else {
-						popup.insertBefore(status, picker);
+					let err = toggleUpdatePropertyPopup(sel);
+					if (err) {
+						printErrorStatus(err);
+						return;
 					}
 				} else {
 					// an element inside of #updatePropertyPopup clicked
@@ -2091,6 +2008,7 @@ window.onload = function() {
 			let info = t.closest(".info");
 			let ent = info.closest(".entry");
 			if (info.dataset.entryPath != ent.dataset.entryPath) {
+				showUpdatePropertyPopup
 				showInfoAdder(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
 				return;
 			}
@@ -3080,6 +2998,98 @@ let LastPickedProperty = {
 	{{range $entType, $p := $.UserSetting.PickedProperty}}
 	"{{$entType}}": "{{$p}}",
 	{{end}}
+}
+
+// toggleUpdatePropertyPopup opens or closes updatePropertyPopup.
+function toggleUpdatePropertyPopup(sel) {
+	let thisEnt = sel.closest(".entry");
+	let entPath = thisEnt.dataset.entryPath;
+	let sub = sel.dataset.sub;
+	let popup = document.querySelector("#updatePropertyPopup");
+	if (popup.dataset.entryPath == entPath && popup.dataset.sub == sub) {
+		// popup is already opened, close
+		if (popup.classList.contains("expose")) {
+			popup.classList.remove("expose");
+			return;
+		}
+	} else {
+		// recalcuate popup
+		popup.dataset.entryPath = entPath;
+		popup.dataset.sub = sub;
+		// reset inner elements
+		popup.dataset.entryType = sel.dataset.entryType;
+		let menu = popup.querySelector(".selectStatusMenu");
+		menu.innerHTML = "";
+		let stats = PossibleStatus[sel.dataset.entryType];
+		if (stats.length != 0) {
+			menu.classList.remove("hidden");
+			for (let s of stats) {
+				let item = document.createElement("div");
+				item.dataset.value = s;
+				item.classList.add("selectStatusMenuItem");
+				let dot = document.createElement("div");
+				dot.classList.add("selectStatusMenuItemDot");
+				dot.classList.add("statusDot");
+				dot.dataset.entryType = sel.dataset.entryType;
+				dot.dataset.value = s;
+				let val = document.createElement("div");
+				val.classList.add("selectStatusMenuItemValue");
+				let t = s;
+				if (s == "") {
+					t = "(none)";
+					val.style.color = "#888888";
+				}
+				val.innerText = t;
+				item.appendChild(dot);
+				item.appendChild(val);
+				menu.appendChild(item);
+			}
+		} else {
+			menu.classList.add("hidden");
+		}
+		let select = popup.querySelector(".propertyPickerName");
+		select.innerHTML = "";
+		let props = Properties[sel.dataset.entryType].slice();
+		props.push("*environ", "*access");
+		let picked = LastPickedProperty[sel.dataset.entryType];
+		for (let p of props) {
+			let opt = document.createElement("option");
+			opt.value = p;
+			let t = p || ">";
+			opt.innerText = t;
+			if (p == picked) {
+				opt.selected = true;
+			}
+			select.appendChild(opt);
+		}
+		let nameInput = popup.querySelector(".propertyPickerName");
+		reloadPropertyPicker(popup, nameInput.value.trim());
+	}
+	// slight adjust of the popup position to make statusDots aligned.
+	popup.style.removeProperty("right");
+	let right = sel.closest(".right");
+	let offset = offsetFrom(sel, right);
+	let status = popup.querySelector(".selectStatusMenu");
+	let picker = popup.querySelector(".propertyPicker");
+	popup.style.left = String(offset.left - 6) + "px";
+	popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
+	popup.insertBefore(status, picker); // default style
+	popup.classList.add("expose");
+	// some times popup placed outside of window. prevent it.
+	// but only when the popup fits in the window by switching positions.
+	if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
+		if (status.getBoundingClientRect().x - picker.getBoundingClientRect().width > 0) {
+			popup.style.removeProperty("left");
+			popup.style.right = "0px";
+			let margin = popup.getBoundingClientRect().right - sel.getBoundingClientRect().left;
+			popup.style.right = String(margin - 125) + "px";
+		}
+	}
+	if (popup.style.right) {
+		popup.insertBefore(picker, status);
+	} else {
+		popup.insertBefore(status, picker);
+	}
 }
 
 // autoComplete takes input tag and possible autocompleted values and label.
