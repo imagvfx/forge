@@ -489,6 +489,8 @@ window.onload = function() {
 			let popup = document.querySelector("#updatePropertyPopup");
 			if (popup.classList.contains("expose")) {
 				popup.classList.remove("expose");
+				let popupHandle = document.querySelector(".popupHandle");
+				popupHandle.classList.remove("popupHandle");
 				hide = true;
 			}
 		}
@@ -600,6 +602,8 @@ window.onload = function() {
 			let popup = document.querySelector("#updatePropertyPopup");
 			if (popup.classList.contains("expose")) {
 				popup.classList.remove("expose");
+				let popupHandle = document.querySelector(".popupHandle");
+				popupHandle.classList.remove("popupHandle");
 				hide = true;
 			}
 			let userMenu = document.getElementById("userAutoCompleteMenu");
@@ -658,8 +662,9 @@ window.onload = function() {
 				let popup = event.target.closest("#updatePropertyPopup");
 				let nameInput = popup.querySelector(".propertyPickerName");
 				let valueInput = popup.querySelector(".propertyPickerValue");
+				let ctg = nameInput.dataset.category;
 				let prop = nameInput.value.trim();
-				if (prop == "") {
+				if (ctg == "" || prop == "") {
 					return;
 				}
 				let mainDiv = document.querySelector(".main");
@@ -682,8 +687,12 @@ window.onload = function() {
 					}
 					paths.push(path);
 				}
-				if (prop == "*environ" || prop == "*access") {
-					let updateType = prop.slice(1);
+				if (ctg == "environ" || ctg == "access" || prop == "*environ" || prop == "*access") {
+					let updateCtg = ctg;
+					if (prop == "*environ" || prop == "*access") {
+						// special values for managing entry environ or access.
+						updateCtg = prop.slice(1);
+					}
 					let lines = valueInput.value.split("\n");
 					let modify = false;
 					for (let l of lines) {
@@ -711,10 +720,10 @@ window.onload = function() {
 						data.append("name", key);
 						let api = "";
 						if (prefix == "+") {
-							api = "/api/add-or-update-" + updateType;
+							api = "/api/add-or-update-" + updateCtg;
 							data.append("value", val);
 						} else if (prefix == "-") {
-							api = "/api/delete-" + updateType;
+							api = "/api/delete-" + updateCtg;
 							data.append("generous", "1");
 						}
 						postForge(api, data, function(err) {
@@ -725,7 +734,7 @@ window.onload = function() {
 							}
 							nameInput.dataset.error = "";
 							nameInput.dataset.modified = "";
-							reloadPropertyPicker(popup, prop);
+							reloadPropertyPicker(popup, ctg, prop, false);
 							printStatus("done");
 						});
 					}
@@ -1028,15 +1037,21 @@ window.onload = function() {
 		if (event.target.closest(".propertyPickerName")) {
 			let popup = event.target.closest("#updatePropertyPopup");
 			let nameInput = popup.querySelector(".propertyPickerName");
-			nameInput.dataset.value = nameInput.value;
-			let valueInput = popup.querySelector(".propertyPickerValue");
-			let prop = nameInput.value.trim();
-			let data = new FormData();
+			if (nameInput.dataset.building) {
+				// nameInput is on building. not an user event.
+				return;
+			}
 			let entType = popup.dataset.entryType;
 			if (entType == "") {
 				printErrorStatus("entry type should not be empty.");
 				return;
 			}
+			let prop = nameInput.value.trim();
+			nameInput.dataset.value = prop;
+			// change local cache
+			LastPickedProperty[entType] = prop;
+			// let server to remember
+			let data = new FormData();
 			data.append("update_picked_property", "1");
 			data.append("entry_type", entType);
 			data.append("picked_property", prop);
@@ -1045,7 +1060,8 @@ window.onload = function() {
 					printErrorStatus(err);
 					return;
 				}
-				reloadPropertyPicker(popup, prop);
+				reloadPropertyPicker(popup, "property", prop, false);
+				printStatus("done");
 			});
 			return;
 		}
@@ -1627,7 +1643,6 @@ window.onload = function() {
 			}
 			if (
 				document.querySelector("#updatePropertyPopup.expose") ||
-				document.querySelector("#infoUpdater:not(.nodisplay)") ||
 				document.querySelector("#infoAdder:not(.nodisplay)") ||
 				document.querySelector(".grandSubArea.adding")
 			) {
@@ -1990,29 +2005,6 @@ window.onload = function() {
 
 				});
 			}
-		}
-	}
-	let infoTitles = document.getElementsByClassName("infoTitle");
-	for (let t of infoTitles) {
-		t.onclick = function(event) {
-			if (subEntArea.contains(t) && !subEntArea.classList.contains("editMode")) {
-				let info = t.closest(".subEntryInfo");
-				let val = info.querySelector(".infoValue");
-				if (val.classList.contains("expand")) {
-					val.classList.remove("expand");
-				} else {
-					val.classList.add("expand")
-				}
-				return;
-			}
-			let info = t.closest(".info");
-			let ent = info.closest(".entry");
-			if (info.dataset.entryPath != ent.dataset.entryPath) {
-				showUpdatePropertyPopup
-				showInfoAdder(ent.dataset.entryPath, info.dataset.category, info.dataset.name, info.dataset.type, info.dataset.value);
-				return;
-			}
-			showInfoUpdater(info);
 		}
 	}
 	let infoSelectors = document.getElementsByClassName("infoSelector");
@@ -2707,74 +2699,12 @@ function showCategoryInfos(ctg) {
 	});
 }
 
-function showInfoUpdater(info) {
-	document.getElementById("infoAdder").classList.add("nodisplay");
-	let updater = document.getElementById("infoUpdater");
-	updater.classList.add("nodisplay");
-	let active = document.querySelector(".infoTitle.active");
-	if (active) {
-		active.classList.remove("active");
-	}
-	let thisEnt = info.closest(".entry");
-	let entPath = info.dataset.entryPath;
-	let ctg = info.dataset.category;
-	let name = info.dataset.name;
-	let type = info.dataset.type;
-	let value = info.dataset.value;
-	let label = entPath;
-	if (thisEnt.classList.contains("subEntry")) {
-		let selectedEnts = selectedEntries();
-		if (selectedEnts.length != 0) {
-			if (!selectedEnts.includes(thisEnt)) {
-				printErrorStatus("entry not in selection: " + entPath);
-				return;
-			}
-		}
-		if (info.classList.contains("invalid")) {
-			printErrorStatus(ctg + " not exists: " + name);
-			return;
-		}
-		label = String(selectedEnts.length) + " entries selected";
-		if (selectedEnts.length == 1) {
-			label = entPath;
-		} else if (selectedEnts.length == 0) {
-			// implicit selection
-			label = entPath;
-		}
-	}
-	updater.getElementsByClassName("entryLabel")[0].innerText = label;
-	updater.getElementsByClassName("entryInput")[0].value = entPath;
-	updater.getElementsByClassName("categoryInput")[0].value = ctg;
-	updater.getElementsByClassName("nameLabel")[0].innerText = name;
-	updater.getElementsByClassName("nameInput")[0].value = name;
-	updater.getElementsByClassName("typeInput")[0].value = type;
-	updater.getElementsByClassName("valueForm")[0].action = "/api/update-" + ctg;
-	updater.getElementsByTagName("button")[0].innerText = "Update";
-	clearStatus();
-
-	let infoTitle = info.querySelector(".infoTitle");
-	infoTitle.classList.add("active");
-	updater.classList.remove("nodisplay");
-
-	let valueInput = updater.getElementsByClassName("valueInput")[0];
-	valueInput.placeholder = type;
-	valueInput.value = value;
-	resizeTextArea(valueInput);
-	valueInput.focus();
-}
-
-function hideInfoUpdater() {
-	let updater = document.getElementById("infoUpdater");
-	updater.classList.add("nodisplay");
-}
-
 let PropertyTypes = {{marshalJS $.PropertyTypes}}
 let AccessorTypes = {{marshalJS $.AccessorTypes}}
 
 function showInfoAdder(entry, ctg, name, type, value) {
 	// TODO: Add the item inplace?
 	document.getElementById("infoAdder").classList.remove("nodisplay");
-	document.getElementById("infoUpdater").classList.add("nodisplay");
 
 	let adder = document.getElementById("infoAdder");
 	adder.classList.remove("nodisplay");
@@ -3002,27 +2932,51 @@ let LastPickedProperty = {
 
 // toggleUpdatePropertyPopup opens or closes updatePropertyPopup.
 function toggleUpdatePropertyPopup(sel) {
-	let thisEnt = sel.closest(".entry");
-	let entPath = thisEnt.dataset.entryPath;
-	let sub = sel.dataset.sub;
 	let popup = document.querySelector("#updatePropertyPopup");
-	if (popup.dataset.entryPath == entPath && popup.dataset.sub == sub) {
-		// popup is already opened, close
-		if (popup.classList.contains("expose")) {
-			popup.classList.remove("expose");
-			return;
+	let popupHandle = document.querySelector(".popupHandle");
+	if (popupHandle) {
+		popupHandle.classList.remove("popupHandle");
+		if (sel == popupHandle) {
+			// popup is already opened, close
+			if (popup.classList.contains("expose")) {
+				popup.classList.remove("expose");
+				return;
+			}
 		}
+	}
+	sel.classList.add("popupHandle");
+	let selEnt = sel.closest(".entry");
+	let entPath = selEnt.dataset.entryPath;
+	let ent = selEnt;
+	let sub = "";
+	let grandSubEnt = sel.closest(".grandSubEntry");
+	if (grandSubEnt) {
+		ent = grandSubEnt;
+		sub = ent.dataset.sub;
+	}
+	let ctg = "property";
+	let prop = LastPickedProperty[ent.dataset.entryType];
+	let withStatus = false;
+	let forceProp = false;
+	let info = sel.closest(".info");
+	if (info) {
+		ctg = info.dataset.category;
+		prop = info.dataset.name;
+		forceProp = true;
 	} else {
-		// recalcuate popup
-		popup.dataset.entryPath = entPath;
-		popup.dataset.sub = sub;
-		// reset inner elements
-		popup.dataset.entryType = sel.dataset.entryType;
-		let menu = popup.querySelector(".selectStatusMenu");
-		menu.innerHTML = "";
-		let stats = PossibleStatus[sel.dataset.entryType];
+		withStatus = true;
+	}
+	// recalcuate popup
+	popup.dataset.entryPath = entPath;
+	popup.dataset.sub = sub;
+	// reset inner elements
+	popup.dataset.entryType = ent.dataset.entryType;
+	let menu = popup.querySelector(".selectStatusMenu");
+	menu.innerHTML = "";
+	menu.classList.add("hidden");
+	if (withStatus) {
+		let stats = PossibleStatus[ent.dataset.entryType];
 		if (stats.length != 0) {
-			menu.classList.remove("hidden");
 			for (let s of stats) {
 				let item = document.createElement("div");
 				item.dataset.value = s;
@@ -3030,7 +2984,7 @@ function toggleUpdatePropertyPopup(sel) {
 				let dot = document.createElement("div");
 				dot.classList.add("selectStatusMenuItemDot");
 				dot.classList.add("statusDot");
-				dot.dataset.entryType = sel.dataset.entryType;
+				dot.dataset.entryType = ent.dataset.entryType;
 				dot.dataset.value = s;
 				let val = document.createElement("div");
 				val.classList.add("selectStatusMenuItemValue");
@@ -3044,27 +2998,30 @@ function toggleUpdatePropertyPopup(sel) {
 				item.appendChild(val);
 				menu.appendChild(item);
 			}
-		} else {
-			menu.classList.add("hidden");
+			menu.classList.remove("hidden");
 		}
-		let select = popup.querySelector(".propertyPickerName");
-		select.innerHTML = "";
-		let props = Properties[sel.dataset.entryType].slice();
-		props.push("*environ", "*access");
-		let picked = LastPickedProperty[sel.dataset.entryType];
-		for (let p of props) {
-			let opt = document.createElement("option");
-			opt.value = p;
-			let t = p || ">";
-			opt.innerText = t;
-			if (p == picked) {
-				opt.selected = true;
-			}
-			select.appendChild(opt);
-		}
-		let nameInput = popup.querySelector(".propertyPickerName");
-		reloadPropertyPicker(popup, nameInput.value.trim());
 	}
+	let select = popup.querySelector(".propertyPickerName");
+	select.dataset.building = "1";
+	select.innerHTML = "";
+	let props = Properties[ent.dataset.entryType].slice();
+	if (forceProp && !props.includes(prop)) {
+		props.push(prop)
+	}
+	props.push("*environ", "*access");
+	for (let p of props) {
+		let opt = document.createElement("option");
+		opt.value = p;
+		let t = p || ">";
+		opt.innerText = t;
+		if (p == prop) {
+			opt.selected = true;
+		}
+		select.appendChild(opt);
+	}
+	select.dataset.building = "";
+	reloadPropertyPicker(popup, ctg, prop, forceProp);
+
 	// slight adjust of the popup position to make statusDots aligned.
 	popup.style.removeProperty("right");
 	let right = sel.closest(".right");
@@ -3076,14 +3033,10 @@ function toggleUpdatePropertyPopup(sel) {
 	popup.insertBefore(status, picker); // default style
 	popup.classList.add("expose");
 	// some times popup placed outside of window. prevent it.
-	// but only when the popup fits in the window by switching positions.
 	if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
-		if (status.getBoundingClientRect().x - picker.getBoundingClientRect().width > 0) {
-			popup.style.removeProperty("left");
-			popup.style.right = "0px";
-			let margin = popup.getBoundingClientRect().right - sel.getBoundingClientRect().left;
-			popup.style.right = String(margin - 125) + "px";
-		}
+		let left = popup.style.left;
+		popup.style.removeProperty("left");
+		popup.style.right = "20px";
 	}
 	if (popup.style.right) {
 		popup.insertBefore(picker, status);
@@ -3225,11 +3178,11 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 // Feel not so good, but I couldn't think better way to clear it. At least for now.
 let cleanAutoComplete = null;
 
-function reloadPropertyPicker(popup, prop) {
-	LastPickedProperty[popup.dataset.entryType] = prop;
+function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 	let nameInput = popup.querySelector(".propertyPickerName");
 	let valueInput = popup.querySelector(".propertyPickerValue");
 	let history = popup.querySelector(".propertyPickerHistory");
+	nameInput.dataset.category = ctg;
 	nameInput.dataset.value = prop;
 	if (prop == "") {
 		nameInput.dataset.error = "";
@@ -3238,6 +3191,11 @@ function reloadPropertyPicker(popup, prop) {
 		valueInput.value = "";
 		history.classList.add("hidden");
 		return;
+	}
+	if (forceProp) {
+		nameInput.disabled = true;
+	} else {
+		nameInput.disabled = false;
 	}
 	valueInput.disabled = "";
 	history.classList.remove("hidden");
@@ -3257,7 +3215,55 @@ function reloadPropertyPicker(popup, prop) {
 		nameInput.dataset.modified = "";
 		valueInput.value = value;
 	}
-	if (prop == "*environ") {
+	if (ctg == "environ") {
+		let data = new FormData();
+		data.append("path", path)
+		postForge("/api/entry-environs", data, function(envs, err) {
+			if (err) {
+				printErrorStatus(err);
+				return;
+			}
+			let environs = [];
+			for (let e of envs) {
+				if (e.Name != prop) {
+					continue;
+				}
+				let l = e.Name + "=" + e.Value;
+				if (e.Path != path) {
+					l = "~" + l;
+				}
+				environs.push(l);
+			}
+			environs.sort();
+			updateInputs("environ", environs.join("\n"));
+			printStatus("done");
+		});
+		return;
+	} else if (ctg == "access") {
+		let data = new FormData();
+		data.append("path", path);
+		postForge("/api/entry-access-list", data, function(accs, err) {
+			if (err) {
+				printErrorStatus(err);
+				return;
+			}
+			let accessList = [];
+			for (let a of accs) {
+				if (a.Name != prop) {
+					continue;
+				}
+				let l = a.Name + "=" + a.Value;
+				if (a.Path != path) {
+					l = "~" + l;
+				}
+				accessList.push(l);
+			}
+			accessList.sort();
+			updateInputs("access", accessList.join("\n"));
+			printStatus("done");
+		});
+		return;
+	} else if (prop == "*environ") {
 		let data = new FormData();
 		data.append("path", path)
 		postForge("/api/entry-environs", data, function(envs, err) {
@@ -3277,6 +3283,7 @@ function reloadPropertyPicker(popup, prop) {
 			updateInputs("environ", environs.join("\n"));
 			printStatus("done");
 		});
+		return;
 	} else if (prop == "*access") {
 		let data = new FormData();
 		data.append("path", path);
