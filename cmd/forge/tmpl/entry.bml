@@ -96,7 +96,7 @@
 				]
 				{{if not $.ResultsFromSearch}}
 				<!-- This Entry -->
-				<div class="dirEntry entry copyable" data-entry-path="{{$.Entry.Path}}" data-copy-key="path" data-copy-field="entryPath" style="padding:1.5rem 1.2rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
+				<div class="dirEntry entry copyable" data-entry-path="{{$.Entry.Path}}" data-entry-type="{{$.Entry.Type}}" data-copy-key="path" data-copy-field="entryPath" style="padding:1.5rem 1.2rem;background-color:#FAFAFA;border-bottom:1.5px solid #EEE"> [
 					<div class="dirEntryTop"> [
 						{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 						{{$s := index $.Entry.Property "status"}}
@@ -186,7 +186,7 @@
 							{{with $p := index $.Entry.Property $name}}
 							<div class="dirEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
-									<div class="infoTitle"> [
+									<div class="infoTitle statusSelector"> [
 										<div> [{{$p.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 									]
@@ -202,7 +202,7 @@
 							{{with $p := index $.Entry.Property $name}}
 							<div class="dirEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
-									<div class="infoTitle"> [
+									<div class="infoTitle statusSelector"> [
 										<div class="hiddenPropertyIcon"> []
 										<div> [{{$p.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
@@ -221,7 +221,7 @@
 									{{if eq $e.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
 									{{end}}
-									<div class="infoTitle" title="defined at {{$e.EntryPath}}"> [
+									<div class="infoTitle statusSelector" title="defined at {{$e.EntryPath}}"> [
 										<div> [{{$e.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $e.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $e.UpdatedAt}}"> []
 									]
@@ -238,7 +238,7 @@
 									{{if eq $a.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
 									{{end}}
-									<div class="infoTitle" title="defined at {{$a.EntryPath}}"> [
+									<div class="infoTitle statusSelector" title="defined at {{$a.EntryPath}}"> [
 										<div> [{{$a.Name}}]
 										<div class="recentlyUpdatedDot {{if not (recent $a.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $a.UpdatedAt}}"> []
 									]
@@ -530,7 +530,7 @@
 											{{with $p := index $ent.Property $name}}
 											<div class="subEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
 												<div class="subEntryInfoTop"> [
-													<div class="infoTitle copyable" data-copy-key="{{$name}}" data-copy-from=".subEntryInfo" data-copy-field="value"> [
+													<div class="infoTitle statusSelector copyable" data-copy-key="{{$name}}" data-copy-from=".subEntryInfo" data-copy-field="value"> [
 														<div> [{{$name}}]
 														<div class="recentlyUpdatedDot {{if not (recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts)}}invisible{{end}}" data-updated-at="{{formatTime $p.UpdatedAt}}"> []
 														<div style="flex:1;"> []
@@ -577,24 +577,6 @@
 			]
 			<div id="scrollToTop"> []
 			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:2;"> [
-				<div id="infoUpdater" class="infoModifier nodisplay"> [
-					<div class="infoModifierTopBar" style="background-color:#E0EEEE;"> [
-						<div class="entryLabel" style=""> []
-						<div class="closeButton" style="background-color:#BDD;"> [&#x2715]
-					]
-					<div style="display:flex;gap:0.5rem;padding:0.7rem;"> [
-						<div class="nameLabel" style="width:8rem;border:0;display:flex"> []
-						<form class="valueForm" action="/api/update-property" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-							<input name="path" class="entryInput" type="hidden"> []
-							<input name="name" class="nameInput" type="hidden"> []
-							<input name="ctg" class="categoryInput" type="hidden"> []
-							<input name="type" class="typeInput typeHolder" type="hidden"> []
-							<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
-							<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-							<button style="width:5rem"> [Update]
-						]
-					]
-				]
 				<div id="infoAdder" class="infoModifier nodisplay"> [
 					<div class="infoModifierTopBar" style="background-color:#F5E0E0;"> [
 						<div class="entryLabel" style=""> []
