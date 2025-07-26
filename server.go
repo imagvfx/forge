@@ -847,6 +847,14 @@ func (s *Server) DeleteUserData(ctx context.Context, user, section, key string) 
 	return nil
 }
 
+func (s *Server) UserRead(ctx context.Context, path string) error {
+	return s.svc.UserRead(ctx, path)
+}
+
+func (s *Server) UserWrite(ctx context.Context, path string) error {
+	return s.svc.UserWrite(ctx, path)
+}
+
 func (s *Server) AllGroups(ctx context.Context) ([]*Group, error) {
 	groups, err := s.svc.FindGroups(ctx, GroupFinder{})
 	if err != nil {

@@ -262,6 +262,14 @@ func (s *Service) DeleteUserData(ctx context.Context, user, section, key string)
 	return DeleteUserData(s.db, ctx, user, section, key)
 }
 
+func (s *Service) UserRead(ctx context.Context, path string) error {
+	return UserRead(s.db, ctx, path)
+}
+
+func (s *Service) UserWrite(ctx context.Context, path string) error {
+	return UserWrite(s.db, ctx, path)
+}
+
 func (s *Service) FindGroups(ctx context.Context, find forge.GroupFinder) ([]*forge.Group, error) {
 	return FindGroups(s.db, ctx, find)
 }

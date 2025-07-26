@@ -172,8 +172,19 @@ func userEnabled(tx *sql.Tx, ctx context.Context, user string) (bool, error) {
 	return enabled, nil
 }
 
-// userRead returns an error if the user cannot read the entry.
-// It returns forge.NotFound error when the context user doesn't have read permission.
+// UserRead simulates the context user read the path.
+// It returns nil if the path exists and the user can read the path.
+// It returns forge.NotFound error if the path is not exists or
+// the context user doesn't have read permission.
+func UserRead(db *sql.DB, ctx context.Context, path string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	return userRead(tx, ctx, path)
+}
+
 func userRead(tx *sql.Tx, ctx context.Context, path string) error {
 	user := forge.UserNameFromContext(ctx)
 	enabled, err := userEnabled(tx, ctx, user)
@@ -198,9 +209,20 @@ func userRead(tx *sql.Tx, ctx context.Context, path string) error {
 	return nil
 }
 
-// userWrite returns an error if the user cannot write the entry.
-// It returns forge.NotFound error when the context user doesn't have read permission or
-// returns forge.Unauthorized error when the context user doesn't have write permission.
+// UserWrite simulates the context user write to the path.
+// It returns nil if the path exists and the user can write to the path.
+// It returns forge.NotFound error if the path is not exists or
+// the context user doesn't have read permission.
+// It returns forge.Unauthorized error when the user doesn't have write permission.
+func UserWrite(db *sql.DB, ctx context.Context, path string) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	return userWrite(tx, ctx, path)
+}
+
 func userWrite(tx *sql.Tx, ctx context.Context, path string) error {
 	user := forge.UserNameFromContext(ctx)
 	enabled, err := userEnabled(tx, ctx, user)
