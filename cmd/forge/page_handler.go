@@ -74,6 +74,7 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 }
 
 func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	path := r.URL.Path
 	user := forge.UserNameFromContext(ctx)
 	u, err := h.server.GetUser(ctx, user)
 	if err != nil {
@@ -82,6 +83,16 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	isAdmin, err := h.server.IsAdmin(ctx, user)
 	if err != nil {
 		return err
+	}
+	userWritable := false
+	err = h.server.UserWrite(ctx, path)
+	if err != nil {
+		var e *forge.NotFoundError
+		if !errors.As(err, &e) {
+			return err
+		}
+	} else {
+		userWritable = true
 	}
 	setting, err := h.server.GetUserSetting(ctx, user)
 	if err != nil {
@@ -96,7 +107,6 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		// prevent nil dereference
 		pageSetting = &forge.UserDataSection{}
 	}
-	path := r.URL.Path
 	ent, err := h.server.GetEntry(ctx, path)
 	if err != nil {
 		return err
@@ -887,6 +897,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	recipe := struct {
 		User                     *forge.User
 		UserIsAdmin              bool
+		UserWritable             bool
 		UserSetting              *forge.UserSetting
 		PageSetting              *forge.UserDataSection
 		Entry                    *forge.Entry
@@ -924,6 +935,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	}{
 		User:                     u,
 		UserIsAdmin:              isAdmin,
+		UserWritable:             userWritable,
 		UserSetting:              setting,
 		PageSetting:              pageSetting,
 		Entry:                    ent,

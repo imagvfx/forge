@@ -123,7 +123,7 @@
 								<input id="renameInput" class="nodisplay" name="new-name" type="text" value="{{$.Entry.Name}}"> []
 							]
 							<label id="rename-display-toggle" class="item-box" style="cursor:pointer" onclick="toggleRenameInput()"> [Rename]
-							{{if $.UserIsAdmin}}
+							{{if $.UserWritable}}
 							{{if $.Entry.Archived}}
 							<form action="/api/unarchive-entry" method="post" onSubmit="return submitAPI(this);"> [
 								<input name="unarchive_entry" type="hidden" value="1"> []

@@ -784,12 +784,9 @@ func archiveEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if user == "" {
 		return forge.Unauthorized("context user unspecified")
 	}
-	admin, err := isAdmin(tx, ctx, user)
+	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
-	}
-	if !admin {
-		return forge.Unauthorized("user doesn't have permission: %v", user)
 	}
 	toks := strings.Split(path, "/")
 	if len(toks) != 2 {
@@ -838,12 +835,9 @@ func unarchiveEntry(tx *sql.Tx, ctx context.Context, path string) error {
 	if user == "" {
 		return forge.Unauthorized("context user unspecified")
 	}
-	admin, err := isAdmin(tx, ctx, user)
+	err := userWrite(tx, ctx, path)
 	if err != nil {
 		return err
-	}
-	if !admin {
-		return forge.Unauthorized("user doesn't have permission: %v", user)
 	}
 	toks := strings.Split(path, "/")
 	if len(toks) != 2 {
