@@ -87,8 +87,9 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 	userWritable := false
 	err = h.server.UserWrite(ctx, path)
 	if err != nil {
-		var e *forge.NotFoundError
-		if !errors.As(err, &e) {
+		var ne *forge.NotFoundError
+		var ue *forge.UnauthorizedError
+		if !errors.As(err, &ne) && !errors.As(err, &ue) {
 			return err
 		}
 	} else {
