@@ -1759,20 +1759,20 @@ window.onload = function() {
 		let label = document.getElementById("statusLabel");
 		labeler.onmouseenter = function(event) {
 			label.innerText = "";
+			let status = labeler.dataset.value;
+			if (status == "") {
+				status = "(none)";
+			}
+			label.innerText += status;
 			let assignee = labeler.dataset.assignee;
 			if (assignee != "") {
+				label.innerText += " / "
 				let called = CalledByName[assignee];
 				label.innerText += called;
 			}
-			label.innerText += " / "
-			let status = labeler.dataset.value;
-			if (status != "") {
-				// don't show '(none)' as it is too eye catch.
-				label.innerText += status;
-			}
 			let reviewer = labeler.dataset.reviewer;
 			if (reviewer != "") {
-				label.innerText += " ▸ " + reviewer;
+				label.innerText += "▸" + reviewer;
 			}
 			let due = labeler.dataset.due;
 			if (due != "") {
