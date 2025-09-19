@@ -467,7 +467,8 @@
 														{{if ne $idx -1}}
 														{{$gsName = slice $gsPath $idx (len $gsPath)}}
 														{{end}}
-														{{$assignee := ""}}{{with $p := index $gs.Property "assignee"}}{{$assignee = $p.Value}}{{end}}
+														{{$assignee := ""}}{{$called := ""}}
+														{{with $p := index $gs.Property "assignee"}}{{$assignee = $p.Value}}{{$called = $p.Eval}}{{end}}
 														{{$status := ""}}{{with $p := index $gs.Property "status"}}{{$status = $p.Value}}{{end}}
 														{{$reviewer := ""}}{{with $p := index $gs.Property "reviewer"}}{{$reviewer = $p.Value}}{{end}}
 														{{$due := ""}}{{with $p:= index $gs.Property "due"}}{{$due = $p.Value}}{{end}}
@@ -475,10 +476,12 @@
 														<div style="color:#aaa"> [+]
 														{{end}}
 														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} summaryLabeler statusSelector {{if ne $i 0}}nonDirect{{end}} grandSubEntry copyable" data-copy-key="{{$gsPath}} path" data-copy-field="entryPath" data-entry-path="{{$gs.Path}}" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}" data-assignee="{{$assignee}}" data-reviewer="{{$reviewer}}" data-due="{{$due}}"> [
-															{{$gsName}}{{with $reviewer}} ▸{{end}}
+															{{$gsName}}
 														]
 														<div class="gsInfo"> [
-															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> []
+															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> [{{$called}}]
+															<div class="reviewerLabel"> [{{with $reviewer}}▸{{$reviewer}}{{end}}]
+															<div style="flex:1"> []
 															{{if not (index $.EndStatus $gs.Type $status)}}
 															<div class="dueLabel" data-due="{{$due}}" title="{{$due}}"> []
 															{{end}}

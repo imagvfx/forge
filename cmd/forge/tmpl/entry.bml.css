@@ -1579,6 +1579,10 @@
 	text-decoration: 2px underline #ffbbbb;
 }
 
+.reviewerLabel {
+	word-break: keep-all;
+}
+
 .dueLabel {
 	font-size: 0.6rem;
 	padding: 0 2px;

@@ -2160,10 +2160,6 @@ window.onload = function() {
 			el.innerText = ddayForm(n);
 		}
 	}
-	let assigneeLabels = document.querySelectorAll(".assigneeLabel")
-	for (let el of assigneeLabels) {
-		el.innerText = CalledByName[el.dataset.assignee];
-	}
 	let scrollToTop = document.querySelector("#scrollToTop");
 	scrollToTop.onmouseenter = function() {
 		scrollToTop.classList.add("reveal");
