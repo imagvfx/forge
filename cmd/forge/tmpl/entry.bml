@@ -422,8 +422,10 @@
 												{{with $assignee := index $ent.Property "assignee"}}
 												<input class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
 												{{end}}
-												<span> []
+												{{$reviewer := ""}}{{with $p := index $ent.Property "reviewer"}}{{$reviewer = $p.Value}}{{end}}
+												<div class="reviewerLabel"> [{{with $reviewer}}▸{{$reviewer}}{{end}}]
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
+												<span style="flex:1;"> []
 												{{if not (index $.EndStatus $ent.Type $status)}}
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
 												<div class="dueLabel" data-due="{{$due.Value}}" title="{{$due.Value}}"> []
