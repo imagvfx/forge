@@ -1,5 +1,10 @@
 // html { filter: grayscale(100%) }
 
+[contenteditable="true"]:empty:before {
+   content: attr(placeholder);
+   color: #888;
+}
+
 .flexSpacer {
 	flex: 1;
 }
@@ -1102,7 +1107,7 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 1px;
-	font-size: 0.65rem;
+	font-size: 0.7rem;
 }
 
 .flexBreakLine {
@@ -1545,13 +1550,10 @@
 }
 
 .assigneeInput {
-	width: 0;
-	flex: 1;
-	box-sizing: border-box;
-	font-size: 0.65rem;
-	background-color: transparent;
-	border: 1px solid rgba(0, 0, 0, 0);
-	margin: -3px;
+	word-break: keep-all;
+	padding: 1px;
+	padding-right: 3px;
+	min-width: 0.2rem;
 }
 
 .assigneeInput.my {
@@ -1582,6 +1584,8 @@
 
 .reviewerLabel {
 	word-break: keep-all;
+	font-size: 0.9em;
+	color: #244;
 }
 
 .dueLabel {

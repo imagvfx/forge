@@ -635,6 +635,12 @@ window.onload = function() {
 					subEntArea.classList.remove("editMode");
 					removeClass(subEntArea, "lastClicked");
 					removeClass(subEntArea, "temporary");
+					// blur focus on assigneeInput
+					let edit = document.activeElement;
+					if (edit.contentEditable == "true") {
+						edit.blur();
+						edit.innerText = edit.dataset.oldValue;
+					}
 					printStatus("normal mode");
 					return;
 				}
@@ -755,9 +761,12 @@ window.onload = function() {
 		}
 		if (subEntArea.classList.contains("editMode")) {
 			// key binding for edit mode
+			// even in edit mode, text editing in user-editables shouldn't be interupted.
 			let userEditables = ["TEXTAREA", "INPUT"];
 			if (userEditables.includes(event.target.tagName)) {
-				// even in edit mode, text editing in user-editables shouldn't be interupted.
+				return;
+			}
+			if (event.target.contentEditable == "true") {
 				return;
 			}
 			if (ctrlPressed && event.code == "KeyA") {
@@ -1837,6 +1846,7 @@ window.onload = function() {
 		if (!called) {
 			called = "";
 		}
+		input.innerText = called;
 		input.value = called;
 		input.dataset.oldValue = called;
 		input.onfocus = function(event) {
@@ -1879,6 +1889,7 @@ window.onload = function() {
 					let inp = ent.getElementsByClassName("assigneeInput")[0];
 					inp.dataset.oldValue = called;
 					inp.value = called;
+					inp.innerText = called;
 				}
 			});
 		});
@@ -3098,6 +3109,9 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	let focus = -1;
 	let oninput = function(event) {
 		let search = input.value;
+		if (input.contentEditable == "true") {
+			search = input.innerText;
+		}
 		if (search == "") {
 			return;
 		}
@@ -3163,7 +3177,11 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 				activate(items, focus);
 			}
 		} else if (event.key == "Enter") {
-			if (input.value == "") {
+			let value = input.value;
+			if (input.contentEditable == "true") {
+				value = input.innerText;
+			}
+			if (value == "") {
 				oncomplete("");
 				return;
 			}

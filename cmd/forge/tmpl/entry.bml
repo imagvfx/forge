@@ -420,7 +420,7 @@
 											]
 											<div class="subInfoArea"> [
 												{{with $assignee := index $ent.Property "assignee"}}
-												<input class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> []
+												<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" value="{{$assignee.Eval}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> [{{$assignee.Eval}}]
 												{{end}}
 												{{$reviewer := ""}}{{with $p := index $ent.Property "reviewer"}}{{$reviewer = $p.Value}}{{end}}
 												<div class="reviewerLabel"> [{{with $reviewer}}▸{{$reviewer}}{{end}}]
