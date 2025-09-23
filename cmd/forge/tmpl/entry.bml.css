@@ -1566,8 +1566,10 @@
 	justify-content: space-between;
 	align-items: center;
 	font-size: 0.6rem;
-	margin-left: 0.3rem;
+	margin-left: 0.2rem;
 	color: #444;
+	gap: 0.1rem;
+	white-space: pre;
 }
 
 .detailView .gsInfo {

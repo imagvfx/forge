@@ -423,7 +423,7 @@
 												<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" value="{{$assignee.Eval}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> [{{$assignee.Eval}}]
 												{{end}}
 												{{$reviewer := ""}}{{with $p := index $ent.Property "reviewer"}}{{$reviewer = $p.Value}}{{end}}
-												<div class="reviewerLabel"> [{{with $reviewer}}▸{{$reviewer}}{{end}}]
+												<div class="reviewerLabel"> [{{with $reviewer}}▸ {{$reviewer}}{{end}}]
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
 												<span style="flex:1;"> []
 												{{if not (index $.EndStatus $ent.Type $status)}}
@@ -482,7 +482,7 @@
 														]
 														<div class="gsInfo"> [
 															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> [{{$called}}]
-															<div class="reviewerLabel"> [{{with $reviewer}}▸{{$reviewer}}{{end}}]
+															<div class="reviewerLabel"> [{{with $reviewer}}▸ {{$reviewer}}{{end}}]
 															<div style="flex:1"> []
 															{{if not (index $.EndStatus $gs.Type $status)}}
 															<div class="dueLabel" data-due="{{$due}}" title="{{$due}}"> []
