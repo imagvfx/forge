@@ -422,7 +422,7 @@
 												{{with $assignee := index $ent.Property "assignee"}}
 												<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" value="{{$assignee.Eval}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> [{{$assignee.Eval}}]
 												{{end}}
-												{{$reviewer := ""}}{{with $p := index $ent.Property "reviewer"}}{{$reviewer = $p.Value}}{{end}}
+												{{$reviewer := ""}}{{with $p := index $ent.Property "reviewer"}}{{$reviewer = $p.Eval}}{{end}}
 												<div class="reviewerLabel"> [{{with $reviewer}}▸ {{$reviewer}}{{end}}]
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
 												<span style="flex:1;"> []
@@ -472,7 +472,7 @@
 														{{$assignee := ""}}{{$called := ""}}
 														{{with $p := index $gs.Property "assignee"}}{{$assignee = $p.Value}}{{$called = $p.Eval}}{{end}}
 														{{$status := ""}}{{with $p := index $gs.Property "status"}}{{$status = $p.Value}}{{end}}
-														{{$reviewer := ""}}{{with $p := index $gs.Property "reviewer"}}{{$reviewer = $p.Value}}{{end}}
+														{{$reviewer := ""}}{{with $p := index $gs.Property "reviewer"}}{{$reviewer = $p.Eval}}{{end}}
 														{{$due := ""}}{{with $p:= index $gs.Property "due"}}{{$due = $p.Value}}{{end}}
 														{{if and false (ne $i 0)}}
 														<div style="color:#aaa"> [+]
