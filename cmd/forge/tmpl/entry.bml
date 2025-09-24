@@ -132,8 +132,6 @@
 								<label for="unarchiveEntryButton"> [Unarchive]
 							]
 							{{else}}
-							<!-- Backup isn't working well in when the entry is in archive. I might dig it one day. -->
-							<div id="backupAsExcelButton"> [Backup]
 							<form action="/api/archive-entry" method="post" onSubmit="return submitAPI(this);"> [
 								<input name="archive_entry" type="hidden" value="1"> []
 								<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
@@ -141,6 +139,7 @@
 								<label for="archiveEntryButton" style="cursor:pointer;"> [Archive]
 							]
 							{{end}}
+							<div id="backupAsExcelButton"> [Backup]
 							{{end}}
 						]
 					]
