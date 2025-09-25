@@ -3110,7 +3110,7 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	let oninput = function(event) {
 		let search = input.value;
 		if (input.contentEditable == "true") {
-			search = input.innerText;
+			search = input.innerText.trim();
 		}
 		if (search == "") {
 			return;
