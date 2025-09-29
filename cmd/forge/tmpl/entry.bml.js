@@ -1891,6 +1891,7 @@ window.onload = function() {
 					inp.value = called;
 					inp.innerText = called;
 				}
+				printStatus("done");
 			});
 		});
 	}
@@ -3111,6 +3112,7 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 		let search = input.value;
 		if (input.contentEditable == "true") {
 			search = input.innerText.trim();
+			input.value = search;
 		}
 		if (search == "") {
 			return;
@@ -3147,6 +3149,11 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 	}
 	// Don't set input.onkeydown, it will swipe default (typing characters) behavior of input.
 	let onkeydown = function(event) {
+		if (input.contentEditable == "true") {
+			if (event.key == "Enter") {
+				event.preventDefault();
+			}
+		}
 		if (event.key == "Control" || event.key == "Alt" || event.key == "Shift") {
 			return;
 		}
@@ -3178,9 +3185,6 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 			}
 		} else if (event.key == "Enter") {
 			let value = input.value;
-			if (input.contentEditable == "true") {
-				value = input.innerText;
-			}
 			if (value == "") {
 				oncomplete("");
 				return;
