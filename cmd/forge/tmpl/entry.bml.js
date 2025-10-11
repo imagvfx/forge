@@ -763,6 +763,18 @@ window.onload = function() {
 					}
 					nameInput.dataset.error = "";
 					nameInput.dataset.modified = "";
+					for (let path of paths) {
+						let data = new FormData();
+						data.append("path", path);
+						data.append("name", prop);
+						postForge("/api/get-property", data, function(p, err) {
+							if (err) {
+								printErrorStatus(err);
+								return;
+							}
+							refreshInfoValue(path, "property", prop, p);
+						});
+					}
 					printStatus("done");
 				});
 			}
@@ -3382,6 +3394,23 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 								}
 								dot.dataset.assignee = value;
 							}
+						}
+						// refresh info in the page.
+						for (let ent of selectedEnts) {
+							if (sub != "") {
+								continue;
+							}
+							let path = ent.dataset.entryPath;
+							let data = new FormData();
+							data.append("path", path);
+							data.append("name", prop);
+							postForge("/api/get-property", data, function(p, err) {
+								if (err) {
+									printErrorStatus(err);
+									return;
+								}
+								refreshInfoValue(path, "property", prop, p);
+							});
 						}
 					});
 				});
