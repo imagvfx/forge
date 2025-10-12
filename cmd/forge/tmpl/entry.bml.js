@@ -693,12 +693,8 @@ window.onload = function() {
 					}
 					paths.push(path);
 				}
-				if (ctg == "environ" || ctg == "access" || prop == "*environ" || prop == "*access") {
-					let updateCtg = ctg;
-					if (prop == "*environ" || prop == "*access") {
-						// special values for managing entry environ or access.
-						updateCtg = prop.slice(1);
-					}
+				if (prop == "*environ" || prop == "*access") {
+					let updateCtg = prop.slice(1);
 					let lines = valueInput.value.split("\n");
 					let modify = false;
 					for (let l of lines) {
@@ -755,7 +751,7 @@ window.onload = function() {
 				}
 				data.append("name", prop);
 				data.append("value", valueInput.value.trim());
-				postForge("/api/update-property", data, function(_, err) {
+				postForge("/api/update-"+ctg, data, function(_, err) {
 					if (err) {
 						nameInput.dataset.error = "1";
 						printErrorStatus(err);
@@ -767,12 +763,12 @@ window.onload = function() {
 						let data = new FormData();
 						data.append("path", path);
 						data.append("name", prop);
-						postForge("/api/get-property", data, function(p, err) {
+						postForge("/api/get-"+ctg, data, function(p, err) {
 							if (err) {
 								printErrorStatus(err);
 								return;
 							}
-							refreshInfoValue(path, "property", prop, p);
+							refreshInfoValue(path, ctg, prop, p);
 						});
 					}
 					printStatus("done");
@@ -3253,19 +3249,12 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 				printErrorStatus(err);
 				return;
 			}
-			let environs = [];
 			for (let e of envs) {
-				if (e.Name != prop) {
-					continue;
+				if (e.Name == prop) {
+					updateInputs("environ", e.Value);
+					break;
 				}
-				let l = e.Name + "=" + e.Value;
-				if (e.Path != path) {
-					l = "~" + l;
-				}
-				environs.push(l);
 			}
-			environs.sort();
-			updateInputs("environ", environs.join("\n"));
 			printStatus("done");
 		});
 		return;
@@ -3279,17 +3268,11 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 			}
 			let accessList = [];
 			for (let a of accs) {
-				if (a.Name != prop) {
-					continue;
+				if (a.Name == prop) {
+					updateInputs("access", a.Value);
+					break;
 				}
-				let l = a.Name + "=" + a.Value;
-				if (a.Path != path) {
-					l = "~" + l;
-				}
-				accessList.push(l);
 			}
-			accessList.sort();
-			updateInputs("access", accessList.join("\n"));
 			printStatus("done");
 		});
 		return;
