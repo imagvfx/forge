@@ -245,6 +245,7 @@ type Access struct {
 	Name      string
 	Type      string // Don't need when adding Access.
 	Value     string
+	Eval      string
 	RawValue  int
 	UpdatedAt time.Time
 }
@@ -255,6 +256,7 @@ func (p *Access) MarshalJSON() ([]byte, error) {
 		Name      string
 		Type      string
 		Value     string
+		Eval      string
 		RawValue  string
 		UpdatedAt time.Time
 	}{
@@ -262,6 +264,7 @@ func (p *Access) MarshalJSON() ([]byte, error) {
 		Name:      p.Name,
 		Type:      p.Type,
 		Value:     p.Value,
+		Eval:      p.Eval,
 		RawValue:  p.Value,
 		UpdatedAt: p.UpdatedAt,
 	}

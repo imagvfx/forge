@@ -155,6 +155,7 @@ func findAccessList(tx *sql.Tx, ctx context.Context, find forge.AccessFinder) ([
 		if a.RawValue == 1 {
 			a.Value = "rw"
 		}
+		a.Eval = a.Value
 		acss = append(acss, a)
 	}
 	return acss, nil
