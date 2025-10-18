@@ -3044,20 +3044,24 @@ function toggleUpdatePropertyPopup(sel) {
 	let offset = offsetFrom(sel, right);
 	let status = popup.querySelector(".selectStatusMenu");
 	let picker = popup.querySelector(".propertyPicker");
-	popup.style.left = String(offset.left - 6) + "px";
-	popup.style.top = String(offset.top + sel.offsetHeight + 4) + "px";
+	popup.style.left = String(offset.left) +"px";
+	popup.style.top = String(offset.top + sel.offsetHeight) + "px";
 	popup.insertBefore(status, picker); // default style
 	popup.classList.add("expose");
+	let value = popup.querySelector(".propertyPickerValue");
+	value.style.width = value.dataset.oldWidth;
 	// some times popup placed outside of window. prevent it.
-	if (popup.getBoundingClientRect().right > document.body.getBoundingClientRect().right) {
-		let left = popup.style.left;
-		popup.style.removeProperty("left");
-		popup.style.right = "20px";
+	let bodyRect = document.body.getBoundingClientRect();
+	let popupRect = popup.getBoundingClientRect();
+	let valueRect = value.getBoundingClientRect();
+	let bodyWidth = bodyRect.width - 30; // for left, right margin
+	if (popupRect.width > bodyWidth) {
+		let over = Math.floor(popupRect.width - bodyWidth);
+		value.style.width = String(valueRect.width - over) + "px";
 	}
-	if (popup.style.right) {
-		popup.insertBefore(picker, status);
-	} else {
-		popup.insertBefore(status, picker);
+	if (popupRect.right > bodyRect.right - 15) { // for right margin
+		popup.style.removeProperty("left");
+		popup.style.right = "15px";
 	}
 }
 
