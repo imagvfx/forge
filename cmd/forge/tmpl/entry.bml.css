@@ -1678,7 +1678,7 @@
 	display: none;
 	z-index: 1;
 	gap: 3px;
-	margin: 0.2em 0rem 0 -0.3rem;
+	margin: 0.2em 0rem 0 -0.35rem;
 }
 
 #updatePropertyPopup.expose {
