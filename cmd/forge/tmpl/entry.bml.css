@@ -1843,6 +1843,29 @@
 	background-color: white;
 }
 
+.propertyPickerUpdateButton {
+   position: absolute;
+   top: 0.2rem;
+   right: 2rem;
+   font-size: 0.7rem;
+   border: 1px solid #8883;
+   border-radius: 2px;
+   background-color: #ce909033;
+   color: #929899;
+   padding: 0.1rem;
+   cursor: pointer;
+}
+
+.propertyPickerUpdateButton:not(.expose) {
+   display: none;
+}
+
+.propertyPickerUpdateButton:hover {
+   border: 1px solid #BF8A25;
+   background-color: #EAA174;
+   color: white;
+}
+
 #statusLabel {
 	position: absolute;
 	border: 1px solid #AAAAAA;

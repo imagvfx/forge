@@ -473,6 +473,10 @@ window.onload = function() {
 							popup.classList.remove("expose");
 						});
 					}
+					let updateButton = event.target.closest(".propertyPickerUpdateButton");
+					if (updateButton != null) {
+						updateFromPropertyPicker();
+					}
 					let history = event.target.closest(".propertyPickerHistory");
 					if (history != null) {
 						let path = popup.dataset.entryPath;
@@ -660,131 +664,9 @@ window.onload = function() {
 		}
 		if (event.target.closest(".propertyPickerValue")) {
 			if ((ctrlPressed && event.code == "Enter") || event.code == "NumpadEnter") {
-				if (cleanAutoComplete != null) {
-					// autoComplete binded to the .propertyPickerValue input.
-					// It will do the job instead.
-					return;
-				}
-				let popupHandle = document.querySelector(".popupHandle");
-				let popup = event.target.closest("#updatePropertyPopup");
-				let nameInput = popup.querySelector(".propertyPickerName");
-				let valueInput = popup.querySelector(".propertyPickerValue");
-				let ctg = nameInput.dataset.category;
-				let prop = nameInput.value.trim();
-				if (ctg == "" || prop == "") {
-					return;
-				}
-				let mainDiv = document.querySelector(".main");
-				let entPath = popup.dataset.entryPath;
-				let sub = popup.dataset.sub;
-				let selEnts = selectedEntries();
-				if (selEnts.length == 0) {
-					let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
-					selEnts = [thisEnt];
-				}
-
-				let paths = [];
-				for (let ent of selEnts) {
-					let path = ent.dataset.entryPath;
-					if (sub != "") {
-						if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
-							continue
-						}
-						path += "/" + sub;
-					}
-					paths.push(path);
-				}
-				if (prop == "*environ" || prop == "*access") {
-					let updateCtg = prop.slice(1);
-					let lines = valueInput.value.split("\n");
-					let modify = false;
-					for (let l of lines) {
-						l = l.trim();
-						let prefix = l.slice(0, 1);
-						if (prefix != "+" && prefix != "-") {
-							continue
-						}
-						modify = true;
-
-						let keyVal = l.slice(1);
-						keyVal = keyVal.trim();
-						let idx = keyVal.indexOf("=");
-						if (idx < 0) {
-							printErrorStatus("unexpected line: "  + l);
-							break;
-						}
-						let key = keyVal.slice(0, idx).trim();
-						let val = keyVal.slice(idx+1).trim();
-
-						let data = new FormData();
-						for (let path of paths) {
-							data.append("path", path);
-						}
-						data.append("name", key);
-						let api = "";
-						if (prefix == "+") {
-							api = "/api/add-or-update-" + updateCtg;
-							data.append("value", val);
-						} else if (prefix == "-") {
-							api = "/api/delete-" + updateCtg;
-							data.append("generous", "1");
-						}
-						postForge(api, data, function(err) {
-							if (err) {
-								nameInput.dataset.error = "1";
-								printErrorStatus(err);
-								return;
-							}
-							if (popupHandle.classList.contains("infoTitle")) {
-								popup.classList.remove("expose");
-								popupHandle.classList.remove("popupHandle");
-							} else {
-								reloadPropertyPicker(popup, ctg, prop, false);
-							}
-							printStatus("done");
-						});
-					}
-					if (!modify) {
-						printStatus("nothing to do");
-					}
-					return;
-				}
-				let data = new FormData();
-				for (let path of paths) {
-					data.append("path", path);
-				}
-				data.append("name", prop);
-				data.append("value", valueInput.value.trim());
-				postForge("/api/update-"+ctg, data, function(_, err) {
-					if (err) {
-						nameInput.dataset.error = "1";
-						printErrorStatus(err);
-						return;
-					}
-					nameInput.dataset.error = "";
-					nameInput.dataset.modified = "";
-					for (let path of paths) {
-						let data = new FormData();
-						data.append("path", path);
-						data.append("name", prop);
-						postForge("/api/get-"+ctg, data, function(p, err) {
-							if (err) {
-								printErrorStatus(err);
-								return;
-							}
-							refreshInfoValue(path, ctg, prop, p);
-						});
-					}
-					if (popupHandle.classList.contains("infoTitle")) {
-						popup.classList.remove("expose");
-						popupHandle.classList.remove("popupHandle");
-					} else {
-						reloadPropertyPicker(popup, ctg, prop, false);
-					}
-					printStatus("done");
-				});
+				updateFromPropertyPicker();
+				return;
 			}
-			return;
 		}
 		if (subEntArea.classList.contains("editMode")) {
 			// key binding for edit mode
@@ -1113,6 +995,8 @@ window.onload = function() {
 			let nameInput = popup.querySelector(".propertyPickerName");
 			nameInput.dataset.error = "";
 			nameInput.dataset.modified = "1";
+			let updateButton = popup.querySelector(".propertyPickerUpdateButton");
+			updateButton.classList.add("expose");
 		}
 	}
 	let searchTypeSelect = document.querySelector("#searchTypeSelect");
@@ -2542,6 +2426,132 @@ function resizeTextArea(textarea) {
 	textarea.style.height = String(textarea.scrollHeight) + "px";
 }
 
+function updateFromPropertyPicker() {
+	if (cleanAutoComplete != null) {
+		// autoComplete binded to the .propertyPickerValue input.
+		// It will do the job instead.
+		return;
+	}
+	let popupHandle = document.querySelector(".popupHandle");
+	let popup = event.target.closest("#updatePropertyPopup");
+	let nameInput = popup.querySelector(".propertyPickerName");
+	let valueInput = popup.querySelector(".propertyPickerValue");
+	let ctg = nameInput.dataset.category;
+	let prop = nameInput.value.trim();
+	if (ctg == "" || prop == "") {
+		return;
+	}
+	let mainDiv = document.querySelector(".main");
+	let entPath = popup.dataset.entryPath;
+	let sub = popup.dataset.sub;
+	let selEnts = selectedEntries();
+	if (selEnts.length == 0) {
+		let thisEnt = document.querySelector(`.entry[data-entry-path="${popup.dataset.entryPath}"]`);
+		selEnts = [thisEnt];
+	}
+
+	let paths = [];
+	for (let ent of selEnts) {
+		let path = ent.dataset.entryPath;
+		if (sub != "") {
+			if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
+				continue
+			}
+			path += "/" + sub;
+		}
+		paths.push(path);
+	}
+	if (prop == "*environ" || prop == "*access") {
+		let updateCtg = prop.slice(1);
+		let lines = valueInput.value.split("\n");
+		let modify = false;
+		for (let l of lines) {
+			l = l.trim();
+			let prefix = l.slice(0, 1);
+			if (prefix != "+" && prefix != "-") {
+				continue
+			}
+			modify = true;
+
+			let keyVal = l.slice(1);
+			keyVal = keyVal.trim();
+			let idx = keyVal.indexOf("=");
+			if (idx < 0) {
+				printErrorStatus("unexpected line: "  + l);
+				break;
+			}
+			let key = keyVal.slice(0, idx).trim();
+			let val = keyVal.slice(idx+1).trim();
+
+			let data = new FormData();
+			for (let path of paths) {
+				data.append("path", path);
+			}
+			data.append("name", key);
+			let api = "";
+			if (prefix == "+") {
+				api = "/api/add-or-update-" + updateCtg;
+				data.append("value", val);
+			} else if (prefix == "-") {
+				api = "/api/delete-" + updateCtg;
+				data.append("generous", "1");
+			}
+			postForge(api, data, function(err) {
+				if (err) {
+					nameInput.dataset.error = "1";
+					printErrorStatus(err);
+					return;
+				}
+				if (popupHandle.classList.contains("infoTitle")) {
+					popup.classList.remove("expose");
+					popupHandle.classList.remove("popupHandle");
+				} else {
+					reloadPropertyPicker(popup, ctg, prop, false);
+				}
+				printStatus("done");
+			});
+		}
+		if (!modify) {
+			printStatus("nothing to do");
+		}
+		return;
+	}
+	let data = new FormData();
+	for (let path of paths) {
+		data.append("path", path);
+	}
+	data.append("name", prop);
+	data.append("value", valueInput.value.trim());
+	postForge("/api/update-"+ctg, data, function(_, err) {
+		if (err) {
+			nameInput.dataset.error = "1";
+			printErrorStatus(err);
+			return;
+		}
+		nameInput.dataset.error = "";
+		nameInput.dataset.modified = "";
+		for (let path of paths) {
+			let data = new FormData();
+			data.append("path", path);
+			data.append("name", prop);
+			postForge("/api/get-"+ctg, data, function(p, err) {
+				if (err) {
+					printErrorStatus(err);
+					return;
+				}
+				refreshInfoValue(path, ctg, prop, p);
+			});
+		}
+		if (popupHandle.classList.contains("infoTitle")) {
+			popup.classList.remove("expose");
+			popupHandle.classList.remove("popupHandle");
+		} else {
+			reloadPropertyPicker(popup, ctg, prop, false);
+		}
+		printStatus("done");
+	});
+}
+
 function submitUpdaterOrAdder(ev, input) {
 	ev.stopPropagation();
 	ev.preventDefault();
@@ -3228,6 +3238,7 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 	let nameInput = popup.querySelector(".propertyPickerName");
 	let valueInput = popup.querySelector(".propertyPickerValue");
 	let history = popup.querySelector(".propertyPickerHistory");
+	let updateButton = popup.querySelector(".propertyPickerUpdateButton");
 	nameInput.dataset.category = ctg;
 	nameInput.dataset.value = prop;
 	if (prop == "") {
@@ -3244,6 +3255,7 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 		nameInput.disabled = false;
 	}
 	valueInput.disabled = "";
+	updateButton.classList.remove("expose");
 	history.classList.remove("hidden");
 	let mainDiv = document.querySelector(".main");
 	let entPath = popup.dataset.entryPath;
