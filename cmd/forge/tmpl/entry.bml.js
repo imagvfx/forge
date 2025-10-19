@@ -3037,6 +3037,12 @@ function toggleUpdatePropertyPopup(sel) {
 	}
 	select.dataset.building = "";
 	reloadPropertyPicker(popup, ctg, prop, forceProp);
+	if (forceProp) {
+		let pickerValue = popup.querySelector(".propertyPickerValue");
+		setTimeout(function() {
+			pickerValue.focus();
+		}, 0);
+	}
 
 	// slight adjust of the popup position to make statusDots aligned.
 	popup.style.removeProperty("right");
