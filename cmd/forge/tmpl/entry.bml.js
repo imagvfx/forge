@@ -665,6 +665,7 @@ window.onload = function() {
 					// It will do the job instead.
 					return;
 				}
+				let popupHandle = document.querySelector(".popupHandle");
 				let popup = event.target.closest("#updatePropertyPopup");
 				let nameInput = popup.querySelector(".propertyPickerName");
 				let valueInput = popup.querySelector(".propertyPickerValue");
@@ -734,9 +735,12 @@ window.onload = function() {
 								printErrorStatus(err);
 								return;
 							}
-							nameInput.dataset.error = "";
-							nameInput.dataset.modified = "";
-							reloadPropertyPicker(popup, ctg, prop, false);
+							if (popupHandle.classList.contains("infoTitle")) {
+								popup.classList.remove("expose");
+								popupHandle.classList.remove("popupHandle");
+							} else {
+								reloadPropertyPicker(popup, ctg, prop, false);
+							}
 							printStatus("done");
 						});
 					}
@@ -770,6 +774,12 @@ window.onload = function() {
 							}
 							refreshInfoValue(path, ctg, prop, p);
 						});
+					}
+					if (popupHandle.classList.contains("infoTitle")) {
+						popup.classList.remove("expose");
+						popupHandle.classList.remove("popupHandle");
+					} else {
+						reloadPropertyPicker(popup, ctg, prop, false);
 					}
 					printStatus("done");
 				});
