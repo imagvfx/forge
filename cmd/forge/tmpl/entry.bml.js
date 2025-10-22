@@ -3240,6 +3240,7 @@ function autoComplete(input, labels, vals, menuAt, oncomplete) {
 let cleanAutoComplete = null;
 
 function reloadPropertyPicker(popup, ctg, prop, forceProp) {
+	let popupHandle = document.querySelector(".popupHandle");
 	let nameInput = popup.querySelector(".propertyPickerName");
 	let valueInput = popup.querySelector(".propertyPickerValue");
 	let history = popup.querySelector(".propertyPickerHistory");
@@ -3403,9 +3404,6 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 							printErrorStatus(err);
 							return;
 						}
-						valueInput.value = CalledByName[value];
-						nameInput.dataset.error = "";
-						nameInput.dataset.modified = "";
 						if (nameInput.dataset.value == "assignee" && popup.dataset.sub != "") {
 							for (let ent of selectedEnts) {
 								let dot = ent.querySelector(`.statusSelector[data-sub="${popup.dataset.sub}"]`);
@@ -3431,6 +3429,12 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 								}
 								refreshInfoValue(path, "property", prop, p);
 							});
+						}
+						if (popupHandle.classList.contains("infoTitle")) {
+							popup.classList.remove("expose");
+							popupHandle.classList.remove("popupHandle");
+						} else {
+							reloadPropertyPicker(popup, ctg, prop, false);
 						}
 					});
 				});
