@@ -1635,29 +1635,33 @@ window.onload = function() {
 			}
 		}
 		let popup = document.querySelector("#updatePropertyPopup");
-		popup.onmouseup = function(event) {
-			let pickedPropertyInput = document.querySelector(".propertyPickerValue");
-			if (pickedPropertyInput.dataset.resized != "") {
-				pickedPropertyInput.dataset.resized = "";
-				let width = pickedPropertyInput.style.width;
-				let height = pickedPropertyInput.style.height;
-				if (pickedPropertyInput.dataset.oldWidth != width || pickedPropertyInput.dataset.oldHeight != height) {
-					pickedPropertyInput.dataset.oldWidth = width;
-					pickedPropertyInput.dataset.oldHeight = height;
-					let w = width.slice(0, -2);
-					let h = height.slice(0, -2);
-					let size = w + "x" + h;
-					let data = new FormData();
-					data.append("update_picked_property_input_size", size);
-					data.append("size", size);
-					postForge("/api/update-user-setting", data, function(_, err) {
-						if (err) {
-							printErrorStatus(err);
-							return;
-						}
-					});
-				}
+		let pickedPropertyInput = document.querySelector(".propertyPickerValue");
+		pickedPropertyInput.onmousedown = function(event) {
+			let rect = pickedPropertyInput.getBoundingClientRect();
+			pickedPropertyInput.dataset.width = rect.width + "px";
+			pickedPropertyInput.dataset.height = rect.height + "px";
+		}
+		pickedPropertyInput.onmouseup = function(event) {
+			let rect = pickedPropertyInput.getBoundingClientRect();
+			let width = rect.width + "px";
+			let height = rect.height + "px";
+			if (pickedPropertyInput.dataset.width == width && pickedPropertyInput.dataset.height == height) {
+				return;
 			}
+			pickedPropertyInput.dataset.oldWidth = width;
+			pickedPropertyInput.dataset.oldHeight = height;
+			let w = width.slice(0, -2);
+			let h = height.slice(0, -2);
+			let size = w + "x" + h;
+			let data = new FormData();
+			data.append("update_picked_property_input_size", size);
+			data.append("size", size);
+			postForge("/api/update-user-setting", data, function(_, err) {
+				if (err) {
+					printErrorStatus(err);
+					return;
+				}
+			});
 		}
 	}
 	let statusLabelers = document.getElementsByClassName("statusLabeler");
@@ -2048,11 +2052,6 @@ window.onload = function() {
 		}
 		titleRecentlyUpdatedDot(dot);
 	}
-	let pickedPropertyInput = document.querySelector(".propertyPickerValue");
-	let resize = new ResizeObserver(function (entries) {
-		pickedPropertyInput.dataset.resized = 1;
-	});
-	resize.observe(pickedPropertyInput);
 	let dueLabels = document.querySelectorAll(".dueLabel")
 	for (let el of dueLabels) {
 		let due = el.dataset.due;
