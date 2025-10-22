@@ -2434,6 +2434,12 @@ function updateFromPropertyPicker() {
 	let popupHandle = document.querySelector(".popupHandle");
 	let popup = event.target.closest("#updatePropertyPopup");
 	let nameInput = popup.querySelector(".propertyPickerName");
+	if (!nameInput.dataset.modified) {
+		// updatePropertyPopup often exposed before propertyPickerValue has updated. (which I should fix)
+		// prevent accidental update using previous info data.
+		printErrorStatus("info not modified");
+		return;
+	}
 	let valueInput = popup.querySelector(".propertyPickerValue");
 	let ctg = nameInput.dataset.category;
 	let prop = nameInput.value.trim();
