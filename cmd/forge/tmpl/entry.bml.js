@@ -2973,6 +2973,8 @@ let LastPickedProperty = {
 
 // toggleUpdatePropertyPopup opens or closes updatePropertyPopup.
 function toggleUpdatePropertyPopup(sel) {
+	let forceProp = sel.classList.contains("infoTitle");
+	let onWriting = false;
 	let popup = document.querySelector("#updatePropertyPopup");
 	let popupHandle = document.querySelector(".popupHandle");
 	if (popupHandle) {
@@ -2986,89 +2988,96 @@ function toggleUpdatePropertyPopup(sel) {
 		}
 	}
 	sel.classList.add("popupHandle");
-	let selEnt = sel.closest(".entry");
-	let entPath = selEnt.dataset.entryPath;
-	let ent = selEnt;
-	let sub = "";
-	let grandSubEnt = sel.closest(".grandSubEntry");
-	if (grandSubEnt) {
-		ent = grandSubEnt;
-		sub = ent.dataset.sub;
-	}
-	let ctg = "property";
-	let prop = LastPickedProperty[ent.dataset.entryType];
-	let withStatus = false;
-	let forceProp = false;
-	let info = sel.closest(".info");
-	if (info) {
-		ctg = info.dataset.category;
-		prop = info.dataset.name;
-		forceProp = true;
+	let lastPopupHandle = document.querySelector(".lastPopupHandle");
+	if (sel == lastPopupHandle) {
+		onWriting = true;
 	} else {
-		withStatus = true;
-	}
-	// recalcuate popup
-	popup.dataset.entryPath = entPath;
-	popup.dataset.sub = sub;
-	// reset inner elements
-	popup.dataset.entryType = ent.dataset.entryType;
-	let menu = popup.querySelector(".selectStatusMenu");
-	menu.innerHTML = "";
-	menu.classList.add("hidden");
-	if (withStatus) {
-		let stats = PossibleStatus[ent.dataset.entryType];
-		if (stats.length != 0) {
-			for (let s of stats) {
-				let item = document.createElement("div");
-				item.dataset.value = s;
-				item.classList.add("selectStatusMenuItem");
-				let dot = document.createElement("div");
-				dot.classList.add("selectStatusMenuItemDot");
-				dot.classList.add("statusDot");
-				dot.dataset.entryType = ent.dataset.entryType;
-				dot.dataset.value = s;
-				let val = document.createElement("div");
-				val.classList.add("selectStatusMenuItemValue");
-				let t = s;
-				if (s == "") {
-					t = "(none)";
-					val.style.color = "#888888";
+		// refresh contents
+		if (lastPopupHandle) {
+			lastPopupHandle.classList.remove("lastPopupHandle");
+		}
+		sel.classList.add("popupHandle");
+		sel.classList.add("lastPopupHandle");
+		let selEnt = sel.closest(".entry");
+		let entPath = selEnt.dataset.entryPath;
+		let ent = selEnt;
+		let sub = "";
+		let grandSubEnt = sel.closest(".grandSubEntry");
+		if (grandSubEnt) {
+			ent = grandSubEnt;
+			sub = ent.dataset.sub;
+		}
+		let ctg = "property";
+		let prop = LastPickedProperty[ent.dataset.entryType];
+		let withStatus = false;
+		let info = sel.closest(".info");
+		if (info) {
+			ctg = info.dataset.category;
+			prop = info.dataset.name;
+		} else {
+			withStatus = true;
+		}
+		popup.dataset.entryPath = entPath;
+		popup.dataset.sub = sub;
+		// reset inner elements
+		popup.dataset.entryType = ent.dataset.entryType;
+		let menu = popup.querySelector(".selectStatusMenu");
+		menu.innerHTML = "";
+		menu.classList.add("hidden");
+		if (withStatus) {
+			let stats = PossibleStatus[ent.dataset.entryType];
+			if (stats.length != 0) {
+				for (let s of stats) {
+					let item = document.createElement("div");
+					item.dataset.value = s;
+					item.classList.add("selectStatusMenuItem");
+					let dot = document.createElement("div");
+					dot.classList.add("selectStatusMenuItemDot");
+					dot.classList.add("statusDot");
+					dot.dataset.entryType = ent.dataset.entryType;
+					dot.dataset.value = s;
+					let val = document.createElement("div");
+					val.classList.add("selectStatusMenuItemValue");
+					let t = s;
+					if (s == "") {
+						t = "(none)";
+						val.style.color = "#888888";
+					}
+					val.innerText = t;
+					item.appendChild(dot);
+					item.appendChild(val);
+					menu.appendChild(item);
 				}
-				val.innerText = t;
-				item.appendChild(dot);
-				item.appendChild(val);
-				menu.appendChild(item);
+				menu.classList.remove("hidden");
 			}
-			menu.classList.remove("hidden");
 		}
-	}
-	let select = popup.querySelector(".propertyPickerName");
-	select.dataset.building = "1";
-	select.innerHTML = "";
-	let props = Properties[ent.dataset.entryType].slice();
-	if (forceProp && !props.includes(prop)) {
-		props.push(prop)
-	}
-	props.push("*environ", "*access");
-	for (let p of props) {
-		let opt = document.createElement("option");
-		opt.value = p;
-		let t = p || ">";
-		opt.innerText = t;
-		if (p == prop) {
-			opt.selected = true;
+		let select = popup.querySelector(".propertyPickerName");
+		select.dataset.building = "1";
+		select.innerHTML = "";
+		let props = Properties[ent.dataset.entryType].slice();
+		if (!props.includes(prop)) {
+			props.push(prop)
 		}
-		select.appendChild(opt);
+		props.push("*environ", "*access");
+		for (let p of props) {
+			let opt = document.createElement("option");
+			opt.value = p;
+			let t = p || ">";
+			opt.innerText = t;
+			if (p == prop) {
+				opt.selected = true;
+			}
+			select.appendChild(opt);
+		}
+		select.dataset.building = "";
+		reloadPropertyPicker(popup, ctg, prop, forceProp);
 	}
-	select.dataset.building = "";
-	reloadPropertyPicker(popup, ctg, prop, forceProp);
-	if (forceProp) {
+	if (onWriting || forceProp) {
 		let pickerValue = popup.querySelector(".propertyPickerValue");
 		setTimeout(function() {
 			pickerValue.focus();
 		}, 0);
 	}
-
 	// slight adjust of the popup position to make statusDots aligned.
 	popup.style.removeProperty("right");
 	let right = sel.closest(".right");
