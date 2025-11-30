@@ -607,6 +607,15 @@ func expandValueForDate(tx *sql.Tx, ctx context.Context, v, cmp string) (string,
 			return day.Format("2006/01/02"), true
 		}
 		sign := v[0]
+		if v == "0" {
+			sign = '+'
+			v = "+0"
+		} else if v[len(v)-1] == 'd' {
+			if sign != '+' && sign != '-' {
+				sign = '+'
+				v = string(sign) + v[:len(v)-1]
+			}
+		}
 		if sign != '+' && sign != '-' {
 			return v, false
 		}
@@ -628,7 +637,7 @@ func expandValueForDate(tx *sql.Tx, ctx context.Context, v, cmp string) (string,
 		}
 		return date.Format("2006/01/02"), true
 	}
-	if !strings.HasPrefix(v, "+") && !strings.HasPrefix(v, "-") && !strings.HasPrefix(v, "..") {
+	if v != "0" && !strings.HasPrefix(v, "+") && !strings.HasPrefix(v, "-") && !strings.Contains(v, "..") && !strings.HasSuffix(v, "d") {
 		if cmp != "=" && cmp != "!=" && cmp != ":" && cmp != "!:" {
 			// dateRest fills rest date when user put imcomplete yy or yy/mm format
 			// date <  2024  <=  date <  2024/00/00
