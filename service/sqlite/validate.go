@@ -278,6 +278,12 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		fromToday = true
 		val = val[1:]
 	}
+	if val == "0" {
+		t := time.Now().Local()
+		p.Value = t.Format("2006/01/02")
+		p.RawValue = p.Value
+		return nil
+	}
 	possiblePrefix := rune(val[0])
 	if possiblePrefix == '+' || possiblePrefix == '-' {
 		day, err := strconv.Atoi(val[1:])
