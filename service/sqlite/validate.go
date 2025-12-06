@@ -302,8 +302,9 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 			}
 		} else {
 			if !fromToday {
-				// don't have reference date
-				p.RawValue = ""
+				t := time.Now().Local()
+				p.Value = t.Format("2006/01/02")
+				p.RawValue = p.Value
 				return nil
 			}
 			t = time.Now().Local()
