@@ -2527,7 +2527,13 @@ function updateFromPropertyPicker() {
 	}
 	data.append("name", prop);
 	data.append("value", valueInput.value.trim());
-	postForge("/api/update-"+ctg, data, function(_, err) {
+	let url = "/api/update-" + ctg;
+	if (ctg == "environ" || ctg == "access") {
+		// the environ could be inherited.
+		// update should add the info to the entry in that case.
+		url = "/api/add-or-update-" + ctg;
+	}
+	postForge(url, data, function(_, err) {
 		if (err) {
 			nameInput.dataset.error = "1";
 			printErrorStatus(err);
