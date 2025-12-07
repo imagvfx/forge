@@ -267,6 +267,62 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 				q := "(entries.id " + not + " IN (SELECT entries.parent_id FROM entries WHERE entries.parent_id IS NOT NULL))"
 				queries = append(queries, q)
 			}
+		} else if key == "updated" {
+			wh.Exact = true // there will be too many results if we allow in-exact search.
+			for _, v := range wh.Values() {
+				q, vs := func() (string, []any) {
+					if wh.Exclude {
+						// there will be too many results.
+						return "FALSE", nil
+					}
+					if wh.Cmp == "<" || wh.Cmp == "<=" || wh.Cmp == ">" || wh.Cmp == ">=" {
+						ds, de := expandValueForDate(tx, ctx, v, wh.Cmp)
+						if de != "" {
+							// date range not suitable for these comparison types
+							return "FALSE", nil
+						}
+						ts, err := time.Parse("2006/01/02", ds)
+						if err != nil {
+							return "FALSE", nil
+						}
+						if wh.Cmp == ">" {
+							// for example, updated>-1 should be treated as updated>=0.
+							// without this, updated>-1 will search everything updated the previous day.
+							wh.Cmp = ">="
+							ts = ts.Add(24 * time.Hour)
+						}
+						if wh.Cmp == "<=" {
+							// updated<=0 should be able to search updates made today.
+							wh.Cmp = "<"
+							ts = ts.Add(24 * time.Hour)
+						}
+						q := "properties.updated_at " + wh.Cmp + " ?"
+						return q, []any{ts}
+					} else {
+						ds, de := expandValueForDate(tx, ctx, v, wh.Cmp)
+						ts, err := time.Parse("2006/01/02", ds)
+						if err != nil {
+							return "FALSE", nil
+						}
+						if de == "" {
+							// value of updated_at is an exact time, but search cannot be worked that way.
+							// define start and end of the day.
+							te := ts.Add(24 * time.Hour)
+							q := "properties.updated_at >= ? AND properties.updated_at < ?"
+							return q, []any{ts, te}
+						}
+						te, err := time.Parse("2006/01/02", de)
+						if err != nil {
+							return "FALSE", nil
+						}
+						te = te.Add(24 * time.Hour)
+						q := "properties.updated_at >= ? AND properties.updated_at < ?"
+						return q, []any{ts, te}
+					}
+				}()
+				queries = append(queries, q)
+				queryVals = append(queryVals, vs...)
+			}
 		} else {
 			q := fmt.Sprintf("(default_properties.name=? AND ")
 			queryVals = append(queryVals, key)
