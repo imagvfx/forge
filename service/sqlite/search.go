@@ -611,9 +611,10 @@ func expandValueForDate(tx *sql.Tx, ctx context.Context, v, cmp string) (string,
 			sign = '+'
 			v = "+0"
 		} else if v[len(v)-1] == 'd' {
+			v = v[:len(v)-1]
 			if sign != '+' && sign != '-' {
 				sign = '+'
-				v = string(sign) + v[:len(v)-1]
+				v = string(sign) + v
 			}
 		}
 		if sign != '+' && sign != '-' {
