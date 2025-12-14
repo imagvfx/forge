@@ -272,12 +272,7 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		return nil
 	}
 	// if the value starts with + or -, it will change the current date
-	fromToday := false
 	val := p.Value
-	if rune(val[0]) == '=' {
-		fromToday = true
-		val = val[1:]
-	}
 	if val == "0" {
 		t := time.Now().Local()
 		p.Value = t.Format("2006/01/02")
@@ -293,21 +288,13 @@ func validateDate(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		if possiblePrefix == '-' {
 			day *= -1
 		}
-		var t time.Time
+		t := time.Now().Local()
 		if old.Value != "" {
 			var err error
 			t, err = time.Parse("2006/01/02", old.Value)
 			if err != nil {
 				return fmt.Errorf("invalid date string: %v", err)
 			}
-		} else {
-			if !fromToday {
-				t := time.Now().Local()
-				p.Value = t.Format("2006/01/02")
-				p.RawValue = p.Value
-				return nil
-			}
-			t = time.Now().Local()
 		}
 		t = t.AddDate(0, 0, day)
 		p.Value = t.Format("2006/01/02")
