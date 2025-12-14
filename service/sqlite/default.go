@@ -419,6 +419,9 @@ func AddDefault(db *sql.DB, ctx context.Context, d *forge.Default) error {
 }
 
 func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
+	if d.Name == "" {
+		return fmt.Errorf("default property name not specified")
+	}
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -471,6 +474,9 @@ func addDefaultProperty(tx *sql.Tx, ctx context.Context, d *forge.Default) error
 }
 
 func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
+	if d.Name == "" {
+		return fmt.Errorf("default environ name not specified")
+	}
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -523,6 +529,9 @@ func addDefaultEnviron(tx *sql.Tx, ctx context.Context, d *forge.Default) error 
 }
 
 func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
+	if d.Name == "" {
+		return fmt.Errorf("default access name not specified")
+	}
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -594,6 +603,9 @@ func addDefaultAccess(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
 }
 
 func addDefaultSubEntry(tx *sql.Tx, ctx context.Context, d *forge.Default) error {
+	if d.Name == "" {
+		return fmt.Errorf("default sub-entry name not specified")
+	}
 	typeID, err := getEntryTypeID(tx, ctx, d.EntryType)
 	if err != nil {
 		return err
@@ -684,6 +696,9 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 	keys := make([]string, 0)
 	vals := make([]any, 0)
 	if upd.NewName != nil {
+		if *upd.NewName == "" {
+			return fmt.Errorf("new name of default property not specified")
+		}
 		keys = append(keys, "name=?")
 		vals = append(vals, *upd.NewName)
 	}
@@ -739,6 +754,13 @@ func updateDefaultProperty(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpd
 func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]any, 0)
+	if upd.NewName != nil {
+		if *upd.NewName == "" {
+			return fmt.Errorf("new name of default environ not specified")
+		}
+		keys = append(keys, "name=?")
+		vals = append(vals, *upd.NewName)
+	}
 	if upd.Type != nil {
 		keys = append(keys, "type=?")
 		vals = append(vals, *upd.Type)
@@ -812,6 +834,13 @@ func updateDefaultEnviron(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpda
 func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]any, 0)
+	if upd.NewName != nil {
+		if *upd.NewName == "" {
+			return fmt.Errorf("new name of default access not specified")
+		}
+		keys = append(keys, "name=?")
+		vals = append(vals, *upd.NewName)
+	}
 	if upd.Type != nil {
 		return fmt.Errorf("cannot change default accessor type")
 	}
@@ -852,6 +881,13 @@ func updateDefaultAccess(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdat
 func updateDefaultSubEntry(tx *sql.Tx, ctx context.Context, upd forge.DefaultUpdater) error {
 	keys := make([]string, 0)
 	vals := make([]any, 0)
+	if upd.NewName != nil {
+		if *upd.NewName == "" {
+			return fmt.Errorf("new name of default sub-entry not specified")
+		}
+		keys = append(keys, "name=?")
+		vals = append(vals, *upd.NewName)
+	}
 	if upd.Type != nil {
 		keys = append(keys, "sub_entry_type_id=?")
 		subTypeID, err := getEntryTypeID(tx, ctx, *upd.Type)
