@@ -1474,6 +1474,20 @@ window.onload = function() {
 		}
 	}
 	let subEntArea = document.querySelector(".subEntryArea");
+	for (let dot of document.getElementsByClassName("summaryDot")) {
+		dot.onclick = function(event) {
+			// go to the entry the dot is indicating.
+			// *unless* user want to edit the entry in the current page.
+			if (event.altKey || event.ctrlKey || event.metaKey) {
+				return;
+			}
+			if (subEntArea.classList.contains("editMode")) {
+				return;
+			}
+			window.location.href = dot.dataset.entryPath;
+			return;
+		}
+	}
 	let alreadyHandled = false;
 	let mousedownId = 0;
 	let subEntries = document.getElementsByClassName("subEntry");

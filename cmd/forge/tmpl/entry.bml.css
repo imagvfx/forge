@@ -1093,6 +1093,10 @@
 	user-select: none;
 }
 
+.subEntryArea:not(.editMode) .summaryDot {
+   cursor: pointer;
+}
+
 .summaryDot.my:before {
 	content: "@";
 }
