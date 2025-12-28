@@ -506,6 +506,11 @@ window.onload = function() {
 				hide = true;
 			}
 		}
+		let reviewerLabel = event.target.closest(".reviewerLabel");
+		if (reviewerLabel != null && !(event.altKey || event.metaKey) && !inEditMode) {
+			goSearch("type: reviewer=" + reviewerLabel.dataset.reviewer);
+			hide = true;
+		}
 		let dueLabel = event.target.closest(".dueLabel");
 		if (dueLabel != null && !(event.altKey || event.metaKey) && !inEditMode) {
 			let due = dueLabel.dataset.due;

@@ -1598,6 +1598,11 @@
 	color: #244;
 }
 
+.subEntryArea:not(.editMode) .reviewerLabel:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}
+
 .dueLabel {
 	font-size: 0.6rem;
 	padding: 0 2px;
