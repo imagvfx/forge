@@ -12,7 +12,9 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/imagvfx/forge"
 	"github.com/xuri/excelize/v2"
 
@@ -49,8 +51,9 @@ func (h *apiHandler) Handler(handleFunc func(ctx context.Context, w http.Respons
 				}
 				session = s
 			}
-			user := session["user"]
-			ctx := forge.ContextWithUserName(r.Context(), user)
+			ctx := forge.ContextWithContextID(r.Context(), uuid.NewString())
+			ctx = forge.ContextWithTime(ctx, time.Now())
+			ctx = forge.ContextWithUserName(ctx, session["user"])
 			return handleFunc(ctx, w, r)
 		}()
 		h.WriteResponse(w, msg, err)

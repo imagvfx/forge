@@ -3,6 +3,7 @@ package forge
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 type Service interface {
@@ -110,11 +111,33 @@ func Unauthorized(s string, is ...any) *UnauthorizedError {
 type contextKey int
 
 const (
-	userNameContextKey = contextKey(iota + 1)
+	contextIDContextKey = contextKey(iota + 1)
+	timeContextKey
+	userNameContextKey
 )
+
+func ContextWithContextID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, contextIDContextKey, id)
+}
+
+func ContextWithTime(ctx context.Context, creation time.Time) context.Context {
+	return context.WithValue(ctx, timeContextKey, creation)
+}
 
 func ContextWithUserName(ctx context.Context, email string) context.Context {
 	return context.WithValue(ctx, userNameContextKey, email)
+}
+
+func ContextIDFromContext(ctx context.Context) string {
+	id := ctx.Value(contextIDContextKey)
+	if id == nil {
+		return ""
+	}
+	return id.(string)
+}
+
+func TimeFromContext(ctx context.Context) time.Time {
+	return ctx.Value(timeContextKey).(time.Time)
 }
 
 func UserNameFromContext(ctx context.Context) string {

@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/imagvfx/forge"
 )
 
@@ -125,7 +126,8 @@ func (h *loginHandler) HandleCallback(w http.ResponseWriter, r *http.Request) {
 		}
 		user := op.Email
 		called := op.Name
-		ctx := forge.ContextWithUserName(r.Context(), user)
+		ctx := forge.ContextWithContextID(r.Context(), uuid.NewString())
+		ctx = forge.ContextWithUserName(ctx, user)
 		_, err = h.server.GetUser(ctx, user)
 		if err != nil {
 			var e *forge.NotFoundError

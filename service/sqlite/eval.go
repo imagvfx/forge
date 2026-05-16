@@ -33,6 +33,7 @@ func evalProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 		"int":        evalInt,
 		"tag":        evalTag,
 		"search":     evalSearch,
+		"chat":       evalChat,
 	}
 	eval := evalFn[p.Type]
 	if eval == nil {
@@ -193,6 +194,11 @@ func evalTag(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 func evalSearch(tx *sql.Tx, ctx context.Context, p *forge.Property) {
 	p.Eval = p.RawValue
 	p.Value = p.RawValue
+}
+
+func evalChat(tx *sql.Tx, ctx context.Context, p *forge.Property) {
+	p.Eval = p.RawValue
+	p.Value = ""
 }
 
 // evalSpecialProperty evaluates special properties that defined in forge.

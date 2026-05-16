@@ -41,6 +41,7 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 		"int":        validateInt,
 		"tag":        validateTag,
 		"search":     validateSearch,
+		"chat":       validateChat,
 	}
 	validate := validateFn[p.Type]
 	if validate == nil {
@@ -437,6 +438,125 @@ func validateSearch(tx *sql.Tx, ctx context.Context, p, old *forge.Property) err
 		newlines = append(newlines, name+"|"+query)
 	}
 	p.Value = strings.Join(newlines, "\n")
+	p.RawValue = p.Value
+	return nil
+}
+
+func validateChat(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
+	if p.Value == "" {
+		return nil
+	}
+	ctxID := forge.ContextIDFromContext(ctx)
+	if ctxID == "" {
+		return fmt.Errorf("context id needed for a chat")
+	}
+	// only takes '+', '-', '>' as a prefix.
+	val := p.Value
+	prefix := val[0]
+	if prefix != '+' && prefix != '-' && prefix != '>' {
+		return fmt.Errorf("invalid prefix for chat: %s", string(prefix))
+	}
+	user := forge.UserNameFromContext(ctx)
+	t := forge.TimeFromContext(ctx)
+	now := t.Local()
+	stamp := now.Format(time.RFC3339)
+	output := old.RawValue
+	if prefix == '+' {
+		// new chat
+		// input:
+		// +msg
+		// output:
+		// *id user stamp
+		// |msg
+		chatID := ctxID
+		output += "\n*" + chatID + " " + user + " " + stamp
+		// message will be saved with additional '|' to differentiate it with headlines.
+		msg := strings.TrimSpace(val[1:])
+		for _, line := range strings.Split(msg, "\n") {
+			output += "\n|" + line
+		}
+	}
+	if prefix == '-' {
+		// delete chat
+		// input:
+		// -id
+		// output:
+		// (removed the chat from val)
+		delID := strings.TrimSpace(val[1:])
+		if delID == "" {
+			return fmt.Errorf("need chat id to delete")
+		}
+		found := false
+		chats := make([]string, 0)
+		for _, chat := range strings.Split(output, "\n*") {
+			if strings.HasPrefix(chat, delID+" ") {
+				found = true
+				continue
+			}
+			chats = append(chats, chat)
+		}
+		if !found {
+			return fmt.Errorf("chat to delete not found: %s", delID)
+		}
+		output = strings.Join(chats, "\n*")
+	}
+	if prefix == '>' {
+		// reply to a chat
+		// input:
+		// >id msg
+		// output:
+		// *id user stamp
+		// |msg
+		// *reply_id user stamp
+		// |msg
+		toks := strings.SplitN(strings.TrimSpace(val[1:]), " ", 2)
+		if len(toks) != 2 {
+			return fmt.Errorf("invalid input to reply")
+		}
+		chatID := strings.TrimSpace(toks[0])
+		if chatID == "" {
+			return fmt.Errorf("no chat id to reply")
+		}
+		if strings.Contains(chatID, "/") {
+			return fmt.Errorf("cannot reply to a reply: %v", chatID)
+		}
+		found := false
+		msg := strings.TrimSpace(toks[1])
+		replying := false
+		chats := make([]string, 0)
+		for _, chat := range strings.Split(output, "\n*") {
+			if strings.HasPrefix(chat, chatID+" ") {
+				found = true
+				replying = true
+				chats = append(chats, chat)
+				continue
+			}
+			if strings.HasPrefix(chat, chatID+"/") {
+				chats = append(chats, chat)
+				continue
+			}
+			if replying {
+				// reply id contains its parent id
+				replyID := chatID + "/" + ctxID
+				reply := replyID + " " + user + " " + stamp
+				for _, l := range strings.Split(msg, "\n") {
+					reply += "\n|" + l
+				}
+				chats = append(chats, reply)
+				chats = append(chats, chat)
+				replying = false
+				continue
+			}
+			// outside of replying scope
+			replying = false
+			chats = append(chats, chat)
+		}
+		if !found {
+			return fmt.Errorf("chat to reply not found: %v", chatID)
+		}
+		output = strings.Join(chats, "\n*")
+	}
+	p.Value = output
 	p.RawValue = p.Value
 	return nil
 }

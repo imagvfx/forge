@@ -7,9 +7,12 @@ import (
 	"path"
 	"reflect"
 	"sort"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/imagvfx/forge"
 )
 
@@ -112,6 +115,7 @@ var testDefaults = []testDefault{
 	{typ: "part", ctg: "property", k: "assignee", t: "user", v: ""},
 	{typ: "part", ctg: "property", k: "status", t: "text", v: ""},
 	{typ: "part", ctg: "property", k: "direction", t: "text", v: ""},
+	{typ: "part", ctg: "property", k: "chat", t: "chat", v: ""},
 	{typ: "lol", ctg: "property", k: "assignee", t: "user", v: "", want: errors.New("entry type not found: lol")},
 	{typ: "", ctg: "property", k: "assignee", t: "user", v: "", want: errors.New("default entry type not specified")},
 }
@@ -228,7 +232,17 @@ var testUpdateProps = []testProperty{
 	{path: "/test/shot/cg/0010", k: "asset", v: "- multiple\n\n -subtraction ", expect: "addition"},
 	{path: "/test/shot/cg/0010", k: "asset", v: "no-op\n-addition", expect: ""},
 	{path: "/test/shot/cg/0010", k: "asset", v: "no-op\nand-no-op", expect: ""},
-
+	// chat
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "+hi", expect: "\n*0001 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hi"},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "+hello", expect: "\n*0001 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hi\n*0002 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hello"},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: ">0001 how are you doing", expect: "\n*0001 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hi\n*0001/0003 admin@imagvfx.com 2000-01-01T00:00:00Z\n|how are you doing\n*0002 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hello"},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: ">0003 good", want: errors.New("chat to reply not found: 0003")},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: ">0001/0003 good", want: errors.New("cannot reply to a reply: 0001/0003")},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "-0003", want: errors.New("chat to delete not found: 0003")},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "-0001/0003", expect: "\n*0001 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hi\n*0002 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hello"},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "-0001", expect: "\n*0002 admin@imagvfx.com 2000-01-01T00:00:00Z\n|hello"},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "-0002", expect: ""},
+	{path: "/test/shot/cg/0010/ani", k: "chat", v: "+re hi", expect: "\n*0010 admin@imagvfx.com 2000-01-01T00:00:00Z\n|re hi"},
 	// below properties for search.
 	{path: "/test", k: "sup", v: "admin@imagvfx.com", expect: "admin@imagvfx.com"},
 	{path: "/test/shot/cg/0010", k: "cg", v: "remove", expect: "remove"},
@@ -529,6 +543,21 @@ var testEntryEnviron = []struct {
 	},
 }
 
+func userContext(user string) context.Context {
+	ctx := context.Background()
+	ctx = forge.ContextWithContextID(ctx, uuid.NewString())
+	ctx = forge.ContextWithTime(ctx, time.Now())
+	ctx = forge.ContextWithUserName(ctx, user)
+	return ctx
+}
+
+func adminContext() context.Context {
+	return userContext("admin@imagvfx.com")
+}
+
+var chatTime = time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
+var chatID = 1 // will increment
+
 func TestEntries(t *testing.T) {
 	db, server, err := testDB(t)
 	if err != nil {
@@ -536,7 +565,6 @@ func TestEntries(t *testing.T) {
 	}
 	defer db.Close()
 	bgCtx := context.Background()
-	adminCtx := forge.ContextWithUserName(bgCtx, "admin@imagvfx.com")
 	// first user who was added to the db becomes an admin
 	for _, user := range testAddUsers {
 		err = server.AddUser(bgCtx, &forge.User{Name: user.name})
@@ -545,7 +573,7 @@ func TestEntries(t *testing.T) {
 		}
 	}
 	for _, user := range testUpdateUserCalled {
-		ctx := forge.ContextWithUserName(bgCtx, user.name)
+		ctx := userContext(user.name)
 		err = server.UpdateUserCalled(ctx, user.name, user.called)
 		if !equalError(user.updateErr, err) {
 			t.Fatalf("%v.called=%q update: want err %q, got %q", user.name, user.called, errorString(user.updateErr), errorString(err))
@@ -565,7 +593,7 @@ func TestEntries(t *testing.T) {
 		}
 	}
 	for _, user := range testUpdateUserDisabled {
-		ctx := forge.ContextWithUserName(bgCtx, user.name)
+		ctx := userContext(user.name)
 		err = server.UpdateUserDisabled(ctx, user.name, user.disabled)
 		if !equalError(user.wantErr, err) {
 			t.Fatalf("%v.disabled=%v update: want err %q, got %q", user.name, user.disabled, errorString(user.wantErr), errorString(err))
@@ -581,7 +609,7 @@ func TestEntries(t *testing.T) {
 			t.Fatalf("%v.disabled=%v: got %v", user.name, user.disabled, u.Disabled)
 		}
 	}
-	allUsers, err := server.AllUsers(adminCtx)
+	allUsers, err := server.AllUsers(adminContext())
 	if err != nil {
 		t.Fatalf("all users: %v", err)
 	}
@@ -592,7 +620,7 @@ func TestEntries(t *testing.T) {
 	if !reflect.DeepEqual(gotAllUsers, testAllUsers) {
 		t.Fatalf("all users: want %q, got %q", testAllUsers, gotAllUsers)
 	}
-	activeUsers, err := server.ActiveUsers(adminCtx)
+	activeUsers, err := server.ActiveUsers(adminContext())
 	if err != nil {
 		t.Fatalf("active users: %v", err)
 	}
@@ -603,7 +631,7 @@ func TestEntries(t *testing.T) {
 	if !reflect.DeepEqual(gotActiveUsers, testActiveUsers) {
 		t.Fatalf("active users: want %q, got %q", testActiveUsers, gotActiveUsers)
 	}
-	disabledUsers, err := server.DisabledUsers(adminCtx)
+	disabledUsers, err := server.DisabledUsers(adminContext())
 	if err != nil {
 		t.Fatalf("disabled users: %v", err)
 	}
@@ -619,12 +647,12 @@ func TestEntries(t *testing.T) {
 		"writers": {"readwriter@imagvfx.com"},
 	}
 	for group, members := range groupMembers {
-		err = server.AddGroup(adminCtx, &forge.Group{Name: group})
+		err = server.AddGroup(adminContext(), &forge.Group{Name: group})
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, member := range members {
-			err = server.AddGroupMember(adminCtx, group, member)
+			err = server.AddGroupMember(adminContext(), group, member)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -635,10 +663,10 @@ func TestEntries(t *testing.T) {
 		"writers": "rw",
 	}
 	for group, access := range access {
-		err = server.AddAccess(adminCtx, "/", group, access)
+		err = server.AddAccess(adminContext(), "/", group, access)
 	}
 	for _, typ := range testEntryTypes {
-		err := server.AddEntryType(adminCtx, typ.name)
+		err := server.AddEntryType(adminContext(), typ.name)
 		if !equalError(typ.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(typ.want), errorString(err))
 		}
@@ -646,24 +674,32 @@ func TestEntries(t *testing.T) {
 	for _, def := range testDefaults {
 		var err error
 		if def.ctg == "global" {
-			err = server.AddGlobal(adminCtx, def.typ, def.k, def.t, def.v)
+			err = server.AddGlobal(adminContext(), def.typ, def.k, def.t, def.v)
 		} else {
-			err = server.AddDefault(adminCtx, def.typ, def.ctg, def.k, def.t, def.v)
+			err = server.AddDefault(adminContext(), def.typ, def.ctg, def.k, def.t, def.v)
 		}
 		if !equalError(def.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(def.want), errorString(err))
 		}
 	}
 	for _, ent := range testEntries {
-		err := server.AddEntry(adminCtx, ent.path, ent.typ)
+		err := server.AddEntry(adminContext(), ent.path, ent.typ)
 		if !equalError(ent.want, err) {
 			t.Fatalf("want err %q, got %q", errorString(ent.want), errorString(err))
 		}
 	}
 	for _, prop := range testUpdateProps {
-		updCtx := adminCtx
+		updCtx := adminContext()
 		if prop.updater != "" {
-			updCtx = forge.ContextWithUserName(bgCtx, prop.updater)
+			updCtx = userContext(prop.updater)
+		}
+		if prop.k == "chat" {
+			id := strconv.Itoa(chatID)
+			chatID += 1
+			fill := max(4-len(id), 0)
+			id = strings.Repeat("0", fill) + id
+			updCtx = forge.ContextWithContextID(updCtx, id)
+			updCtx = forge.ContextWithTime(updCtx, chatTime)
 		}
 		err := server.UpdateProperty(updCtx, prop.path, prop.k, prop.v)
 		if !equalError(prop.want, err) {
@@ -685,7 +721,7 @@ func TestEntries(t *testing.T) {
 	for _, rename := range testRenames {
 		dir := path.Dir(rename.path)
 		oldName := path.Base(rename.path)
-		err := server.RenameEntry(adminCtx, rename.path, rename.newName)
+		err := server.RenameEntry(adminContext(), rename.path, rename.newName)
 		if !equalError(rename.wantErr, err) {
 			t.Fatalf("rename %q to %q: want err %q, got %q", rename.path, rename.newName, errorString(rename.wantErr), errorString(err))
 		}
@@ -695,7 +731,7 @@ func TestEntries(t *testing.T) {
 		}
 		// revert
 		newPath := path.Join(dir, rename.newName)
-		err = server.RenameEntry(adminCtx, newPath, oldName)
+		err = server.RenameEntry(adminContext(), newPath, oldName)
 		if err != nil {
 			t.Fatalf("rename %q to %q: revert got unwanted err: %v", rename.path, rename.newName, err)
 		}
@@ -704,7 +740,7 @@ func TestEntries(t *testing.T) {
 	// search
 	whoCanRead := []string{"admin@imagvfx.com", "readwriter@imagvfx.com", "reader@imagvfx.com"}
 	for _, user := range whoCanRead {
-		ctx := forge.ContextWithUserName(bgCtx, user)
+		ctx := userContext(user)
 		for _, s := range testSearches {
 			ents, err := server.SearchEntries(ctx, s.path, s.query)
 			if !equalError(s.wantErr, err) {
@@ -723,7 +759,7 @@ func TestEntries(t *testing.T) {
 	}
 	whoCannotRead := []string{"uninvited@imagvfx.com"}
 	for _, user := range whoCannotRead {
-		ctx := forge.ContextWithUserName(bgCtx, user)
+		ctx := userContext(user)
 		for _, s := range testSearches {
 			ents, _ := server.SearchEntries(ctx, s.path, s.query)
 			got := make([]string, 0)
@@ -742,7 +778,7 @@ func TestEntries(t *testing.T) {
 
 	// test find
 	for _, f := range testFinds {
-		ents, err := server.FindEntries(adminCtx, f.finder)
+		ents, err := server.FindEntries(adminContext(), f.finder)
 		if err != nil {
 			t.Fatalf("find: %v", err)
 		}
@@ -759,7 +795,7 @@ func TestEntries(t *testing.T) {
 
 	// test delete
 	for _, delete := range testDeletes {
-		err := server.DeleteEntry(adminCtx, delete.path)
+		err := server.DeleteEntry(adminContext(), delete.path)
 		if !equalError(delete.wantErr, err) {
 			t.Fatalf("delete %q: want err %q, got %q", delete.path, errorString(delete.wantErr), errorString(err))
 		}
@@ -767,25 +803,25 @@ func TestEntries(t *testing.T) {
 
 	// test user data
 	for _, c := range userDataCases {
-		err := server.SetUserData(adminCtx, c.user, c.section, c.key, c.value)
+		err := server.SetUserData(adminContext(), c.user, c.section, c.key, c.value)
 		if !equalError(c.wantErr, err) {
 			t.Fatalf("add %q: want err %q, got %q", c.label, errorString(c.wantErr), errorString(err))
 		}
 		if c.wantErr != nil {
 			continue
 		}
-		value, err := server.GetUserData(adminCtx, c.user, c.section, c.key)
+		value, err := server.GetUserData(adminContext(), c.user, c.section, c.key)
 		if err != nil {
 			t.Fatalf("get %q: %v", c.label, err)
 		}
 		if value != c.value {
 			t.Fatalf("get %q: want %q, got %q", c.label, c.value, value)
 		}
-		err = server.SetUserData(adminCtx, c.user, c.section, c.key, "")
+		err = server.SetUserData(adminContext(), c.user, c.section, c.key, "")
 		if err != nil {
 			t.Fatalf("update %q: %v", c.label, err)
 		}
-		value, err = server.GetUserData(adminCtx, c.user, c.section, c.key)
+		value, err = server.GetUserData(adminContext(), c.user, c.section, c.key)
 		if err != nil {
 			t.Fatalf("get after update %q: %v", c.label, err)
 		}
@@ -797,12 +833,12 @@ func TestEntries(t *testing.T) {
 		if c.wantErr != nil {
 			continue
 		}
-		err = server.DeleteUserData(adminCtx, c.user, c.section, c.key)
+		err = server.DeleteUserData(adminContext(), c.user, c.section, c.key)
 		if err != nil {
 			t.Fatalf("delete %q: %v", c.label, err)
 		}
 	}
-	data, err := server.FindUserData(adminCtx, forge.UserDataFinder{User: "admin@imagvfx.com"})
+	data, err := server.FindUserData(adminContext(), forge.UserDataFinder{User: "admin@imagvfx.com"})
 	if err != nil {
 		t.Fatalf("find: %v", err)
 	}
@@ -812,7 +848,7 @@ func TestEntries(t *testing.T) {
 
 	// test environ after user data as environ overrided by user data.
 	for _, c := range testEntryEnviron {
-		envs, err := server.EntryEnvirons(adminCtx, c.path)
+		envs, err := server.EntryEnvirons(adminContext(), c.path)
 		if !equalError(c.wantErr, err) {
 			t.Fatalf("environ: %q: %v", c.label, err)
 		}

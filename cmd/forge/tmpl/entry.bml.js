@@ -669,6 +669,10 @@ window.onload = function() {
 		}
 		if (event.target.closest(".propertyPickerValue")) {
 			if ((ctrlPressed && event.code == "Enter") || event.code == "NumpadEnter") {
+				if (event.isComposing) {
+					// there are multiple signals coming in korean input mode
+					return;
+				}
 				updateFromPropertyPicker();
 				return;
 			}

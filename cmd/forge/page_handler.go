@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/imagvfx/forge"
 	"github.com/xuri/excelize/v2"
 )
@@ -66,7 +67,8 @@ func (h *pageHandler) Handler(handleFunc func(ctx context.Context, w http.Respon
 				h.login.Handle(w, r)
 				return nil
 			}
-			ctx := forge.ContextWithUserName(r.Context(), user)
+			ctx := forge.ContextWithContextID(r.Context(), uuid.NewString())
+			ctx = forge.ContextWithUserName(ctx, user)
 			return handleFunc(ctx, w, r)
 		}()
 		handleError(w, err)

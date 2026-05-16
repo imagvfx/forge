@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/BurntSushi/toml v0.4.1
+	github.com/google/uuid v1.6.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/kybin/bml v0.0.6
 	github.com/mattn/go-sqlite3 v1.14.6
