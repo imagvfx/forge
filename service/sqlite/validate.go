@@ -524,7 +524,7 @@ func validateChat(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		msg := strings.TrimSpace(toks[1])
 		replying := false
 		chats := make([]string, 0)
-		for _, chat := range strings.Split(output, "\n*") {
+		for _, chat := range strings.Split(output+"\n*", "\n*") { // one additional loop to ensure replying to last chat
 			if strings.HasPrefix(chat, chatID+" ") {
 				found = true
 				replying = true
@@ -551,12 +551,15 @@ func validateChat(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 			replying = false
 			chats = append(chats, chat)
 		}
+		if chats[len(chats)-1] == "" {
+			chats = chats[:len(chats)-1]
+		}
 		if !found {
 			return fmt.Errorf("chat to reply not found: %v", chatID)
 		}
 		output = strings.Join(chats, "\n*")
 	}
-	p.Value = output
-	p.RawValue = p.Value
+	p.Value = val
+	p.RawValue = output
 	return nil
 }
