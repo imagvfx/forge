@@ -158,6 +158,63 @@ var pageHandlerFuncs = template.FuncMap{
 			return template.HTML("<div class='invalid infoValue'>" + p.ValueError.Error() + "</div>")
 		}
 		t := ""
+		if p.Type == "chat" {
+			chats := strings.Split(p.Eval, "\n*")
+			d := -1
+			for _, chat := range chats {
+				chat = strings.TrimSpace(chat)
+				if chat == "" {
+					continue
+				}
+				head, body, found := strings.Cut(chat, "\n")
+				if !found {
+					return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
+				}
+				toks := strings.Split(head, " ")
+				if len(toks) != 3 {
+					return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
+				}
+				id := toks[0]
+				nd := strings.Count(id, "/")
+				if nd > d {
+					for range nd - d - 1 {
+						t += "<details>"
+					}
+				} else {
+					for range d - nd + 1 {
+						t += "</details>"
+					}
+				}
+				d = nd
+				who := toks[1]
+				when := toks[2]
+				open := ""
+				if nd != 0 {
+					open = "open"
+				}
+				t += "<details class='detailContent'" + open + ">"
+				t += "<summary>"
+				t += "<span class='convToCalled' data-user='" + who + "'></span> "
+				w, err := time.Parse(time.RFC3339, when)
+				if err != nil {
+					return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
+				}
+				t += w.Local().Format("2006-01-02")
+				t += "</summary>"
+				t += "<div class='detailContent'>"
+				for _, line := range strings.Split(body, "\n") {
+					if line == "" || line[0] != '|' {
+						return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
+					}
+					t += "<div>" + line[1:] + "</div>"
+				}
+				t += "</div>"
+			}
+			for range d + 1 {
+				t += "</details>"
+			}
+			return template.HTML("<div class='infoValue'>" + t + "</div>")
+		}
 		lines := strings.Split(p.Eval, "\n")
 		for _, line := range lines {
 			line = strings.TrimSpace(line)

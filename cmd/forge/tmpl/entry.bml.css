@@ -1909,3 +1909,17 @@
 	cursor: pointer;
 }
 
+details {
+   padding: 2px;
+}
+
+details .detailContent {
+   padding-left: 5px;
+   padding-bottom: 5px;
+   border-left: 1px solid #ddd;
+}
+
+details summary {
+   color: #355d61;
+   font-size: 0.9em;
+}

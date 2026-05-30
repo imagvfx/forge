@@ -2141,6 +2141,11 @@ window.onload = function() {
 			},
 		);
 	}
+	let convToCalleds = document.querySelectorAll(".convToCalled");
+	for (let conv of convToCalleds) {
+		let called = CalledByName[conv.dataset.user]
+		conv.innerText = called;
+	}
 }
 
 let EntryCache = {}
