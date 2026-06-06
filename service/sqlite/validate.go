@@ -452,17 +452,17 @@ func validateChat(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 	}
 	// only takes '+', '-', '>' as a prefix.
 	val := p.Value
-	prefix := val[0]
-	if prefix != '+' && prefix != '-' && prefix != '>' {
-		return fmt.Errorf("invalid prefix for chat: %s", string(prefix))
+	op := val[0]
+	if op != '+' && op != '-' && op != '>' {
+		return fmt.Errorf("invalid op for chat: %s", string(op))
 	}
 	user := forge.UserNameFromContext(ctx)
 	t := forge.TimeFromContext(ctx)
 	now := t.Local()
 	stamp := now.Format(time.RFC3339)
 	output := old.RawValue
-	if prefix == '+' {
-		// new chat
+	switch op {
+	case '+':
 		// input:
 		// +msg
 		// output:
@@ -470,96 +470,111 @@ func validateChat(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error
 		// |msg
 		chatID := ctxID
 		output += "\n*" + chatID + " " + user + " " + stamp
-		// message will be saved with additional '|' to differentiate it with headlines.
 		msg := strings.TrimSpace(val[1:])
 		for _, line := range strings.Split(msg, "\n") {
 			output += "\n|" + line
 		}
-	}
-	if prefix == '-' {
+	case '-', '>':
+		// case '-'
 		// delete chat
 		// input:
 		// -id
 		// output:
 		// (removed the chat from val)
-		delID := strings.TrimSpace(val[1:])
-		if delID == "" {
-			return fmt.Errorf("need chat id to delete")
-		}
-		found := false
-		chats := make([]string, 0)
-		for _, chat := range strings.Split(output, "\n*") {
-			if strings.HasPrefix(chat, delID+" ") {
-				found = true
-				continue
-			}
-			chats = append(chats, chat)
-		}
-		if !found {
-			return fmt.Errorf("chat to delete not found: %s", delID)
-		}
-		output = strings.Join(chats, "\n*")
-	}
-	if prefix == '>' {
+
+		// case '>'
 		// reply to a chat
 		// input:
 		// >id msg
 		// output:
 		// *id user stamp
 		// |msg
-		// *reply_id user stamp
-		// |msg
-		toks := strings.SplitN(strings.TrimSpace(val[1:]), " ", 2)
-		if len(toks) != 2 {
-			return fmt.Errorf("invalid input to reply")
-		}
-		chatID := strings.TrimSpace(toks[0])
+		// |*reply_id user stamp
+		// ||msg
+		newOutput := ""
+		val := strings.TrimSpace(val[1:])
+		chatID, reply, _ := strings.Cut(val, " ")
 		if chatID == "" {
-			return fmt.Errorf("no chat id to reply")
-		}
-		if strings.Contains(chatID, "/") {
-			return fmt.Errorf("cannot reply to a reply: %v", chatID)
-		}
-		found := false
-		msg := strings.TrimSpace(toks[1])
-		replying := false
-		chats := make([]string, 0)
-		for _, chat := range strings.Split(output+"\n*", "\n*") { // one additional loop to ensure replying to last chat
-			if strings.HasPrefix(chat, chatID+" ") {
-				found = true
-				replying = true
-				chats = append(chats, chat)
-				continue
+			if op == '-' {
+				return fmt.Errorf("no chat id to delete")
+			} else {
+				return fmt.Errorf("no chat id to reply")
 			}
-			if strings.HasPrefix(chat, chatID+"/") {
-				chats = append(chats, chat)
-				continue
+		}
+		if op == '>' && reply == "" {
+			return fmt.Errorf("no message to reply")
+		}
+		// f deletes or replies to ch. ch will be replaced by it's output.
+		f := func(ch string, d int) (string, error) {
+			if op == '-' {
+				// TODO: check if replies are exists
+				return "", nil
 			}
-			if replying {
-				// reply id contains its parent id
-				replyID := chatID + "/" + ctxID
-				reply := replyID + " " + user + " " + stamp
-				for _, l := range strings.Split(msg, "\n") {
-					reply += "\n|" + l
-				}
-				chats = append(chats, reply)
-				chats = append(chats, chat)
-				replying = false
-				continue
+			// '>'
+			if d >= 1 {
+				// Structuring it is not a problem but displaying is.
+				return "", fmt.Errorf("cannot reply to a reply: %v", chatID)
 			}
-			// outside of replying scope
-			replying = false
-			chats = append(chats, chat)
+			replyID := ctxID
+			ch += "\n" + strings.Repeat("|", d+1) + "*" + replyID + " " + user + " " + stamp
+			for _, line := range strings.Split(reply, "\n") {
+				ch += "\n" + strings.Repeat("|", d+2) + line
+			}
+			return ch, nil
 		}
-		if chats[len(chats)-1] == "" {
-			chats = chats[:len(chats)-1]
+		newOutput, done, err := traverseChat(output, chatID, f, 0)
+		if err != nil {
+			return err
 		}
-		if !found {
-			return fmt.Errorf("chat to reply not found: %v", chatID)
+		if !done {
+			return fmt.Errorf("chat not found: %s", chatID)
 		}
-		output = strings.Join(chats, "\n*")
+		output = newOutput
 	}
 	p.Value = val
 	p.RawValue = output
 	return nil
+}
+
+// traverseChat traverses chats to find a chat with 'id'. Then f will be applied to the chat.
+// Other chats will not be affected.
+func traverseChat(chat string, id string, f func(string, int) (string, error), d int) (string, bool, error) {
+	sep := "\n" + strings.Repeat("|", d) + "*"
+	replySep := "\n" + strings.Repeat("|", d+1) + "*"
+	done := false
+	outs := make([]string, 0)
+	for _, ch := range strings.Split(chat, sep) {
+		if done {
+			outs = append(outs, ch)
+			continue
+		}
+		if strings.HasPrefix(ch, id) {
+			done = true
+			out, err := f(ch, d)
+			if err != nil {
+				return "", false, err
+			}
+			if out != "" {
+				outs = append(outs, out)
+			}
+			continue
+		}
+		// This chat isn't what we are finding. But one of it's replies might.
+		thisChat, replyMessages, ok := strings.Cut(ch, replySep)
+		if !ok {
+			outs = append(outs, ch)
+			continue
+		}
+		out, ok, err := traverseChat(replyMessages, id, f, d+1)
+		if err != nil {
+			return "", false, err
+		}
+		if out != "" {
+			thisChat = thisChat + replySep + out
+		}
+		outs = append(outs, thisChat)
+		done = ok
+	}
+	output := strings.Join(outs, sep)
+	return output, done, nil
 }
