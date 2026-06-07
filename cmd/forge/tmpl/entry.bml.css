@@ -1920,6 +1920,7 @@ details .detailContent {
 }
 
 details summary {
+   cursor: pointer;
    color: #355d61;
    font-size: 0.9em;
 }

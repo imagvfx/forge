@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"net/url"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -159,59 +160,76 @@ var pageHandlerFuncs = template.FuncMap{
 		}
 		t := ""
 		if p.Type == "chat" {
-			chats := strings.Split(p.Eval, "\n*")
-			d := -1
-			for _, chat := range chats {
-				chat = strings.TrimSpace(chat)
-				if chat == "" {
+			val := p.Eval
+			re := regexp.MustCompile(`\n[|]*[*]`)
+			idxs := re.FindAllStringIndex(p.Eval, -1)
+			i := 0
+			chats := make([]string, 0)
+			for _, idx := range idxs {
+				j := idx[0]
+				if j == 0 {
 					continue
 				}
-				head, body, found := strings.Cut(chat, "\n")
-				if !found {
-					return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
-				}
-				toks := strings.Split(head, " ")
-				if len(toks) != 3 {
-					return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
-				}
-				id := toks[0]
-				nd := strings.Count(id, "/")
-				if nd > d {
-					for range nd - d - 1 {
-						t += "<details>"
-					}
-				} else {
-					for range d - nd + 1 {
-						t += "</details>"
-					}
-				}
-				d = nd
-				who := toks[1]
-				when := toks[2]
-				open := ""
-				if nd != 0 {
-					open = "open"
-				}
-				t += "<details class='detailContent'" + open + ">"
-				t += "<summary>"
-				t += "<span class='convToCalled' data-user='" + who + "'></span> "
-				w, err := time.Parse(time.RFC3339, when)
-				if err != nil {
-					return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
-				}
-				t += w.Local().Format("2006-01-02")
-				t += "</summary>"
-				t += "<div class='detailContent'>"
-				for _, line := range strings.Split(body, "\n") {
-					if line == "" || line[0] != '|' {
-						return template.HTML("<div class='invalid infoValue'>invalid chat data:\n" + chat + "</div>")
-					}
-					t += "<div>" + line[1:] + "</div>"
-				}
-				t += "</div>"
+				chats = append(chats, val[i:j])
+				i = j
 			}
-			for range d + 1 {
-				t += "</details>"
+			var conv func(string, int) (string, error)
+			conv = func(msg string, d int) (string, error) {
+				output := ""
+				chats := strings.Split(msg, "\n"+strings.Repeat("|", d)+"*")
+				for i, chat := range chats {
+					if chat == "" {
+						continue
+					}
+					thisChat, replies, _ := strings.Cut(chat, "\n"+strings.Repeat("|", d+1)+"*")
+					head, body, ok := strings.Cut(thisChat, "\n")
+					if !ok {
+						return "", fmt.Errorf("invalid chat data")
+					}
+					toks := strings.Split(head, " ")
+					if len(toks) != 3 {
+						return "", fmt.Errorf("invalid chat data")
+					}
+					who := toks[1]
+					when := toks[2]
+					open := ""
+					if d != 0 {
+						open = "open"
+					} else if i == len(chats)-1 {
+						// last base chat should be shown
+						open = "open"
+					}
+					output += "<details class='detailContent' " + open + ">"
+					output += "<summary>"
+					output += "<span class='convToCalled' data-user='" + who + "'></span> "
+					w, err := time.Parse(time.RFC3339, when)
+					if err != nil {
+						return "", fmt.Errorf("invalid chat data")
+					}
+					output += w.Local().Format("2006-01-02")
+					output += "</summary>"
+					output += "<div class='detailContent'>"
+					for _, line := range strings.Split(body, "\n") {
+						if !strings.HasPrefix(line, strings.Repeat("|", d+1)) {
+							return "", fmt.Errorf("invalid chat data")
+						}
+						output += "<div>" + line[d+1:] + "</div>"
+					}
+					output += "</div>"
+					if replies != "" {
+						out, err := conv(replies, d+1)
+						if err != nil {
+							return "", err
+						}
+						output += out
+					}
+					output += "</details>"
+				}
+				return output, nil
+			}
+			t, err := conv(val, 0)
+			if err != nil {
+				return template.HTML("<div class='invalid infoValue'>" + err.Error() + ": " + val + "</div>")
 			}
 			return template.HTML("<div class='infoValue'>" + t + "</div>")
 		}
