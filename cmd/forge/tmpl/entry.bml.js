@@ -2454,11 +2454,6 @@ function resizeTextArea(textarea) {
 }
 
 function updateFromPropertyPicker() {
-	if (cleanAutoComplete != null) {
-		// autoComplete binded to the .propertyPickerValue input.
-		// It will do the job instead.
-		return;
-	}
 	let popupHandle = document.querySelector(".popupHandle");
 	let popup = event.target.closest("#updatePropertyPopup");
 	let nameInput = popup.querySelector(".propertyPickerName");
@@ -3504,73 +3499,8 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 				let menuAt = getOffset(valueInput);
 				menuAt.top += valueInput.getBoundingClientRect().height + 4;
 				cleanAutoComplete = autoComplete(valueInput, AllUserLabels, AllUserNames, menuAt, function(value) {
-					let entPath = popup.dataset.entryPath;
-					let thisEnt = document.querySelector(`.entry[data-entry-path="${entPath}"]`)
-					let selectedEnts = selectedEntries();
-					if (selectedEnts.length != 0) {
-						if (!selectedEnts.includes(thisEnt)) {
-							printErrorStatus("entry not in selection: " + entPath);
-							return;
-						}
-					} else {
-						selectedEnts = [thisEnt];
-					}
-					let sub = popup.dataset.sub;
-					let paths = [];
-					for (let ent of selectedEnts) {
-						let path = ent.dataset.entryPath;
-						if (sub != "") {
-							if (ent.querySelector(`.grandSubEntry[data-sub="${sub}"]`) == null) {
-								continue
-							}
-							path += "/" + sub;
-						}
-						paths.push(path);
-					}
-					let data = new FormData();
-					for (let path of paths) {
-						data.append("path", path);
-					}
-					data.append("name", prop);
-					data.append("value", value);
-					postForge("/api/update-property", data, function(_, err) {
-						if (err) {
-							printErrorStatus(err);
-							return;
-						}
-						if (nameInput.dataset.value == "assignee" && popup.dataset.sub != "") {
-							for (let ent of selectedEnts) {
-								let dot = ent.querySelector(`.statusSelector[data-sub="${popup.dataset.sub}"]`);
-								if (!dot) {
-									continue;
-								}
-								dot.dataset.assignee = value;
-							}
-						}
-						// refresh info in the page.
-						for (let ent of selectedEnts) {
-							if (sub != "") {
-								continue;
-							}
-							let path = ent.dataset.entryPath;
-							let data = new FormData();
-							data.append("path", path);
-							data.append("name", prop);
-							postForge("/api/get-property", data, function(p, err) {
-								if (err) {
-									printErrorStatus(err);
-									return;
-								}
-								refreshInfoValue(path, "property", prop, p);
-							});
-						}
-						if (popupHandle.classList.contains("infoTitle")) {
-							popup.classList.remove("expose");
-							popupHandle.classList.remove("popupHandle");
-						} else {
-							reloadPropertyPicker(popup, ctg, prop, false);
-						}
-					});
+					valueInput.value = value;
+					updateFromPropertyPicker();
 				});
 			}
 			printStatus("done");
