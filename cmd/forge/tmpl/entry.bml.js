@@ -3499,7 +3499,7 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 				printErrorStatus(err);
 				return;
 			}
-			updateInputs(p.Type, p.Eval);
+			updateInputs(p.Type, p.Value);
 			if (nameInput.dataset.type == "user") {
 				let menuAt = getOffset(valueInput);
 				menuAt.top += valueInput.getBoundingClientRect().height + 4;
