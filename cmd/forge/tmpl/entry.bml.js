@@ -2708,6 +2708,97 @@ function refreshInfoValue(path, ctg, name, p) {
 			div.innerText = name;
 			valueElem.appendChild(div);
 		}
+	} else if (p.Type == "chat") {
+		const re = /\n[|]*[*]/g
+		const chats = [];
+		let i = 0;
+		let match;
+		while ((match = re.exec(evaled)) !== null) {
+			const j = match.index;
+			if (j == 0) {
+				continue;
+			}
+			chats.push(evaled.slice(i, j));
+			i = j;
+		}
+		chats.push(evaled.slice(i));
+		function conv(msg, d) {
+			let output = "";
+			const sep = "\n" + "|".repeat(d) + "*";
+			let chats = msg.split(sep)
+			for (let i = 0; i < chats.length; i++) {
+				const chat = chats[i];
+				if (chat == "") {
+					continue
+				}
+				const nextSep = "\n" + "|".repeat(d+1) + "*";
+				let idx = chat.indexOf(nextSep);
+				if (idx < 0) {
+					idx = chat.length;
+				}
+				const thisChat = chat.slice(0, idx);
+				const replies = chat.slice(idx+nextSep.length);
+				idx = thisChat.indexOf("\n");
+				if (idx < 0) {
+					console.log(thisChat);
+					throw new Error("invalid chat data: a");
+				}
+				let head = thisChat.slice(0, idx);
+				let body = thisChat.slice(idx+1);
+				const toks = head.split(" ");
+				if (toks.length != 3) {
+					throw new Error("invalid chat data: b");
+				}
+				const who = toks[1];
+				const when = toks[2];
+				let open = "";
+				if (d != 0) {
+					open = "open";
+				} else if (i == chats.length-1) {
+					// last base chat should be shown
+					open = "open";
+				}
+				output += "<details class='detailContent' " + open + ">"
+				output += "<summary>"
+				output += "<span class='convToCalled' data-user='" + who + "'>"+CalledByName[who]+"</span> "
+				try {
+					const d = new Date(when);
+					if (isNaN(d.getTime())) {
+						throw new Error("invalid chat data: c");
+					}
+					const year = d.getFullYear();
+					const month = String(d.getMonth() + 1).padStart(2, '0');
+					const day = String(d.getDate()).padStart(2, '0');
+					output += `${year}-${month}-${day}`;
+				} catch (e) {
+					throw new Error("invalid chat data");
+				}
+				output += "</summary>"
+				output += "<div class='detailContent'>"
+				const lines = body.split("\n");
+				for (const line of lines) {
+					if (!line.startsWith("|".repeat(d+1))) {
+						throw new Error("invalid chat data")
+					}
+					output += "<div>" + line.slice(d+1) + "</div>"
+				}
+				output += "</div>"
+				if (replies != "") {
+					output += conv(replies, d+1);
+				}
+				output += "</details>"
+			}
+			return output
+		}
+		try {
+			valueElem.innerHTML = conv(evaled, 0);
+		} catch (e) {
+			// TODO: 'invalid' class added here will be removed by the following code.
+			// Because it assumes that validation from update process has already been made.
+			// Is it right assumption? And what should I do?
+			valueElem.classList.add("invalid");
+			valueElem.innerHTML = e.message + ": " + evaled;
+		}
 	} else {
 		for (let line of evaled.split("\n")) {
 			line = line.trim();
