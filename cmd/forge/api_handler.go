@@ -403,6 +403,108 @@ func (h *apiHandler) handleAddOrUpdateEnviron(ctx context.Context, w http.Respon
 	return nil, nil
 }
 
+func (h *apiHandler) handleUpdateEntryEnvirons(ctx context.Context, w http.ResponseWriter, r *http.Request) (any, error) {
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return nil, fmt.Errorf("path not defined")
+	}
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	// an environ can have value with multiple lines.
+	// merge the line with the next line, if a line ends with '\' character.
+	blocks := make([]string, 0)
+	block := ""
+	for _, l := range strings.Split(value, "\n") {
+		merge := false
+		l = strings.TrimRight(l, " \t\r")
+		if strings.HasSuffix(l, "\\") {
+			l = l[:len(l)-1] + "\n"
+			merge = true
+		}
+		block += l
+		if merge {
+			continue
+		}
+		blocks = append(blocks, block)
+		block = ""
+	}
+	// handle blocks
+	for _, b := range blocks {
+		b = strings.TrimSpace(b)
+		if b == "" {
+			continue
+		}
+		for _, p := range entPaths {
+			err := h.updateEntryEnviron(ctx, p, b)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return nil, nil
+}
+
+// updateEntryEnviron updates entry environ with a block that has update info.
+// A block should starts with + or - prefix, following KEY=VALUE.
+// VALUE may be consists of multple lines.
+// It will return without doing anything if given block is invalid.
+func (h *apiHandler) updateEntryEnviron(ctx context.Context, pth, block string) error {
+	if block == "" {
+		return nil
+	}
+	prefix := string(block[0])
+	block = block[1:]
+	k, v, _ := strings.Cut(block, "=")
+	switch prefix {
+	case "+":
+		env, err := h.server.EntryEnviron(ctx, pth, k)
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+		}
+		update := false
+		if env != nil && env.EntryPath == pth {
+			update = true
+		}
+		t := "text" // default environ type
+		if v == "" && env != nil {
+			t = env.Type
+			v = env.Value
+		}
+		if update {
+			return h.server.UpdateEnviron(ctx, pth, k, v)
+		}
+		return h.server.AddEnviron(ctx, pth, k, t, v)
+	case "-":
+		env, err := h.server.GetEnviron(ctx, pth, k)
+		if err != nil {
+			var e *forge.NotFoundError
+			if errors.As(err, &e) {
+				// nothing to do
+				return nil
+			}
+			return err
+		}
+		delete := false
+		if v == "" {
+			// delete environs from all entries.
+			delete = true
+		} else if v == env.Value {
+			// delete environs from entries those environ value is v.
+			delete = true
+		}
+		if !delete {
+			return nil
+		}
+		return h.server.DeleteEnviron(ctx, pth, k)
+	default:
+		return nil
+	}
+}
+
 func (h *apiHandler) handleGetEnviron(ctx context.Context, w http.ResponseWriter, r *http.Request) (any, error) {
 	entPath := r.FormValue("path")
 	name := r.FormValue("name")
@@ -509,6 +611,86 @@ func (h *apiHandler) handleAddOrUpdateAccess(ctx context.Context, w http.Respons
 		}
 	}
 	return nil, nil
+}
+
+func (h *apiHandler) handleUpdateEntryAccessList(ctx context.Context, w http.ResponseWriter, r *http.Request) (any, error) {
+	r.FormValue("") // To parse multipart form.
+	entPaths := r.PostForm["path"]
+	if len(entPaths) == 0 {
+		return nil, fmt.Errorf("path not defined")
+	}
+	value := r.FormValue("value")
+	value = strings.TrimSpace(value)
+	for _, l := range strings.Split(value, "\n") {
+		l = strings.TrimSpace(l)
+		if l == "" {
+			continue
+		}
+		for _, p := range entPaths {
+			err := h.updateEntryAccess(ctx, p, l)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return nil, nil
+}
+
+// updateEntryAccess updates entry access with a line that has update info.
+// The line should starts with + or - prefix, following KEY=VALUE.
+// It will return without doing anything if given line is invalid.
+func (h *apiHandler) updateEntryAccess(ctx context.Context, pth, line string) error {
+	if line == "" {
+		return nil
+	}
+	prefix := string(line[0])
+	line = line[1:]
+	k, v, _ := strings.Cut(line, "=")
+	switch prefix {
+	case "+":
+		acc, err := h.server.EntryAccess(ctx, pth, k)
+		if err != nil {
+			var e *forge.NotFoundError
+			if !errors.As(err, &e) {
+				return err
+			}
+		}
+		update := false
+		if acc != nil && acc.EntryPath == pth {
+			update = true
+		}
+		if v == "" && acc != nil {
+			v = acc.Eval
+		}
+		if update {
+			return h.server.UpdateAccess(ctx, pth, k, v)
+		}
+		return h.server.AddAccess(ctx, pth, k, v)
+	case "-":
+		acc, err := h.server.GetAccess(ctx, pth, k)
+		if err != nil {
+			var e *forge.NotFoundError
+			if errors.As(err, &e) {
+				// nothing to do
+				return nil
+			}
+			return err
+		}
+		delete := false
+		if v == "" {
+			// delete environs from all entries.
+			delete = true
+		} else if v == acc.Value {
+			// delete environs from entries those environ value is v.
+			delete = true
+		}
+		if !delete {
+			return nil
+		}
+		return h.server.DeleteAccess(ctx, pth, k)
+	default:
+		return nil
+	}
 }
 
 func (h *apiHandler) handleGetAccess(ctx context.Context, w http.ResponseWriter, r *http.Request) (any, error) {

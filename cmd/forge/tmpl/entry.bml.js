@@ -2490,58 +2490,29 @@ function updateFromPropertyPicker() {
 		paths.push(path);
 	}
 	if (prop == "*environ" || prop == "*access") {
-		let updateCtg = prop.slice(1);
-		let lines = valueInput.value.split("\n");
-		let modify = false;
-		for (let l of lines) {
-			l = l.trim();
-			let prefix = l.slice(0, 1);
-			if (prefix != "+" && prefix != "-") {
-				continue
-			}
-			modify = true;
-
-			let keyVal = l.slice(1);
-			keyVal = keyVal.trim();
-			let idx = keyVal.indexOf("=");
-			if (idx < 0) {
-				printErrorStatus("unexpected line: "  + l);
-				break;
-			}
-			let key = keyVal.slice(0, idx).trim();
-			let val = keyVal.slice(idx+1).trim();
-
-			let data = new FormData();
-			for (let path of paths) {
-				data.append("path", path);
-			}
-			data.append("name", key);
-			let api = "";
-			if (prefix == "+") {
-				api = "/api/add-or-update-" + updateCtg;
-				data.append("value", val);
-			} else if (prefix == "-") {
-				api = "/api/delete-" + updateCtg;
-				data.append("generous", "1");
-			}
-			postForge(api, data, function(err) {
-				if (err) {
-					nameInput.dataset.error = "1";
-					printErrorStatus(err);
-					return;
-				}
-				if (popupHandle.classList.contains("infoTitle")) {
-					popup.classList.remove("expose");
-					popupHandle.classList.remove("popupHandle");
-				} else {
-					reloadPropertyPicker(popup, ctg, prop, false);
-				}
-				printStatus("done");
-			});
+		let api = "/api/update-entry-environs";
+		if (prop == "*access") {
+			api = "/api/update-entry-access-list";
 		}
-		if (!modify) {
-			printStatus("nothing to do");
+		let data = new FormData();
+		for (let path of paths) {
+			data.append("path", path);
 		}
+		data.append("value", valueInput.value);
+		postForge(api, data, function(_, err) {
+			if (err) {
+				nameInput.dataset.error = "1";
+				printErrorStatus(err);
+				return;
+			}
+			if (popupHandle.classList.contains("infoTitle")) {
+				popup.classList.remove("expose");
+				popupHandle.classList.remove("popupHandle");
+			} else {
+				reloadPropertyPicker(popup, ctg, prop, false);
+			}
+			printStatus("done");
+		});
 		return;
 	}
 	let data = new FormData();
@@ -3453,7 +3424,7 @@ function reloadPropertyPicker(popup, ctg, prop, forceProp) {
 			}
 			let environs = [];
 			for (let e of envs) {
-				let l = e.Name + "=" + e.Value;
+				let l = e.Name + "=" + e.Value.replaceAll("\n", "\\\n");
 				if (e.Path != path) {
 					l = "~" + l;
 				}

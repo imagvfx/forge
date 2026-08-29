@@ -41,6 +41,7 @@ type Service interface {
 	UpdateProperty(ctx context.Context, upd PropertyUpdater) error
 	UpdateProperties(ctx context.Context, upds []PropertyUpdater) error
 	EntryEnvirons(ctx context.Context, path string) ([]*Property, error)
+	EntryEnviron(ctx context.Context, path, name string) (*Property, error)
 	GetEnvirons(ctx context.Context, path string) ([]*Property, error)
 	GetEnviron(ctx context.Context, path, name string) (*Property, error)
 	AddEnviron(ctx context.Context, p *Property) error
@@ -48,6 +49,7 @@ type Service interface {
 	DeleteEnviron(ctx context.Context, path string, name string) error
 	EntryAccessList(ctx context.Context, path string) ([]*Access, error)
 	GetAccessList(ctx context.Context, path string) ([]*Access, error)
+	EntryAccess(ctx context.Context, path, name string) (*Access, error)
 	GetAccess(ctx context.Context, path, name string) (*Access, error)
 	AddAccess(ctx context.Context, ac *Access) error
 	UpdateAccess(ctx context.Context, upd AccessUpdater) error

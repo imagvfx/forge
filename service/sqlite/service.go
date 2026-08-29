@@ -158,6 +158,10 @@ func (s *Service) GetEnvirons(ctx context.Context, path string) ([]*forge.Proper
 	return GetEnvirons(s.db, ctx, path)
 }
 
+func (s *Service) EntryEnviron(ctx context.Context, path, name string) (*forge.Property, error) {
+	return EntryEnviron(s.db, ctx, path, name)
+}
+
 func (s *Service) GetEnviron(ctx context.Context, path, name string) (*forge.Property, error) {
 	return GetEnviron(s.db, ctx, path, name)
 }
@@ -180,6 +184,10 @@ func (s Service) EntryAccessList(ctx context.Context, path string) ([]*forge.Acc
 
 func (s Service) GetAccessList(ctx context.Context, path string) ([]*forge.Access, error) {
 	return GetAccessList(s.db, ctx, path)
+}
+
+func (s *Service) EntryAccess(ctx context.Context, path, name string) (*forge.Access, error) {
+	return EntryAccess(s.db, ctx, path, name)
 }
 
 func (s *Service) GetAccess(ctx context.Context, path, name string) (*forge.Access, error) {

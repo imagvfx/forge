@@ -243,7 +243,7 @@ type Access struct {
 	ID        int
 	EntryPath string
 	Name      string
-	Type      string // Don't need when adding Access.
+	Type      string // 'user' or 'group'. Don't need to fill this when adding Access.
 	Value     string
 	Eval      string
 	RawValue  int

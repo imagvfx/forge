@@ -466,6 +466,20 @@ func (s *Server) GetEnvirons(ctx context.Context, path string) ([]*Property, err
 	return envs, nil
 }
 
+func (s *Server) EntryEnviron(ctx context.Context, path, name string) (*Property, error) {
+	if path == "" {
+		return nil, fmt.Errorf("environ path not specified")
+	}
+	if name == "" {
+		return nil, fmt.Errorf("environ name not specified")
+	}
+	e, err := s.svc.EntryEnviron(ctx, path, name)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
 func (s *Server) GetEnviron(ctx context.Context, path, name string) (*Property, error) {
 	if path == "" {
 		return nil, fmt.Errorf("environ path not specified")
@@ -561,6 +575,20 @@ func (s *Server) GetAccessList(ctx context.Context, path string) ([]*Access, err
 		return acls[i].Name < acls[j].Name
 	})
 	return acls, nil
+}
+
+func (s *Server) EntryAccess(ctx context.Context, path, name string) (*Access, error) {
+	if path == "" {
+		return nil, fmt.Errorf("access path not specified")
+	}
+	if name == "" {
+		return nil, fmt.Errorf("access name not specified")
+	}
+	a, err := s.svc.EntryAccess(ctx, path, name)
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
 }
 
 func (s *Server) GetAccess(ctx context.Context, path string, accessor string) (*Access, error) {

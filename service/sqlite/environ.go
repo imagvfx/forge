@@ -149,6 +149,51 @@ func findEnvirons(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([
 	return envs, nil
 }
 
+// EntryEnviron returns an environ defined in an entry or inherited from the ancestors.
+func EntryEnviron(db *sql.DB, ctx context.Context, path, name string) (*forge.Property, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	e, err := entryEnviron(tx, ctx, path, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
+}
+
+func entryEnviron(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Property, error) {
+	_, err := getEntry(tx, ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	var e *forge.Property
+	for {
+		envs, err := findEnvirons(tx, ctx, forge.PropertyFinder{EntryPath: &path, Name: &name})
+		if err != nil {
+			return nil, err
+		}
+		if len(envs) == 0 {
+			if path == "/" {
+				break
+			}
+			path = filepath.Dir(path)
+			continue
+		}
+		if len(envs) > 1 {
+			return nil, fmt.Errorf("multiple values for an environ")
+		}
+		e = envs[0]
+		return e, nil
+	}
+	return nil, forge.NotFound("environ not found")
+}
+
 func GetEnviron(db *sql.DB, ctx context.Context, path, name string) (*forge.Property, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

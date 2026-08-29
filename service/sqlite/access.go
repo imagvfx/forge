@@ -81,6 +81,51 @@ func entryAccessList(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Acc
 	return acs, nil
 }
 
+// EntryAccess returns an access defined in an entry or inherited from the ancestors.
+func EntryAccess(db *sql.DB, ctx context.Context, path, name string) (*forge.Access, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	a, err := entryAccess(tx, ctx, path, name)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+func entryAccess(tx *sql.Tx, ctx context.Context, path, name string) (*forge.Access, error) {
+	_, err := getEntry(tx, ctx, path)
+	if err != nil {
+		return nil, err
+	}
+	var a *forge.Access
+	for {
+		accs, err := findAccessList(tx, ctx, forge.AccessFinder{EntryPath: &path, Name: &name})
+		if err != nil {
+			return nil, err
+		}
+		if len(accs) == 0 {
+			if path == "/" {
+				break
+			}
+			path = filepath.Dir(path)
+			continue
+		}
+		if len(accs) > 1 {
+			return nil, fmt.Errorf("multiple values for an access")
+		}
+		a = accs[0]
+		return a, nil
+	}
+	return nil, forge.NotFound("access not found")
+}
+
 func GetAccessList(db *sql.DB, ctx context.Context, path string) ([]*forge.Access, error) {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
