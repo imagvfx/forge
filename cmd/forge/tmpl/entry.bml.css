@@ -1319,7 +1319,7 @@
 }
 
 .copyable.highlight {
-	outline: 1px solid #88aadd;
+	outline: 1px solid #88aadd !important;
 }
 
 .infoCategoryToggle {
