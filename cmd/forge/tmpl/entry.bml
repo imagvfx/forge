@@ -183,7 +183,7 @@
 							{{$propFilters := index $.PropertyFilters $.Entry.Type}}
 							{{range $name := $propFilters}}
 							{{with $p := index $.Entry.Property $name}}
-							<div class="dirEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+							<div class="dirEntryInfo info" data-category="property" data-name="{{$p.Name}}" data-value="{{$p.Value}}"> [
 								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									<div class="infoTitle statusSelector"> [
 										{{$p.Name}}
@@ -201,7 +201,7 @@
 							{{end}}
 							{{range $name := $.DirEntryHiddenProperties}}
 							{{with $p := index $.Entry.Property $name}}
-							<div class="dirEntryInfo info hiddenProperty" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$p.Name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+							<div class="dirEntryInfo info hiddenProperty" data-category="property" data-name="{{$p.Name}}" data-value="{{$p.Value}}"> [
 								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									<div class="infoTitle statusSelector"> [
 										<div class="hiddenPropertyIcon"> []
@@ -219,7 +219,7 @@
 							{{end}}
 							{{end}}
 							{{range $e := $.Environs}}
-							<div class="dirEntryInfo info" data-category="environ" data-entry-path="{{$e.EntryPath}}" data-name="{{$e.Name}}" data-type="{{$e.Type}}" data-value="{{$e.Value}}"> [
+							<div class="dirEntryInfo info" data-category="environ" data-name="{{$e.Name}}" data-value="{{$e.Value}}"> [
 								<div class="infoTop copyable" data-copy-from=".dirEntryInfo" data-copy-field="value"> [
 									{{if eq $e.EntryPath $.Entry.Path}}
 									<img class="overrideInfoIcon" src="/asset/override.svg">[]
@@ -532,7 +532,7 @@
 										<div class="subEntryProperties"> [
 											{{range $name := $propFilters}}
 											{{with $p := index $ent.Property $name}}
-											<div class="subEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
+											<div class="subEntryInfo info" data-category="property" data-name="{{$name}}" data-value="{{$p.Value}}"> [
 												<div class="subEntryInfoTop"> [
 													<div class="infoTitle statusSelector copyable" data-copy-key="{{$name}}" data-copy-from=".subEntryInfo" data-copy-field="value"> [
 														{{$name}}
