@@ -2390,7 +2390,6 @@ function titleRecentlyUpdatedDot(dot) {
 }
 
 function updateThumbnail(thumb) {
-	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("updateThumbnailForm")[0];
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
@@ -2411,12 +2410,11 @@ function updateThumbnail(thumb) {
 	let data = new FormData(form);
 	postForge(form.action, data, function(_, err) {
 		if (err) {
-			img.parentElement.style.border = "1px solid #D72";
 			printErrorStatus(err);
 			return;
 		}
 		let entryPath = thumb.closest(".entry").dataset.entryPath;
-		img.src = "/thumbnail" + entryPath + "?t=" + new Date().getTime();
+		thumb.style.backgroundImage = "url(/thumbnail" + entryPath +  "?t=" + new Date().getTime(); + ")";
 		thumb.classList.remove("inherited");
 		thumb.classList.add("exists");
 		printStatus("done");
@@ -2424,17 +2422,16 @@ function updateThumbnail(thumb) {
 }
 
 function deleteThumbnail(thumb) {
-	let img = thumb.getElementsByClassName("thumbnailImg")[0];
 	let form = thumb.getElementsByClassName("deleteThumbnailForm")[0];
 	let data = new FormData(form);
 	postForge(form.action, data, function(_, err) {
 		if (err) {
-			img.parentElement.style.border = "1px solid #D72";
+			thumb.parentElement.style.border = "1px solid #D72";
 			printErrorStatus(err);
 		}
 		// the image is gone, reflect it to img tag (even if it will not visible).
 		// TODO: inherit parent thumbnail
-		img.src = img.src.split("?")[0] + "?t=" + new Date().getTime();
+		thumb.style.removeProperty("background-image");
 		form.action = form.action.replace("/api/update", "/api/add");
 		thumb.classList.remove("exists");
 		printStatus("done");

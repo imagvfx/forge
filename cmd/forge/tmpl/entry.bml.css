@@ -263,41 +263,31 @@
 
 .thumbnail {
 	display: flex;
-}
-
-.thumbnailContainer {
-	display: flex;
+   width:128px;
+   height:72px;
 	border: 1px dashed #CCCCCC;
 	color: #CCCCCC;
-	background-color: #F4F4F4;
 	border-radius: 3px;
-	flex: 1;
-	justify-content: center;
+	justify-content: end;
+	// background-image will be filled on each of the elements.
+	background-color: #F4F4F4;
+	background-size: contain;
+   background-repeat: no-repeat;
+   overflow: hidden;
 }
 
-.thumbnail.exists .thumbnailContainer {
+.thumbnail.exists {
 	border-style: solid;
 }
 
-.thumbnailImg {
-	border-radius: 2px;
-	width: 128px;
-	height: 72px;
-}
-
-.subEntry .thumbnailImg {
-	border-radius: 2px;
+.subEntry .thumbnail {
 	width: 96px;
 	height: 54px;
 }
 
-.detailView .subEntry .thumbnailImg {
+.detailView .subEntry .thumbnail {
 	width: 128px;
 	height: 72px;
-}
-
-.thumbnail:not(:is(.exists, .inherited)) .thumbnailImg {
-	visibility: hidden;
 }
 
 .thumbnail.exists .updateThumbnailButton {
