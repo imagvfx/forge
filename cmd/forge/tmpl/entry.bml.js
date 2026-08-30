@@ -2068,13 +2068,6 @@ window.onload = function() {
 			mod.classList.add("nodisplay");
 		}
 	}
-	let dots = document.querySelectorAll(".recentlyUpdatedDot");
-	for (let dot of dots) {
-		if (dot.classList.contains("invisible")) {
-			continue;
-		}
-		titleRecentlyUpdatedDot(dot);
-	}
 	let dueLabels = document.querySelectorAll(".dueLabel")
 	for (let el of dueLabels) {
 		let due = el.dataset.due;
