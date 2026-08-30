@@ -2793,13 +2793,15 @@ function refreshInfoValue(path, ctg, name, p) {
 	let delta = (now - updated);
 	let day = 24 * 60 * 60 * 1000;
 	if (delta <= day) {
-		let dot = infoElem.querySelector(".recentlyUpdatedDot");
-		let ent = dot.closest(".entry");
-		let entDot = ent.querySelector(".recentlyUpdatedDot.forEntry");
-		for (let d of [dot, entDot]) {
-			d.dataset.updatedAt = p.UpdatedAt;
-			d.title = "updated just now";
-			d.classList.remove("invisible");
+		let infoTitle = infoElem.querySelector(".infoTitle");
+		let subEntryTop = infoElem.closest(".entry").querySelector(".subEntryTop");
+		for (let dotParent of [infoTitle, subEntryTop]) {
+			let d = dotParent.querySelector(".recentlyUpdatedDot");
+			if (!d) {
+				d = document.createElement("div");
+				d.classList.add("recentlyUpdatedDot");
+				dotParent.appendChild(d);
+			}
 		}
 	}
 }
