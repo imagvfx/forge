@@ -1114,6 +1114,10 @@
 	height: 0;
 }
 
+.grandSubArea {
+   flex: 1;
+}
+
 .grandSubEntries {
 	display: flex;
 	flex-wrap: wrap;

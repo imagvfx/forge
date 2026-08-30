@@ -503,7 +503,6 @@
 												]
 												{{end}}
 											]
-											<div class="flexSpacer"> []
 											<div class="linkedEntryArea"> [
 												{{with $keyshot := index .Property "keyshot"}}
 												{{with $val := $keyshot.Value}}
