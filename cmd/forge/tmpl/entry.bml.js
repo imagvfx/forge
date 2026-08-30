@@ -2081,6 +2081,21 @@ window.onload = function() {
 			el.innerText = ddayForm(n);
 		}
 	}
+	let subEntryInfoTops = document.querySelectorAll(".subEntryInfoTop");
+	for (let el of subEntryInfoTops) {
+		el.onmouseenter = function() {
+			let ent = el.closest(".entry");
+			if (el.querySelector(".subEntryInfoHistoryLink")) {
+				return;
+			}
+			let prop = el.closest(".info").dataset.name;
+			let link = document.createElement("a");
+			link.classList.add("subEntryInfoHistoryLink");
+			link.href = "/logs?path=" + ent.dataset.entryPath + "&category=property&name=" + prop;
+			link.innerText = "···";
+			el.appendChild(link);
+		}
+	}
 	let scrollToTop = document.querySelector("#scrollToTop");
 	scrollToTop.onmouseenter = function() {
 		scrollToTop.classList.add("reveal");
