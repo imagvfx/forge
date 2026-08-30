@@ -1717,24 +1717,6 @@ window.onload = function() {
 				status = "(none)";
 			}
 			label.innerText += status;
-			let assignee = labeler.dataset.assignee;
-			if (assignee != "") {
-				label.innerText += " / "
-				let called = CalledByName[assignee];
-				label.innerText += called;
-			}
-			let reviewer = labeler.dataset.reviewer;
-			if (reviewer != "") {
-				label.innerText += "▸" + reviewer;
-			}
-			let due = labeler.dataset.due;
-			if (due != "") {
-				label.innerText += " / "
-				let start = new Date();
-				let end = new Date(due);
-				let t = ddayForm(workdayLeft(start, end));
-				label.innerText += t;
-			}
 			label.style.fontSize = "0.6rem";
 			label.classList.remove("nodisplay");
 			label.style.left = String(labeler.offsetLeft - 4) + "px";
