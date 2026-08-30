@@ -487,7 +487,6 @@
 														<div class="gsInfo"> [
 															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> [{{$called}}]
 															{{with $p := index $gs.Property "reviewer"}}{{if $p.Value}}<div class="reviewerLabel" data-reviewer="{{$p.Value}}"> [▸ {{$p.Eval}}]{{end}}{{end}}
-															<div style="flex:1"> []
 															{{if not (index $.EndStatus $gs.Type $status)}}
 															<div class="dueLabel" data-due="{{$due}}" title="{{$due}}"> []
 															{{end}}
