@@ -1956,7 +1956,7 @@ window.onload = function() {
 				console.log("info not found");
 				return;
 			}
-			let infoHistoryPage = "/logs?path=" + info.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
+			let infoHistoryPage = "/logs?path=" + ent.dataset.entryPath + "&category=" + info.dataset.category + "&name=" + info.dataset.name;
 			if (info.dataset.category == "property") {
 				location.href = infoHistoryPage;
 				return;
