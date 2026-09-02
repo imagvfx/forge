@@ -281,11 +281,6 @@
 }
 
 .subEntry .thumbnail {
-	width: 96px;
-	height: 54px;
-}
-
-.detailView .subEntry .thumbnail {
 	width: 128px;
 	height: 72px;
 }
@@ -635,17 +630,13 @@
 
 .subEntryList {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
 	margin: 1rem 0 1.5rem 0;
 	border: 1px solid #DDDDDD;
 	border-radius: 4px;
 	background-color: #F4F4F4;
 	gap: 1px;
 	overflow: hidden;
-}
-
-.detailView .subEntryList {
-	grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
 }
 
 .subEntryListContainer[data-hide="1"] .subEntryList {
@@ -730,15 +721,6 @@
 
 .subEntryListOption.expandPropertyOption[data-expand="true"] {
 	background-image: url("/asset/expand-property.svg");
-}
-
-.subEntryListOption.detailViewOption {
-	background-image: url("/asset/compact-view.svg");
-	background-size: 1.4rem;
-}
-
-.subEntryListOption.detailViewOption:not([data-value=""]) {
-	background-image: url("/asset/detail-view.svg");
 }
 
 .subEntryArea:not(.editMode) .subEntryListOption.deleteEntryOption {
@@ -1125,18 +1107,12 @@
 	gap: 0.2rem 0.1rem;
 	padding: 0.1rem;
 	margin-top: 0.3rem;
-}
-
-.detailView .grandSubEntries {
 	flex-direction: column;
 }
 
 .grandSubGroup {
 	display: flex;
 	flex-wrap: wrap;
-}
-
-.detailView .grandSubGroup {
 	flex-direction: column;
 }
 
@@ -1159,7 +1135,7 @@
 	outline: 1px solid #88aadd;
 }
 
-.detailView .grandSub.nonDirect::before {
+.grandSub.nonDirect::before {
 	color: #ddd;
 	content: "L";
 	text-vertical-align:top;
@@ -1565,7 +1541,6 @@
 
 .gsInfo {
 	flex: 1;
-	display: none;
 	justify-content: space-between;
 	align-items: center;
 	font-size: 0.6rem;
@@ -1573,9 +1548,6 @@
 	color: #444;
 	gap: 0.1rem;
 	white-space: pre;
-}
-
-.detailView .gsInfo {
 	display: flex;
 }
 

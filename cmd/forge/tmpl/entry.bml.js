@@ -290,36 +290,6 @@ window.onload = function() {
 				});
 				return;
 			}
-			opt = event.target.closest(".subEntryListOption.detailViewOption");
-			if (opt) {
-				let subEntArea = document.querySelector(".subEntryArea");
-				if (opt.dataset.value) {
-					subEntArea.classList.remove("detailView");
-					opt.dataset.value = "";
-				} else {
-					subEntArea.classList.add("detailView");
-					opt.dataset.value = "1";
-				}
-				let data = new FormData();
-				data.append("section", "entry_page");
-				postForge("/api/ensure-user-data-section", data, function(_, err) {
-					if (err) {
-						printErrorStatus(err);
-						return;
-					}
-					let d = new FormData();
-					d.append("section", "entry_page");
-					d.append("key", "detail_view");
-					d.append("value", opt.dataset.value);
-					postForge("/api/set-user-data", d, function(_, err) {
-						if (err) {
-							printErrorStatus(err);
-							return;
-						}
-					});
-				});
-				return;
-			}
 			opt = event.target.closest(".subEntryListOption.deleteEntryOption");
 			if (opt) {
 				let selEnts = selectedEntries();

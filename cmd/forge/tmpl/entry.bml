@@ -259,7 +259,7 @@
 					]
 				]
 				{{end}}
-				<div class="subEntryArea {{if (index $.PageSetting.Data "detail_view")}}detailView{{end}} {{if $.UserSetting.EntryPageExpandProperty}}expandProperty{{end}}" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
+				<div class="subEntryArea {{if $.UserSetting.EntryPageExpandProperty}}expandProperty{{end}}" data-view="{{$.UserSetting.SearchView}}" data-group-by=""> [
 					<div class="subEntryListOptions"> [
 						<div class="subEntryListOption editModeOption" title="turn on/off edit-mode" data-value=""> []
 						<div class="subEntryListSeparator"> []
@@ -267,7 +267,6 @@
 							<img class="normalViewOption" src="/asset/normal-view.svg"> []
 							<img class="thumbnailViewOption" src="/asset/thumbnail-view.svg"> []
 						]
-						<div class="subEntryListOption detailViewOption" title="enable/disable detail view" data-value="{{index $.PageSetting.Data "detail_view"}}"> []
 						<div class="subEntryListOption expandPropertyOption" title="expand/shrink property" data-expand="{{$.UserSetting.EntryPageExpandProperty}}"> []
 						<div class="flexSpacer"> []
 						<select class="subEntryListOption groupByOption" {{with or (not $.ResultsFromSearch) $.GroupByOverride}}data-disabled="1" disabled{{end}}> [
