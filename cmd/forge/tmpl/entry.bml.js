@@ -2581,7 +2581,7 @@ function refreshInfoValue(path, ctg, name, p) {
 	// If you are going to modify this function,
 	// You should also modify 'infoValueElement' handler function in page_handler.go.
 
-	let infoElem = document.querySelector(`.entry[data-entry-path='${path}'] .info[data-category='${ctg}'][data-name='${name}']`);
+	let infoElem = document.querySelector(`.info[data-entry-path='${path}'][data-category='${ctg}'][data-name='${name}']`);
 	if (!infoElem) {
 		return
 	}
