@@ -3090,10 +3090,10 @@ function toggleUpdatePropertyPopup(sel) {
 		select.dataset.building = "1";
 		select.innerHTML = "";
 		let props = Properties[ent.dataset.entryType].slice();
+		props.push("*environ", "*access");
 		if (!props.includes(prop)) {
 			props.push(prop)
 		}
-		props.push("*environ", "*access");
 		for (let p of props) {
 			let opt = document.createElement("option");
 			opt.value = p;
