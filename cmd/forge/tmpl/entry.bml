@@ -539,7 +539,7 @@
 														<div class="recentlyUpdatedDot"> []
 														{{end}}
 													]
-													<div class="subEntryInfoHistoryLink"> [&middot;&middot;&middot;]
+													<div class="infoHistoryLink"> [&middot;&middot;&middot;]
 												]
 												{{infoValueElement $p}}
 											]

@@ -70,7 +70,7 @@ window.onload = function() {
 			window.location.href = url.toString();
 			return;
 		}
-		if (event.target.classList.contains("subEntryInfoHistoryLink")) {
+		if (event.target.classList.contains("infoHistoryLink")) {
 			let t = event.target;
 			let info = t.closest(".info");
 			console.log(info);
