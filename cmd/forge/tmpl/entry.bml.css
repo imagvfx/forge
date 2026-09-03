@@ -1,8 +1,8 @@
 // html { filter: grayscale(100%) }
 
 [contenteditable="true"]:empty:before {
-   content: attr(placeholder);
-   color: #888;
+	content: attr(placeholder);
+	color: #888;
 }
 
 .flexSpacer {
