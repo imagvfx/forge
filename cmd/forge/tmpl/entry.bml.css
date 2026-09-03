@@ -1850,9 +1850,13 @@
 	color: #222222;
 	background-color: #FAFAFA;
 	padding: 0.2rem 0.4rem 0.1rem 0.4rem;
-	font-size: 0.8rem;
+	font-size: 0.7rem;
 	opacity: 0.9;
 	z-index: 1;
+}
+
+.summaryDot > #statusLabel{
+	font-size: 0.6rem;
 }
 
 .infoModifier {

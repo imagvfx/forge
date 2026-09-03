@@ -1671,36 +1671,13 @@ window.onload = function() {
 	for (let labeler of statusLabelers) {
 		let label = document.getElementById("statusLabel");
 		labeler.onmouseenter = function(event) {
-			let status = labeler.dataset.value;
-			if (status == "") {
-				status = "(none)"
-			}
-			label.innerText = status;
-			label.style.fontSize = "0.8rem";
+			labeler.appendChild(label);
+			label.innerText = labeler.dataset.value || "(none)";
 			label.classList.remove("nodisplay");
 			let right = labeler.closest(".right");
 			let offset = offsetFrom(labeler, right);
 			label.style.left = String(offset.left - 4) + "px";
 			label.style.top = String(offset.top - label.offsetHeight - 3) + "px";
-		}
-		labeler.onmouseleave = function(event) {
-			label.classList.add("nodisplay");
-		}
-	}
-	let summaryLabelers = document.getElementsByClassName("summaryLabeler");
-	for (let labeler of summaryLabelers) {
-		let label = document.getElementById("statusLabel");
-		labeler.onmouseenter = function(event) {
-			label.innerText = "";
-			let status = labeler.dataset.value;
-			if (status == "") {
-				status = "(none)";
-			}
-			label.innerText += status;
-			label.style.fontSize = "0.6rem";
-			label.classList.remove("nodisplay");
-			label.style.left = String(labeler.offsetLeft - 4) + "px";
-			label.style.top = String(labeler.offsetTop - label.offsetHeight - 3) + "px";
 		}
 		labeler.onmouseleave = function(event) {
 			label.classList.add("nodisplay");
@@ -1870,7 +1847,7 @@ window.onload = function() {
 							}
 							let prop = ent.Property;
 							let tmpl = document.createElement("template");
-							tmpl.innerHTML = `<div class="summaryDot summaryLabeler statusSelector grandSubEntry"></div>`;
+							tmpl.innerHTML = `<div class="summaryDot statusLabeler statusSelector grandSubEntry"></div>`;
 							let gsub = tmpl.content.firstChild;
 							gsub.innerText = sub;
 							gsub.dataset.sub = sub;
