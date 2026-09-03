@@ -539,7 +539,7 @@
 														<div class="recentlyUpdatedDot"> []
 														{{end}}
 													]
-													<a class="subEntryInfoHistoryLink" href="/logs?path={{$ent.Path}}&category=property&name={{$name}}"> [&middot;&middot;&middot;]
+													<div class="subEntryInfoHistoryLink"> [&middot;&middot;&middot;]
 												]
 												{{infoValueElement $p}}
 											]

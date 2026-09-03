@@ -70,6 +70,16 @@ window.onload = function() {
 			window.location.href = url.toString();
 			return;
 		}
+		if (event.target.classList.contains("subEntryInfoHistoryLink")) {
+			let t = event.target;
+			let info = t.closest(".info");
+			console.log(info);
+			let url = new URL("https://" + window.location.hostname + "/logs");
+			url.searchParams.set("path", info.dataset.entryPath);
+			url.searchParams.set("category", info.dataset.category);
+			url.searchParams.set("name", info.dataset.name);
+			window.location.href = url.toString();
+		}
 		if (event.target.classList.contains("keyshotLink")) {
 			let t = event.target;
 			let query = "keyshot=" + t.dataset.entryPath;

@@ -876,6 +876,7 @@
 	// Due to the font-size difference, I had to manually match it's height to
 	// .subEntryInfo.infoTitle with padding.
 	padding: 0.15rem 0.2rem 0rem 0.2rem;
+	cursor: pointer;
 }
 
 .subEntryInfoHistoryLink:hover {
