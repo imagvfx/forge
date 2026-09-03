@@ -73,7 +73,6 @@ window.onload = function() {
 		if (event.target.classList.contains("infoHistoryLink")) {
 			let t = event.target;
 			let info = t.closest(".info");
-			console.log(info);
 			let url = new URL("https://" + window.location.hostname + "/logs");
 			url.searchParams.set("path", info.dataset.entryPath);
 			url.searchParams.set("category", info.dataset.category);
