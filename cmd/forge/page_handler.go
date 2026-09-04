@@ -441,6 +441,7 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 		if ok {
 			for _, s := range strings.Split(search.Eval, "\n") {
 				if s == "" {
+					atSearches = append(atSearches, [2]string{})
 					continue
 				}
 				name, query, ok := strings.Cut(s, "|")
