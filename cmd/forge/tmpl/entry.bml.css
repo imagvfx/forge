@@ -288,12 +288,12 @@
 	height: 72px;
 }
 
-.thumbnail.exists .updateThumbnailButton {
-	visibility: hidden;
+.thumbnail:not(.exists) #updateThumbnailButton {
+	visibility: visible;
 }
 
-.thumbnail:not(.exists) .deleteThumbnailButton {
-	visibility: hidden;
+.thumbnail.exists #deleteThumbnailButton {
+	visibility: visible;
 }
 
 .thumbnailButton {
@@ -308,6 +308,7 @@
 	height: 1rem;
 	border-radius: 0 3px 0 3px;
 	display: flex;
+	visibility: hidden;
 	justify-content: center;
 	align-items: center;
 	font-size:0.75rem;

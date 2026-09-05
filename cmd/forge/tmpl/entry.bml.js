@@ -1684,43 +1684,42 @@ window.onload = function() {
 	}
 	let thumbs = document.getElementsByClassName('thumbnail');
 	for (let thumb of thumbs) {
+		thumb.onmouseenter = function(event) {
+			thumb.appendChild(document.getElementById("updateThumbnailButton"));
+			thumb.appendChild(document.getElementById("deleteThumbnailButton"));
+		}
 		thumb.ondragover = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			event.currentTarget.classList.add("prepareDrop");
+			thumb.classList.add("prepareDrop");
 		}
 		thumb.ondragleave = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			event.currentTarget.classList.remove("prepareDrop");
+			thumb.classList.remove("prepareDrop");
 		}
 		thumb.ondrop = function(event) {
 			event.stopPropagation();
 			event.preventDefault();
-			let thumbInput = event.currentTarget.getElementsByClassName("updateThumbnailInput")[0];
+			let thumbInput = document.getElementById("updateThumbnailInput");
 			thumbInput.files = event.dataTransfer.files;
-			let thumb = thumbInput.closest(".thumbnail");
 			updateThumbnail(thumb);
-			event.currentTarget.classList.remove("prepareDrop");
+			thumb.classList.remove("prepareDrop");
 		}
 	}
-	let thumbInputs = document.getElementsByClassName("updateThumbnailInput");
-	for (let thumbInput of thumbInputs) {
-		thumbInput.onchange = function(event) {
-			event.stopPropagation();
-			event.preventDefault();
-			let thumb = thumbInput.closest(".thumbnail");
-			updateThumbnail(thumb);
-		}
+	let thumbInput = document.getElementById("updateThumbnailInput");
+	thumbInput.onchange = function(event) {
+		event.stopPropagation();
+		event.preventDefault();
+		let thumb = thumbInput.closest(".thumbnail");
+		updateThumbnail(thumb);
 	}
-	let delThumbButtons = document.getElementsByClassName("deleteThumbnailButton");
-	for (let delButton of delThumbButtons) {
-		delButton.onclick = function(event) {
-			event.stopPropagation();
-			event.preventDefault();
-			let thumb = delButton.closest(".thumbnail");
-			deleteThumbnail(thumb);
-		}
+	let delThumbButton = document.getElementById("deleteThumbnailButton");
+	delThumbButton.onclick = function(event) {
+		event.stopPropagation();
+		event.preventDefault();
+		let thumb = delThumbButton.closest(".thumbnail");
+		deleteThumbnail(thumb);
 	}
 	let assigneeInputs = document.getElementsByClassName("assigneeInput")
 	for (let input of assigneeInputs) {
@@ -2328,7 +2327,6 @@ function titleRecentlyUpdatedDot(dot) {
 }
 
 function updateThumbnail(thumb) {
-	let form = thumb.getElementsByClassName("updateThumbnailForm")[0];
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
 		// Prevent Safari from firing this event twice.
@@ -2340,18 +2338,20 @@ function updateThumbnail(thumb) {
 		}
 	}
 	thumb.dataset.lastUpload = String(now);
+	let action = "/api/add-thumbnail";
 	if (thumb.classList.contains("exists")) {
-		form.action = form.action.replace("/api/add", "/api/update");
-	} else {
-		form.action = form.action.replace("/api/update", "/api/add");
+		action = "/api/update-thumbnail";
 	}
-	let data = new FormData(form);
-	postForge(form.action, data, function(_, err) {
+	let input = document.getElementById("updateThumbnailInput");
+	let data = new FormData();
+	let entryPath = thumb.closest(".entry").dataset.entryPath;
+	data.append("path", entryPath);
+	data.append("file", input.files[0]);
+	postForge(action, data, function(_, err) {
 		if (err) {
 			printErrorStatus(err);
 			return;
 		}
-		let entryPath = thumb.closest(".entry").dataset.entryPath;
 		thumb.style.backgroundImage = "url(/thumbnail" + entryPath +  "?t=" + new Date().getTime(); + ")";
 		thumb.classList.remove("inherited");
 		thumb.classList.add("exists");
@@ -2360,9 +2360,10 @@ function updateThumbnail(thumb) {
 }
 
 function deleteThumbnail(thumb) {
-	let form = thumb.getElementsByClassName("deleteThumbnailForm")[0];
-	let data = new FormData(form);
-	postForge(form.action, data, function(_, err) {
+	let entryPath = thumb.closest(".entry").dataset.entryPath;
+	let data = new FormData();
+	data.append("path", entryPath);
+	postForge("/api/delete-thumbnail", data, function(_, err) {
 		if (err) {
 			thumb.parentElement.style.border = "1px solid #D72";
 			printErrorStatus(err);
@@ -2370,7 +2371,6 @@ function deleteThumbnail(thumb) {
 		// the image is gone, reflect it to img tag (even if it will not visible).
 		// TODO: inherit parent thumbnail
 		thumb.style.removeProperty("background-image");
-		form.action = form.action.replace("/api/update", "/api/add");
 		thumb.classList.remove("exists");
 		printStatus("done");
 	});

@@ -149,18 +149,7 @@
 					<div class="dirEntryBottom" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
 						<div class="dirEntryThumbnailContainer"> [
 							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
-							<a class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> [
-								<form class="updateThumbnailForm" action="/api/{{if $.Entry.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data" onSubmit="return submitAPI(this);"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<label class="updateThumbnailButton thumbnailButton"> [+
-										<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
-									]
-								]
-								<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST" onSubmit="return submitAPI(this);"> [
-									<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
-									<label class="deleteThumbnailButton thumbnailButton"> [-]
-								]
-							]
+							<a class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> []
 						]
 						<div class="dirEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
@@ -411,18 +400,7 @@
 									<div class="subEntryBottom"> [
 										<div class="subEntryBottomLeft"> [
 											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> [
-												<form class="updateThumbnailForm" action="/api/{{if $ent.HasThumbnail}}update{{else}}add{{end}}-thumbnail" method="POST" enctype="multipart/form-data"> [
-													<input name="path" type="hidden" value="{{$ent.Path}}"> []
-													<label class="updateThumbnailButton thumbnailButton"> [+
-														<input class="updateThumbnailInput nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
-													]
-												]
-												<form class="deleteThumbnailForm" action="/api/delete-thumbnail" method="POST"> [
-													<input name="path" type="hidden" value="{{$ent.Path}}"> []
-													<label class="deleteThumbnailButton thumbnailButton"> [-]
-												]
-											]
+											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> []
 											<div class="subInfoArea"> [
 												{{with $assignee := index $ent.Property "assignee"}}
 												<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" value="{{$assignee.Eval}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> [{{$assignee.Eval}}]
@@ -621,6 +599,12 @@
 					<div class="cancelButton button"> [Cancel]
 				]
 			]
+		]
+		<div style="display:none"> [
+			<label id="updateThumbnailButton" class="thumbnailButton"> [+
+				<input id="updateThumbnailInput" class="nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
+			]
+			<label id="deleteThumbnailButton" class="thumbnailButton"> [-]
 		]
 	]
 ]
