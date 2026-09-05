@@ -463,7 +463,6 @@
 												{{else}}
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gsGroups := (index $.GrandSubEntGroups $ent.Path)}}
-													<div class="grandSubGroup {{if gt (len $gsGroups) 1}}detail{{end}}"> [
 													{{range $i, $gs := $gsGroups}}
 														{{$direct := eq $i 0}}
 														<div class="grandSub {{if not $direct}}nonDirect{{end}}"> [
@@ -494,7 +493,6 @@
 														]
 														]
 													{{end}}
-													]
 													{{end}}
 												]
 												<div class="summaryDot grandSubAdderLoader" style="margin-left:0.1rem;"> [+]

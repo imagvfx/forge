@@ -1114,16 +1114,6 @@
 	flex-direction: column;
 }
 
-.grandSubGroup {
-	display: flex;
-	flex-wrap: wrap;
-	flex-direction: column;
-}
-
-.detail.grandSubGroup {
-	width: 100%;
-}
-
 .grandSub {
 	display: flex;
 	align-items: center;
