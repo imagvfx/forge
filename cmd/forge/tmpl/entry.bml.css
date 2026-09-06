@@ -335,6 +335,20 @@
 	display: none;
 }
 
+.undistortInfo {
+	box-sizing: content-box;
+	font-size: 0.6rem;
+	border-radius: 3px;
+	padding: 0 3px;
+	font-style: unset;
+	width: 0.6rem;
+	height: 0.9rem;
+	background-image: url("/asset/distortion.svg");
+	background-size: 0.8rem;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
 .statusSummary {
 	display: flex;
 	gap: 1rem;

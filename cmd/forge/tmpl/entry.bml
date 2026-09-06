@@ -407,7 +407,7 @@
 												{{end}}
 												{{with $p := index $ent.Property "reviewer"}}{{if $p.Value}}<div class="reviewerLabel" data-reviewer="{{$p.Value}}"> [▸ {{$p.Eval}}]{{end}}{{end}}
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
-												<span> []
+												{{with $p := index $ent.Property "undistort_resolution"}}{{if $p.Value}}<span class="undistortInfo" title="undistorted"> []{{end}}{{end}}
 												{{if not (index $.EndStatus $ent.Type $status)}}
 												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
 												<div class="dueLabel" data-due="{{$due.Value}}" title="{{$due.Value}}"> []
