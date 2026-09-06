@@ -509,13 +509,11 @@
 											{{range $name := $propFilters}}
 											{{with $p := index $ent.Property $name}}
 											<div class="subEntryInfo info" data-category="property" data-entry-path="{{$p.EntryPath}}" data-name="{{$name}}" data-type="{{$p.Type}}" data-value="{{$p.Value}}"> [
-												<div class="subEntryInfoTop"> [
-													<div class="infoTitle statusSelector copyable" data-copy-key="{{$name}}" data-copy-from=".subEntryInfo" data-copy-field="value"> [
-														{{$name}}
-														{{if recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts}}
-														<div class="recentlyUpdatedDot"> []
-														{{end}}
-													]
+												<div class="subEntryInfoTop infoTitle statusSelector copyable" data-copy-key="{{$name}}" data-copy-from=".subEntryInfo" data-copy-field="value"> [
+													{{$name}}
+													{{if recent $p.UpdatedAt $.UserSetting.UpdateMarkerLasts}}
+													<div class="recentlyUpdatedDot"> []
+													{{end}}
 												]
 												{{infoValueElement $p}}
 											]

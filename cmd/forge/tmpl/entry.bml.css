@@ -879,10 +879,10 @@
 .subEntryInfoTop {
 	display: flex;
 	font-size: 0.75rem;
-	justify-content: center;
+	justify-content: space-between;
 	align-items: center;
 	color: #AAA;
-	gap: 0.5rem;
+	height: 1.3rem;
 }
 
 #infoHistoryLink {
@@ -1625,6 +1625,7 @@
 	border-radius:2px;
 	margin: 1px;
 	background-color: #CC8888;
+	margin-right: auto;
 }
 
 .recentlyUpdatedDot.forEntry {
