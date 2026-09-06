@@ -885,7 +885,7 @@
 	gap: 0.5rem;
 }
 
-.infoHistoryLink {
+#infoHistoryLink {
 	color: #DDD;
 	border-radius: 2px;
 	font-weight: bold;
@@ -897,18 +897,18 @@
 	cursor: pointer;
 }
 
-.infoHistoryLink:hover {
+#infoHistoryLink:hover {
 	color: #AAA;
 	text-decoration: none !important;
 	border: 1px solid #e8e8e8;
 }
 
-.subEntryArea.editMode .infoHistoryLink:hover {
+#subEntryArea.editMode .infoHistoryLink:hover {
 	background-color: #FAFAFA;
 	border: 1px solid #D0D0D0;
 }
 
-.subEntryInfo:not(:hover) .infoHistoryLink {
+#subEntryInfo:not(:hover) .infoHistoryLink {
 	visibility: hidden;
 }
 

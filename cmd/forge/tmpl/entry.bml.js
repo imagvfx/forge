@@ -70,7 +70,7 @@ window.onload = function() {
 			window.location.href = url.toString();
 			return;
 		}
-		if (event.target.classList.contains("infoHistoryLink")) {
+		if (event.target.id == "infoHistoryLink") {
 			let t = event.target;
 			let info = t.closest(".info");
 			let url = new URL("https://" + window.location.hostname + "/logs");
@@ -2075,6 +2075,12 @@ window.onload = function() {
 	for (let conv of convToCalleds) {
 		let called = CalledByName[conv.dataset.user]
 		conv.innerText = called;
+	}
+	let subEntryInfoTops = document.querySelectorAll(".subEntryInfoTop");
+	for (let top of subEntryInfoTops) {
+		top.onmouseenter = function(event) {
+			top.appendChild(document.getElementById("infoHistoryLink"));
+		}
 	}
 }
 

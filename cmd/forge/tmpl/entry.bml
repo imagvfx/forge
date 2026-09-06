@@ -516,7 +516,6 @@
 														<div class="recentlyUpdatedDot"> []
 														{{end}}
 													]
-													<div class="infoHistoryLink"> [&middot;&middot;&middot;]
 												]
 												{{infoValueElement $p}}
 											]
@@ -605,6 +604,7 @@
 				<input id="updateThumbnailInput" class="nodisplay" name="file" type="file" accept="image/jpeg, image/png"> []
 			]
 			<label id="deleteThumbnailButton" class="thumbnailButton"> [-]
+			<div id="infoHistoryLink"> [&middot;&middot;&middot;]
 		]
 	]
 ]
