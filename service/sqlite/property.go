@@ -53,6 +53,10 @@ func entryProperties(tx *sql.Tx, ctx context.Context, path string) ([]*forge.Pro
 	return findProperties(tx, ctx, forge.PropertyFinder{EntryPath: &path})
 }
 
+func entryPropertiesByID(tx *sql.Tx, ctx context.Context, entry_id int) ([]*forge.Property, error) {
+	return findProperties(tx, ctx, forge.PropertyFinder{EntryID: &entry_id})
+}
+
 // when id is empty, it will find properties of root.
 func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) ([]*forge.Property, error) {
 	keys := make([]string, 0)
@@ -60,6 +64,10 @@ func findProperties(tx *sql.Tx, ctx context.Context, find forge.PropertyFinder) 
 	if find.Name != nil {
 		keys = append(keys, "default_properties.name=?")
 		vals = append(vals, *find.Name)
+	}
+	if find.EntryID != nil {
+		keys = append(keys, "properties.entry_id=?")
+		vals = append(vals, *find.EntryID)
 	}
 	if find.EntryPath != nil {
 		keys = append(keys, "entries.path=?")

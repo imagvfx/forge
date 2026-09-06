@@ -611,7 +611,7 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 	}
 	for _, e := range ents {
 		e.Property = make(map[string]*forge.Property)
-		props, err := entryProperties(tx, ctx, e.Path)
+		props, err := entryPropertiesByID(tx, ctx, e.ID)
 		if err != nil {
 			return nil, err
 		}

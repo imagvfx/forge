@@ -199,6 +199,7 @@ func CompareProperty(t string, a, b string) int {
 }
 
 type PropertyFinder struct {
+	EntryID   *int
 	EntryPath *string
 	Name      *string
 	DefaultID *int
