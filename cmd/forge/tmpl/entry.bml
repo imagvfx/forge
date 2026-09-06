@@ -402,16 +402,12 @@
 											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
 											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> []
 											<div class="subInfoArea"> [
-												{{with $assignee := index $ent.Property "assignee"}}
-												<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $assignee.Value}}my{{end}}" value="{{$assignee.Eval}}" data-assignee="{{$assignee.Value}}" placeholder="assignee"> [{{$assignee.Eval}}]
-												{{end}}
+												{{with $p := index $ent.Property "assignee"}}<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $p.Value}}my{{end}}" value="{{$p.Eval}}" data-assignee="{{$p.Value}}" placeholder="assignee"> [{{$p.Eval}}]{{end}}
 												{{with $p := index $ent.Property "reviewer"}}{{if $p.Value}}<div class="reviewerLabel" data-reviewer="{{$p.Value}}"> [▸ {{$p.Eval}}]{{end}}{{end}}
-												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
 												{{with $p := index $ent.Property "undistort_resolution"}}{{if $p.Value}}<span class="undistortInfo" title="undistorted"> []{{end}}{{end}}
+												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
 												{{if not (index $.EndStatus $ent.Type $status)}}
-												{{with $due := index $ent.Property "due"}}{{if $due.Value}}
-												<div class="dueLabel" data-due="{{$due.Value}}" title="{{$due.Value}}"> []
-												{{end}}{{end}}
+												{{with $p := index $ent.Property "due"}}{{if $p.Value}}<div class="dueLabel" data-due="{{$p.Value}}" title="{{$p.Value}}"> []{{end}}{{end}}
 												{{end}}
 											]
 											{{if index $.ShowGrandSub $ent.Type}}
