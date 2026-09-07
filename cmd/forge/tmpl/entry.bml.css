@@ -338,7 +338,7 @@
 .undistortInfo {
 	box-sizing: content-box;
 	font-size: 0.6rem;
-	border-radius: 3px;
+	border-radius: 1px;
 	padding: 0 3px;
 	font-style: unset;
 	width: 0.6rem;
@@ -347,6 +347,7 @@
 	background-size: 0.8rem;
 	background-repeat: no-repeat;
 	background-position: center;
+	background-color: #fcc;
 }
 
 .statusSummary {
