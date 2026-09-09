@@ -905,28 +905,22 @@ window.onload = function() {
 			return;
 		}
 		if (ctrlPressed && event.code == "KeyD") {
-			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
-				return;
-			}
-			let ents = document.querySelectorAll(":is([data-entry-path],[data-sub]):hover");
-			if (ents.length == 0) {
-				return;
-			}
 			event.preventDefault();
-			let ent = ents[ents.length-1];
-			let sub = "";
-			let path = "";
-			if (ent.dataset.sub) {
-				sub = ent.dataset.sub;
-				let parent = ent.parentElement.closest(".entry");
-				if (!parent) {
-					return;
-				}
-				path = parent.dataset.entryPath + "/" + sub;
-			} else {
-				path = ent.dataset.entryPath;
+			let selEnts = selectedEntries();
+			if (selEnts.length == 0) {
+				 printErrorStatus("no entry selected");
+				 return;
 			}
-			location.href = path;
+			let thisEnt = selEnts[0];
+			let entPath = thisEnt.dataset.entryPath;
+			let expand = !thisEnt.classList.contains("expanded");
+			for (let ent of selEnts) {
+				if (expand) {
+					ent.classList.add("expanded");
+				} else {
+					ent.classList.remove("expanded");
+				}
+			}
 			return;
 		}
 	}
