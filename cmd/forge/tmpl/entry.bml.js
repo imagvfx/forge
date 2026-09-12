@@ -2352,7 +2352,8 @@ function updateThumbnail(thumb) {
 			printErrorStatus(err);
 			return;
 		}
-		thumb.style.backgroundImage = "url(/thumbnail" + entryPath +  "?t=" + new Date().getTime(); + ")";
+		let img = thumb.querySelector(".thumbnailImg");
+		img.src = "/thumbnail" + entryPath +  "?t=" + new Date().getTime();
 		thumb.classList.remove("inherited");
 		thumb.classList.add("exists");
 		printStatus("done");
@@ -2370,7 +2371,8 @@ function deleteThumbnail(thumb) {
 		}
 		// the image is gone, reflect it to img tag (even if it will not visible).
 		// TODO: inherit parent thumbnail
-		thumb.style.removeProperty("background-image");
+		let img = thumb.querySelector(".thumbnailImg");
+		img.src = "";
 		thumb.classList.remove("exists");
 		printStatus("done");
 	});

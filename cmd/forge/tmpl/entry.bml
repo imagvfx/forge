@@ -149,7 +149,9 @@
 					<div class="dirEntryBottom" data-selected-category="{{$.UserSetting.EntryPageSelectedCategory}}" data-show-hidden="{{$.UserSetting.EntryPageShowHiddenProperty}}"> [
 						<div class="dirEntryThumbnailContainer"> [
 							{{$thumbnailPath := index $.ThumbnailPath $.Entry.Path}}
-							<a class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> []
+							<a class="thumbnail {{if $.Entry.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}"> [
+								<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" loading="lazy"> []
+							]
 						]
 						<div class="dirEntryInfoContainer"> [
 							<!-- Property Expand Toggle -->
@@ -400,7 +402,9 @@
 									<div class="subEntryBottom"> [
 										<div class="subEntryBottomLeft"> [
 											{{$thumbnailPath := index $.ThumbnailPath $ent.Path}}
-											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}" style="background-image:url(/thumbnail{{$thumbnailPath}});"> []
+											<a class="thumbnail {{if $ent.HasThumbnail}}exists{{else if $thumbnailPath}}inherited{{end}}" href="{{$ent.Path}}"> [
+												<img class="thumbnailImg" src="/thumbnail{{$thumbnailPath}}" loading="lazy"> []
+											]
 											<div class="subInfoArea"> [
 												{{with $p := index $ent.Property "assignee"}}<div contenteditable="true" class="assigneeInput {{if eq $.User.Name $p.Value}}my{{end}}" value="{{$p.Eval}}" data-assignee="{{$p.Value}}" placeholder="assignee"> [{{$p.Eval}}]{{end}}
 												{{with $p := index $ent.Property "reviewer"}}{{if $p.Value}}<div class="reviewerLabel" data-reviewer="{{$p.Value}}"> [▸ {{$p.Eval}}]{{end}}{{end}}

@@ -288,6 +288,14 @@
 	height: 72px;
 }
 
+.thumbnail .thumbnailImg {
+	visibility: hidden;;
+}
+
+.thumbnail:is(.exists, .inherited) .thumbnailImg {
+	visibility: visible;
+}
+
 .thumbnail:not(.exists) #updateThumbnailButton {
 	visibility: visible;
 }
