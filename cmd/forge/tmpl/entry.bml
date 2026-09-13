@@ -81,7 +81,7 @@
 							<input name="quick_search_override" type="hidden" value="1"> []
 							<button hidden> []
 						]
-						<div style="flex:1"> []
+						<div class="flexSpacer"> []
 						<div class="showSearches" style="display:flex;flex-wrap:wrap;justify-content:end;"> [
 							{{range $at := $.Searches}}
 							{{range $s := $at}}
@@ -112,7 +112,7 @@
 						{{if $.Entry.Archived}}
 						<div class="archivedLabel" style="font-size:0.8rem"> [Archived]
 						{{end}}
-						<div style="flex:1"> []
+						<div class="flexSpacer"> []
 						<div class="dirEntryFunctions"> [
 							<form action="/api/update-user-setting" method="POST" onSubmit="return submitAPI(this);"> [
 								<input name="update_pinned_path" type="hidden" value="1"> []
@@ -298,7 +298,7 @@
 						{{range $t, $vals := $.SubEntryTags}}
 						{{if $vals}}
 						<div style="display:flex;flex-wrap:wrap;justify-content:end;"> [
-							<div style="flex:1"> []
+							<div class="flexSpacer"> []
 							{{range $v := $vals -}}
 							<div class="tagLink" title="{{$t}}={{$v}}" data-tag-name="{{$t}}" data-tag-value="{{$v}}"> [{{$v}}]
 							{{- end}}
@@ -307,7 +307,7 @@
 						{{end}}
 					]
 					<div class="subEntryFunctions"> [
-						<div style="flex:1"> []
+						<div class="flexSpacer"> []
 						<form id="addExcelForm" action="/api/bulk-update" method="post" enctype="multipart/form-data" onSubmit="return submitAPI(this);"> [
 							<input name="path" type="hidden" value="{{$.Entry.Path}}"> []
 							<input name="add" type="hidden" value="1"> []
@@ -410,6 +410,7 @@
 												{{with $p := index $ent.Property "reviewer"}}{{if $p.Value}}<div class="reviewerLabel" data-reviewer="{{$p.Value}}"> [▸ {{$p.Eval}}]{{end}}{{end}}
 												{{with $p := index $ent.Property "undistort_resolution"}}{{if $p.Value}}<span class="undistortInfo" title="undistorted"> []{{end}}{{end}}
 												{{$status := ""}}{{with $p := index $ent.Property "status"}}{{$status = $p.Value}}{{end}}
+												<div class="flexSpacer"> []
 												{{if not (index $.EndStatus $ent.Type $status)}}
 												{{with $p := index $ent.Property "due"}}{{if $p.Value}}<div class="dueLabel" data-due="{{$p.Value}}" title="{{$p.Value}}"> []{{end}}{{end}}
 												{{end}}
@@ -464,7 +465,7 @@
 														<div class="gsInfo"> [
 															<div class="assigneeLabel  {{if eq $.User.Name $assignee}}my{{end}}" data-assignee="{{$assignee}}"> [{{$called}}]
 															{{with $p := index $gs.Property "reviewer"}}{{if $p.Value}}<div class="reviewerLabel" data-reviewer="{{$p.Value}}"> [▸ {{$p.Eval}}]{{end}}{{end}}
-															<div style="flex:1"> []
+															<div class="flexSpacer"> []
 															{{if not (index $.EndStatus $gs.Type $status)}}
 															<div class="dueLabel" data-due="{{$due}}" title="{{$due}}"> []
 															{{end}}
@@ -573,7 +574,7 @@
 						]
 					]
 				]
-				<div id="statusBar" style="display:flex;padding:0 0.5rem;align-items:center;background-color:white;height:1.5rem;border-top:1px solid #DDD;font-size:0.8rem;"> []
+				<div id="statusBar"> []
 			]
 		]
 
