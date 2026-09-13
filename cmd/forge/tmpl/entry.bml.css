@@ -246,6 +246,9 @@
 	font-size: 0.75rem;
 	color: #555;
 	user-select: none;
+	width: 5.7rem;
+	display: flex;
+	flex-direction: column;
 }
 
 .dirEntryInfos {
@@ -1330,7 +1333,7 @@
 }
 
 .infoCategoryToggle {
-	width: fit-content;
+	width: auto;
 	display: flex;
 	align-items: stretch;
 	border-radius: 2px;
