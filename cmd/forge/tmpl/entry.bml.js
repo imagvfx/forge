@@ -785,38 +785,29 @@ window.onload = function() {
 					}
 					paths.push(path);
 				}
-				let data = new FormData();
-				for (let path of paths) {
-					data.append("path", path)
-					data.append("name", prop)
-				}
-				postForge("/api/get-properties", data, function(ps, err) {
-					if (err) {
-						printErrorStatus(err);
-						return;
+				let onget = function(props) {
+					let text = "";
+					for (let p of props) {
+						text += p.Eval
+						text += "\n"
 					}
-					let data = "";
-					for (let p of ps) {
-						data += p.Eval
-						data += "\n"
-					}
-					let succeeded = function() {
-						let show = data;
-						if (show.length > 50) {
-							show = show.slice(0, 50) + "...";
+					let onwrite = function() {
+						let info = prop;
+						if (sub != "") {
+							info = sub + " " + prop;
 						}
-						printStatus(prop + " copied from " + ps.length + " entries: " + show);
-						copyable.classList.add("highlight");
-						setTimeout(function() {
-							copyable.classList.remove("highlight");
-						}, 500)
+						let num = String(props.length);
+						if (num != selectedEnts.length) {
+							num += " of " + String(selectedEnts.length);
+						}
+						printStatus(info + " copied from " + num + " entries: " + text);
 					}
-					let failed = function() {
-						printStatus("failed to copy data");
+					let onfail = function() {
+						printErrorStatus("failed to copy data");
 					}
-					navigator.clipboard.writeText(data).then(succeeded, failed);
-					return;
-				});
+					navigator.clipboard.writeText(text).then(onwrite, onfail);
+				}
+				getProperties(paths, prop, onget)
 				return;
 			}
 
@@ -2113,6 +2104,21 @@ function getEntry(path, onget, onfail) {
 		}
 		EntryCache[path] = ent;
 		onget(ent);
+	});
+}
+
+function getProperties(paths, prop, onget) {
+	let data = new FormData();
+	for (let path of paths) {
+		data.append("path", path)
+		data.append("name", prop)
+	}
+	postForge("/api/get-properties", data, function(props, err) {
+		if (err) {
+			printErrorStatus(err);
+			return;
+		}
+		onget(props);
 	});
 }
 
