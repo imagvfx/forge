@@ -991,21 +991,25 @@ func (s *Server) GetThumbnail(ctx context.Context, path string) (*Thumbnail, err
 	return thumb, nil
 }
 
-func thumbnail(img image.Image, width, height int) image.Image {
-	thumb := image.NewRGBA(image.Rect(0, 0, 192, 108))
+func thumbnailImage(img image.Image) image.Image {
+	return resizeImage(img, 192, 108)
+}
+
+func resizeImage(img image.Image, width, height int) image.Image {
+	thumb := image.NewRGBA(image.Rect(0, 0, width, height))
 	thumbBounds := thumb.Bounds()
 	imgWidth := float64(img.Bounds().Dx())
 	imgHeight := float64(img.Bounds().Dy())
-	xs := imgWidth / 192
-	ys := imgHeight / 108
+	xs := imgWidth / float64(width)
+	ys := imgHeight / float64(height)
 	if xs > ys {
 		scaledHeight := int(imgHeight / xs)
-		marginY := (108 - scaledHeight) / 2
+		marginY := (height - scaledHeight) / 2
 		thumbBounds.Min.Y += marginY
 		thumbBounds.Max.Y -= marginY
 	} else {
 		scaledWidth := int(imgWidth / ys)
-		marginX := (192 - scaledWidth) / 2
+		marginX := (width - scaledWidth) / 2
 		thumbBounds.Min.X += marginX
 		thumbBounds.Max.X -= marginX
 	}
@@ -1021,7 +1025,7 @@ func (s *Server) AddThumbnail(ctx context.Context, path string, img image.Image)
 	if img == nil {
 		return fmt.Errorf("thumbnail image not specified")
 	}
-	thumb := thumbnail(img, 192, 108)
+	thumb := thumbnailImage(img)
 	buf := new(bytes.Buffer)
 	err := png.Encode(buf, thumb)
 	if err != nil {
@@ -1044,7 +1048,7 @@ func (s *Server) UpdateThumbnail(ctx context.Context, path string, img image.Ima
 	if img == nil {
 		return fmt.Errorf("thumbnail image not specified")
 	}
-	thumb := thumbnail(img, 192, 108)
+	thumb := thumbnailImage(img)
 	buf := new(bytes.Buffer)
 	err := png.Encode(buf, thumb)
 	if err != nil {
