@@ -162,11 +162,9 @@
 								]
 								<div class="infoCategoryToggle" data-category="environ"> [
 									<div class="infoSelector"> [Environ ({{len $.Environs}})]
-									<div class="infoAdder"> [+]
 								]
 								<div class="infoCategoryToggle" data-category="access"> [
 									<div class="infoSelector"> [Access ({{len $.AccessList}})]
-									<div class="infoAdder"> [+]
 								]
 							]
 						]
@@ -557,23 +555,6 @@
 			]
 			<div id="scrollToTop"> []
 			<div id="footer" style="position:fixed;left:0;bottom:0;width:100%;z-index:2;"> [
-				<div id="infoAdder" class="infoModifier nodisplay"> [
-					<div class="infoModifierTopBar" style="background-color:#F5E0E0;"> [
-						<div class="entryLabel" style=""> []
-						<div class="closeButton" style="background-color:#ECC;"> [&#x2715]
-					]
-					<div style="display:flex;gap:0.5rem;padding:0.7rem;background-color:inherit;"> [
-						<form class="valueForm" action="/api/add-environ" style="flex:1;display:flex;gap:0.5rem;margin-bottom:1rem" method="POST"> [
-							<input name="path" class="entryInput" type="hidden"> []
-							<input name="name" class="nameInput" style="box-sizing:border-box;height:1.5rem"> []
-							<input name="ctg" class="categoryInput" type="hidden"> []
-							<select name="type" class="typeSelect typeHolder" style="box-sizing:border-box;height:1.5rem;width:8rem"> [/* options will be added from script when event occurs */]
-							<textarea name="value" class="valueInput" style="flex:1" rows="1"> []
-							<img class="updatingMarker invisible" src="/asset/update.svg" style="width:1rem;height:1rem;position:relative;top:0;margin-top:0.5rem;margin-left:-2rem;margin-right:0.5rem;"> []
-							<button style="width:5rem"> [Add]
-						]
-					]
-				]
 				<div id="statusBar"> []
 			]
 		]

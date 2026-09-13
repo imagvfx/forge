@@ -1378,16 +1378,6 @@
 	border-radius: 2px 0 0 2px;
 }
 
-.infoAdder {
-	padding: 0.3rem;
-	border-radius: 0 2px 2px 0;
-	color: #999;
-}
-
-.infoAdder:hover {
-	color: #555;
-}
-
 .showHiddenProperty {
 	width: 5px;
 	padding: 0.3rem;
@@ -1435,17 +1425,6 @@
 
 .infoContextMenuLoader:hover {
 	color:#AAA;
-}
-
-.valueInput {
-	max-height: 140px;
-}
-
-.updatingMarker {
-	animation-duration: 1s;
-	animation-name: rotating;
-	animation-iteration-count: infinite;
-	animation-timing-function: linear;
 }
 
 @keyframes rotating {
@@ -1888,28 +1867,6 @@
 
 .summaryDot > #statusLabel{
 	font-size: 0.6rem;
-}
-
-.infoModifier {
-	background-color: #F9F9F9;
-	border-top: 1px solid #BBB;
-}
-
-.infoModifierTopBar {
-	display: flex;
-	justify-content: space-between;
-	padding: 0.5rem;
-}
-
-.infoModifier .closeButton {
-	border-radius: 3px;
-	width: 1rem;
-	height: 1rem;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: 0.5rem;
-	cursor: pointer;
 }
 
 details {

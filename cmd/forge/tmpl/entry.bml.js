@@ -513,12 +513,11 @@ window.onload = function() {
 		if (hide) {
 			return;
 		}
-		if (!event.target.closest(".infoAdder, .infoTitle, #footer") || event.target.closest("#footer .closeButton")) {
+		if (!event.target.closest(".infoTitle, #footer") || event.target.closest("#footer .closeButton")) {
 			let active = document.querySelector(".infoTitle.active");
 			if (active) {
 				active.classList.remove("active");
 			}
-			hide = hideInfoAdder();
 		}
 		if (event.target.closest(".grandSubAdderLoader")) {
 			let grandSubAdding = document.querySelector(".grandSubArea.adding");
@@ -613,10 +612,6 @@ window.onload = function() {
 				grandSubAdding.classList.remove("adding");
 				hide = true;
 			}
-			if (hide) {
-				return;
-			}
-			hide = hideInfoAdder();
 			if (hide) {
 				return;
 			}
@@ -1048,25 +1043,6 @@ window.onload = function() {
 	let allInputs = document.getElementsByTagName("input");
 	for (let input of allInputs) {
 		input.autocomplete = "off";
-	}
-	let inputs = document.getElementsByClassName("valueInput");
-	for (let input of inputs) {
-		input.onkeydown = function(ev) {
-			if (ev.repeat) {
-				return;
-			}
-			if (((ev.ctrlKey || ev.metaKey) && ev.code == "Enter") || ev.code == "NumpadEnter") {
-				submitUpdaterOrAdder(ev, input);
-			}
-		}
-		input.parentElement.onsubmit = function(ev) {
-			submitUpdaterOrAdder(ev, input);
-		}
-	}
-	for (let input of inputs) {
-		input.oninput = function() {
-			resizeTextArea(input);
-		}
 	}
 	let addExcelFile = document.getElementById("addExcelFile");
 	if (addExcelFile != null) {
@@ -1541,7 +1517,6 @@ window.onload = function() {
 			}
 			if (
 				document.querySelector("#updatePropertyPopup.expose") ||
-				document.querySelector("#infoAdder:not(.nodisplay)") ||
 				document.querySelector(".grandSubArea.adding")
 			) {
 				// close those first.
@@ -1616,9 +1591,6 @@ window.onload = function() {
 					}
 				}
 				printSelectionStatus();
-				if (document.querySelector(".subEntry.selected") == null) {
-					hideInfoAdder();
-				}
 			}
 		}
 		let popup = document.querySelector("#updatePropertyPopup");
@@ -1877,14 +1849,6 @@ window.onload = function() {
 			showCategoryInfos(tgl.dataset.category);
 		}
 	}
-	let infoAdders = document.getElementsByClassName("infoAdder");
-	for (let a of infoAdders) {
-		let ent = a.closest(".entry");
-		let tgl = a.closest(".infoCategoryToggle");
-		a.onclick = function() {
-			showInfoAdder(ent.dataset.entryPath, tgl.dataset.category, "", "text", "");
-		}
-	}
 	let infoContextMenuLoaders = document.getElementsByClassName("infoContextMenuLoader");
 	for (let loader of infoContextMenuLoaders) {
 		loader.onclick = function(event) {
@@ -1981,13 +1945,6 @@ window.onload = function() {
 			});
 			// Handled already, no need to submit again.
 			return false;
-		}
-	}
-	let infoModifiers = document.querySelectorAll(".infoModifier");
-	for (let mod of infoModifiers) {
-		let closeBtn = mod.querySelector(".closeButton");
-		closeBtn.onclick = function() {
-			mod.classList.add("nodisplay");
 		}
 	}
 	let dueLabels = document.querySelectorAll(".dueLabel")
@@ -2365,11 +2322,6 @@ function deleteThumbnail(thumb) {
 	});
 }
 
-function resizeTextArea(textarea) {
-	textarea.style.height = "auto";
-	textarea.style.height = String(textarea.scrollHeight) + "px";
-}
-
 function updateFromPropertyPicker() {
 	let popupHandle = document.querySelector(".popupHandle");
 	let popup = event.target.closest("#updatePropertyPopup");
@@ -2471,69 +2423,6 @@ function updateFromPropertyPicker() {
 			reloadPropertyPicker(popup, ctg, prop, false);
 		}
 		printStatus("done");
-	});
-}
-
-function submitUpdaterOrAdder(ev, input) {
-	ev.stopPropagation();
-	ev.preventDefault();
-	let req = new XMLHttpRequest();
-	let form = input.parentElement;
-	let data = new FormData(input.parentElement);
-	let entPath = data.get("path");
-	data.delete("path"); // will be refilled
-	let submitEntPaths = [];
-	let thisEntry = document.querySelector(`.entry[data-entry-path="${entPath}"]`);
-	if (!thisEntry || thisEntry.classList.contains("dirEntry")) {
-		// thisEntry can be null if it is an inherited info.
-		submitEntPaths = [entPath];
-	} else {
-		// subEntry
-		let selectedEnts = selectedEntries();
-		if (selectedEnts.length == 0) {
-			submitEntPaths = [entPath];
-		} else {
-			for (let ent of selectedEnts) {
-				submitEntPaths.push(ent.dataset.entryPath);
-			}
-			if (!submitEntPaths.includes(entPath)) {
-				printErrorStatus("entry not in selection: " + entPath);
-				return;
-			}
-		}
-	}
-	for (let path of submitEntPaths) {
-		data.append("path", path);
-	}
-	let ctg = data.get("ctg");
-	let name = data.get("name");
-	let marker = form.getElementsByClassName("updatingMarker")[0];
-	marker.classList.remove("invisible");
-	postForge(form.action, data, function(_, err) {
-		marker.classList.add("invisible");
-		if (err) {
-			printErrorStatus(err);
-			return;
-		}
-		// we know the value we just send,
-		// but let's get the corrected value from server.
-		let get = new XMLHttpRequest();
-		let d = new FormData();
-		for (let path of submitEntPaths) {
-			d.append("path", path);
-		}
-		d.append("name", name);
-		let api = "/api/get-" + ctg;
-		postForge(api, d, function(info, err) {
-			if (err) {
-				printErrorStatus("update done, but failed to get the new value: " + err);
-				return;
-			}
-			for (let path of submitEntPaths) {
-				refreshInfoValue(path, ctg, name, info);
-			}
-			printStatus("done");
-		});
 	});
 }
 
@@ -2752,60 +2641,6 @@ function showCategoryInfos(ctg) {
 
 let PropertyTypes = {{marshalJS $.PropertyTypes}}
 let AccessorTypes = {{marshalJS $.AccessorTypes}}
-
-function showInfoAdder(entry, ctg, name, type, value) {
-	// TODO: Add the item inplace?
-	document.getElementById("infoAdder").classList.remove("nodisplay");
-
-	let adder = document.getElementById("infoAdder");
-	adder.classList.remove("nodisplay");
-	adder.getElementsByClassName("entryLabel")[0].innerText = entry;
-	adder.getElementsByClassName("entryInput")[0].value = entry;
-	adder.getElementsByClassName("categoryInput")[0].value = ctg;
-	adder.getElementsByTagName("button")[0].innerText = "Add";
-	clearStatus();
-
-	let nameInput = adder.getElementsByClassName("nameInput")[0]
-	nameInput.value = name;
-	nameInput.placeholder = ctg;
-	let typeSel = adder.getElementsByClassName("typeSelect")[0]
-	typeSel.innerHTML = "";
-	if (ctg == "access") {
-		typeSel.style.display = "none";
-	} else {
-		typeSel.style.removeProperty("display");
-		let types = PropertyTypes;
-		for (let t of types) {
-			let option = document.createElement("option");
-			if (t == type) {
-				option.selected = true;
-			}
-			option.value = t;
-			option.text = t;
-			typeSel.appendChild(option)
-		}
-	}
-	adder.getElementsByClassName("valueForm")[0].action = "/api/add-" + ctg;
-
-	let valueInput = adder.getElementsByClassName("valueInput")[0];
-	valueInput.value = value;
-	resizeTextArea(valueInput);
-	if (!name) {
-		nameInput.focus();
-	} else {
-		valueInput.focus();
-	}
-}
-
-function hideInfoAdder() {
-	let adder = document.getElementById("infoAdder");
-	let hide = false;
-	if (!adder.classList.contains("nodisplay")) {
-		adder.classList.add("nodisplay");
-		hide = true;
-	}
-	return hide;
-}
 
 let currentContextMenuLoader = null;
 
