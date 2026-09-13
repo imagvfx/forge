@@ -518,7 +518,7 @@ window.onload = function() {
 			if (active) {
 				active.classList.remove("active");
 			}
-			hide = hideInfoModifier();
+			hide = hideInfoAdder();
 		}
 		if (event.target.closest(".grandSubAdderLoader")) {
 			let grandSubAdding = document.querySelector(".grandSubArea.adding");
@@ -616,7 +616,7 @@ window.onload = function() {
 			if (hide) {
 				return;
 			}
-			hide = hideInfoModifier();
+			hide = hideInfoAdder();
 			if (hide) {
 				return;
 			}
@@ -1617,7 +1617,7 @@ window.onload = function() {
 				}
 				printSelectionStatus();
 				if (document.querySelector(".subEntry.selected") == null) {
-					hideInfoModifier();
+					hideInfoAdder();
 				}
 			}
 		}
@@ -2818,7 +2818,12 @@ function showInfoAdder(entry, ctg, name, type, value) {
 
 function hideInfoAdder() {
 	let adder = document.getElementById("infoAdder");
-	adder.classList.add("nodisplay");
+	let hide = false;
+	if (!adder.classList.contains("nodisplay")) {
+		adder.classList.add("nodisplay");
+		hide = true;
+	}
+	return hide;
 }
 
 let currentContextMenuLoader = null;
@@ -2835,27 +2840,6 @@ function printSelectionStatus() {
 		what = String(n) + " entries";
 	}
 	printStatus(what + " selected");
-}
-
-function showInfoModifier() {
-	let footer = document.querySelectorAll("infoModifier");
-	if (footer.classList.contains("nodisplay")) {
-		footer.classList.remove("nodisplay");
-		return true;
-	}
-	return false;
-}
-
-function hideInfoModifier() {
-	let hide = false;
-	let modifiers = document.querySelectorAll(".infoModifier");
-	for (let mod of modifiers) {
-		if (!mod.classList.contains("nodisplay")) {
-			mod.classList.add("nodisplay");
-			hide = true;
-		}
-	}
-	return hide;
 }
 
 function toggleCollapse() {
