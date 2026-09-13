@@ -2313,25 +2313,6 @@ function renameEntry(form) {
 	return false;
 }
 
-function titleRecentlyUpdatedDot(dot) {
-	let then = new Date(dot.dataset.updatedAt);
-	let now = new Date();
-	let today = new Date(now.toDateString());
-	let dur = then - today;
-	let day = 24 * 60 * 60 * 1000;
-	let n = Math.floor(dur / day);
-	let title = "updated today";
-	if (n < 0) {
-		n = Math.abs(n);
-		if (n == 1) {
-			title = "updated 1 day ago";
-		} else {
-			title = "updated " + n + " days ago";
-		}
-	}
-	dot.title = title;
-}
-
 function updateThumbnail(thumb) {
 	let now = new Date().getTime();
 	if (thumb.dataset.lastUpload) {
