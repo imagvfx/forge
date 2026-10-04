@@ -368,10 +368,9 @@
 	width: 0.6rem;
 	height: 0.9rem;
 	background-image: url("/asset/distortion.svg");
-	background-size: 0.8rem;
+	background-size: 0.9rem;
 	background-repeat: no-repeat;
 	background-position: center;
-	background-color: #fcc;
 }
 
 .statusSummary {
