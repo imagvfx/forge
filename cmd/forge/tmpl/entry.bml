@@ -441,14 +441,15 @@
 												<div class="grandSubEntries {{if and $possibleSubTypes (not (has $possibleSubTypes ","))}}addable{{end}}"> [
 													{{range $gsGroups := (index $.GrandSubEntGroups $ent.Path)}}
 													{{range $i, $gs := $gsGroups}}
-														{{$direct := eq $i 0}}
-														<div class="grandSub {{if not $direct}}nonDirect{{end}}"> [
 														{{$gsPath := slice $gs.Path (inc (len $ent.Path)) (len $gs.Path)}}
 														{{$idx := strIndex $gsPath "/"}}
+														{{$direct := true}}
 														{{$gsName := $gsPath}}
 														{{if ne $idx -1}}
+														{{$direct = false}}
 														{{$gsName = slice $gsPath $idx (len $gsPath)}}
 														{{end}}
+														<div class="grandSub {{if not $direct}}nonDirect{{end}}"> [
 														{{$assignee := ""}}{{$called := ""}}
 														{{with $p := index $gs.Property "assignee"}}{{$assignee = $p.Value}}{{$called = $p.Eval}}{{end}}
 														{{$status := ""}}{{with $p := index $gs.Property "status"}}{{$status = $p.Value}}{{end}}
@@ -457,7 +458,7 @@
 														{{if and false (ne $i 0)}}
 														<div style="color:#aaa"> [+]
 														{{end}}
-														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} statusLabeler statusSelector {{if ne $i 0}}nonDirect{{end}} grandSubEntry copyable" data-copy-key="{{$gsPath}} path" data-copy-field="entryPath" data-entry-path="{{$gs.Path}}" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}"> [
+														<div class="summaryDot {{if eq $.User.Name $assignee}}my{{end}} statusLabeler statusSelector grandSubEntry copyable" data-copy-key="{{$gsPath}} path" data-copy-field="entryPath" data-entry-path="{{$gs.Path}}" data-sub="{{$gsPath}}" data-entry-type="{{$gs.Type}}" data-value="{{$status}}"> [
 															{{$gsName}}
 														]
 														<div class="gsInfo"> [

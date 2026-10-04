@@ -1117,7 +1117,7 @@
 	content: "@";
 }
 
-.summaryDot.nonDirect.grandSubEntry {
+.nonDirect .summaryDot.grandSubEntry {
 	border-radius: 6px;
 	padding: 0.1rem 0.25rem;
 	font-size: 0.5rem;
