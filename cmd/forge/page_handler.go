@@ -218,16 +218,18 @@ func (h *pageHandler) handleEntry(ctx context.Context, w http.ResponseWriter, r 
 				return nil
 			}
 			if byProp != "" {
+				vals := make([]string, 0, len(queries))
 				for _, q := range queries {
 					if strings.HasPrefix(q, "-") {
 						continue
 					}
-					ents, err := h.server.SearchEntries(ctx, path, byProp+"="+q)
-					if err != nil {
-						return err
-					}
-					subEnts = append(subEnts, ents...)
+					vals = append(vals, q)
 				}
+				ents, err := h.server.SearchEntriesByPropertyValues(ctx, path, byProp, vals)
+				if err != nil {
+					return err
+				}
+				subEnts = append(subEnts, ents...)
 				return nil
 			}
 			// default search

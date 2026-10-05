@@ -24,6 +24,7 @@ type Service interface {
 	DeleteGlobal(ctx context.Context, entType, name string) error
 	FindEntries(ctx context.Context, find EntryFinder) ([]*Entry, error)
 	SearchEntries(ctx context.Context, search EntrySearcher) ([]*Entry, error)
+	SearchEntriesByPropertyValues(ctx context.Context, path string, prop string, vals []string) ([]*Entry, error)
 	CountAllSubEntries(ctx context.Context, path string) (int, error)
 	GetEntry(ctx context.Context, path string) (*Entry, error)
 	AddEntry(ctx context.Context, ent *Entry) error

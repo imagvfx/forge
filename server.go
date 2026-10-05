@@ -84,6 +84,17 @@ func (s *Server) SearchEntries(ctx context.Context, path, query string) ([]*Entr
 	return ents, nil
 }
 
+func (s *Server) SearchEntriesByPropertyValues(ctx context.Context, path, prop string, vals []string) ([]*Entry, error) {
+	if path == "" {
+		return nil, fmt.Errorf("entry path not specified")
+	}
+	ents, err := s.svc.SearchEntriesByPropertyValues(ctx, path, prop, vals)
+	if err != nil {
+		return nil, err
+	}
+	return ents, nil
+}
+
 func (s *Server) CountAllSubEntries(ctx context.Context, path string) (int, error) {
 	if path == "" {
 		return 0, fmt.Errorf("entry path not specified")

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -571,6 +572,64 @@ func searchEntries(tx *sql.Tx, ctx context.Context, search forge.EntrySearcher) 
 		return nil, err
 	}
 	defer rows.Close()
+	return entryRowsToEntries(tx, ctx, rows)
+}
+
+// SearchEntriesByPropertyValues search entries those property value is one of suggested values.
+// Currently it only works well with text properties. Not sure I want more as it is only used
+// for search by id now.
+func SearchEntriesByPropertyValues(db *sql.DB, ctx context.Context, path, prop string, vals []string) ([]*forge.Entry, error) {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	ents, err := searchEntriesByPropertyValues(tx, ctx, path, prop, vals)
+	if err != nil {
+		return nil, err
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return ents, nil
+}
+
+func searchEntriesByPropertyValues(tx *sql.Tx, ctx context.Context, path, prop string, vals []string) ([]*forge.Entry, error) {
+	// build main query
+	qs := strings.Join(slices.Repeat([]string{"?"}, len(vals)), ", ")
+	if path == "/" {
+		path = ""
+	}
+	query := fmt.Sprintf(`
+		SELECT
+			entries.id,
+			entries.path,
+			entry_types.name,
+			entries.archived,
+			entries.created_at,
+			(SELECT time FROM logs WHERE logs.entry_id=entries.id ORDER BY id DESC LIMIT 1),
+			thumbnails.id
+		FROM entries
+		LEFT JOIN entry_types ON entries.type_id = entry_types.id
+		LEFT JOIN thumbnails ON entries.id = thumbnails.entry_id
+		LEFT JOIN properties ON entries.id = properties.entry_id
+		LEFT JOIN default_properties ON properties.default_id = default_properties.id
+		WHERE entries.path GLOB '%s/*' AND default_properties.name='%s' AND properties.val IN (%s)
+	`, path, prop, qs)
+	queryVals := make([]any, 0, len(vals))
+	for _, v := range vals {
+		queryVals = append(queryVals, v)
+	}
+	rows, err := tx.QueryContext(ctx, query, queryVals...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return entryRowsToEntries(tx, ctx, rows)
+}
+
+func entryRowsToEntries(tx *sql.Tx, ctx context.Context, rows *sql.Rows) ([]*forge.Entry, error) {
 	ents := make([]*forge.Entry, 0)
 	for rows.Next() {
 		e := &forge.Entry{}

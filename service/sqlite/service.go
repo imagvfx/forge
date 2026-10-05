@@ -86,6 +86,10 @@ func (s *Service) SearchEntries(ctx context.Context, search forge.EntrySearcher)
 	return SearchEntries(s.db, ctx, search)
 }
 
+func (s *Service) SearchEntriesByPropertyValues(ctx context.Context, path, prop string, vals []string) ([]*forge.Entry, error) {
+	return SearchEntriesByPropertyValues(s.db, ctx, path, prop, vals)
+}
+
 func (s *Service) CountAllSubEntries(ctx context.Context, path string) (int, error) {
 	return CountAllSubEntries(s.db, ctx, path)
 }
