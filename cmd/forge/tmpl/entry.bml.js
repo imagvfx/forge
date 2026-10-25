@@ -341,8 +341,9 @@ window.onload = function() {
 			let selEnts = selectedEntries();
 			if (selEnts.length != 0) {
 				if (!selEnts.includes(thisEnt)) {
-					 printErrorStatus("entry not in selection: " + entPath);
-					 return;
+					thisEnt.classList.add("selected");
+					selEnts.push(thisEnt);
+					printSelectionStatus();
 				}
 			} else {
 				selEnts = [thisEnt];
@@ -391,10 +392,9 @@ window.onload = function() {
 						let selectedEnts = selectedEntries();
 						if (selectedEnts.length != 0) {
 							if (!selectedEnts.includes(thisEnt)) {
-								let popup = document.querySelector("#updatePropertyPopup");
-								popup.classList.remove("expose");
-								printErrorStatus("entry not in selection: " + entPath);
-								return;
+								thisEnt.classList.add("selected");
+								selectedEnts.push(thisEnt);
+								printSelectionStatus();
 							}
 						}
 					}
@@ -414,9 +414,9 @@ window.onload = function() {
 						let selectedEnts = selectedEntries();
 						if (selectedEnts.length != 0) {
 							if (!selectedEnts.includes(thisEnt)) {
-								popup.classList.remove("expose");
-								printErrorStatus("entry not in selection: " + entPath);
-								return;
+								thisEnt.classList.add("selected");
+								selectedEnts.push(thisEnt);
+								printSelectionStatus();
 							}
 						} else {
 							selectedEnts = [thisEnt];
@@ -526,8 +526,8 @@ window.onload = function() {
 			}
 			let subEnt = event.target.closest(".subEntry");
 			if (selectedEntries().length != 0 && !subEnt.classList.contains("selected")) {
-				printErrorStatus("entry not in selection: " + subEnt.dataset.entryPath);
-				return;
+				subEnt.classList.add("selected");
+				printSelectionStatus();
 			}
 			let area = event.target.closest(".grandSubArea");
 			area.classList.add("adding");
@@ -762,8 +762,9 @@ window.onload = function() {
 				let selectedEnts = selectedEntries();
 				if (selectedEnts.length != 0) {
 					if (!selectedEnts.includes(thisEnt)) {
-						printErrorStatus("entry not in selection: " + entPath);
-						return;
+						thisEnt.classList.add("selected");
+						selectedEnts.push(thisEnt);
+						printSelectionStatus();
 					}
 				} else {
 					selectedEnts = [thisEnt];
@@ -1701,8 +1702,9 @@ window.onload = function() {
 			let selectedEnts = selectedEntries();
 			if (selectedEnts.length != 0) {
 				if (!selectedEnts.includes(thisEnt)) {
-					printErrorStatus("entry not in selection: " + entPath);
-					return;
+					thisEnt.classList.add("selected");
+					selectedEnts.push(thisEnt);
+					printSelectionStatus();
 				}
 			} else {
 				if (value == input.dataset.oldValue) {
