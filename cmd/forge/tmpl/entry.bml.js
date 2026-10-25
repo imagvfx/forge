@@ -1450,6 +1450,8 @@ window.onload = function() {
 			}
 			for (let cls of ["searchLink", "tagLink", "entryLink"]) {
 				if (event.target.classList.contains(cls)) {
+					event.stopPropagation();
+					event.preventDefault();
 					// it's moving to another page
 					return;
 				}
