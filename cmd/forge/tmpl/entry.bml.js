@@ -719,6 +719,16 @@ window.onload = function() {
 				printSelectionStatus();
 				return;
 			}
+			if (ctrlPressed && event.code == "KeyF") {
+				event.preventDefault();
+				let query = "-mode:entry";
+				let selEnts = selectedEntries();
+				for (let ent of selEnts) {
+					query += " " + ent.dataset.entryPath;
+				}
+				goSearch(query);
+				return;
+			}
 		}
 		if (ctrlPressed && event.code == "KeyC") {
 			if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
