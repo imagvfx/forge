@@ -983,6 +983,7 @@ window.onload = function() {
 		if (event.code != "Enter" && event.code != "NumpadEnter") {
 			return;
 		}
+		event.preventDefault();
 		let formData = new FormData(searchForm);
 		let query = formData.get("search");
 		if (event.ctrlKey || event.metaKey) {
