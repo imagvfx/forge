@@ -285,6 +285,7 @@ type AccessUpdater struct {
 
 type Log struct {
 	ID        int
+	ContextID string
 	EntryPath string
 	User      string
 	Action    string

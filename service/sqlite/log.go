@@ -12,6 +12,7 @@ func createLogsTable(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS logs (
 			id INTEGER PRIMARY KEY,
+			ctx_id TEXT NOT NULL,
 			entry_id INTEGER,
 			user TEXT NOT NULL,
 			action TEXT NOT NULL,
@@ -25,6 +26,12 @@ func createLogsTable(tx *sql.Tx) error {
 	`)
 	if err != nil {
 		return err
+	}
+	_, err = tx.Exec(`ALTER TABLE logs ADD COLUMN ctx_id TEXT NOT NULL DEFAULT ''`)
+	if err != nil {
+		if !strings.Contains(err.Error(), "duplicate column name") {
+			return err
+		}
 	}
 	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS index_logs_entry_id ON logs (entry_id)`)
 	if err != nil {
@@ -74,6 +81,7 @@ func findLogs(tx *sql.Tx, ctx context.Context, find forge.LogFinder) ([]*forge.L
 	rows, err := tx.QueryContext(ctx, `
 		SELECT
 			logs.id,
+			logs.ctx_id,
 			entries.path,
 			logs.user,
 			logs.action,
@@ -96,6 +104,7 @@ func findLogs(tx *sql.Tx, ctx context.Context, find forge.LogFinder) ([]*forge.L
 		l := &forge.Log{}
 		err := rows.Scan(
 			&l.ID,
+			&l.ContextID,
 			&l.EntryPath,
 			&l.User,
 			&l.Action,
@@ -150,8 +159,10 @@ func addLog(tx *sql.Tx, ctx context.Context, l *forge.Log) error {
 	if err != nil {
 		return err
 	}
+	ctxID := forge.ContextIDFromContext(ctx)
 	result, err := tx.ExecContext(ctx, `
 		INSERT INTO logs (
+			ctx_id,
 			entry_id,
 			user,
 			action,
@@ -160,8 +171,9 @@ func addLog(tx *sql.Tx, ctx context.Context, l *forge.Log) error {
 			typ,
 			val
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`,
+		ctxID,
 		entryID,
 		l.User,
 		l.Action,
