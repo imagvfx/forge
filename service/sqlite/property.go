@@ -200,7 +200,7 @@ func addProperty(tx *sql.Tx, ctx context.Context, p *forge.Property) error {
 	if err != nil {
 		return err
 	}
-	err = validateProperty(tx, ctx, p, nil)
+	err = validateProperty(tx, ctx, false, p, nil)
 	if err != nil {
 		return err
 	}
@@ -374,7 +374,7 @@ func updateProperty(tx *sql.Tx, ctx context.Context, upd forge.PropertyUpdater) 
 	vals := make([]any, 0)
 	if upd.Value != nil {
 		p.Value = *upd.Value
-		err := validateProperty(tx, ctx, p, old)
+		err := validateProperty(tx, ctx, false, p, old)
 		if err != nil {
 			return err
 		}

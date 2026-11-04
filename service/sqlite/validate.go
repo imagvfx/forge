@@ -18,7 +18,7 @@ import (
 // It saves the result to p.RawValue when it has processed well.
 // It modifies p.Value to make it better form to log.
 // Every type should allow empty Value while its meaning can be different on the type.
-func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) error {
+func validateProperty(tx *sql.Tx, ctx context.Context, isEnv bool, p, old *forge.Property) error {
 	if p == nil {
 		return fmt.Errorf("unable to validate nil property")
 	}
@@ -29,6 +29,11 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 	handled, err := validateSpecialProperty(tx, ctx, p, old)
 	if handled {
 		return err
+	}
+	// revert
+	err = validateRevertProperty(tx, ctx, isEnv, p, old)
+	if err != nil {
+		return fmt.Errorf("validate revert property: %v", err)
 	}
 	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property, *forge.Property) error{
 		"timecode":   validateTimecode,
@@ -48,6 +53,52 @@ func validateProperty(tx *sql.Tx, ctx context.Context, p, old *forge.Property) e
 		return fmt.Errorf("unknown type of property: %v", p.Type)
 	}
 	return validate(tx, ctx, p, old)
+}
+
+func validateRevertProperty(tx *sql.Tx, ctx context.Context, isEnv bool, p, old *forge.Property) error {
+	if !strings.HasPrefix(p.Value, "^") {
+		return nil
+	}
+	if p.Type != "text" {
+		return fmt.Errorf("not implement revert on %s property", p.Type)
+	}
+	ctg := "property"
+	if isEnv {
+		ctg = "environ"
+	}
+	ctxID := p.Value[1:]
+	if ctxID == "" {
+		return fmt.Errorf("revert needs context-id", p.Type)
+	}
+	logs, err := getLogs(tx, ctx, p.EntryPath, ctg, p.Name)
+	if err != nil {
+		return fmt.Errorf("couldn't get logs: %v", err)
+	}
+	findRevertValue := false
+	// when it does not find action to revert, it will set to old value.
+	// so it will be discarded later.
+	p.Value = old.Value
+	for i := len(logs) - 1; i >= 0; i-- {
+		l := logs[i]
+		if findRevertValue {
+			if l.Action == "rename" {
+				continue
+			}
+			// create, update, delete action left.
+			// revert to delete log will just set empty string.
+			v := ""
+			if l.Action == "create" || l.Action == "update" {
+				v = l.Value
+			}
+			p.Value = v
+			break
+		}
+		if l.ContextID == ctxID {
+			findRevertValue = true
+			continue
+		}
+	}
+	return nil
 }
 
 // validateSpecialProperty validates special properties those Forge treats specially.
