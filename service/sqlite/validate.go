@@ -31,9 +31,9 @@ func validateProperty(tx *sql.Tx, ctx context.Context, isEnv bool, p, old *forge
 		return err
 	}
 	// revert
-	err = validateRevertProperty(tx, ctx, isEnv, p, old)
+	err = restoreProperty(tx, ctx, isEnv, p, old)
 	if err != nil {
-		return fmt.Errorf("validate revert property: %v", err)
+		return fmt.Errorf("restore property: %v", err)
 	}
 	validateFn := map[string]func(*sql.Tx, context.Context, *forge.Property, *forge.Property) error{
 		"timecode":   validateTimecode,
@@ -55,20 +55,20 @@ func validateProperty(tx *sql.Tx, ctx context.Context, isEnv bool, p, old *forge
 	return validate(tx, ctx, p, old)
 }
 
-func validateRevertProperty(tx *sql.Tx, ctx context.Context, isEnv bool, p, old *forge.Property) error {
-	if !strings.HasPrefix(p.Value, "^") {
+func restoreProperty(tx *sql.Tx, ctx context.Context, isEnv bool, p, old *forge.Property) error {
+	_, ctxID, ok := strings.Cut(p.Value, "#before:")
+	if !ok {
 		return nil
 	}
+	if ctxID == "" {
+		return fmt.Errorf("needs context-id", p.Type)
+	}
 	if p.Type != "text" {
-		return fmt.Errorf("not implement revert on %s property", p.Type)
+		return fmt.Errorf("not implement on %s property", p.Type)
 	}
 	ctg := "property"
 	if isEnv {
 		ctg = "environ"
-	}
-	ctxID := p.Value[1:]
-	if ctxID == "" {
-		return fmt.Errorf("revert needs context-id", p.Type)
 	}
 	logs, err := getLogs(tx, ctx, p.EntryPath, ctg, p.Name)
 	if err != nil {
