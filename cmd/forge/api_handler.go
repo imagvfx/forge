@@ -455,7 +455,11 @@ func (h *apiHandler) updateEntryEnviron(ctx context.Context, pth, block string) 
 	}
 	prefix := string(block[0])
 	block = block[1:]
-	k, v, _ := strings.Cut(block, "=")
+	k, v, ok := strings.Cut(block, "=")
+	// '+KEY' without '=' means it will update with the current value,
+	// which is usually inherits from one of ancestor entries.
+	// It is useful for multi entry environ editing.
+	keepValue := !ok
 	switch prefix {
 	case "+":
 		env, err := h.server.EntryEnviron(ctx, pth, k)
@@ -470,7 +474,7 @@ func (h *apiHandler) updateEntryEnviron(ctx context.Context, pth, block string) 
 			update = true
 		}
 		t := "text" // default environ type
-		if v == "" && env != nil {
+		if keepValue && env != nil {
 			t = env.Type
 			v = env.Value
 		}
@@ -645,7 +649,9 @@ func (h *apiHandler) updateEntryAccess(ctx context.Context, pth, line string) er
 	}
 	prefix := string(line[0])
 	line = line[1:]
-	k, v, _ := strings.Cut(line, "=")
+	k, v, ok := strings.Cut(line, "=")
+	// see reasoning of keepValue in updateEntryEnviron.
+	keepValue := !ok
 	switch prefix {
 	case "+":
 		acc, err := h.server.EntryAccess(ctx, pth, k)
@@ -659,7 +665,7 @@ func (h *apiHandler) updateEntryAccess(ctx context.Context, pth, line string) er
 		if acc != nil && acc.EntryPath == pth {
 			update = true
 		}
-		if v == "" && acc != nil {
+		if keepValue && acc != nil {
 			v = acc.Eval
 		}
 		if update {
